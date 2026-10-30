@@ -35,6 +35,7 @@ export function toActiveSession(
       status: state.status,
     },
     savedAt: new Date().toISOString(),
+    workout: runtime.workout,
   };
   if (runtime.plan) active.plan = runtime.plan;
   return active;

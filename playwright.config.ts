@@ -16,6 +16,23 @@ export default defineConfig({
   projects: [
     {
       name: 'local',
+      testIgnore: /(setup|training-basic)\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], baseURL: `http://127.0.0.1:${E2E_PORT}` },
+    },
+    {
+      // Files that start a training session autosave it to the shared local database, which would
+      // pop the resume prompt in tests running at the same time; so they run one file at a time.
+      name: 'local-training',
+      testMatch: /training-basic\.spec\.ts/,
+      dependencies: ['local'],
+      use: { ...devices['Desktop Chrome'], baseURL: `http://127.0.0.1:${E2E_PORT}` },
+    },
+    {
+      // These tests keep a stored session around on purpose; running them after the other
+      // local tests (which clear it before each test) keeps the shared database predictable.
+      name: 'local-resume',
+      testMatch: /setup\.spec\.ts/,
+      dependencies: ['local-training'],
       use: { ...devices['Desktop Chrome'], baseURL: `http://127.0.0.1:${E2E_PORT}` },
     },
     {

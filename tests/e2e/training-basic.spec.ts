@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 /** The page clock is installed before navigation so performance.now and rAF are controllable. */
 async function openTraining(page: Page, buttonName: 'Ride' | 'Ride with players'): Promise<void> {
