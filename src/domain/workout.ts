@@ -57,6 +57,15 @@ export interface MusicCue {
   track: TrackRef;
 } // rep >= 1
 
+/** Hints for scaleWorkout: which blocks stretch and which repeat absorbs extra reps. */
+export interface WorkoutScaling {
+  warmupBlockId: string;
+  cooldownBlockId: string;
+  flexRepeatId?: string;
+  minTimes?: number;
+  maxTimes?: number;
+}
+
 export interface Workout {
   id: string;
   name: string;
@@ -70,6 +79,7 @@ export interface Workout {
   musicCues: MusicCue[];
   fallbackPlaylist: TrackRef[];
   musicHints?: Record<string, string>; // blockId -> "what song to look for"
+  scaling?: WorkoutScaling;
   schemaVersion: 1;
   updatedAt: string;
 }
@@ -152,6 +162,15 @@ export const workoutSchema: z.ZodType<Workout> = z
     musicCues: z.array(musicCueSchema),
     fallbackPlaylist: z.array(trackRefSchema),
     musicHints: z.record(z.string(), z.string()).optional(),
+    scaling: z
+      .object({
+        warmupBlockId: z.string().min(1),
+        cooldownBlockId: z.string().min(1),
+        flexRepeatId: z.string().min(1).optional(),
+        minTimes: z.number().int().min(2).max(50).optional(),
+        maxTimes: z.number().int().min(2).max(50).optional(),
+      })
+      .optional(),
     schemaVersion: z.literal(1),
     updatedAt: z.string(),
   })
@@ -175,6 +194,34 @@ export const workoutSchema: z.ZodType<Workout> = z
         register(b.id, ['blocks', i, 'id'], 1);
       }
     });
+    if (w.scaling) {
+      const sc = w.scaling;
+      const repeatIds = new Set(w.blocks.filter((b) => b.kind === 'repeat').map((b) => b.id));
+      const topLevelIds = new Set(w.blocks.filter((b) => b.kind !== 'repeat').map((b) => b.id));
+      for (const key of ['warmupBlockId', 'cooldownBlockId'] as const) {
+        if (!topLevelIds.has(sc[key])) {
+          ctx.addIssue({
+            code: 'custom',
+            message: `scaling.${key} must be a top-level steady or ramp block, got ${sc[key]}`,
+            path: ['scaling', key],
+          });
+        }
+      }
+      if (sc.flexRepeatId !== undefined && !repeatIds.has(sc.flexRepeatId)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `scaling.flexRepeatId must be a repeat block, got ${sc.flexRepeatId}`,
+          path: ['scaling', 'flexRepeatId'],
+        });
+      }
+      if (sc.minTimes !== undefined && sc.maxTimes !== undefined && sc.minTimes > sc.maxTimes) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'scaling.minTimes must not exceed maxTimes',
+          path: ['scaling', 'minTimes'],
+        });
+      }
+    }
     w.musicCues.forEach((cue, i) => {
       const max = maxRep.get(cue.blockId);
       if (max === undefined) {
