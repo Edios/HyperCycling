@@ -43,7 +43,7 @@ export const sessionConfigSchema: z.ZodType<SessionConfig> = z.object({
   background: z.enum(['basic', 'hyperride', 'youtube']),
   youtubeUrl: z.string().optional(),
   hud: z.enum(['solo', 'players', 'immersive', 'column', 'cockpit', 'tunnelTime']),
-  playerIds: z.array(z.string()),
+  playerIds: z.array(z.string()).max(10),
   music: z.boolean(),
 }) as unknown as z.ZodType<SessionConfig>; // optional-field inference caveat
 

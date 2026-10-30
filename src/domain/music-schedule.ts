@@ -41,7 +41,9 @@ function resolveCues(segments: Segment[], cues: MusicCue[]): ResolvedCue[] {
     const seg = segments.find((s) => s.blockId === cue.blockId && s.rep === cue.rep);
     if (seg) byStart.set(seg.startSec, cue);
   }
-  return [...byStart.entries()].sort((a, b) => a[0] - b[0]).map(([startSec, cue]) => ({ startSec, cue }));
+  return [...byStart.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([startSec, cue]) => ({ startSec, cue }));
 }
 
 /** Sequential fallback tracks from `anchor` (each from 0) until `limit`. */

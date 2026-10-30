@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { SessionConfig } from './settings';
+import { sessionConfigSchema, type SessionConfig } from './settings';
 import {
   activeSessionSchema,
   isActiveSessionFresh,
@@ -39,8 +39,8 @@ describe('schemas', () => {
   const log = {
     id: 's1',
     workoutId: 'w1',
-    startedAt: 'a',
-    endedAt: 'b',
+    startedAt: '2026-01-01T10:00:00Z',
+    endedAt: '2026-01-01T10:30:00Z',
     riddenSec: 10,
     completed: false,
     playerIds: [],
@@ -61,5 +61,20 @@ describe('schemas', () => {
     expect(
       activeSessionSchema.safeParse({ ...a, plan: { planId: 'p', week: 1, slot: 'x' } }).success,
     ).toBe(false);
+  });
+});
+
+describe('schema extras', () => {
+  it('rejects more than 10 playerIds in a session config', () => {
+    const cfg = {
+      background: 'basic',
+      hud: 'solo',
+      playerIds: Array.from({ length: 11 }, (_, i) => `p${i}`),
+      music: false,
+    };
+    expect(sessionConfigSchema.safeParse(cfg).success).toBe(false);
+  });
+  it('rejects a non ISO savedAt', () => {
+    expect(activeSessionSchema.safeParse({ ...active('nope') }).success).toBe(false);
   });
 });

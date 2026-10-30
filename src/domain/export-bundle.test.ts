@@ -67,3 +67,61 @@ describe('parseExportBundle', () => {
     expect(parseExportBundle(rest)).toMatchObject({ ok: false, reason: 'invalid' });
   });
 });
+
+describe('parseExportBundle duplicate ids', () => {
+  it.each(['workouts', 'players', 'planProgress', 'sessionLogs'] as const)(
+    'rejects duplicate ids in %s naming collection and id',
+    (key) => {
+      const item =
+        key === 'players'
+          ? { id: 'dup', name: 'A', ftp: 200 }
+          : key === 'planProgress'
+            ? {
+                id: 'dup',
+                planId: 'dup',
+                startedAt: '2026-01-01T00:00:00Z',
+                settings: {
+                  sessionMinutes: 45,
+                  difficulty: 0,
+                  layout: 'progresFreestyle',
+                  startWeek: 1,
+                },
+                entries: [],
+              }
+            : key === 'sessionLogs'
+              ? {
+                  id: 'dup',
+                  workoutId: 'w',
+                  startedAt: '2026-01-01T00:00:00Z',
+                  endedAt: '2026-01-01T00:10:00Z',
+                  riddenSec: 1,
+                  completed: false,
+                  playerIds: [],
+                  config: { background: 'basic', hud: 'solo', playerIds: [], music: false },
+                }
+              : {
+                  id: 'dup',
+                  name: 'W',
+                  description: '',
+                  category: 'progres',
+                  tags: [],
+                  source: { kind: 'user' },
+                  blocks: [],
+                  musicCues: [],
+                  fallbackPlaylist: [],
+                  schemaVersion: 1,
+                  updatedAt: '2026-01-01T00:00:00Z',
+                };
+      const r = parseExportBundle({ ...good(), [key]: [item, structuredClone(item)] });
+      expect(r.ok).toBe(false);
+      if (!r.ok) {
+        expect(r.reason).toBe('invalid');
+        expect(r.details).toContain(key);
+        expect(r.details).toContain('dup');
+      }
+    },
+  );
+  it('rejects a non ISO exportedAt', () => {
+    expect(parseExportBundle({ ...good(), exportedAt: 'yesterday' }).ok).toBe(false);
+  });
+});

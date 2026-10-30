@@ -172,7 +172,7 @@ export const workoutSchema: z.ZodType<Workout> = z
       })
       .optional(),
     schemaVersion: z.literal(1),
-    updatedAt: z.string(),
+    updatedAt: z.iso.datetime({ offset: true }),
   })
   .superRefine((w, ctx) => {
     // Block ids must be unique across the workout, repeat children included.

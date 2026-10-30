@@ -69,8 +69,12 @@ function singleton<T extends Settings | ActiveSession>(
 
 export async function createIndexedDbRepositories(
   dbName = 'spinning-tutor',
-): Promise<Repositories> {
+): Promise<Repositories & { close(): void }> {
   const db = await openDB<TutorDb>(dbName, DB_VERSION, {
+    blocking(_current, _blocked, event) {
+      // another tab wants to upgrade or delete the database: let go of it
+      (event.target as IDBDatabase).close();
+    },
     upgrade(d) {
       for (const name of COLLECTIONS) d.createObjectStore(name, { keyPath: 'id' });
       d.createObjectStore('singletons');
@@ -78,6 +82,7 @@ export async function createIndexedDbRepositories(
   });
 
   return {
+    close: () => db.close(),
     workouts: collection(db, 'workouts', (v) => validate('workout', schemas.workouts, v)),
     players: collection(db, 'players', (v) => validate('player', schemas.players, v)),
     planProgress: collection(db, 'planProgress', (v) =>
@@ -116,17 +121,28 @@ export async function createIndexedDbRepositories(
       const b = validateBundle(input); // fully validated before any write
       const tx = db.transaction([...COLLECTIONS, 'singletons'], 'readwrite');
       const writes: Promise<unknown>[] = [];
-      for (const name of COLLECTIONS) {
-        const store = tx.objectStore(name);
-        writes.push(store.clear());
-        for (const item of b[name]) writes.push(store.put(item as never));
+      try {
+        for (const name of COLLECTIONS) {
+          const store = tx.objectStore(name);
+          writes.push(store.clear());
+          for (const item of b[name]) writes.push(store.put(item as never));
+        }
+        const singletons = tx.objectStore('singletons');
+        writes.push(
+          b.settings ? singletons.put(b.settings, 'settings') : singletons.delete('settings'),
+        );
+        await Promise.all(writes);
+        await tx.done;
+      } catch (err) {
+        // a synchronous throw would otherwise let the transaction commit the earlier clear()
+        try {
+          tx.abort();
+        } catch {
+          /* already finished or aborted */
+        }
+        await Promise.allSettled([...writes, tx.done]); // swallow the abort rejections
+        throw err;
       }
-      const singletons = tx.objectStore('singletons');
-      writes.push(
-        b.settings ? singletons.put(b.settings, 'settings') : singletons.delete('settings'),
-      );
-      writes.push(tx.done);
-      await Promise.all(writes);
     },
   };
 }

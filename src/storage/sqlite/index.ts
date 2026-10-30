@@ -62,19 +62,22 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
   ): CollectionRepo<T> {
     const s = stmts[table];
     return {
-      list: () => Promise.resolve(s.all.all().map((r) => parseRow<T>(r))),
-      get: (id) => {
+      list: async () =>
+        s.all
+          .all()
+          .map((r) => parseRow<T>(r))
+          .sort(byId),
+      // all methods are async so failures surface as rejections, never synchronous throws
+      get: async (id) => {
         const row = s.one.get(id);
-        return Promise.resolve(row === undefined ? undefined : parseRow<T>(row));
+        return row === undefined ? undefined : parseRow<T>(row);
       },
-      // async so validation errors surface as rejections, not synchronous throws
       put: async (item) => {
         const valid = parse(item);
         s.upsert.run(valid.id, JSON.stringify(valid), now());
       },
-      remove: (id) => {
+      remove: async (id) => {
         s.del.run(id);
-        return Promise.resolve();
       },
     };
   }
@@ -84,16 +87,15 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
     parse: (v: unknown) => T,
   ): SingletonRepo<T> {
     return {
-      get: () => {
+      get: async () => {
         const row = singletonGet.get(key);
-        return Promise.resolve(row === undefined ? undefined : parseRow<T>(row));
+        return row === undefined ? undefined : parseRow<T>(row);
       },
       put: async (v) => {
         singletonPut.run(key, JSON.stringify(parse(v)));
       },
-      clear: () => {
+      clear: async () => {
         singletonDel.run(key);
-        return Promise.resolve();
       },
     };
   }

@@ -14,7 +14,7 @@ const session: SessionConfig = {
   music: false,
 };
 
-function workout(id: string, name = `Workout ${id}`): Workout {
+export function workout(id: string, name = `Workout ${id}`): Workout {
   return {
     id,
     name,
@@ -86,7 +86,7 @@ const active = (): ActiveSession => ({
   plan: { planId: 'plan1', week: 2, slot: 'freestyle' },
 });
 
-function bundle(): ExportBundle {
+export function bundle(): ExportBundle {
   return {
     app: 'spinning-tutor',
     schemaVersion: 1,
@@ -313,6 +313,15 @@ export function runRepositoryContract(name: string, makeRepos: () => Promise<Rep
         const before = withoutExportedAt(await repos.exportAll());
         const wrong = { ...bundle(), schemaVersion: 2 } as unknown as ExportBundle;
         await expect(repos.replaceAll(wrong)).rejects.toThrow();
+        expect(withoutExportedAt(await repos.exportAll())).toEqual(before);
+      });
+
+      it('rejects duplicate ids in a bundle collection and leaves data untouched', async () => {
+        await repos.replaceAll(bundle());
+        const before = withoutExportedAt(await repos.exportAll());
+        const dup = bundle();
+        dup.players = [player('p1', 'Ola', 200), player('p1', 'Other', 210)];
+        await expect(repos.replaceAll(dup)).rejects.toThrow(/duplicate id "p1" in players/);
         expect(withoutExportedAt(await repos.exportAll())).toEqual(before);
       });
 

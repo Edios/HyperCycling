@@ -25,8 +25,8 @@ export interface ActiveSession {
 export const sessionLogSchema: z.ZodType<SessionLog> = z.object({
   id: z.string().min(1),
   workoutId: z.string().min(1),
-  startedAt: z.string(),
-  endedAt: z.string(),
+  startedAt: z.iso.datetime({ offset: true }),
+  endedAt: z.iso.datetime({ offset: true }),
   riddenSec: z.number().min(0),
   completed: z.boolean(),
   playerIds: z.array(z.string()),
@@ -41,7 +41,7 @@ export const activeSessionSchema: z.ZodType<ActiveSession> = z.object({
     workoutElapsedSec: z.number().min(0),
     status: z.enum(['paused', 'running']),
   }),
-  savedAt: z.string(),
+  savedAt: z.iso.datetime({ offset: true }),
   plan: z
     .object({
       planId: z.string().min(1),

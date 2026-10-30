@@ -14,13 +14,18 @@ export const playerSchema: z.ZodType<Player> = z.object({
   isMe: z.boolean().optional(),
 }) as unknown as z.ZodType<Player>; // optional-field inference caveat (exactOptionalPropertyTypes)
 
+/** True when no more than one player is marked `isMe`. */
+export function atMostOneMe(players: readonly Player[]): boolean {
+  return players.filter((p) => p.isMe).length <= 1;
+}
+
 /** Validates a list of players: every item valid and at most one `isMe`. */
 export function validatePlayers(
   list: unknown,
 ): { ok: true; players: Player[] } | { ok: false; details: string } {
   const r = z.array(playerSchema).safeParse(list);
   if (!r.success) return { ok: false, details: formatIssue(r.error) };
-  if (r.data.filter((p) => p.isMe).length > 1) {
+  if (!atMostOneMe(r.data)) {
     return { ok: false, details: 'at most one player can be marked isMe' };
   }
   return { ok: true, players: r.data };

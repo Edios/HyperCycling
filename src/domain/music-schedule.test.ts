@@ -3,7 +3,13 @@ import { musicAt, nextTrackChange } from './music-schedule';
 import type { Segment } from './segments';
 import type { MusicCue, TrackRef } from './workout';
 
-const seg = (index: number, startSec: number, durationSec: number, blockId: string, rep = 1): Segment => ({
+const seg = (
+  index: number,
+  startSec: number,
+  durationSec: number,
+  blockId: string,
+  rep = 1,
+): Segment => ({
   index,
   startSec,
   durationSec,
@@ -67,8 +73,14 @@ describe('musicAt', () => {
   it('plays fallback from t=0 before the first cue', () => {
     const cues = [cue('b', tr('B'))];
     const fallback = [tr('F1', 40), tr('F2')];
-    expect(musicAt({ segments, cues, fallback, tSec: 10 })).toMatchObject({ key: 'fb:0:0', offsetSec: 10 });
-    expect(musicAt({ segments, cues, fallback, tSec: 50 })).toMatchObject({ key: 'fb:1:0', offsetSec: 10 });
+    expect(musicAt({ segments, cues, fallback, tSec: 10 })).toMatchObject({
+      key: 'fb:0:0',
+      offsetSec: 10,
+    });
+    expect(musicAt({ segments, cues, fallback, tSec: 50 })).toMatchObject({
+      key: 'fb:1:0',
+      offsetSec: 10,
+    });
     expect(musicAt({ segments, cues, fallback, tSec: 99 })?.track.id).toBe('F2');
   });
 
@@ -128,7 +140,10 @@ describe('nextTrackChange', () => {
     const cues = [cue('a', tr('A', 50))];
     const fallback = [tr('F1', 100)];
     const base = { segments, cues, fallback };
-    expect(nextTrackChange({ ...base, tSec: 0 })).toMatchObject({ atSec: 50, track: { key: 'fb:0:50' } });
+    expect(nextTrackChange({ ...base, tSec: 0 })).toMatchObject({
+      atSec: 50,
+      track: { key: 'fb:0:50' },
+    });
     expect(nextTrackChange({ ...base, tSec: 50 })).toEqual({ atSec: 150, track: null });
   });
 
@@ -144,7 +159,10 @@ describe('nextTrackChange', () => {
 
   it('reports the end of the workout, and null afterwards', () => {
     const cues = [cue('a', tr('A'))];
-    expect(nextTrackChange({ segments, cues, fallback: [], tSec: 200 })).toEqual({ atSec: 600, track: null });
+    expect(nextTrackChange({ segments, cues, fallback: [], tSec: 200 })).toEqual({
+      atSec: 600,
+      track: null,
+    });
     expect(nextTrackChange({ segments, cues, fallback: [], tSec: 600 })).toBeNull();
   });
 

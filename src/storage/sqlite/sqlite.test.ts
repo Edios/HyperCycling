@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS } from '../../domain/settings';
-import { runRepositoryContract } from '../contract';
+import { bundle, runRepositoryContract, workout } from '../contract';
 import { createSqliteRepositories } from './index';
 
 const opened: { close(): void }[] = [];
@@ -75,5 +75,32 @@ describe('sqlite migrations and persistence', () => {
     raw.pragma('user_version = 99');
     raw.close();
     expect(() => createSqliteRepositories(path)).toThrow(/newer/i);
+  });
+
+  it('rolls back replaceAll when a statement fails mid-transaction', async () => {
+    const path = join(dir, 'rollback.db');
+    const repos = track(createSqliteRepositories(path));
+    await repos.workouts.put(workout('keep'));
+    await repos.players.put({ id: 'old', name: 'Old', ftp: 200 });
+    const before = await repos.exportAll();
+
+    // A trigger makes the player insert fail after workouts were already replaced.
+    const other = new Database(path);
+    other.exec(
+      `CREATE TRIGGER fail_player BEFORE INSERT ON players WHEN NEW.id = 'p2'
+       BEGIN SELECT RAISE(ABORT, 'forced failure'); END`,
+    );
+    other.close();
+
+    await expect(repos.replaceAll(bundle())).rejects.toThrow('forced failure');
+    const after = await repos.exportAll();
+    expect({ ...after, exportedAt: '' }).toEqual({ ...before, exportedAt: '' });
+  });
+
+  it('rejects instead of throwing synchronously', async () => {
+    const repos = track(createSqliteRepositories(':memory:'));
+    const call = repos.workouts.put({} as never);
+    expect(call).toBeInstanceOf(Promise);
+    await expect(call).rejects.toThrow();
   });
 });

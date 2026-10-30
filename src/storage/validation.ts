@@ -20,7 +20,9 @@ export function validate<T>(what: string, schema: z.ZodType<T>, value: unknown):
   const r = schema.safeParse(value);
   if (!r.success) {
     const i = r.error.issues[0];
-    throw new Error(`Invalid ${what}: ${i ? `${i.path.join('.')}: ${i.message}` : 'invalid'}`);
+    const path = i?.path.join('.');
+    const detail = i ? (path ? `${path}: ${i.message}` : i.message) : 'invalid';
+    throw new Error(`Invalid ${what}: ${detail}`);
   }
   return r.data;
 }

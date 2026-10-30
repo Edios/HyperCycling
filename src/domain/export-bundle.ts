@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { planProgressSchema, type PlanProgress } from './plan';
-import { playerSchema, type Player } from './player';
+import { atMostOneMe, playerSchema, type Player } from './player';
 import { sessionLogSchema, type SessionLog } from './session-log';
 import { settingsSchema, type Settings } from './settings';
 import { workoutSchema, type Workout } from './workout';
@@ -28,7 +28,7 @@ export const exportBundleSchema: z.ZodType<ExportBundle> = z
   .object({
     app: z.literal('spinning-tutor'),
     schemaVersion: z.literal(1),
-    exportedAt: z.string(),
+    exportedAt: z.iso.datetime({ offset: true }),
     workouts: z.array(workoutSchema),
     players: z.array(playerSchema),
     planProgress: z.array(planProgressSchema),
@@ -36,11 +36,24 @@ export const exportBundleSchema: z.ZodType<ExportBundle> = z
     settings: settingsSchema.nullable(),
   })
   .superRefine((b, ctx) => {
-    if (b.players.filter((p) => p.isMe).length > 1) {
+    if (!atMostOneMe(b.players)) {
       ctx.addIssue({
         code: 'custom',
         message: 'at most one player can be marked isMe',
         path: ['players'],
+      });
+    }
+    for (const key of ['workouts', 'players', 'planProgress', 'sessionLogs'] as const) {
+      const seen = new Set<string>();
+      b[key].forEach((item, i) => {
+        if (seen.has(item.id)) {
+          ctx.addIssue({
+            code: 'custom',
+            message: `duplicate id "${item.id}" in ${key}`,
+            path: [key, i, 'id'],
+          });
+        }
+        seen.add(item.id);
       });
     }
   }) as unknown as z.ZodType<ExportBundle>;

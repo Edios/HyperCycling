@@ -33,7 +33,11 @@ export function cueForTransition(
 
   if (next.effortStart - prev.effortEnd >= ATTACK_EFFORT_JUMP) return { kind: 'attack' };
 
-  if (prev.position !== undefined && next.position !== undefined && prev.position !== next.position) {
+  if (
+    prev.position !== undefined &&
+    next.position !== undefined &&
+    prev.position !== next.position
+  ) {
     return next.position === 'standing' ? { kind: 'standUp' } : { kind: 'sitDown' };
   }
 
