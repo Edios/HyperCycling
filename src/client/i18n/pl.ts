@@ -25,7 +25,6 @@ export const pl: Messages = {
     pause: 'Pauza',
     resume: 'Wznów',
     paused: 'Pauza',
-    musicTrackFailed: 'Nie można odtworzyć "{title}". Trening trwa dalej bez muzyki.',
     pressToStart: 'Naciśnij spację lub kliknij Start',
     previous: 'Poprzedni blok',
     nextBlock: 'Następny blok',
@@ -270,6 +269,89 @@ export const pl: Messages = {
     resetBody: 'Zaczęcie od nowa wymaże Twój postęp w tym planie. Tego nie można cofnąć.',
     resetYes: 'Wymaż i zacznij od nowa',
     cancel: 'Anuluj',
+  },
+  music: {
+    nowPlaying: 'Teraz gra',
+    nowPlayingMuted: 'wyciszone',
+    unknownTrack: 'Utwór',
+    error: {
+      generic: 'Nie można odtworzyć "{title}". Trening trwa dalej bez muzyki.',
+      noDevice:
+        'Spotify nie ma aktywnego urządzenia. Otwórz Spotify na telefonie lub komputerze i włącz dowolny utwór. Trening trwa dalej bez muzyki.',
+      premium:
+        'Sterowanie odtwarzaniem wymaga konta Spotify Premium. Trening trwa dalej bez muzyki.',
+      notConnected:
+        'Spotify nie jest połączone. Połącz je w Ustawieniach. Trening trwa dalej bez muzyki.',
+      rateLimited: 'Spotify jest teraz przeciążone. Trening trwa dalej bez muzyki.',
+      network: 'Nie można połączyć się ze Spotify. Trening trwa dalej bez muzyki.',
+      stateMismatch: 'Logowanie do Spotify nie pasuje do tego okna. Spróbuj połączyć ponownie.',
+      authDenied: 'Spotify nie otrzymało zgody na dostęp. Spróbuj połączyć ponownie.',
+    },
+    notEmbeddable:
+      'Tego filmu nie można osadzić (osadzanie wyłączone albo film jest prywatny lub usunięty), więc nie zagra w aplikacji.',
+    notEmbeddableBadge: 'nie do osadzenia',
+    spotifySearch: 'Szukaj w Spotify',
+    spotifySearchPlaceholder: 'Utwór lub wykonawca',
+    spotifySearchGo: 'Szukaj',
+    spotifySearching: 'Szukam…',
+    spotifyNoResults: 'Nie znaleziono utworów.',
+    spotifyResults: 'Wyniki ze Spotify',
+    spotifyUse: 'Użyj',
+    spotifyConnectHint: 'Połącz Spotify w Ustawieniach, aby tu szukać utworów.',
+    spotifyOpenSettings: 'Otwórz Ustawienia',
+  },
+  settings: {
+    title: 'Ustawienia',
+    sections: 'Sekcje ustawień',
+    music: {
+      title: 'Muzyka',
+      intro:
+        'Spotify gra przez aplikację Spotify na jednym z Twoich urządzeń. YouTube nie wymaga logowania.',
+      localhostTitle: 'Spotify nie przyjmuje adresu "localhost"',
+      localhostBody:
+        'Otwórz aplikację pod adresem 127.0.0.1 zamiast localhost, a potem połącz. Na tym adresie łączenie jest wyłączone.',
+      localhostLink: 'Otwórz tę stronę pod 127.0.0.1',
+      clientId: 'Client ID Spotify',
+      clientIdHint:
+        'Publiczny identyfikator z Twojej aplikacji Spotify. Client secret nie jest potrzebny.',
+      clientIdDefault: 'Domyślny dla tej wersji: {id}',
+      clientIdPlaceholder: 'Wklej Client ID',
+      clientIdMissing: 'Najpierw wpisz Client ID.',
+      saveFailed: 'Nie udało się zapisać ustawienia.',
+      status: 'Stan',
+      connected: 'Połączono',
+      notConnected: 'Nie połączono',
+      connect: 'Połącz Spotify',
+      disconnect: 'Rozłącz',
+      connectFailed: 'Nie udało się rozpocząć logowania do Spotify.',
+      device: 'Urządzenie odtwarzania',
+      deviceAuto: 'Automatycznie (aktywne urządzenie)',
+      deviceRefresh: 'Odśwież urządzenia',
+      deviceLoading: 'Wczytuję urządzenia…',
+      deviceNone: 'Brak urządzeń. Otwórz Spotify na telefonie lub komputerze i odśwież.',
+      deviceActive: 'aktywne',
+      setupTitle: 'Jak skonfigurować Spotify',
+      setupSteps: {
+        dashboard:
+          'Otwórz Spotify Developer Dashboard (developer.spotify.com/dashboard) i utwórz aplikację. Nazwa dowolna.',
+        redirect:
+          'W polu "Redirect URIs" dodaj poniższe adresy (dokładnie tak, jak podano), potem Zapisz:',
+        api: 'Zaznacz "Web API" jako planowane API.',
+        users:
+          'W "User Management" aplikacji dodaj własne konto Spotify (aplikacja zostaje w trybie deweloperskim).',
+        clientId:
+          'Skopiuj Client ID z ustawień aplikacji i wklej powyżej. Client secret nie jest potrzebny (PKCE).',
+        connect: 'Naciśnij "Połącz Spotify" i zatwierdź dostęp. Wrócisz na tę stronę.',
+      },
+      uriLocal: 'Aplikacja lokalna',
+      uriPages: 'GitHub Pages',
+      uriThis: 'Ta strona',
+      copy: 'Kopiuj',
+      copied: 'Skopiowano',
+      copyFailed: 'Nie udało się skopiować',
+      premiumNote:
+        'Sterowanie odtwarzaniem wymaga Spotify Premium i otwartej aplikacji Spotify na urządzeniu. Muzyka nigdy nie zatrzymuje treningu.',
+    },
   },
   placeholder: { body: 'Ten ekran pojawi się w kolejnej aktualizacji.', plans: 'Plany' },
   youtube: {

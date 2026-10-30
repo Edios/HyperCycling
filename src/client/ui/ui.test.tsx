@@ -10,7 +10,7 @@ import { Field } from './Field';
 import { Modal } from './Modal';
 import { ProfileChart } from './ProfileChart';
 import { Segmented } from './Segmented';
-import { Toast } from './Toast';
+import { Toast, ToastStack } from './Toast';
 import { Toggle } from './Toggle';
 
 describe('Button and Chip', () => {
@@ -96,6 +96,19 @@ describe('Field, Modal, Toast', () => {
   it('Toast announces its message', () => {
     render(<Toast message="Saved" onClose={() => {}} />);
     expect(screen.getByRole('status')).toHaveTextContent('Saved');
+  });
+
+  it('ToastStack shows several toasts in one column', () => {
+    render(
+      <ToastStack>
+        <Toast message="First" onClose={() => {}} />
+        <Toast message="Second" onClose={() => {}} />
+      </ToastStack>,
+    );
+    const stack = screen.getByTestId('toast-stack');
+    expect(stack).toContainElement(screen.getByText('First'));
+    expect(stack).toContainElement(screen.getByText('Second'));
+    expect(screen.getAllByTestId('toast-stack')).toHaveLength(1);
   });
 });
 

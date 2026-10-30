@@ -27,6 +27,8 @@ export interface FakeMusicProvider extends MusicProvider {
   failConnect(fail: boolean): void;
   /** Rejects `play` for any track the predicate accepts (until replaced). */
   failPlaysWhen(predicate: ((track: TrackRef) => boolean) | undefined): void;
+  /** The error that failing plays reject with (default: a plain Error). */
+  failPlaysWith(error: Error | undefined): void;
 }
 
 /** In-memory provider for tests: records calls and fails on demand. */
@@ -36,6 +38,7 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
   let playFailures = 0;
   let connectFails = false;
   let failWhen: ((track: TrackRef) => boolean) | undefined;
+  let failError: Error | undefined;
   const calls: FakeCall[] = [];
   const log: string[] = [];
   const record = (call: FakeCall, line: string): void => {
@@ -56,6 +59,9 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
     failPlaysWhen(predicate) {
       failWhen = predicate;
     },
+    failPlaysWith(error) {
+      failError = error;
+    },
     connect() {
       record({ type: 'connect' }, 'connect');
       if (connectFails) return Promise.reject(new Error('connect failed'));
@@ -66,9 +72,9 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
       record({ type: 'play', track, offsetSec }, `play:${track.id}@${Math.round(offsetSec)}`);
       if (playFailures > 0) {
         playFailures -= 1;
-        return Promise.reject(new Error('play failed'));
+        return Promise.reject(failError ?? new Error('play failed'));
       }
-      if (failWhen?.(track)) return Promise.reject(new Error('play failed'));
+      if (failWhen?.(track)) return Promise.reject(failError ?? new Error('play failed'));
       return Promise.resolve();
     },
     fadeOut(ms) {

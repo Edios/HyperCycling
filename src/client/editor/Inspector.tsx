@@ -3,6 +3,12 @@ import { effortRow, effortToFtpPct, type EffortLevel, type EffortTable } from '.
 import type { Block, Intensity, Position, Workout } from '../../domain/workout';
 import { parseClock, parseTrackUrl } from '../music/parse-track-url';
 import { useT } from '../i18n';
+import { Link } from 'react-router-dom';
+import type { TrackRef } from '../../domain/workout';
+import { spotifyErrorKey } from '../music/spotify/messages';
+import { getSharedSpotifyProvider } from '../music/spotify/shared';
+import { useSpotifyConnected } from '../music/spotify/useSpotify';
+import { checkYoutubeEmbeddable } from '../music/youtube-check';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Segmented';
 import { formatClock } from '../training/format';
@@ -322,6 +328,10 @@ function LeafInspector({
 }) {
   const t = useT();
   const id = leaf.id;
+  const workoutRef = useRef(workout);
+  useEffect(() => {
+    workoutRef.current = workout;
+  });
   const patch = (p: Record<string, unknown>): void =>
     dispatch({ type: 'updateBlock', id, patch: p });
   const cue = workout.musicCues.find((c) => c.blockId === id && c.rep === 1);
@@ -413,6 +423,9 @@ function LeafInspector({
         key={`${id}:${cue ? `${cue.track.provider}:${cue.track.id}:${cue.track.startAtSec}` : ''}`}
         blockId={id}
         cue={cue?.track}
+        getCue={() =>
+          workoutRef.current.musicCues.find((c) => c.blockId === id && c.rep === 1)?.track
+        }
         dispatch={dispatch}
         focusRequested={focusTrack}
         onFocused={onTrackFocused}
@@ -439,6 +452,7 @@ function trackUrl(track: { provider: 'spotify' | 'youtube'; id: string }): strin
 function TrackField({
   blockId,
   cue,
+  getCue,
   dispatch,
   focusRequested,
   onFocused,
@@ -447,6 +461,8 @@ function TrackField({
 }: {
   blockId: string;
   cue: Workout['musicCues'][number]['track'] | undefined;
+  /** The cue as it is now (after any later edits); used when an async check finishes. */
+  getCue: () => TrackRef | undefined;
   dispatch: Dispatch<EditorAction>;
   focusRequested: boolean;
   onFocused: () => void;
@@ -481,23 +497,38 @@ function TrackField({
     onDraft({ url: value, start: fill });
   };
 
+  const place = (track: TrackRef): void => {
+    dispatch({ type: 'setCue', blockId, rep: 1, track });
+    onDraft(undefined);
+    if (track.provider !== 'youtube') return;
+    // Ask YouTube whether the video can be embedded, and fill in its title. The pin stays either
+    // way (the IFrame player reports the truth at playback); a blocked video only gets a mark.
+    void checkYoutubeEmbeddable(track.id).then((check) => {
+      // Pinning remounts this field, so the current cue is read from the workout, not from here.
+      const now = getCue();
+      if (!now || now.provider !== 'youtube' || now.id !== track.id) return;
+      const patch: Partial<TrackRef> = {};
+      if (check.title && !now.title) patch.title = check.title;
+      if (check.author && !now.artist) patch.artist = check.author;
+      if (check.status === 'blocked' || check.status === 'missing') patch.notEmbeddable = true;
+      if (Object.keys(patch).length === 0) return;
+      dispatch({ type: 'setCue', blockId, rep: 1, track: { ...now, ...patch } });
+    });
+  };
+
   const pin = (): void => {
     setTouched(true);
     if (!parsed || startSec === undefined) return;
     const same = cue?.provider === parsed.provider && cue.id === parsed.id;
-    dispatch({
-      type: 'setCue',
-      blockId,
-      rep: 1,
-      track: {
-        provider: parsed.provider,
-        id: parsed.id,
-        // The title belongs to the track: a different id starts without one.
-        title: same ? cue.title : '',
-        startAtSec: startSec,
-      },
+    place({
+      provider: parsed.provider,
+      id: parsed.id,
+      // The title belongs to the track: a different id starts without one.
+      title: same ? cue.title : '',
+      ...(same && cue.artist ? { artist: cue.artist } : {}),
+      ...(same && cue.notEmbeddable ? { notEmbeddable: true } : {}),
+      startAtSec: startSec,
     });
-    onDraft(undefined);
   };
 
   return (
@@ -507,10 +538,16 @@ function TrackField({
       </label>
       {cue && (
         <small className={styles.caption} data-testid="track-pinned">
+          {cue.title ? `${cue.title} · ` : ''}
           {t('editor.inspector.pinned', {
             provider: providerName(cue.provider),
             time: formatClock(cue.startAtSec),
           })}
+        </small>
+      )}
+      {cue?.notEmbeddable && (
+        <small role="alert" className={styles.error} data-testid="track-not-embeddable">
+          {t('music.notEmbeddable')}
         </small>
       )}
       <input
@@ -563,6 +600,98 @@ function TrackField({
           </Button>
         )}
       </div>
+      <SpotifySearch
+        onPick={(track) => {
+          place({ ...track, startAtSec: startSec ?? 0 });
+        }}
+      />
+    </div>
+  );
+}
+
+/** Spotify track search (at most 10 results) for the track field; hints at Settings when offline. */
+function SpotifySearch({ onPick }: { onPick: (track: TrackRef) => void }) {
+  const t = useT();
+  const connected = useSpotifyConnected();
+  const inputId = useId();
+  const [query, setQuery] = useState('');
+  const [state, setState] = useState<
+    | { kind: 'idle' }
+    | { kind: 'loading' }
+    | { kind: 'results'; items: TrackRef[] }
+    | { kind: 'error'; message: string }
+  >({ kind: 'idle' });
+  const run = (): void => {
+    const q = query.trim();
+    if (!q) return;
+    setState({ kind: 'loading' });
+    getSharedSpotifyProvider()
+      .search(q)
+      .then(
+        (items) => setState({ kind: 'results', items: items.slice(0, 10) }),
+        (err: unknown) => setState({ kind: 'error', message: t(spotifyErrorKey(err)) }),
+      );
+  };
+  if (!connected) {
+    return (
+      <small className={styles.caption} data-testid="spotify-search-hint">
+        {t('music.spotifyConnectHint')} <Link to="/settings">{t('music.spotifyOpenSettings')}</Link>
+      </small>
+    );
+  }
+  return (
+    <div className={styles.group} data-testid="spotify-search">
+      <label className={styles.groupLabel} htmlFor={inputId}>
+        {t('music.spotifySearch')}
+      </label>
+      <div className={styles.row}>
+        <input
+          id={inputId}
+          data-testid="spotify-query"
+          className={styles.wide}
+          placeholder={t('music.spotifySearchPlaceholder')}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              run();
+            }
+          }}
+        />
+        <Button onClick={run}>{t('music.spotifySearchGo')}</Button>
+      </div>
+      <div aria-live="polite">
+        {state.kind === 'loading' && (
+          <small className={styles.caption}>{t('music.spotifySearching')}</small>
+        )}
+        {state.kind === 'error' && (
+          <small role="alert" className={styles.error}>
+            {state.message}
+          </small>
+        )}
+        {state.kind === 'results' && state.items.length === 0 && (
+          <small className={styles.caption}>{t('music.spotifyNoResults')}</small>
+        )}
+      </div>
+      {state.kind === 'results' && state.items.length > 0 && (
+        <ul className={styles.results} aria-label={t('music.spotifyResults')}>
+          {state.items.map((tr) => (
+            <li key={tr.id} data-testid="spotify-result">
+              <span className={styles.trackName}>
+                {tr.title}
+                {tr.artist ? ` · ${tr.artist}` : ''}
+              </span>
+              <Button
+                onClick={() => onPick(tr)}
+                aria-label={`${t('music.spotifyUse')}: ${tr.title}`}
+              >
+                {t('music.spotifyUse')}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -581,18 +710,38 @@ function FallbackPlaylist({
   const [url, setUrl] = useState('');
   const [touched, setTouched] = useState(false);
   const list = workout.fallbackPlaylist;
+  const listRef = useRef(list);
+  useEffect(() => {
+    listRef.current = list;
+  });
   const parsed = parseTrackUrl(url);
   const set = (fallbackPlaylist: Workout['fallbackPlaylist']): void =>
     dispatch({ type: 'updateMeta', patch: { fallbackPlaylist } });
   const add = (): void => {
     setTouched(true);
     if (!parsed) return;
-    set([
-      ...list,
-      { provider: parsed.provider, id: parsed.id, title: '', startAtSec: parsed.startAtSec ?? 0 },
-    ]);
+    const added: TrackRef = {
+      provider: parsed.provider,
+      id: parsed.id,
+      title: '',
+      startAtSec: parsed.startAtSec ?? 0,
+    };
+    set([...list, added]);
     setUrl('');
     setTouched(false);
+    if (parsed.provider !== 'youtube') return;
+    void checkYoutubeEmbeddable(parsed.id).then((check) => {
+      const patch: Partial<TrackRef> = {};
+      if (check.title) patch.title = check.title;
+      if (check.author) patch.artist = check.author;
+      if (check.status === 'blocked' || check.status === 'missing') patch.notEmbeddable = true;
+      if (Object.keys(patch).length === 0) return;
+      // The list may have changed meanwhile: patch the first matching entry that is still bare.
+      const latest = listRef.current;
+      const at = latest.findIndex((x) => x.provider === 'youtube' && x.id === added.id && !x.title);
+      if (at < 0) return;
+      set(latest.map((x, i) => (i === at ? { ...x, ...patch } : x)));
+    });
   };
   const move = (i: number, to: number): void => {
     const next = [...list];
@@ -614,6 +763,9 @@ function FallbackPlaylist({
               <li key={`${tr.provider}:${tr.id}:${i}`} data-testid="fallback-track">
                 <span className={styles.trackName}>
                   {tr.title || `${tr.provider === 'spotify' ? 'Spotify' : 'YouTube'} · ${tr.id}`}
+                  {tr.notEmbeddable && (
+                    <em className={styles.badge}> ⚠ {t('music.notEmbeddableBadge')}</em>
+                  )}
                 </span>
                 <button
                   type="button"

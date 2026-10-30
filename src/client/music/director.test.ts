@@ -701,3 +701,54 @@ describe('music director: dispose', () => {
     expect(base.log).toEqual(['pause']);
   });
 });
+
+describe('music director: volume and now playing', () => {
+  it('reports the playing track and clears it when the track changes or ends', async () => {
+    const seen: (string | null)[] = [];
+    make({
+      cues: [cue('a', track('A')), cue('b', track('B'))],
+      onPlaying: (t) => seen.push(t?.id ?? null),
+    }).start();
+    await runAt(0);
+    expect(seen).toEqual(['A']);
+    await runAt(150);
+    expect(seen).toEqual(['A', null, 'B']);
+  });
+
+  it('applies a volume change to the current track, ignoring repeats', async () => {
+    const director = make({ fallback: [track('F')] });
+    director.start();
+    await runAt(0);
+    director.setVolume(0);
+    await settle();
+    director.setVolume(0);
+    director.setVolume(1);
+    await settle();
+    expect(spotify.log).toEqual(['play:F@0', 'setVolume:0', 'setVolume:1']);
+  });
+
+  it('starts the next track at the muted level and clamps odd values', async () => {
+    const director = make({ fallback: [track('F')], volume: 0 });
+    director.start();
+    await runAt(0);
+    expect(spotify.log).toEqual(['setVolume:0', 'play:F@0']);
+    director.setVolume(7);
+    await settle();
+    expect(spotify.log.at(-1)).toBe('setVolume:1');
+  });
+
+  it('hands the failure to the warning callback', async () => {
+    spotify.failPlaysWhen(() => true);
+    const errors: unknown[] = [];
+    make({
+      fallback: [track('F')],
+      onWarning: (t, err) => {
+        warnings.push(t);
+        errors.push(err);
+      },
+    }).start();
+    await runAt(0);
+    expect(warnings).toHaveLength(1);
+    expect(errors[0]).toBeInstanceOf(Error);
+  });
+});

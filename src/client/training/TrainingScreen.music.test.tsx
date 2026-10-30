@@ -1,10 +1,11 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flattenWorkout } from '../../domain/segments';
 import type { SessionConfig } from '../../domain/settings';
 import type { TrackRef, Workout } from '../../domain/workout';
 import { resetSettingsForTests } from '../data/useSettings';
+import { SpotifyError } from '../music/spotify/errors';
 import { createFakeMusicProvider, type FakeMusicProvider } from '../music/fake-provider';
 import { useLastResult } from './last-result';
 import {
@@ -180,5 +181,83 @@ describe('music in the training screen', () => {
     view.unmount();
     expect(music.disposed).toBe(1);
     expect(music.provider.log).toContain('pause');
+  });
+});
+
+describe('now playing, mute and warnings', () => {
+  const titled: TrackRef = { ...fallback, title: 'Warm up jam', artist: 'The Band' };
+
+  it('shows the track in the corner while it plays and hides it when music is off', async () => {
+    load(workoutWith({ fallbackPlaylist: [titled] }), true);
+    await renderScreen();
+    expect(screen.queryByTestId('now-playing')).not.toBeInTheDocument();
+    await startRunning();
+    const corner = screen.getByTestId('now-playing');
+    expect(corner).toHaveTextContent('Warm up jam');
+    expect(corner).toHaveTextContent('The Band · YouTube');
+  });
+
+  it('shows nothing when the session has music off', async () => {
+    load(workoutWith({ fallbackPlaylist: [titled] }), false);
+    await renderScreen();
+    await startRunning();
+    expect(screen.queryByTestId('now-playing')).not.toBeInTheDocument();
+  });
+
+  it('the M key mutes the music and unmuting restores it', async () => {
+    load(workoutWith({ fallbackPlaylist: [titled] }), true);
+    await renderScreen();
+    await startRunning();
+    expect(music.provider.log).toEqual(['play:abcdefghijk@0']);
+    await act(async () => {
+      fireEvent.keyDown(window, { code: 'KeyM' });
+    });
+    expect(music.provider.log.at(-1)).toBe('setVolume:0');
+    expect(screen.getByTestId('now-playing')).toHaveAttribute('data-muted', 'true');
+    await act(async () => {
+      fireEvent.keyDown(window, { code: 'KeyM' });
+    });
+    expect(music.provider.log.at(-1)).toBe('setVolume:1');
+    expect(screen.getByTestId('now-playing')).toHaveAttribute('data-muted', 'false');
+  });
+
+  it('a track that starts while muted begins at volume 0', async () => {
+    load(workoutWith({ fallbackPlaylist: [titled] }), true);
+    await renderScreen();
+    await act(async () => {
+      fireEvent.keyDown(window, { code: 'KeyM' });
+    });
+    await startRunning();
+    expect(music.provider.log).toEqual(['setVolume:0', 'play:abcdefghijk@0']);
+  });
+
+  it.each([
+    ['noActiveDevice', 'Open Spotify on a phone or computer'],
+    ['premiumRequired', 'Premium'],
+    ['notAuthorized', 'not connected'],
+    ['rateLimited', 'busy'],
+  ] as const)('maps the Spotify error %s to a clear warning', async (code, text) => {
+    music.provider.failPlaysWhen(() => true);
+    music.provider.failPlaysWith(new SpotifyError(code));
+    load(
+      workoutWith({
+        fallbackPlaylist: [{ ...titled, provider: 'spotify', id: '4uLU6hMCjMI75M1A2tKUQC' }],
+      }),
+      true,
+    );
+    await renderScreen();
+    await startRunning();
+    const stack = screen.getByTestId('toast-stack');
+    expect(stack).toHaveTextContent(text);
+    expect(useSessionStore.getState().state.status).toBe('running');
+  });
+
+  it('puts the warning in the toast stack, which holds several toasts without overlap', async () => {
+    music.provider.failPlaysWhen(() => true);
+    load(workoutWith({ fallbackPlaylist: [titled] }), true);
+    await renderScreen();
+    await startRunning();
+    const stack = screen.getByTestId('toast-stack');
+    expect(stack).toContainElement(screen.getByText(/Cannot play "Warm up jam"/));
   });
 });

@@ -25,20 +25,27 @@ export interface MusicDirectorOptions {
   subscribeEvents(cb: (event: EngineEvent, state: EngineState) => void): () => void;
   /** Called on every state change; the director reacts only when the status changes. */
   subscribeState(cb: () => void): () => void;
-  /** Called once per track that cannot be played (not for the retry). */
-  onWarning(track: TrackRef): void;
+  /** Called once per track that cannot be played (not for the retry), with the failure. */
+  onWarning(track: TrackRef, error?: unknown): void;
+  /** The track now playing (or paused), `null` once nothing is scheduled. */
+  onPlaying?(track: TrackRef | null): void;
+  /** Volume 0..1 applied to every provider; 1 by default. */
+  volume?: number;
   fadeMs?: number;
   retryMs?: number;
   pollMs?: number;
 }
 
 export interface MusicDirector {
+  /** Mute/unmute: 0..1. Applies to the current track and to those that follow. */
+  setVolume(v: number): void;
   start(): void;
   dispose(): void;
 }
 
 interface Playing {
   key: string;
+  track: TrackRef;
   provider: MusicProvider;
   /** Paused because the engine is not running; resumed when it runs again on the same track. */
   halted: boolean;
@@ -109,6 +116,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
   const pollMs = options.pollMs ?? POLL_MS;
 
   let current: Playing | null = null;
+  let volume = options.volume ?? 1;
   let disposed = false;
   let started = false;
   let running = false;
@@ -154,7 +162,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     failures.set(key, record);
     if (record.count !== 1) return; // one warning and one retry per scheduled track
     try {
-      options.onWarning(track);
+      options.onWarning(track, err);
     } catch (warnErr) {
       console.error('Music warning handler failed', warnErr);
     }
@@ -183,6 +191,8 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
         if (fresh?.key !== desired.key) return true; // the loop will decide again
         offsetSec = fresh.offsetSec;
       }
+      // A muted session must not start audible: set the level before the track begins.
+      if (volume !== 1) await quietly('volume', () => provider.setVolume(volume));
       const playId = ++playCounter;
       latestPlay.set(provider, playId);
       await bounded(
@@ -206,8 +216,17 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       void quietly('pause', () => provider.pause());
       return false;
     }
-    current = { key: desired.key, provider, halted: false };
+    current = { key: desired.key, track: desired.track, provider, halted: false };
+    announce(desired.track);
     return true;
+  }
+
+  function announce(track: TrackRef | null): void {
+    try {
+      options.onPlaying?.(track);
+    } catch (err) {
+      console.error('Music now-playing handler failed', err);
+    }
   }
 
   const fade = (playing: Playing): Promise<void> =>
@@ -230,6 +249,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       const playing = current;
       if (!playing) return false;
       current = null;
+      announce(null);
       if (!playing.halted) await fade(playing);
       return true;
     }
@@ -251,6 +271,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       // The old track fades out first; the new one then starts from a fresh offset.
       const playing = current;
       current = null;
+      announce(null);
       if (!playing.halted) await fade(playing);
       return true;
     }
@@ -282,6 +303,16 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
   }
 
   return {
+    setVolume(v) {
+      const next = Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1;
+      if (next === volume) return;
+      volume = next;
+      const playing = current;
+      if (playing && !disposed) {
+        void quietly('volume', () => playing.provider.setVolume(volume));
+      }
+    },
+
     start() {
       if (started || disposed) return;
       if (options.cues.length === 0 && options.fallback.length === 0) return; // nothing to play

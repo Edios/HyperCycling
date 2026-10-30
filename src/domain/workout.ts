@@ -49,6 +49,8 @@ export interface TrackRef {
   artist?: string;
   durationSec?: number;
   startAtSec: number;
+  /** Set by the editor when YouTube reports that the video cannot be embedded. */
+  notEmbeddable?: boolean;
 }
 
 export interface MusicCue {
@@ -134,6 +136,7 @@ const trackRefSchema = z.object({
   artist: z.string().optional(),
   durationSec: z.number().min(0).optional(),
   startAtSec: z.number().min(0),
+  notEmbeddable: z.boolean().optional(),
 });
 
 const musicCueSchema = z.object({
@@ -302,7 +305,8 @@ export function duplicateWorkout(w: Workout, nameSuffix: string): Workout {
     const sc = copy.scaling;
     sc.warmupBlockId = idMap.get(sc.warmupBlockId) ?? sc.warmupBlockId;
     sc.cooldownBlockId = idMap.get(sc.cooldownBlockId) ?? sc.cooldownBlockId;
-    if (sc.flexRepeatId !== undefined) sc.flexRepeatId = idMap.get(sc.flexRepeatId) ?? sc.flexRepeatId;
+    if (sc.flexRepeatId !== undefined)
+      sc.flexRepeatId = idMap.get(sc.flexRepeatId) ?? sc.flexRepeatId;
   }
   if (copy.musicHints) {
     copy.musicHints = Object.fromEntries(

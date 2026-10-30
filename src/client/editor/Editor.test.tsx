@@ -34,6 +34,10 @@ vi.mock('../data/repositories', () => ({
 
 vi.setConfig({ testTimeout: 20_000 });
 
+vi.mock('../music/youtube-check', () => ({
+  checkYoutubeEmbeddable: () => Promise.resolve({ status: 'unknown' }),
+}));
+
 import { builtinWorkouts } from '../data/builtin';
 import { EditorScreen } from './EditorScreen';
 
