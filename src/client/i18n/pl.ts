@@ -2,7 +2,7 @@ import type { Messages } from './en';
 
 export const pl: Messages = {
   app: { title: 'Spinning Tutor' },
-  nav: { plan: 'Plan', freestyle: 'Dowolny', players: 'Zawodnicy', settings: 'Ustawienia' },
+  nav: { plan: 'Plan', freestyle: 'Freestyle', players: 'Gracze', settings: 'Ustawienia' },
   training: {
     effort: 'Wysiłek',
     cadence: 'Kadencja',
@@ -31,7 +31,7 @@ export const pl: Messages = {
     mute: 'Wycisz',
     controls: 'Sterowanie treningiem',
     fullscreen: 'Pełny ekran',
-    players: 'Zawodnicy',
+    players: 'Gracze',
     endTitle: 'Zakończyć trening?',
     endBody: 'Postęp nie zostanie zapisany jako ukończony.',
     endConfirm: 'Zakończ',
@@ -94,7 +94,7 @@ export const pl: Messages = {
   tag: {
     mine: 'Moje',
     progres: 'Progres',
-    freestyle: 'Dowolny',
+    freestyle: 'Freestyle',
     hiit: 'HIIT',
     test: 'Testy',
     music: 'Pod muzykę',
@@ -112,7 +112,7 @@ export const pl: Messages = {
   dev: {
     title: 'Treningi',
     ride: 'Jedź',
-    rideWithPlayers: 'Jedź z zawodnikami',
+    rideWithPlayers: 'Jedź z graczami',
   },
   coach: {
     attack: 'ATAK!',

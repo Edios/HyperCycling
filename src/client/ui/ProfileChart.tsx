@@ -36,7 +36,6 @@ export function ProfileChart({ segments, height, pastSec = 0, thick = false }: P
   return (
     <div
       data-testid="profile-chart"
-      role="img"
       aria-hidden="true"
       className={styles.chart}
       style={{ height: typeof height === 'number' ? `${height}px` : height }}

@@ -139,3 +139,43 @@ describe('AppBar', () => {
     expect(screen.getByRole('link', { name: /Settings/ })).toHaveAttribute('href', '/settings');
   });
 });
+
+describe('Modal focus and Segmented ids', () => {
+  it('focuses the first control, wraps Tab, and restores focus on close', () => {
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+    const { unmount } = render(
+      <Modal title="T" onClose={() => {}}>
+        <button type="button">One</button>
+        <button type="button">Two</button>
+      </Modal>,
+    );
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
+    const two = screen.getByRole('button', { name: 'Two' });
+    two.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(two).toHaveFocus();
+    unmount();
+    expect(opener).toHaveFocus();
+    opener.remove();
+  });
+
+  it('two Segmented controls with the same label do not share a radio group', () => {
+    const opts = [
+      { value: 'a', label: 'A' },
+      { value: 'b', label: 'B' },
+    ];
+    render(
+      <>
+        <Segmented label="Same" value="a" options={opts} onChange={() => {}} />
+        <Segmented label="Same" value="b" options={opts} onChange={() => {}} />
+      </>,
+    );
+    const radios = screen.getAllByRole('radio');
+    expect(new Set(radios.map((r) => r.getAttribute('name'))).size).toBe(2);
+    expect(radios.filter((r) => (r as HTMLInputElement).checked)).toHaveLength(2);
+  });
+});

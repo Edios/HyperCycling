@@ -6,7 +6,11 @@ import type { Workout } from '../../domain/workout';
 const mine = vi.hoisted(() => ({ list: [] as Workout[] }));
 
 vi.mock('../data/repositories', () => ({
-  getRepositories: () => Promise.resolve({ workouts: { list: () => Promise.resolve(mine.list) } }),
+  getRepositories: () =>
+    Promise.resolve({
+      workouts: { list: () => Promise.resolve(mine.list) },
+      settings: { get: () => Promise.resolve(undefined) },
+    }),
 }));
 
 vi.setConfig({ testTimeout: 20_000 });

@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 /** The page clock is installed before navigation so performance.now and rAF are controllable. */
 async function openTraining(page: Page, buttonName: 'Ride' | 'Ride with players'): Promise<void> {
   await page.clock.install();
-  await page.goto('./#/dev');
+  await page.goto('./?dev#/dev');
   // The deterministic demo workout is not the first row since the built-in content landed.
   const row = page.getByTestId('workout-row').filter({ hasText: 'Demo mix' });
   await row.getByRole('button', { name: buttonName, exact: true }).click();

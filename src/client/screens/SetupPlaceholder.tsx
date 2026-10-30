@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { builtinPlans } from '../data/builtin';
-import { DEFAULT_PLAN_SETTINGS, type PlanSlot } from '../../domain/plan';
+import { DEFAULT_PLAN_SETTINGS } from '../../domain/plan';
 import { scaleWorkout } from '../../domain/scale';
 import { flattenWorkout } from '../../domain/segments';
 import type { SessionConfig } from '../../domain/settings';
@@ -64,7 +64,7 @@ export function SetupPlaceholder() {
         Number.isInteger(week) &&
         week > 0 &&
         (slot === 'progres' || slot === 'freestyle')
-          ? { plan: { planId, week, slot: slot as PlanSlot } }
+          ? { plan: { planId, week, slot } }
           : {}),
       };
       useSessionStore.getState().load(runtime);

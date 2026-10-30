@@ -8,6 +8,11 @@ import { PlanTab } from './select/PlanTab';
 import { SelectShell } from './select/SelectShell';
 import { TrainingScreen } from './training/TrainingScreen';
 
+/** The demo list is for development and e2e only: dev builds, or any build opened with ?dev. */
+const DEV_ROUTE =
+  import.meta.env.DEV ||
+  (typeof location !== 'undefined' && new URLSearchParams(location.search).has('dev'));
+
 export function App() {
   return (
     <HashRouter>
@@ -34,8 +39,8 @@ export function App() {
         <Route path="/plans" element={<PlaceholderPage titleKey="placeholder.plans" />} />
         <Route path="/players" element={<PlaceholderPage titleKey="nav.players" />} />
         <Route path="/settings" element={<PlaceholderPage titleKey="nav.settings" />} />
-        {/* Developer shortcut kept for e2e: rides any built-in workout with demo players. */}
-        <Route path="/dev" element={<DevHome />} />
+        {/* Developer shortcut (see DEV_ROUTE): rides any built-in workout with demo players. */}
+        {DEV_ROUTE && <Route path="/dev" element={<DevHome />} />}
         <Route
           path="*"
           element={

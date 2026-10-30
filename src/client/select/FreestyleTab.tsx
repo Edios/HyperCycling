@@ -11,7 +11,7 @@ import styles from './FreestyleTab.module.css';
 export function FreestyleTab() {
   const t = useT();
   const [lang] = useLang();
-  const { workouts } = useLibrary();
+  const { workouts, loaded } = useLibrary();
   const [filter, setFilter] = useState<FilterId>('all');
   const [query, setQuery] = useState('');
   const shown = useMemo(
@@ -30,14 +30,27 @@ export function FreestyleTab() {
           ))}
         </div>
         <div className={styles.actions}>
-          <input
-            type="search"
-            className={styles.search}
-            aria-label={t('free.searchLabel')}
-            placeholder={t('free.searchPlaceholder')}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+          <div className={styles.searchWrap}>
+            <svg
+              className={styles.searchIcon}
+              viewBox="0 0 20 20"
+              width="18"
+              height="18"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path d="M13 13l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <input
+              type="search"
+              className={styles.search}
+              aria-label={t('free.searchLabel')}
+              placeholder={t('free.searchPlaceholder')}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
           <Button disabled title={t('common.comingSoon')}>
             {t('free.importFile')}
           </Button>
@@ -46,7 +59,9 @@ export function FreestyleTab() {
           </Button>
         </div>
       </div>
-      {shown.length === 0 ? (
+      {!loaded ? (
+        <div aria-busy="true" />
+      ) : shown.length === 0 ? (
         <p className={styles.empty}>{t('free.empty')}</p>
       ) : (
         <div className={styles.grid}>

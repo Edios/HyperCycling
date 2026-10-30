@@ -56,7 +56,7 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
   const [lang] = useLang();
   const navigate = useNavigate();
   const { settings } = useSettings();
-  const { workouts } = useLibrary();
+  const { workouts, loaded: libraryLoaded } = useLibrary();
   const last = useLastSession();
   const [swapping, setSwapping] = useState(false);
 
@@ -70,8 +70,10 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
     for (let week = 1; week <= plan.weeks.length; week++) {
       const st = weekStatus(plan, progress, week);
       for (const slot of SLOTS) {
-        if (st[slot] === 'done') done++;
-        if (st[slot] !== 'skipped') total++;
+        // Weeks without a session in this slot (or layout) are not sessions at all.
+        if (workoutOf(plan, week, slot, progress.settings.layout) === undefined) continue;
+        total++;
+        if (st[slot] !== 'open') done++;
       }
     }
     return { done, total };
@@ -114,6 +116,8 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
     return altWorkout ? [altWorkout] : [];
   }, [next, plan, workouts, byId]);
 
+  if (!libraryLoaded) return <div className={styles.page} aria-busy="true" />;
+
   const pct = counts.total > 0 ? Math.round((counts.done / counts.total) * 100) : 0;
 
   return (
@@ -146,9 +150,9 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
                 <div className={styles.titleRow}>
                   <div>
                     <span
-                      className={`${styles.badge} ${nextWorkout.category === 'progres' ? styles.progres : styles.freestyle}`}
+                      className={`${styles.badge} ${next.slot === 'progres' ? styles.progres : styles.freestyle}`}
                     >
-                      {t(nextWorkout.category === 'progres' ? 'tag.progres' : 'tag.freestyle')}
+                      {t(next.slot === 'progres' ? 'tag.progres' : 'tag.freestyle')}
                     </span>
                     <h2>{localizedText(nextWorkout, lang).name}</h2>
                     <p className={styles.mut}>{localizedText(nextWorkout, lang).description}</p>
@@ -220,6 +224,7 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
                       key={slot}
                       data-testid={`week-${week}-${slot}`}
                       data-status={st[slot]}
+                      title={w ? localizedText(w, lang).name : undefined}
                       className={`${styles.slot} ${styles[st[slot]] ?? ''}`}
                     >
                       <span aria-hidden="true" className={styles.mark}>

@@ -5,6 +5,7 @@ import {
   DEFAULT_PLAN_SETTINGS,
   type Plan,
   type PlanProgress,
+  type PlanSettings,
   type ProgressEntry,
 } from '../../domain/plan';
 import type { SessionLog } from '../../domain/session-log';
@@ -37,19 +38,28 @@ import { PlanTab } from './PlanTab';
 
 const plan = builtinPlans.find((p) => !p.loop) as Plan;
 
-function progressFor(entries: ProgressEntry[]): PlanProgress {
+function progressFor(
+  entries: ProgressEntry[],
+  p: Plan = plan,
+  settings: PlanSettings = DEFAULT_PLAN_SETTINGS,
+): PlanProgress {
   return {
-    id: plan.id,
-    planId: plan.id,
+    id: p.id,
+    planId: p.id,
     startedAt: '2026-01-01T00:00:00.000Z',
-    settings: DEFAULT_PLAN_SETTINGS,
+    settings,
     entries,
   };
 }
 
-function entry(week: number, slot: 'progres' | 'freestyle', status: 'done' | 'skipped' = 'done') {
+function entry(
+  week: number,
+  slot: 'progres' | 'freestyle',
+  status: 'done' | 'skipped' = 'done',
+  p: Plan = plan,
+) {
   const workoutId =
-    plan.weeks[week - 1]?.sessions.find((s) => s.slot === slot)?.workoutId ?? 'unknown';
+    p.weeks[week - 1]?.sessions.find((s) => s.slot === slot)?.workoutId ?? 'unknown';
   return { week, slot, workoutId, status, at: '2026-01-02T10:00:00.000Z' } as ProgressEntry;
 }
 
@@ -91,7 +101,7 @@ describe('PlanTab', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: plan.name })).toBeInTheDocument();
     expect(screen.getByText(/Next session · week 2/)).toBeInTheDocument();
-    expect(screen.getByTestId('plan-done')).toHaveTextContent(/^1 of \d+ sessions$/);
+    expect(screen.getByTestId('plan-done')).toHaveTextContent(/^2 of 12 sessions$/);
     expect(screen.getByRole('button', { name: 'Ride' })).toBeEnabled();
 
     const weeks = screen.getByTestId('weeks-list');
@@ -172,5 +182,64 @@ describe('PlanTab', () => {
     ];
     renderTab();
     expect(await screen.findByText(new RegExp(`Last: .*${w.name}`))).toBeInTheDocument();
+  });
+
+  it('badge follows the slot, not the workout category', async () => {
+    db.settings = { ...DEFAULT_SETTINGS, activePlanId: plan.id };
+    db.progress = [progressFor([entry(1, 'progres')])];
+    renderTab();
+    const card = await screen.findByTestId('next-session');
+    expect(within(card).getByText('Freestyle')).toBeInTheDocument();
+    expect(within(card).queryByText('Progres')).not.toBeInTheDocument();
+  });
+
+  it('Swap on a progres slot offers the week alternative when there is one', async () => {
+    const bf = builtinPlans.find((p) => p.id === 'build-form') as Plan;
+    const alt = bf.weeks[0]?.progresAlt as string;
+    db.settings = { ...DEFAULT_SETTINGS, activePlanId: bf.id };
+    db.progress = [progressFor([], bf)];
+    renderTab();
+    const swap = await screen.findByRole('button', { name: 'Swap' });
+    expect(swap).toBeEnabled();
+    fireEvent.click(swap);
+    const dialog = await screen.findByRole('dialog');
+    const choices = within(dialog).getAllByRole('button', { name: /min/ });
+    expect(choices).toHaveLength(1);
+    fireEvent.click(choices[0] as HTMLElement);
+    expect((await screen.findByTestId('where')).textContent).toBe(
+      `/setup/${alt}?plan=build-form&week=1&slot=progres`,
+    );
+  });
+
+  it('doubleProgres layout serves the progres alternative in the second slot', async () => {
+    const bf = builtinPlans.find((p) => p.id === 'build-form') as Plan;
+    const alt = bf.weeks[0]?.progresAlt as string;
+    db.settings = { ...DEFAULT_SETTINGS, activePlanId: bf.id };
+    db.progress = [
+      progressFor([entry(1, 'progres', 'done', bf)], bf, {
+        ...DEFAULT_PLAN_SETTINGS,
+        layout: 'doubleProgres',
+      }),
+    ];
+    renderTab();
+    fireEvent.click(await screen.findByRole('button', { name: 'Ride' }));
+    expect((await screen.findByTestId('where')).textContent).toBe(
+      `/setup/${alt}?plan=build-form&week=1&slot=freestyle`,
+    );
+  });
+
+  it('a looping plan starts its next cycle after a full pass', async () => {
+    const loop = builtinPlans.find((p) => p.loop) as Plan;
+    db.settings = { ...DEFAULT_SETTINGS, activePlanId: loop.id };
+    const entries: ProgressEntry[] = [];
+    loop.weeks.forEach((w, i) =>
+      w.sessions.forEach((s) => entries.push(entry(i + 1, s.slot, 'done', loop))),
+    );
+    db.progress = [progressFor(entries, loop)];
+    renderTab();
+    expect(await screen.findByText(/Next session · week 1/)).toBeInTheDocument();
+    expect(screen.queryByText('Plan complete')).not.toBeInTheDocument();
+    expect(screen.getByTestId('week-1')).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByTestId('plan-done')).toHaveTextContent(/^0 of \d+ sessions$/);
   });
 });

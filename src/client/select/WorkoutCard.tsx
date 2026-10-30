@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { flattenWorkout } from '../../domain/segments';
 import type { Workout } from '../../domain/workout';
 import { localizedText } from '../data/localized';
+import { useSettings } from '../data/useSettings';
 import { useLang, useT } from '../i18n';
 import { ProfileChart } from '../ui/ProfileChart';
 import { minutesOf, primaryTag, tagKey } from './model';
@@ -12,7 +13,11 @@ import styles from './WorkoutCard.module.css';
 export const WorkoutCard = memo(function WorkoutCard({ workout }: { workout: Workout }) {
   const t = useT();
   const [lang] = useLang();
-  const segments = useMemo(() => flattenWorkout(workout), [workout]);
+  const { settings } = useSettings();
+  const segments = useMemo(
+    () => flattenWorkout(workout, settings.effortTable),
+    [workout, settings.effortTable],
+  );
   return (
     <Link
       to={`/setup/${encodeURIComponent(workout.id)}`}

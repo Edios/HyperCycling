@@ -85,8 +85,11 @@
   margin: 0.625rem 0 0;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 3.5rem;
+  font-size: clamp(2.4rem, 4vw, 3.5rem);
   line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .titleRow p {

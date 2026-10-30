@@ -22,11 +22,24 @@
   gap: 0.75rem;
 }
 
+.searchWrap {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--mut);
+  pointer-events: none;
+}
+
 .search {
   width: 15rem;
   height: 3rem;
   box-sizing: border-box;
-  padding: 0 1rem;
+  padding: 0 1rem 0 2.5rem;
   border-radius: 0.75rem;
   border: 1px solid var(--line);
   background: var(--bg);

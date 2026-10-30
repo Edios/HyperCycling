@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import styles from './Segmented.module.css';
 
 export interface SegmentedOption<T extends string> {
@@ -21,6 +22,7 @@ export function Segmented<T extends string>({
   options,
   onChange,
 }: SegmentedProps<T>) {
+  const group = useId();
   return (
     <div role="radiogroup" aria-label={label} className={styles.seg}>
       {options.map((o) => (
@@ -32,7 +34,7 @@ export function Segmented<T extends string>({
           <input
             type="radio"
             className={styles.input}
-            name={label}
+            name={group}
             checked={o.value === value}
             disabled={o.disabled}
             onChange={() => onChange(o.value)}

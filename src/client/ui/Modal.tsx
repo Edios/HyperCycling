@@ -2,6 +2,8 @@ import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { useT } from '../i18n';
 import styles from './Modal.module.css';
 
+const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
 export interface ModalProps {
   title: string;
   onClose: () => void;
@@ -20,9 +22,31 @@ export function Modal({ title, onClose, children }: ModalProps) {
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
-    panel.current?.focus();
+    const focusables = (): HTMLElement[] =>
+      Array.from(panel.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []).filter(
+        (el) => !el.hasAttribute('disabled'),
+      );
+    (focusables()[0] ?? panel.current)?.focus();
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onCloseRef.current();
+      if (e.key === 'Escape') {
+        onCloseRef.current();
+      } else if (e.key === 'Tab') {
+        const items = focusables();
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (!first || !last) {
+          e.preventDefault();
+          return;
+        }
+        const active = document.activeElement;
+        if (e.shiftKey && (active === first || !panel.current?.contains(active))) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && (active === last || !panel.current?.contains(active))) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener('keydown', onKey);
     return () => {
