@@ -1,0 +1,60 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 28vw 1fr;
+  gap: 4vh;
+  padding: 5.4vh 3.4vw 0;
+}
+
+.players {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.players > * {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2.7vh;
+}
+
+.two {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+}
+
+.nextRow {
+  display: flex;
+  align-items: center;
+  gap: 4vh;
+  margin-top: 3vh;
+}
+
+.nextRow > :first-child {
+  flex: 1;
+}
+
+.free {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

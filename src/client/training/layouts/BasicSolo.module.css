@@ -1,0 +1,42 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 3.4vh;
+  padding: 7.4vh 3.4vw 0;
+}
+
+.two {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+}
+
+/* Effort tile border picks up the zone color (mockup). */
+.tiles > :first-child {
+  border-color: color-mix(in srgb, var(--zone) 40%, var(--line));
+}
+
+.tiles > * {
+  padding-top: 4.2vh;
+  padding-bottom: 3.7vh;
+}
+
+.nextRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5vh;
+  margin-top: 4.9vh;
+}
+
+.free {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

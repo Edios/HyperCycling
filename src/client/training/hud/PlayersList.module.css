@@ -41,7 +41,7 @@
 
 .watts {
   font-weight: 800;
-  font-size: 4.6vh;
+  font-size: 6.4vh;
   color: var(--zone);
   font-variant-numeric: tabular-nums;
 }

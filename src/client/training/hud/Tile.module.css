@@ -10,7 +10,7 @@
 
 .label {
   font-weight: 600;
-  font-size: 2.4vh;
+  font-size: 2.7vh;
   color: var(--mut);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -25,15 +25,15 @@
 
 .sub {
   font-family: var(--font-body);
-  font-size: 2.2vh;
+  font-size: 2.7vh;
   color: var(--mut);
 }
 
 .xl .value {
-  font-size: 25vh;
+  font-size: 31vh;
 }
 .lg .value {
-  font-size: 19vh;
+  font-size: 21vh;
 }
 .md .value {
   font-size: 13vh;
