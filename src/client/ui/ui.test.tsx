@@ -145,8 +145,9 @@ describe('Modal focus and Segmented ids', () => {
     const opener = document.createElement('button');
     document.body.appendChild(opener);
     opener.focus();
+    const onClose = vi.fn();
     const { unmount } = render(
-      <Modal title="T" onClose={() => {}}>
+      <Modal title="T" onClose={onClose}>
         <button type="button">One</button>
         <button type="button">Two</button>
       </Modal>,
@@ -158,6 +159,8 @@ describe('Modal focus and Segmented ids', () => {
     expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
     fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
     expect(two).toHaveFocus();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledOnce();
     unmount();
     expect(opener).toHaveFocus();
     opener.remove();

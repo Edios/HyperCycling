@@ -2,8 +2,9 @@ import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import open from 'open';
+import { serverConfig } from '../src/server/config';
 
-const url = 'http://127.0.0.1:5175';
+const url = `http://${serverConfig.host}:${serverConfig.port}`;
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 const builtIndex = 'dist/client/index.html';
