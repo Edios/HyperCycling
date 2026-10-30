@@ -1,0 +1,28 @@
+.root {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18vh;
+  line-height: 1;
+  color: var(--c);
+  text-shadow: 0 0 3vh var(--c);
+  pointer-events: none;
+}
+
+.tick {
+  animation: tick 0.95s ease-out both;
+}
+
+@keyframes tick {
+  0% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+  }
+}

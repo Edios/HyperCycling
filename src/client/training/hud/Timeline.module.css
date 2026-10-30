@@ -1,0 +1,66 @@
+.root {
+  padding: 2.4vh 4vh 1.4vh;
+  font-family: var(--font-body);
+}
+
+.track {
+  position: relative;
+  height: 14vh;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 100%;
+}
+
+.bar {
+  position: relative;
+  flex-basis: 0;
+  min-width: 2px;
+  filter: drop-shadow(0 -1px 6px color-mix(in srgb, var(--c) 45%, transparent));
+}
+
+.fill,
+.edge {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.fill {
+  background: linear-gradient(to top, transparent, color-mix(in srgb, var(--c) 22%, transparent));
+}
+
+.edge {
+  background: var(--c);
+}
+
+.past {
+  opacity: 0.35;
+  filter: none;
+}
+
+.current {
+  filter: drop-shadow(0 -1px 12px var(--c));
+}
+
+.cursor {
+  position: absolute;
+  top: -1vh;
+  bottom: -1vh;
+  width: 2px;
+  margin-left: -1px;
+  background: linear-gradient(to top, var(--fg), color-mix(in srgb, var(--fg) 20%, transparent));
+  pointer-events: none;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.9vh;
+  color: var(--mut);
+  margin-top: 1vh;
+  font-variant-numeric: tabular-nums;
+}

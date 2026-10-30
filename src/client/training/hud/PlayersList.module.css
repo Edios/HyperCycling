@@ -1,0 +1,51 @@
+.root {
+  background: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: 2vh;
+  padding: 2vh 2.4vh;
+  font-family: var(--font-display);
+}
+
+.header {
+  font-weight: 600;
+  font-size: 2.2vh;
+  letter-spacing: 0.06em;
+  color: var(--mut);
+  text-transform: uppercase;
+  margin-bottom: 1.2vh;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2vh;
+  padding: 1vh 0;
+  border-top: 1px solid var(--line);
+}
+
+.name {
+  font-weight: 600;
+  font-size: 3.4vh;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.watts {
+  font-weight: 800;
+  font-size: 4.6vh;
+  color: var(--zone);
+  font-variant-numeric: tabular-nums;
+}
+
+.me .name {
+  color: var(--zone);
+}
