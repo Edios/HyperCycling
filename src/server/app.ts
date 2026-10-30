@@ -1,9 +1,11 @@
 import { readFileSync } from 'node:fs';
-import Fastify, { type FastifyInstance } from 'fastify';
+import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import fastifyStatic from '@fastify/static';
+import { createSqliteRepositories } from '../storage/sqlite';
+import { registerDataRoutes } from './routes/data';
 
 export interface BuildServerOptions {
-  /** SQLite file path. Accepted now, used from the storage task onwards. */
+  /** SQLite file path, or ':memory:'. */
   dbPath: string;
   /** Directory with the built client. When set it is served at `/`. */
   staticDir?: string;
@@ -21,7 +23,22 @@ export async function buildServer(opts: BuildServerOptions): Promise<FastifyInst
   const app = Fastify({ logger: opts.logger ?? false });
   const version = readVersion();
 
+  const repos = createSqliteRepositories(opts.dbPath);
+  app.addHook('onClose', () => {
+    repos.close();
+  });
+
+  // Never leak internals (stack traces) to clients.
+  app.setErrorHandler((err: FastifyError, req, reply) => {
+    const status = err.statusCode && err.statusCode >= 400 ? err.statusCode : 500;
+    if (status >= 500) req.log.error(err);
+    return reply
+      .code(status)
+      .send({ error: status >= 500 ? 'Internal server error' : err.message });
+  });
+
   app.get('/api/health', async () => ({ ok: true, version }));
+  registerDataRoutes(app, repos);
 
   if (opts.staticDir) {
     await app.register(fastifyStatic, { root: opts.staticDir });

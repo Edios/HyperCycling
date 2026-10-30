@@ -1,20 +1,24 @@
+import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { buildServer } from './app';
+import { serverConfig } from './config';
 
-const HOST = '127.0.0.1';
-const port = Number(process.env.PORT ?? 5175);
+export { serverConfig };
+
 const staticDir = process.env.STATIC_DIR ? path.resolve(process.env.STATIC_DIR) : undefined;
+const dbPath = process.env.DB_PATH ?? path.resolve('data', 'spinning-tutor.db');
+if (dbPath !== ':memory:') mkdirSync(path.dirname(dbPath), { recursive: true });
 
 const app = await buildServer({
-  dbPath: process.env.DB_PATH ?? path.resolve('data', 'spinning-tutor.db'),
+  dbPath,
   logger: true,
   ...(staticDir ? { staticDir } : {}),
 });
 try {
-  await app.listen({ host: HOST, port });
+  await app.listen(serverConfig);
 } catch (err) {
   if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') {
-    console.error(`Port ${port} is busy — is Spinning Tutor already running?`);
+    console.error(`Port ${serverConfig.port} is busy — is Spinning Tutor already running?`);
   } else {
     console.error(err);
   }
