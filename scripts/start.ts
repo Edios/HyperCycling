@@ -11,23 +11,26 @@ if (!existsSync('dist/client/index.html')) {
 }
 
 const server = spawn(process.execPath, ['--import', 'tsx', 'src/server/main.ts'], {
-  stdio: ['ignore', 'pipe', 'inherit'],
+  stdio: 'inherit',
   env: { ...process.env, STATIC_DIR: 'dist/client' },
 });
 server.on('exit', (code) => process.exit(code ?? 0));
 for (const sig of ['SIGINT', 'SIGTERM'] as const) process.on(sig, () => server.kill());
 
-server.stdout.on('data', (chunk: Buffer) => {
-  process.stdout.write(chunk);
-});
-
-// Wait until the server answers, then open the browser.
-for (let i = 0; i < 100; i++) {
+// Wait until the server answers (up to ~10 s), then open the browser.
+let healthy = false;
+for (let i = 0; i < 100 && !healthy; i++) {
   try {
-    if ((await fetch(`${url}/api/health`)).ok) break;
+    healthy = (await fetch(`${url}/api/health`)).ok;
   } catch {
-    await new Promise((r) => setTimeout(r, 100));
+    // server not listening yet
   }
+  if (!healthy) await new Promise((r) => setTimeout(r, 100));
+}
+if (!healthy) {
+  console.error(`Server did not become healthy at ${url} within 10 s.`);
+  server.kill();
+  process.exit(1);
 }
 console.log(`Spinning Tutor running at ${url}`);
 if (process.env.NO_OPEN !== '1') await open(url);

@@ -10,4 +10,13 @@ const app = await buildServer({
   logger: true,
   ...(staticDir ? { staticDir } : {}),
 });
-await app.listen({ host: HOST, port });
+try {
+  await app.listen({ host: HOST, port });
+} catch (err) {
+  if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') {
+    console.error(`Port ${port} is busy — is Spinning Tutor already running?`);
+  } else {
+    console.error(err);
+  }
+  process.exit(1);
+}
