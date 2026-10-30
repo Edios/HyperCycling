@@ -169,8 +169,12 @@ export const en = {
       '“{current}” is your active plan. Your progress in it is kept, and you can return to it later.',
     confirmYes: 'Start {name}',
     saveFailed: 'Couldn’t save the plan. Nothing was changed.',
+    doneOne: '{n} session done',
+    doneFew: '{n} sessions done',
+    doneMany: '{n} sessions done',
+    doneOther: '{n} sessions done',
     existingBody:
-      'You already have progress in this plan ({done} sessions done). Continue where you left off, or start over?',
+      'You already have progress in this plan ({done}). Continue where you left off, or start over?',
     continue: 'Continue',
     startOver: 'Start over',
     resetTitle: 'Erase progress?',

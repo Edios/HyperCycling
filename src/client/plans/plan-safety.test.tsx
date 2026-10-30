@@ -125,7 +125,7 @@ describe('PlanDetail progress safety', () => {
     fireEvent.click(screen.getByRole('radio', { name: '30 min' }));
     fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent('1 sessions done');
+    expect(dialog).toHaveTextContent('1 session done');
     expect(db.puts.progress).toHaveLength(0);
     fireEvent.click(within(dialog).getByRole('button', { name: 'Continue' }));
     await screen.findByTestId('where');
@@ -210,5 +210,35 @@ describe('PlanDetail progress safety', () => {
   it('labels a looping plan in the header', async () => {
     renderDetail('keep-fit');
     expect(await screen.findByText(/looping/)).toBeInTheDocument();
+  });
+
+  it('Continue on an inactive plan keeps its stored settings and start week', async () => {
+    const p = withProgress();
+    p.settings = { ...DEFAULT_PLAN_SETTINGS, sessionMinutes: 60, startWeek: 3 };
+    db.progress = [p];
+    renderDetail();
+    await screen.findByTestId('preview-progres');
+    expect(screen.getByRole('radio', { name: '60 min' })).toBeChecked();
+    expect(screen.getByLabelText('Start week')).toHaveValue('3');
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue' }));
+    await screen.findByTestId('where');
+    expect(db.puts.progress[0]?.settings).toMatchObject({ sessionMinutes: 60, startWeek: 3 });
+    expect(db.puts.progress[0]?.entries).toEqual([doneEntry]);
+  });
+
+  it('a failed Start over leaves the old plan active and writes no reset', async () => {
+    db.settings = { ...DEFAULT_SETTINGS, activePlanId: quickBoost.id };
+    db.progress = [withProgress()];
+    db.failProgressPut = true;
+    renderDetail();
+    await screen.findByTestId('preview-progres');
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Start over' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Erase and start over' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Couldn’t save the plan');
+    expect(db.puts.progress).toHaveLength(0);
+    expect(db.puts.settings.at(-1)?.activePlanId).toBe(quickBoost.id);
+    expect(screen.queryByTestId('where')).not.toBeInTheDocument();
   });
 });

@@ -171,8 +171,12 @@ export const pl: Messages = {
       '„{current}” to Twój aktywny plan. Twój postęp w nim zostaje zachowany i możesz do niego wrócić.',
     confirmYes: 'Zacznij {name}',
     saveFailed: 'Nie udało się zapisać planu. Nic nie zostało zmienione.',
+    doneOne: '{n} ukończona sesja',
+    doneFew: '{n} ukończone sesje',
+    doneMany: '{n} ukończonych sesji',
+    doneOther: '{n} ukończonej sesji',
     existingBody:
-      'Masz już postęp w tym planie ({done} ukończonych sesji). Kontynuować czy zacząć od nowa?',
+      'Masz już postęp w tym planie ({done}). Kontynuować czy zacząć od nowa?',
     continue: 'Kontynuuj',
     startOver: 'Zacznij od nowa',
     resetTitle: 'Wymazać postęp?',

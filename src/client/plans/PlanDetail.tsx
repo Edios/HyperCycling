@@ -95,7 +95,7 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
   const { settings, updateSettings } = useSettings();
   const { workouts } = useLibrary();
   const isActive = settings.activePlanId === plan.id;
-  const stored = isActive ? data.progress?.settings : undefined;
+  const stored = data.progress?.settings;
 
   const [cfg, setCfg] = useState<PlanSettings>(stored ?? DEFAULT_PLAN_SETTINGS);
   const [pickWeek, setPickWeek] = useState((stored?.startWeek ?? 1) > 1);
@@ -139,6 +139,8 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
   }
 
   async function commit(mode: 'keep' | 'reset'): Promise<void> {
+    const previousActive = settings.activePlanId;
+    let activated = false;
     try {
       const repos = await getRepositories();
       if (equipment.showsWatts) await saveFtp();
@@ -152,17 +154,39 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
               settings: cfg,
               entries: [],
             };
-      await repos.planProgress.put(progress);
+      if (mode === 'reset') {
+        // Activate first and erase last: a failure must never leave erased progress behind.
+        await updateSettings({ activePlanId: plan.id });
+        activated = true;
+        await repos.planProgress.put(progress);
+      } else {
+        await repos.planProgress.put(progress);
+        if (!isActive) {
+          await updateSettings({ activePlanId: plan.id });
+        }
+      }
     } catch (err) {
       console.warn('Saving the plan failed', err);
+      if (activated) await updateSettings({ activePlanId: previousActive });
       setConfirming(false);
       setError(t('plans.saveFailed'));
       return;
     }
-    if (!isActive) await updateSettings({ activePlanId: plan.id });
     navigate('/');
   }
 
+  const doneCount = data.progress?.entries.filter((e) => e.status === 'done').length ?? 0;
+  const doneCat = new Intl.PluralRules(lang).select(doneCount);
+  const doneLabel = t(
+    doneCat === 'one'
+      ? 'plans.doneOne'
+      : doneCat === 'few'
+        ? 'plans.doneFew'
+        : doneCat === 'many'
+          ? 'plans.doneMany'
+          : 'plans.doneOther',
+    { n: doneCount },
+  );
   const otherActive = settings.activePlanId !== undefined && !isActive;
   const hasProgress = !isActive && data.progress !== undefined;
 
@@ -360,13 +384,7 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
               })}
             </p>
           )}
-          {hasProgress && (
-            <p>
-              {t('plans.existingBody', {
-                done: data.progress?.entries.filter((e) => e.status === 'done').length ?? 0,
-              })}
-            </p>
-          )}
+          {hasProgress && <p>{t('plans.existingBody', { done: doneLabel })}</p>}
           <div className={styles.modalButtons}>
             <Button onClick={() => setConfirming(false)}>{t('plans.cancel')}</Button>
             {hasProgress ? (
