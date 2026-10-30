@@ -172,7 +172,9 @@ describe('onFrame scheduling', () => {
     p.onFrame(base({ segments: segs, workoutSec: 14, dist: 280 }));
     expect(p.bends).toHaveLength(0);
     p.onFrame(base({ segments: segs, workoutSec: 15, dist: 300 }));
-    expect(p.bends).toEqual([{ axis: 'x', dir: 1, amp: 30, len: 150, start: 300 + TUNNEL_LENGTH }]);
+    expect(p.bends).toEqual([
+      { axis: 'x', dir: 1, amp: 30, len: 150, start: 300 + TUNNEL_LENGTH, source: 'mid' },
+    ]);
     // next attempt not before 15 + 20 s
     p.onFrame(base({ segments: segs, workoutSec: 34, dist: 600 }));
     expect(p.bends).toHaveLength(1);
@@ -182,6 +184,42 @@ describe('onFrame scheduling', () => {
     const late = createPathModel({ rand: seq(0.9, 0), firstMidBendSec: 0 });
     late.onFrame(base({ segments: segs, workoutSec: 580, dist: 0 }));
     expect(late.bends.filter((b) => b.amp === 30)).toHaveLength(0);
+  });
+
+  it('re-plans the transition after a backward jump', () => {
+    const segs = segments([120, 3], [60, 8]);
+    const p = createPathModel({ rand: seq(0.5) });
+    p.onFrame(base({ segments: segs, workoutSec: 110, dist: 2200 }));
+    expect(p.bends.filter((b) => b.source === 'transition')).toHaveLength(1);
+    // jump back to the start of the section, ride up to the change again
+    p.onFrame(base({ segments: segs, workoutSec: 0, dist: 2300 }));
+    p.onFrame(base({ segments: segs, workoutSec: 110, dist: 4500 }));
+    expect(p.bends.filter((b) => b.source === 'transition').map((b) => b.start)).toContain(
+      4500 + 200,
+    );
+  });
+
+  /** A long section with one mid bend placed at 300 + 288 = 588 (ends at 738). */
+  function withMidBend() {
+    const segs = segments([600, 4], [60, 9]);
+    const p = createPathModel({ rand: seq(0.9, 0), initialXDir: 1, firstMidBendSec: 15 });
+    p.onFrame(base({ segments: segs, workoutSec: 15, dist: 300 }));
+    expect(p.bends).toEqual([expect.objectContaining({ source: 'mid', start: 588, len: 150 })]);
+    return { p, cur: segs[0] as Segment, next: segs[1] as Segment };
+  }
+
+  it('a pending mid bend is replaced by the transition bend', () => {
+    const { p, cur, next } = withMidBend();
+    const b = p.onSegmentChange(cur, next, 10, 20, 400);
+    expect(b).toMatchObject({ axis: 'y', dir: 1, source: 'transition', start: 600 });
+    expect(p.bends).toEqual([b]);
+  });
+
+  it('a mid bend already being ridden keeps going; the transition queues right after it', () => {
+    const { p, cur, next } = withMidBend();
+    const b = p.onSegmentChange(cur, next, 10, 10, 595);
+    expect(b).toMatchObject({ axis: 'y', source: 'transition', start: 738 });
+    expect(p.bends.map((x) => x.source)).toEqual(['mid', 'transition']);
   });
 
   it('no mid bends in short sections', () => {

@@ -13,6 +13,11 @@ const fake = vi.hoisted(() => {
     renders: 0,
     composerRenders: 0,
     failRenderer: false,
+    failBox: false,
+    colorsParsed: 0,
+    projectionUpdates: 0,
+    pixelRatios: [] as number[],
+    blooms: [] as { strength: number }[],
   };
   const vec = () => ({ set: vi.fn(), setScalar: vi.fn() });
   class Disposable {
@@ -22,6 +27,9 @@ const fake = vi.hoisted(() => {
     }
   }
   class Color {
+    constructor(...args: unknown[]) {
+      if (args.length > 0) log.colorsParsed += 1;
+    }
     set() {
       return this;
     }
@@ -34,7 +42,8 @@ const fake = vi.hoisted(() => {
   }
   class Object3D {
     position = vec();
-    rotation = vec();
+    rotation = { ...vec(), order: 'XYZ' };
+    quaternion = {};
     scale = vec();
     matrix = {};
     frustumCulled = true;
@@ -61,6 +70,17 @@ const fake = vi.hoisted(() => {
     Color,
     Object3D,
     Vector2: class {},
+    Vector3: class {
+      x = 0;
+      y = 0;
+      z = 0;
+      set() {
+        return this;
+      }
+      applyQuaternion() {
+        return this;
+      }
+    },
     FogExp2: class {},
     BufferAttribute: class {
       needsUpdate = false;
@@ -77,7 +97,9 @@ const fake = vi.hoisted(() => {
     PerspectiveCamera: class extends Object3D {
       fov = 70;
       aspect = 1;
-      updateProjectionMatrix() {}
+      updateProjectionMatrix() {
+        log.projectionUpdates += 1;
+      }
       lookAt() {}
       setViewOffset() {}
       clearViewOffset() {}
@@ -89,6 +111,7 @@ const fake = vi.hoisted(() => {
     },
     BoxGeometry: class extends Geometry {
       constructor() {
+        if (log.failBox) throw new Error('out of memory');
         super('BoxGeometry');
       }
     },
@@ -129,7 +152,9 @@ const fake = vi.hoisted(() => {
         super('WebGLRenderer');
         log.renderers.push(this);
       }
-      setPixelRatio() {}
+      setPixelRatio(r: number) {
+        log.pixelRatios.push(r);
+      }
       setSize() {}
       render() {
         log.renders += 1;
@@ -141,6 +166,7 @@ const fake = vi.hoisted(() => {
       strength = 0;
       constructor() {
         super(kind);
+        if (kind === 'UnrealBloomPass') log.blooms.push(this);
       }
     };
   const composer = class extends Disposable {
@@ -149,6 +175,7 @@ const fake = vi.hoisted(() => {
     }
     addPass() {}
     setSize() {}
+    setPixelRatio() {}
     render() {
       log.composerRenders += 1;
     }
@@ -205,6 +232,11 @@ beforeEach(() => {
   fake.log.renders = 0;
   fake.log.composerRenders = 0;
   fake.log.failRenderer = false;
+  fake.log.failBox = false;
+  fake.log.colorsParsed = 0;
+  fake.log.projectionUpdates = 0;
+  fake.log.pixelRatios.length = 0;
+  fake.log.blooms.length = 0;
   frames = [];
   vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
   vi.stubGlobal('cancelAnimationFrame', vi.fn());
@@ -243,6 +275,56 @@ describe('HyperrideCanvas', () => {
     );
     await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
     expect(fake.log.disposed).toEqual([]);
+  });
+
+  it('init failure after the renderer exists frees it and the context', async () => {
+    mockWebgl();
+    fake.log.failBox = true;
+    const onUnavailable = vi.fn();
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    render(
+      <HyperrideCanvas getFrameInput={() => input} quality="high" onUnavailable={onUnavailable} />,
+    );
+    await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
+    expect(fake.log.disposed).toEqual(
+      expect.arrayContaining(['TorusGeometry', 'MeshBasicMaterial', 'WebGLRenderer']),
+    );
+    expect(fake.log.renderers[0]?.forceContextLoss).toHaveBeenCalledTimes(1);
+  });
+
+  it('first frame: glow starts at its target, no needless projection updates, colors cached', async () => {
+    mockWebgl();
+    render(<HyperrideCanvas getFrameInput={() => input} quality="high" />);
+    await waitFor(() => expect(frames.length).toBeGreaterThan(0));
+    frames.shift()?.(16);
+    // effort 3 → 0.25 + 0.075·3
+    expect(fake.log.blooms[0]?.strength).toBeCloseTo(0.475, 10);
+    const parsedAfterFirst = fake.log.colorsParsed;
+    const projections = fake.log.projectionUpdates;
+    frames.shift()?.(32);
+    frames.shift()?.(48);
+    expect(fake.log.colorsParsed).toBe(parsedAfterFirst);
+    expect(fake.log.projectionUpdates).toBe(projections);
+  });
+
+  it('follows devicePixelRatio changes', async () => {
+    mockWebgl();
+    const listeners: (() => void)[] = [];
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        addEventListener: (_: string, cb: () => void) => listeners.push(cb),
+        removeEventListener: vi.fn(),
+      })),
+    );
+    vi.stubGlobal('devicePixelRatio', 1);
+    const { unmount } = render(<HyperrideCanvas getFrameInput={() => input} quality="high" />);
+    await waitFor(() => expect(frames.length).toBeGreaterThan(0));
+    expect(fake.log.pixelRatios).toEqual([1]);
+    vi.stubGlobal('devicePixelRatio', 1.5);
+    listeners[listeners.length - 1]?.();
+    expect(fake.log.pixelRatios).toEqual([1, 1.5]);
+    unmount();
   });
 
   it('renders frames from getFrameInput and disposes everything on unmount', async () => {

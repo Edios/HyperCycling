@@ -10,6 +10,7 @@ import type { PathModel } from './world';
 /** A bend placed on the path: `start` is the absolute z where it begins. */
 export interface ActiveBend extends Bend {
   start: number;
+  source: 'transition' | 'mid';
 }
 
 export interface PathFrameInput {
@@ -27,8 +28,10 @@ export interface PathScheduler extends PathModel {
   readonly bends: readonly ActiveBend[];
   /**
    * Plans the bend for the change cur → next, placed where the camera will be when `next`
-   * starts (never closer than 45 % of the tunnel, so it can be seen coming). Returns the bend
-   * added, or null when none was planned or the previous bend has not ended yet.
+   * starts (never closer than 45 % of the tunnel, so it can be seen coming). A mid-section bend
+   * in the way is replaced while still ahead of the camera, or followed right after its end when
+   * already being ridden. Returns the bend added, or null when none was planned or a previous
+   * transition bend has not ended yet.
    */
   onSegmentChange(
     cur: Segment,
@@ -62,6 +65,8 @@ export function createPathModel(opts: PathModelOptions): PathScheduler {
   const { rand } = opts;
   const bends: ActiveBend[] = [];
   let lastXDir: 1 | -1 = opts.initialXDir ?? (rand() < 0.5 ? 1 : -1);
+  /** x direction before the latest mid bend, restored when that bend is replaced. */
+  let xDirBefore = lastXDir;
   /** Offsets of bends already pruned (they keep their full contribution). */
   let baseX = 0;
   let baseY = 0;
@@ -84,8 +89,8 @@ export function createPathModel(opts: PathModelOptions): PathScheduler {
     return !last || last.start + last.len < startZ;
   };
 
-  const push = (bend: Bend, start: number): ActiveBend => {
-    const placed: ActiveBend = { ...bend, start };
+  const push = (bend: Bend, start: number, source: ActiveBend['source']): ActiveBend => {
+    const placed: ActiveBend = { ...bend, start, source };
     bends.push(placed);
     if (bend.axis === 'x') lastXDir = bend.dir;
     return placed;
@@ -111,16 +116,27 @@ export function createPathModel(opts: PathModelOptions): PathScheduler {
     slopeY: (z) => curveY(z + 0.5) - curveY(z - 0.5),
 
     onSegmentChange(cur, next, secondsLeft, speed, dist) {
-      const startZ = dist + Math.max(TUNNEL_LENGTH * MIN_TRANSITION_LEAD, secondsLeft * speed);
-      if (!free(startZ)) return null;
+      let startZ = dist + Math.max(TUNNEL_LENGTH * MIN_TRANSITION_LEAD, secondsLeft * speed);
+      const last = bends[bends.length - 1];
+      if (last && !free(startZ)) {
+        if (last.source !== 'mid') return null;
+        if (last.start > dist) {
+          // not entered yet: the section change matters more than a decorative side bend
+          bends.pop();
+          lastXDir = xDirBefore;
+        } else {
+          startZ = last.start + last.len;
+        }
+      }
       const bend = planTransitionBend(cur, next, rand, lastXDir);
-      return bend ? push(bend, startZ) : null;
+      return bend ? push(bend, startZ, 'transition') : null;
     },
 
     onFrame(input) {
       prune(input.dist);
       if (input.workoutSec < lastWorkoutSec) {
-        // jumped back: allow a mid-section bend again soon
+        // jumped back: plan the coming transition again, allow a mid-section bend again soon
+        plannedFor = -1;
         nextMidSec = Math.min(nextMidSec, input.workoutSec + firstMid);
       }
       lastWorkoutSec = input.workoutSec;
@@ -139,7 +155,10 @@ export function createPathModel(opts: PathModelOptions): PathScheduler {
             rand,
             lastXDir,
           );
-          if (bend) push(bend, startZ);
+          if (bend) {
+            xDirBefore = lastXDir;
+            push(bend, startZ, 'mid');
+          }
         }
         nextMidSec = input.workoutSec + MID_BEND_MIN_GAP_SEC + rand() * MID_BEND_GAP_SPREAD_SEC;
       }
