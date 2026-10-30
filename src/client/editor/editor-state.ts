@@ -60,19 +60,32 @@ export interface EditorState {
   dirty: boolean;
   /** i18n message keys of the last failed action; empty after a successful one. */
   errors: string[];
+  /** The last saved workout; `dirty` is `workout !== saved`. */
+  saved: Workout;
+  // NOTE: the two injectables below are functions, so this state is not serialisable
+  // (do not persist or structuredClone it; persist `workout` instead).
   /** Id source, injectable for deterministic tests. Defaults to newId. */
   idFactory?: () => string;
+  /** Clock for `updatedAt` (ISO string), injectable so the reducer stays pure. */
+  now?: () => string;
 }
 
-export function createEditorState(workout: Workout, idFactory?: () => string): EditorState {
+const systemNow = (): string => new Date().toISOString();
+
+export function createEditorState(
+  workout: Workout,
+  opts: { idFactory?: () => string; now?: () => string } = {},
+): EditorState {
   return {
     workout,
+    saved: workout,
     selectedId: undefined,
     past: [],
     future: [],
     dirty: false,
     errors: [],
-    ...(idFactory ? { idFactory } : {}),
+    ...(opts.idFactory ? { idFactory: opts.idFactory } : {}),
+    ...(opts.now ? { now: opts.now } : {}),
   };
 }
 
@@ -193,7 +206,7 @@ function apply(state: EditorState, fn: (w: Workout, nextId: () => string) => Out
   const draft = structuredClone(state.workout);
   const outcome = fn(draft, state.idFactory ?? newId);
   if ('error' in outcome) return fail(state, outcome.error);
-  draft.updatedAt = new Date().toISOString();
+  draft.updatedAt = (state.now ?? systemNow)();
   const parsed = workoutSchema.safeParse(draft);
   if (!parsed.success) return fail(state, ERROR_INVALID);
   return {
@@ -222,10 +235,11 @@ function cloneWithNewIds(b: Block, nextId: () => string): Block {
 export function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case 'select':
+      if (action.id !== undefined && !locate(state.workout, action.id)) return state;
       return { ...state, selectedId: action.id };
 
     case 'markSaved':
-      return { ...state, dirty: false };
+      return { ...state, saved: state.workout, dirty: false };
 
     case 'undo': {
       const prev = state.past.at(-1);
@@ -236,7 +250,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         selectedId: prev.selectedId,
         past: state.past.slice(0, -1),
         future: [...state.future, { workout: state.workout, selectedId: state.selectedId }],
-        dirty: true,
+        dirty: prev.workout !== state.saved,
         errors: [],
       };
     }
@@ -252,7 +266,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
           -HISTORY_LIMIT,
         ),
         future: state.future.slice(0, -1),
-        dirty: true,
+        dirty: next.workout !== state.saved,
         errors: [],
       };
     }
@@ -266,6 +280,13 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       });
 
     case 'moveBlock':
+      if (
+        action.from === action.to &&
+        action.from >= 0 &&
+        action.from < state.workout.blocks.length
+      ) {
+        return state;
+      }
       return apply(state, (w) => {
         const n = w.blocks.length;
         if (action.from < 0 || action.from >= n || action.to < 0 || action.to >= n) return invalid;
@@ -308,10 +329,11 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         const patch: Record<string, unknown> = { ...action.patch };
         if (b.kind === 'repeat') {
           // Only the repeat count is editable on a repeat block.
-          loc.list[loc.index] = {
-            ...b,
-            ...(patch.times !== undefined ? { times: patch.times } : {}),
-          } as Block;
+          const times = typeof patch.times === 'number' ? patch.times : b.times;
+          loc.list[loc.index] = { ...b, times } as Block;
+          // Lowering the count drops cues on repetitions that no longer exist.
+          const childIds = new Set(b.blocks.map((c) => c.id));
+          w.musicCues = w.musicCues.filter((c) => !childIds.has(c.blockId) || c.rep <= times);
         } else {
           delete patch.times;
           loc.list[loc.index] = { ...b, ...patch } as Block;

@@ -51,7 +51,10 @@ function base(): Workout {
 
 function fresh(): EditorState {
   let n = 0;
-  return { ...createEditorState(base()), idFactory: () => `n${++n}` };
+  return createEditorState(base(), {
+    idFactory: () => `n${++n}`,
+    now: () => '2026-02-02T00:00:00.000Z',
+  });
 }
 
 function run(s: EditorState, ...actions: EditorAction[]): EditorState {
@@ -145,6 +148,11 @@ describe('moveBlock', () => {
     const s = run(fresh(), { type: 'moveBlock', from: 3, to: 0 });
     expect(ids(s.workout)).toEqual(['cd', 'wu', 'rep', 'mid']);
   });
+  it('from === to is a no-op without history', () => {
+    const s0 = fresh();
+    const s = run(s0, { type: 'moveBlock', from: 1, to: 1 });
+    expect(s).toBe(s0);
+  });
   it('errors on out-of-range index and keeps workout', () => {
     const s0 = fresh();
     const s = run(s0, { type: 'moveBlock', from: 9, to: 0 });
@@ -231,6 +239,25 @@ describe('updateBlock', () => {
     const s = run(fresh(), { type: 'updateBlock', id: 'rep', patch: { times: 6 } });
     expect((s.workout.blocks[1] as RepeatBlock).times).toBe(6);
   });
+  it('lowering times prunes cues above the new count', () => {
+    const s = run(
+      fresh(),
+      { type: 'updateBlock', id: 'rep', patch: { times: 2 } },
+      { type: 'updateBlock', id: 'rep', patch: { times: 2 } },
+    );
+    expect(s.errors).toEqual([]);
+    expect(s.workout.musicCues.map((c) => c.blockId)).toEqual(['a', 'mid']);
+    const t = run(fresh(), { type: 'updateBlock', id: 'rep', patch: { times: 2 } });
+    expect(t.workout.musicCues.find((c) => c.blockId === 'a')?.rep).toBe(2);
+    const cues = { type: 'setCue', blockId: 'b', rep: 3, track } as const;
+    const u = run(fresh(), cues, { type: 'updateBlock', id: 'rep', patch: { times: 2 } });
+    expect(u.errors).toEqual([]);
+    expect(u.workout.musicCues.some((c) => c.blockId === 'b')).toBe(false);
+  });
+  it('stamps updatedAt from the injected clock', () => {
+    const s = run(fresh(), { type: 'addBlock', kind: 'steady' });
+    expect(s.workout.updatedAt).toBe('2026-02-02T00:00:00.000Z');
+  });
   it('invalid patch keeps previous workout with error', () => {
     const s0 = fresh();
     const s = run(s0, { type: 'updateBlock', id: 'rep', patch: { times: 1 } });
@@ -295,6 +322,15 @@ describe('removeChild', () => {
     expect((s.workout.blocks[1] as RepeatBlock).blocks.map((c) => c.id)).toEqual(['b']);
     expect(s.workout.musicCues.map((c) => c.blockId)).toEqual(['mid']);
     expect(s.selectedId).toBe('b');
+  });
+  it('removeBlock on the last child of a repeat keeps state with an error', () => {
+    const s = run(
+      fresh(),
+      { type: 'removeChild', repeatId: 'rep', childId: 'a' },
+      { type: 'removeBlock', id: 'b' },
+    );
+    expect((s.workout.blocks[1] as RepeatBlock).blocks.map((c) => c.id)).toEqual(['b']);
+    expect(s.errors).toEqual(['editor.error.invalid']);
   });
   it('refuses to remove the last child', () => {
     const s = run(
@@ -374,6 +410,20 @@ describe('select / markSaved / meta', () => {
     expect(s.dirty).toBe(false);
     expect(s.past).toHaveLength(0);
   });
+  it('select with an unknown id is a no-op', () => {
+    const s0 = fresh();
+    expect(run(s0, { type: 'select', id: 'ghost' })).toBe(s0);
+  });
+  it('dirty tracks the saved workout across undo/redo', () => {
+    const s1 = run(fresh(), { type: 'addBlock', kind: 'steady' }, { type: 'markSaved' });
+    expect(s1.dirty).toBe(false);
+    const s2 = run(s1, { type: 'addBlock', kind: 'ramp' });
+    expect(s2.dirty).toBe(true);
+    const u = run(s2, { type: 'undo' });
+    expect(u.dirty).toBe(false);
+    expect(run(u, { type: 'undo' }).dirty).toBe(true);
+    expect(run(u, { type: 'redo' }).dirty).toBe(true);
+  });
   it('markSaved clears dirty', () => {
     const s = run(fresh(), { type: 'addBlock', kind: 'steady' }, { type: 'markSaved' });
     expect(s.dirty).toBe(false);
@@ -394,7 +444,7 @@ describe('undo / redo', () => {
     const u = run(s1, { type: 'undo' });
     expect(u.workout).toEqual(s0.workout);
     expect(u.selectedId).toBe('mid');
-    expect(u.dirty).toBe(true);
+    expect(u.dirty).toBe(false);
     const r = run(u, { type: 'redo' });
     expect(r.workout).toEqual(s1.workout);
     expect(r.selectedId).toBe('n1');
