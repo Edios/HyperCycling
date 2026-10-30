@@ -2,9 +2,17 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { z } from 'zod';
 import { parseExportBundle } from '../../domain/export-bundle';
 import type { CollectionRepo, Repositories, SingletonRepo } from '../../domain/repositories';
+import { backupDb } from '../backup';
 import { schemas } from '../../storage/validation';
 
 const IMPORT_BODY_LIMIT = 10 * 1024 * 1024;
+const MAX_ID_LENGTH = 200;
+
+export interface DataRoutesOptions {
+  /** Where to snapshot the database before an import. Omit to skip (in-memory databases). */
+  backup?: { db: { backup(toPath: string): Promise<unknown> }; dir: string } | undefined;
+  now?: () => Date;
+}
 
 /** URL collection name -> repository key. */
 const COLLECTIONS = {
@@ -21,12 +29,18 @@ function fail(reply: FastifyReply, status: number, error: string, details?: stri
   return reply.code(status).send(details === undefined ? { error } : { error, details });
 }
 
+const idTooLong = (id: string): boolean => id.length > MAX_ID_LENGTH;
+
 function issueText(error: z.ZodError): string {
   const i = error.issues[0];
   return i ? `${i.path.join('.')}: ${i.message}` : 'invalid';
 }
 
-export function registerDataRoutes(app: FastifyInstance, repos: Repositories): void {
+export function registerDataRoutes(
+  app: FastifyInstance,
+  repos: Repositories,
+  options: DataRoutesOptions = {},
+): void {
   for (const [url, key] of Object.entries(SINGLETONS) as [
     keyof typeof SINGLETONS,
     (typeof SINGLETONS)[keyof typeof SINGLETONS],
@@ -54,7 +68,20 @@ export function registerDataRoutes(app: FastifyInstance, repos: Repositories): v
   app.post('/api/import', { bodyLimit: IMPORT_BODY_LIMIT }, async (req, reply) => {
     const parsed = parseExportBundle(req.body);
     if (!parsed.ok) return fail(reply, 400, parsed.reason, parsed.details);
+    if (options.backup) {
+      try {
+        await backupDb(
+          options.backup.db,
+          options.backup.dir,
+          (options.now ?? (() => new Date()))(),
+        );
+      } catch (err) {
+        req.log.error(err);
+        return fail(reply, 500, 'Backup failed, nothing was imported');
+      }
+    }
     await repos.replaceAll(parsed.bundle);
+    await repos.activeSession.clear(); // a saved session may point at data that no longer exists
     return reply.code(204).send();
   });
 
@@ -74,6 +101,7 @@ export function registerDataRoutes(app: FastifyInstance, repos: Repositories): v
     async (req, reply) => {
       const c = lookup(req.params.collection);
       if (!c) return fail(reply, 404, 'Not found');
+      if (idTooLong(req.params.id)) return fail(reply, 400, 'Invalid id');
       const item = await repoFor(c).get(req.params.id);
       return item === undefined ? fail(reply, 404, 'Not found') : item;
     },
@@ -84,6 +112,7 @@ export function registerDataRoutes(app: FastifyInstance, repos: Repositories): v
     async (req, reply) => {
       const c = lookup(req.params.collection);
       if (!c) return fail(reply, 404, 'Not found');
+      if (idTooLong(req.params.id)) return fail(reply, 400, 'Invalid id');
       const r = schemas[COLLECTIONS[c]].safeParse(req.body);
       if (!r.success) return fail(reply, 400, `Invalid ${c} item`, issueText(r.error));
       const item = r.data as { id: string };
@@ -98,6 +127,7 @@ export function registerDataRoutes(app: FastifyInstance, repos: Repositories): v
     async (req, reply) => {
       const c = lookup(req.params.collection);
       if (!c) return fail(reply, 404, 'Not found');
+      if (idTooLong(req.params.id)) return fail(reply, 400, 'Invalid id');
       await repoFor(c).remove(req.params.id);
       return reply.code(204).send();
     },

@@ -10,7 +10,11 @@ import { migrate } from './migrations';
 const TABLES = ['workouts', 'players', 'planProgress', 'sessionLogs'] as const;
 type Table = (typeof TABLES)[number];
 
-export type SqliteRepositories = Repositories & { close(): void };
+export type SqliteRepositories = Repositories & {
+  close(): void;
+  /** Consistent online copy of the database (safe with WAL). */
+  backup(toPath: string): Promise<unknown>;
+};
 
 export function createSqliteRepositories(dbPath: string): SqliteRepositories {
   const db = new Database(dbPath);
@@ -156,6 +160,8 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
       const b = validateBundle(input); // fully validated before the transaction starts
       replace(b);
     },
+
+    backup: (toPath) => db.backup(toPath),
 
     close() {
       db.close();

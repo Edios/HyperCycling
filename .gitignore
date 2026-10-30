@@ -3,7 +3,7 @@ dist
 coverage
 test-results
 playwright-report
-data/
+/data/
 .env.local
 .DS_Store
 npm-debug.log*
