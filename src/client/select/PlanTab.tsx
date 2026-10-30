@@ -26,8 +26,15 @@ import styles from './PlanTab.module.css';
 const SLOTS: readonly PlanSlot[] = ['progres', 'freestyle'];
 const MARK = { done: '✓', skipped: '–', open: '○' } as const;
 
-function setupUrl(workoutId: string, planId: string, week: number, slot: PlanSlot): string {
-  return `/setup/${encodeURIComponent(workoutId)}?plan=${encodeURIComponent(planId)}&week=${week}&slot=${slot}`;
+function setupUrl(
+  workoutId: string,
+  planId: string,
+  week: number,
+  slot: PlanSlot,
+  cycle: number,
+): string {
+  const cyclePart = cycle > 1 ? `&cycle=${cycle}` : '';
+  return `/setup/${encodeURIComponent(workoutId)}?plan=${encodeURIComponent(planId)}&week=${week}&slot=${slot}${cyclePart}`;
 }
 
 /** Plan tab: active plan header, next session hero card and the weeks list. */
@@ -194,7 +201,9 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
                   variant="primary"
                   size="big"
                   disabled={!nextWorkout}
-                  onClick={() => navigate(setupUrl(next.workoutId, plan.id, next.week, next.slot))}
+                  onClick={() =>
+                    navigate(setupUrl(next.workoutId, plan.id, next.week, next.slot, next.cycle))
+                  }
                 >
                   {t('plan.ride')}
                 </Button>
@@ -270,7 +279,7 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
           title={next.slot === 'freestyle' ? t('plan.swapTitle') : t('plan.swapProgres')}
           options={swapOptions}
           onClose={() => setSwapping(false)}
-          onPick={(w) => navigate(setupUrl(w.id, plan.id, next.week, next.slot))}
+          onPick={(w) => navigate(setupUrl(w.id, plan.id, next.week, next.slot, next.cycle))}
         />
       )}
     </div>

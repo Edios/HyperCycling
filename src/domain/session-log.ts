@@ -20,7 +20,7 @@ export interface ActiveSession {
   config: SessionConfig;
   snapshot: EngineSnapshot;
   savedAt: string;
-  plan?: { planId: string; week: number; slot: PlanSlot };
+  plan?: { planId: string; week: number; slot: PlanSlot; cycle?: number };
   /** The exact (scaled) workout that was ridden, so a resume never depends on current settings. */
   workout?: Workout;
 }
@@ -50,6 +50,7 @@ export const activeSessionSchema: z.ZodType<ActiveSession> = z.object({
       planId: z.string().min(1),
       week: z.number().int().min(1),
       slot: z.enum(['progres', 'freestyle']),
+      cycle: z.number().int().min(1).optional(),
     })
     .optional(),
   workout: workoutSchema.optional(),

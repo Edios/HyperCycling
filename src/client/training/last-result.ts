@@ -11,7 +11,7 @@ export interface LastResult {
   config: SessionConfig;
   players: Player[];
   startedAt: string;
-  plan?: { planId: string; week: number; slot: PlanSlot };
+  plan?: { planId: string; week: number; slot: PlanSlot; cycle?: number };
 }
 
 interface LastResultStore {

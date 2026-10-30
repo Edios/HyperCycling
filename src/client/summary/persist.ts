@@ -1,12 +1,17 @@
 import { newId } from '../../domain/ids';
-import { recordEntry, type PlanProgress } from '../../domain/plan';
+import {
+  DEFAULT_PLAN_SETTINGS,
+  recordEntry,
+  removeEntry,
+  type PlanProgress,
+  type ProgressEntry,
+} from '../../domain/plan';
 import type { SessionLog } from '../../domain/session-log';
-import { DEFAULT_PLAN_SETTINGS } from '../../domain/plan';
 import { getRepositories } from '../data/repositories';
 import type { LastResult } from '../training/last-result';
-import { activeCycle, type CountTarget } from './model';
+import { entryCycle, type CountTarget } from './model';
 
-const persisted = new WeakMap<LastResult, Promise<void>>();
+const logged = new WeakSet<LastResult>();
 
 export function buildSessionLog(result: LastResult, endedAt: string): SessionLog {
   return {
@@ -21,30 +26,51 @@ export function buildSessionLog(result: LastResult, endedAt: string): SessionLog
   };
 }
 
+/** Stores the session log, at most once per result (StrictMode and remounts call this again). */
+export async function saveSessionLog(result: LastResult): Promise<void> {
+  if (logged.has(result)) return;
+  logged.add(result);
+  try {
+    const repos = await getRepositories();
+    await repos.sessionLogs.put(buildSessionLog(result, new Date().toISOString()));
+  } catch (err) {
+    console.warn('Saving the session log failed', err);
+  }
+}
+
+interface EntryState {
+  /** Whether the done entry is currently written for this result. */
+  applied: boolean;
+  /** Entry the write replaced, restored when the toggle goes off. */
+  previous: ProgressEntry | undefined;
+  /** Writes run one after another so they land in toggle order. */
+  queue: Promise<void>;
+}
+
+const entryStates = new WeakMap<LastResult, EntryState>();
+
+function sameSlot(e: ProgressEntry, week: number, slot: string, cycle: number): boolean {
+  return (e.cycle ?? 1) === cycle && e.week === week && e.slot === slot;
+}
+
 /**
- * Stores the session log and, when `count` is given, a done entry in the plan progress.
- * Runs at most once per result: later calls return the first call's promise.
+ * Makes the plan progress match the toggle: on records a done entry, off puts back whatever the
+ * entry replaced (or removes it). Does nothing when the state already matches.
  */
-export function persistResult(result: LastResult, count: CountTarget | undefined): Promise<void> {
-  const existing = persisted.get(result);
-  if (existing) return existing;
-  const run = (async () => {
-    const at = new Date().toISOString();
-    let repos;
+export function syncPlanEntry(result: LastResult, target: CountTarget, on: boolean): Promise<void> {
+  let state = entryStates.get(result);
+  if (!state) {
+    state = { applied: false, previous: undefined, queue: Promise.resolve() };
+    entryStates.set(result, state);
+  }
+  if (state.applied === on) return state.queue;
+  state.applied = on;
+  const st = state;
+  st.queue = st.queue.then(async () => {
     try {
-      repos = await getRepositories();
-    } catch (err) {
-      console.warn('Saving the session failed', err);
-      return;
-    }
-    try {
-      await repos.sessionLogs.put(buildSessionLog(result, at));
-    } catch (err) {
-      console.warn('Saving the session log failed', err);
-    }
-    if (!count) return;
-    try {
-      const planId = count.plan.id;
+      const repos = await getRepositories();
+      const planId = target.plan.id;
+      const at = new Date().toISOString();
       const progress: PlanProgress = (await repos.planProgress.get(planId)) ?? {
         id: planId,
         planId,
@@ -52,21 +78,27 @@ export function persistResult(result: LastResult, count: CountTarget | undefined
         settings: DEFAULT_PLAN_SETTINGS,
         entries: [],
       };
-      const cycle = activeCycle(count.plan, progress);
-      await repos.planProgress.put(
-        recordEntry(progress, {
-          week: count.week,
-          slot: count.slot,
-          workoutId: result.workout.id,
-          status: 'done',
-          at,
-          ...(cycle > 1 ? { cycle } : {}),
-        }),
-      );
+      const cycle = entryCycle(result, target.plan, progress);
+      const key = { week: target.week, slot: target.slot, cycle };
+      if (on) {
+        st.previous = progress.entries.find((e) => sameSlot(e, key.week, key.slot, cycle));
+        await repos.planProgress.put(
+          recordEntry(progress, {
+            week: key.week,
+            slot: key.slot,
+            workoutId: result.workout.id,
+            status: 'done',
+            at,
+            ...(cycle > 1 ? { cycle } : {}),
+          }),
+        );
+      } else {
+        const removed = removeEntry(progress, key);
+        await repos.planProgress.put(st.previous ? recordEntry(removed, st.previous) : removed);
+      }
     } catch (err) {
       console.warn('Saving the plan progress failed', err);
     }
-  })();
-  persisted.set(result, run);
-  return run;
+  });
+  return st.queue;
 }

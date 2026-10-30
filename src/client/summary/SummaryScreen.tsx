@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { DEFAULT_PLAN_SETTINGS, type Plan, type PlanProgress } from '../../domain/plan';
 import type { Player } from '../../domain/player';
@@ -7,6 +7,7 @@ import { builtinPlans } from '../data/builtin';
 import { localizedText } from '../data/localized';
 import { getRepositories } from '../data/repositories';
 import { useSettings } from '../data/useSettings';
+import { RAMP_TEST_ID } from '../plans/effective-session';
 import { useLang, useT } from '../i18n';
 import { formatClock } from '../training/format';
 import { useLastResult, type LastResult } from '../training/last-result';
@@ -16,16 +17,8 @@ import { Chip } from '../ui/Chip';
 import { Field } from '../ui/Field';
 import { ProfileChart } from '../ui/ProfileChart';
 import { Toggle } from '../ui/Toggle';
-import {
-  countTarget,
-  meOf,
-  proposeFtp,
-  RAMP_TEST_ID,
-  setupPath,
-  withFtp,
-  type CountTarget,
-} from './model';
-import { persistResult } from './persist';
+import { countTarget, meOf, proposeFtp, setupPath, withFtp } from './model';
+import { saveSessionLog, syncPlanEntry } from './persist';
 import styles from './SummaryScreen.module.css';
 
 /** Route /summary. Redirects home when there is no finished session to show. */
@@ -88,28 +81,18 @@ function Summary({ result }: { result: LastResult }) {
   const [override, setOverride] = useState<boolean | undefined>();
   const counted = target !== undefined && (override ?? target.defaultOn);
 
-  // Leaving by any route persists once. The latest choice lives in a ref so the deferred unmount
-  // handler needs no state; the timer lets StrictMode's simulated unmount cancel it.
-  const latest = useRef<CountTarget | undefined>(undefined);
+  // Everything is saved as soon as the screen opens (a closed tab loses nothing); the toggle
+  // adds or removes the plan entry, and the buttons only navigate. Both calls are idempotent.
   useEffect(() => {
-    latest.current = counted ? target : undefined;
-  }, [counted, target]);
-  const timer = useRef<number | undefined>(undefined);
-  useEffect(() => {
-    if (timer.current !== undefined) {
-      window.clearTimeout(timer.current);
-      timer.current = undefined;
-    }
-    return () => {
-      timer.current = window.setTimeout(() => {
-        void persistResult(result, latest.current);
-        if (useLastResult.getState().result === result) useLastResult.getState().clear();
-      }, 0);
-    };
+    void saveSessionLog(result);
   }, [result]);
+  useEffect(() => {
+    if (target) void syncPlanEntry(result, target, counted);
+  }, [result, target, counted]);
 
-  const leave = (to: string): void => {
-    void persistResult(result, latest.current).then(() => navigate(to));
+  const leave = (to: string, clear: boolean): void => {
+    navigate(to);
+    if (clear) useLastResult.getState().clear();
   };
 
   const name = localizedText(result.workout, lang).name;
@@ -157,8 +140,8 @@ function Summary({ result }: { result: LastResult }) {
         {showFtp && <FtpCard />}
 
         <div className={styles.buttons}>
-          <Button onClick={() => leave(setupPath(result))}>{t('summary.again')}</Button>
-          <Button variant="primary" onClick={() => leave('/')}>
+          <Button onClick={() => leave(setupPath(result), false)}>{t('summary.again')}</Button>
+          <Button variant="primary" onClick={() => leave('/', true)}>
             {t('summary.backToPlan')}
           </Button>
         </div>
@@ -196,7 +179,15 @@ function FtpCard() {
   const proposal = proposeFtp(best);
 
   const save = async (): Promise<void> => {
-    const updated = rider && proposal !== undefined ? withFtp(rider, proposal) : undefined;
+    if (!rider) {
+      setMessage({ kind: 'error', text: t('summary.ftpChoose') });
+      return;
+    }
+    if (proposal === undefined) {
+      setMessage({ kind: 'error', text: t('summary.ftpBestError') });
+      return;
+    }
+    const updated = withFtp(rider, proposal);
     if (!updated) {
       setMessage({ kind: 'error', text: t('summary.ftpError') });
       return;
@@ -208,7 +199,7 @@ function FtpCard() {
       setMessage({ kind: 'ok', text: t('summary.ftpSaved') });
     } catch (err) {
       console.warn('Saving the FTP failed', err);
-      setMessage({ kind: 'error', text: t('summary.ftpError') });
+      setMessage({ kind: 'error', text: t('summary.ftpSaveFailed') });
     }
   };
 

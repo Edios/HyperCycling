@@ -19,6 +19,8 @@ export interface PlanRef {
   planId: string;
   week: number;
   slot: PlanSlot;
+  /** Pass through a looping plan; absent means 1. */
+  cycle?: number;
 }
 
 /** Reads `plan`, `week` and `slot` from the query; all three must be valid or there is no plan. */
@@ -28,7 +30,9 @@ export function parsePlanRef(params: URLSearchParams): PlanRef | undefined {
   const slot = params.get('slot');
   if (!planId || !Number.isInteger(week) || week < 1) return undefined;
   if (slot !== 'progres' && slot !== 'freestyle') return undefined;
-  return { planId, week, slot };
+  const cycle = params.has('cycle') ? Number(params.get('cycle')) : 1;
+  if (!Number.isInteger(cycle) || cycle < 1) return undefined;
+  return { planId, week, slot, ...(cycle > 1 ? { cycle } : {}) };
 }
 
 /** Plan scaling (session length and difficulty); a failure falls back to the unscaled workout. */

@@ -11,8 +11,6 @@ import { flattenWorkout } from '../../domain/segments';
 import type { EffortTable } from '../../domain/effort';
 import type { LastResult } from '../training/last-result';
 
-export const RAMP_TEST_ID = 'ramp-test';
-
 /** Where a counted ride would be recorded, and whether the toggle starts on. */
 export interface CountTarget {
   plan: Plan;
@@ -48,17 +46,20 @@ export function countTarget(
   return open ? { plan, week: open.week, slot: 'freestyle', defaultOn } : undefined;
 }
 
-/** Pass through a looping plan the next session belongs to (1 for non-looping plans). */
-export function activeCycle(plan: Plan, progress: PlanProgress): number {
-  return nextSession(plan, progress)?.cycle ?? 1;
+/**
+ * Pass through a looping plan the ride belongs to: the one it was started in, else the pass the
+ * plan is currently in (1 for non-looping plans).
+ */
+export function entryCycle(result: LastResult, plan: Plan, progress: PlanProgress): number {
+  return result.plan?.cycle ?? nextSession(plan, progress)?.cycle ?? 1;
 }
 
-/** 75 % of the best 1-minute power, rounded; undefined for input that is not a positive number. */
+/** 75 % of the best 1-minute power, rounded; undefined unless the input is a positive whole number. */
 export function proposeFtp(bestWatts: string): number | undefined {
   const trimmed = bestWatts.trim();
-  if (trimmed === '') return undefined;
+  if (!/^\d+$/.test(trimmed)) return undefined;
   const n = Number(trimmed);
-  if (!Number.isFinite(n) || n <= 0) return undefined;
+  if (!Number.isSafeInteger(n) || n <= 0) return undefined;
   return Math.round(0.75 * n);
 }
 
@@ -76,5 +77,7 @@ export function withFtp(player: Player, ftp: number): Player | undefined {
 export function setupPath(result: LastResult): string {
   const base = `/setup/${encodeURIComponent(result.workout.id)}`;
   const p = result.plan;
-  return p ? `${base}?plan=${encodeURIComponent(p.planId)}&week=${p.week}&slot=${p.slot}` : base;
+  if (!p) return base;
+  const cycle = p.cycle !== undefined && p.cycle > 1 ? `&cycle=${p.cycle}` : '';
+  return `${base}?plan=${encodeURIComponent(p.planId)}&week=${p.week}&slot=${p.slot}${cycle}`;
 }

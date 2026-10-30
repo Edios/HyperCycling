@@ -252,9 +252,14 @@ export function PlayersScreen() {
     await persist((repos) => repos.players.remove(p.id));
     const last = settings.lastSession;
     if (last?.playerIds.includes(p.id)) {
-      await updateSettings({
-        lastSession: { ...last, playerIds: last.playerIds.filter((id) => id !== p.id) },
-      });
+      try {
+        await updateSettings({
+          lastSession: { ...last, playerIds: last.playerIds.filter((id) => id !== p.id) },
+        });
+      } catch (err) {
+        console.warn('Updating the last session failed', err);
+        setFailed(true);
+      }
     }
   };
 

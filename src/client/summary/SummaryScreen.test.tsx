@@ -1,7 +1,7 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_PLAN_SETTINGS,
   type Plan,
@@ -39,6 +39,7 @@ vi.mock('../data/repositories', () => ({
         get: (id: string) => Promise.resolve(db.progress.find((p) => p.planId === id)),
         put: (p: PlanProgress) => {
           db.progressPuts.push(p);
+          db.progress = [...db.progress.filter((x) => x.planId !== p.planId), p];
           return Promise.resolve();
         },
       },
@@ -124,12 +125,6 @@ beforeEach(() => {
   db.progressPuts = [];
   resetSettingsForTests();
   useLastResult.getState().clear();
-});
-
-// Unmounting persists in a deferred handler; let it finish before the next test resets the db.
-afterEach(async () => {
-  cleanup();
-  await new Promise((r) => setTimeout(r, 20));
 });
 
 const toggle = () => screen.findByRole('switch', { name: 'Count toward plan' });
@@ -227,8 +222,10 @@ describe('SummaryScreen', () => {
     });
   });
 
-  describe('leaving', () => {
-    it('Back to plan writes the log and a done entry when the toggle is on', async () => {
+  describe('persistence', () => {
+    const progressNow = () => db.progress.find((p) => p.planId === plan.id)!;
+
+    it('writes the log and a done entry as soon as the summary opens', async () => {
       useLastResult.getState().set(
         result({
           plan: planRef,
@@ -238,8 +235,7 @@ describe('SummaryScreen', () => {
       );
       renderSummary();
       await toggle();
-      fireEvent.click(screen.getByRole('button', { name: 'Back to plan' }));
-      expect(await screen.findByTestId('where')).toHaveTextContent('/');
+      await waitFor(() => expect(db.progressPuts).toHaveLength(1));
       expect(db.logs).toHaveLength(1);
       const log = db.logs[0]!;
       expect(log).toMatchObject({
@@ -252,8 +248,7 @@ describe('SummaryScreen', () => {
       });
       expect(log.id).toBeTruthy();
       expect(Number.isNaN(Date.parse(log.endedAt))).toBe(false);
-      expect(db.progressPuts).toHaveLength(1);
-      expect(db.progressPuts[0]!.entries).toEqual([
+      expect(progressNow().entries).toEqual([
         expect.objectContaining({
           week: 1,
           slot: 'progres',
@@ -263,20 +258,70 @@ describe('SummaryScreen', () => {
       ]);
     });
 
-    it('with the toggle off only the log is written', async () => {
+    it('keeps the log and the entry when the screen closes without a button', async () => {
       useLastResult.getState().set(result({ plan: planRef }));
-      renderSummary();
-      fireEvent.click(await toggle());
-      fireEvent.click(screen.getByRole('button', { name: 'Back to plan' }));
-      await screen.findByTestId('where');
+      const { unmount } = renderSummary();
+      await toggle();
+      await waitFor(() => expect(db.progressPuts).toHaveLength(1));
+      unmount();
+      await new Promise((r) => setTimeout(r, 30));
       expect(db.logs).toHaveLength(1);
+      expect(progressNow().entries).toHaveLength(1);
+    });
+
+    it('below 80 % only the log is written', async () => {
+      useLastResult.getState().set(result({ plan: planRef, riddenSec: 10, completed: false }));
+      renderSummary();
+      await toggle();
+      await waitFor(() => expect(db.logs).toHaveLength(1));
+      await new Promise((r) => setTimeout(r, 30));
       expect(db.progressPuts).toHaveLength(0);
     });
 
-    it('a double click writes exactly once, also under StrictMode', async () => {
+    it('turning the toggle off removes the entry and on writes it again', async () => {
+      useLastResult.getState().set(result({ plan: planRef }));
+      renderSummary();
+      const sw = await toggle();
+      await waitFor(() => expect(progressNow().entries).toHaveLength(1));
+      fireEvent.click(sw);
+      await waitFor(() => expect(progressNow().entries).toHaveLength(0));
+      fireEvent.click(sw);
+      await waitFor(() => expect(progressNow().entries).toHaveLength(1));
+      expect(db.logs).toHaveLength(1);
+    });
+
+    it('turning the toggle off restores the entry it replaced', async () => {
+      const earlier: ProgressEntry = {
+        week: 1,
+        slot: 'progres',
+        workoutId: 'earlier',
+        status: 'done',
+        at: '2026-02-01T00:00:00.000Z',
+      };
+      db.progress = [freshProgress([earlier])];
+      useLastResult.getState().set(result({ plan: planRef }));
+      renderSummary();
+      const sw = await toggle();
+      await waitFor(() => expect(progressNow().entries[0]?.workoutId).toBe(progresWorkout.id));
+      fireEvent.click(sw);
+      await waitFor(() => expect(progressNow().entries).toEqual([earlier]));
+    });
+
+    it('StrictMode writes the log and the entry once', async () => {
       useLastResult.getState().set(result({ plan: planRef }));
       renderSummary(true);
       await toggle();
+      await waitFor(() => expect(db.progressPuts).toHaveLength(1));
+      await new Promise((r) => setTimeout(r, 30));
+      expect(db.logs).toHaveLength(1);
+      expect(db.progressPuts).toHaveLength(1);
+    });
+
+    it('the buttons only navigate, even when double clicked', async () => {
+      useLastResult.getState().set(result({ plan: planRef }));
+      renderSummary(true);
+      await toggle();
+      await waitFor(() => expect(db.progressPuts).toHaveLength(1));
       const btn = screen.getByRole('button', { name: 'Back to plan' });
       fireEvent.click(btn);
       fireEvent.click(btn);
@@ -284,24 +329,6 @@ describe('SummaryScreen', () => {
       await new Promise((r) => setTimeout(r, 30));
       expect(db.logs).toHaveLength(1);
       expect(db.progressPuts).toHaveLength(1);
-    });
-
-    it('StrictMode alone does not write before leaving', async () => {
-      useLastResult.getState().set(result({ plan: planRef }));
-      renderSummary(true);
-      await toggle();
-      await new Promise((r) => setTimeout(r, 30));
-      expect(db.logs).toHaveLength(0);
-    });
-
-    it('leaving by navigation persists once with the toggle as shown', async () => {
-      useLastResult.getState().set(result({ plan: planRef }));
-      const { unmount } = renderSummary();
-      fireEvent.click(await toggle());
-      unmount();
-      await waitFor(() => expect(db.logs).toHaveLength(1));
-      expect(db.progressPuts).toHaveLength(0);
-      expect(useLastResult.getState().result).toBeUndefined();
     });
 
     it('Ride again goes back to setup with the same plan query', async () => {
@@ -312,7 +339,14 @@ describe('SummaryScreen', () => {
       expect(await screen.findByTestId('where')).toHaveTextContent(
         `/setup/${progresWorkout.id}?plan=${plan.id}&week=2&slot=progres`,
       );
-      expect(db.logs).toHaveLength(1);
+    });
+
+    it('Ride again keeps a later cycle in the query', async () => {
+      useLastResult.getState().set(result({ plan: { ...planRef, cycle: 2 } }));
+      renderSummary();
+      await toggle();
+      fireEvent.click(screen.getByRole('button', { name: 'Ride again' }));
+      expect(await screen.findByTestId('where')).toHaveTextContent('&slot=progres&cycle=2');
     });
 
     it('Ride again without a plan has no query', async () => {
@@ -327,12 +361,55 @@ describe('SummaryScreen', () => {
       useLastResult.getState().set(result({ workout: freestyleWorkout }));
       renderSummary();
       await toggle();
-      fireEvent.click(screen.getByRole('button', { name: 'Back to plan' }));
-      await screen.findByTestId('where');
+      await waitFor(() => expect(db.progressPuts).toHaveLength(1));
       expect(db.progressPuts[0]!.entries[0]).toMatchObject({
         slot: 'freestyle',
         workoutId: freestyleWorkout.id,
         status: 'done',
+      });
+    });
+
+    describe('looping plan', () => {
+      const loop = builtinPlans.find((p) => p.loop) as Plan;
+      const allDone = (): ProgressEntry[] =>
+        loop.weeks.flatMap((w, i) =>
+          w.sessions.map((s) => ({
+            week: i + 1,
+            slot: s.slot,
+            workoutId: s.workoutId,
+            status: 'done' as const,
+            at: '2026-02-01T00:00:00.000Z',
+          })),
+        );
+      const first = loop.weeks[0]!.sessions[0]!;
+      const startedIn = (cycle: number) =>
+        result({
+          workout: builtinWorkouts.find((w) => w.id === first.workoutId)!,
+          plan: { planId: loop.id, week: 1, slot: first.slot, cycle },
+        });
+
+      beforeEach(() => {
+        db.settings = { ...DEFAULT_SETTINGS, activePlanId: loop.id };
+        // Cycle 1 is closed, so cycle 2 is the active pass.
+        db.progress = [{ ...freshProgress(allDone()), id: loop.id, planId: loop.id }];
+      });
+
+      it('re-riding an older cycle records that cycle, not the current one', async () => {
+        useLastResult.getState().set(startedIn(1));
+        renderSummary();
+        await toggle();
+        await waitFor(() => expect(db.progressPuts).toHaveLength(1));
+        const entries = db.progressPuts[0]!.entries;
+        expect(entries).toHaveLength(allDone().length);
+        expect(entries.some((e) => e.cycle === 2)).toBe(false);
+      });
+
+      it('a ride started in the current cycle records that cycle', async () => {
+        useLastResult.getState().set(startedIn(2));
+        renderSummary();
+        await toggle();
+        await waitFor(() => expect(db.progressPuts).toHaveLength(1));
+        expect(db.progressPuts[0]!.entries.filter((e) => e.cycle === 2)).toHaveLength(1);
       });
     });
   });
@@ -373,6 +450,26 @@ describe('SummaryScreen', () => {
       renderSummary();
       fireEvent.change(await best(), { target: { value: '333' } });
       expect(screen.getByTestId('ftp-proposal')).toHaveTextContent('250 W');
+    });
+
+    it('shows no proposal for a non-integer reading', async () => {
+      useLastResult.getState().set(result({ workout: ramp }));
+      renderSummary();
+      fireEvent.change(await best(), { target: { value: '333.5' } });
+      expect(screen.queryByTestId('ftp-proposal')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Save FTP' }));
+      expect(await screen.findByRole('alert')).toHaveTextContent('whole number');
+      expect(db.playerPuts).toHaveLength(0);
+    });
+
+    it('asks to choose a rider when none is selected', async () => {
+      db.players = [{ ...mirek, isMe: false }, ania];
+      useLastResult.getState().set(result({ workout: ramp }));
+      renderSummary();
+      fireEvent.change(await best(), { target: { value: '200' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Save FTP' }));
+      expect(await screen.findByRole('alert')).toHaveTextContent('Choose a rider');
+      expect(db.playerPuts).toHaveLength(0);
     });
 
     it('rejects an FTP outside 50-600', async () => {

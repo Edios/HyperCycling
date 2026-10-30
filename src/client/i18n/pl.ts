@@ -53,6 +53,9 @@ export const pl: Messages = {
     ftpSave: 'Zapisz FTP',
     ftpError: 'FTP musi być liczbą całkowitą od 50 do 600.',
     ftpSaved: 'FTP zapisane.',
+    ftpChoose: 'Najpierw wybierz zawodnika.',
+    ftpBestError: 'Wpisz najlepszą moc jako liczbę całkowitą watów.',
+    ftpSaveFailed: 'Nie udało się zapisać FTP. Spróbuj ponownie.',
   },
   setup: {
     badgeWeek: '{kind} · tydzień {n}',

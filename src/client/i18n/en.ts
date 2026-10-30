@@ -51,6 +51,9 @@ export const en = {
     ftpSave: 'Save FTP',
     ftpError: 'FTP must be a whole number from 50 to 600.',
     ftpSaved: 'FTP saved.',
+    ftpChoose: 'Choose a rider first.',
+    ftpBestError: 'Enter your best power as a whole number of watts.',
+    ftpSaveFailed: 'Could not save the FTP. Try again.',
   },
   setup: {
     badgeWeek: '{kind} · week {n}',

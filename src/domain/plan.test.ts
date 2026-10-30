@@ -9,6 +9,7 @@ import {
   planSchema,
   planSettingsSchema,
   recordEntry,
+  removeEntry,
   suggestCountTowardPlan,
   weekStatus,
   weeklyLoad,
@@ -166,6 +167,25 @@ describe('recordEntry', () => {
     const p = progress({}, [entry(1, 'freestyle'), entry(1, 'progres', 'done', 1)]);
     const next = recordEntry(p, { ...entry(1, 'progres'), cycle: 2 });
     expect(next.entries).toHaveLength(3);
+  });
+});
+
+describe('removeEntry', () => {
+  it('drops only the entry of the same cycle, week and slot, without mutating', () => {
+    const p = progress({}, [
+      entry(1, 'progres'),
+      entry(1, 'freestyle'),
+      { ...entry(1, 'progres'), cycle: 2 },
+    ]);
+    const next = removeEntry(p, { week: 1, slot: 'progres' });
+    expect(next.entries).toHaveLength(2);
+    expect(next.entries.some((e) => e.slot === 'progres' && (e.cycle ?? 1) === 1)).toBe(false);
+    expect(p.entries).toHaveLength(3);
+    expect(removeEntry(p, { week: 1, slot: 'progres', cycle: 2 }).entries).toHaveLength(2);
+  });
+  it('is a no-op for a missing entry', () => {
+    const p = progress({}, [entry(1, 'progres')]);
+    expect(removeEntry(p, { week: 2, slot: 'progres' }).entries).toEqual(p.entries);
   });
 });
 

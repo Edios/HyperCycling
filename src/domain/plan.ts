@@ -232,6 +232,20 @@ export function recordEntry(p: PlanProgress, e: ProgressEntry): PlanProgress {
   return { ...p, entries: [...kept, e] };
 }
 
+/** Drops the entry for the same cycle, week and slot (if any). Does not mutate the input. */
+export function removeEntry(
+  p: PlanProgress,
+  key: { week: number; slot: PlanSlot; cycle?: number },
+): PlanProgress {
+  const cycle = key.cycle ?? 1;
+  return {
+    ...p,
+    entries: p.entries.filter(
+      (x) => !(cycleOf(x) === cycle && x.week === key.week && x.slot === key.slot),
+    ),
+  };
+}
+
 /** Current week if its freestyle slot is open and really freestyle (not doubleProgres). */
 export function canCountFreestyle(plan: Plan, p: PlanProgress): { week: number } | null {
   if (p.settings.layout === 'doubleProgres') return null;

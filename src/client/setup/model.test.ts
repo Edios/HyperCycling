@@ -45,6 +45,16 @@ describe('buildConfig', () => {
 });
 
 describe('parsePlanRef / pickPlayers', () => {
+  it('reads an optional cycle and rejects a bad one', () => {
+    expect(parsePlanRef(new URLSearchParams('plan=p&week=2&slot=progres&cycle=2'))).toEqual({
+      planId: 'p',
+      week: 2,
+      slot: 'progres',
+      cycle: 2,
+    });
+    expect(parsePlanRef(new URLSearchParams('plan=p&week=2&slot=progres&cycle=0'))).toBeUndefined();
+  });
+
   it('needs plan, a positive integer week and a known slot', () => {
     expect(parsePlanRef(new URLSearchParams('plan=p&week=2&slot=progres'))).toEqual({
       planId: 'p',
