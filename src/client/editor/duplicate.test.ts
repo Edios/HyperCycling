@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Workout } from '../../domain/workout';
+import { builtinWorkouts } from '../data/builtin';
+import { workoutSchema } from '../../domain/workout';
 import { newWorkoutDraft } from './model';
 
 const put = vi.hoisted(() => vi.fn());
@@ -28,5 +30,12 @@ describe('duplicateAndSave', () => {
     expect(copy.id).not.toBe(src.id);
     expect(copy.blocks.map((b) => b.id)).not.toEqual(src.blocks.map((b) => b.id));
     expect(put).toHaveBeenCalledWith(copy);
+  });
+
+  it('produces a valid copy of every built-in workout (scaling ids remapped)', async () => {
+    for (const w of builtinWorkouts) {
+      const copy = await duplicateAndSave(w, 'en', ' (copy)');
+      expect(workoutSchema.safeParse(copy).success, w.id).toBe(true);
+    }
   });
 });
