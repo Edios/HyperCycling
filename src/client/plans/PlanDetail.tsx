@@ -10,7 +10,7 @@ import {
 } from '../../domain/plan';
 import { newId } from '../../domain/ids';
 import type { Player } from '../../domain/player';
-import { scaleWorkout } from '../../domain/scale';
+import { scaleForPlan } from '../../domain/scale';
 import { flattenWorkout } from '../../domain/segments';
 import type { Workout } from '../../domain/workout';
 import { builtinPlans } from '../data/builtin';
@@ -437,15 +437,12 @@ function Preview({ testId, badge, badgeClass, workout, cfg }: PreviewProps) {
   const scaled = useMemo<Workout | undefined>(() => {
     if (!workout) return undefined;
     try {
-      return scaleWorkout(workout, {
-        targetMinutes: cfg.sessionMinutes,
-        difficultyPct: cfg.difficulty,
-      });
+      return scaleForPlan(workout, cfg);
     } catch (err) {
       console.warn('Scaling the preview failed, showing it unscaled', err);
       return workout;
     }
-  }, [workout, cfg.sessionMinutes, cfg.difficulty]);
+  }, [workout, cfg]);
   const segments = useMemo(
     () => (scaled ? flattenWorkout(scaled, settings.effortTable) : []),
     [scaled, settings.effortTable],

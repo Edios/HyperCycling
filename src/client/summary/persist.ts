@@ -4,6 +4,7 @@ import {
   recordEntry,
   removeEntry,
   type PlanProgress,
+  type PlanSlot,
   type ProgressEntry,
 } from '../../domain/plan';
 import type { SessionLog } from '../../domain/session-log';
@@ -43,6 +44,8 @@ interface EntryState {
   applied: boolean;
   /** Entry the write replaced, restored when the toggle goes off. */
   previous: ProgressEntry | undefined;
+  /** Slot the "on" write resolved; "off" reuses it and never recomputes. Unset until captured. */
+  key: { week: number; slot: PlanSlot; cycle: number } | undefined;
   /** Writes run one after another so they land in toggle order. */
   queue: Promise<void>;
 }
@@ -60,7 +63,7 @@ function sameSlot(e: ProgressEntry, week: number, slot: string, cycle: number): 
 export function syncPlanEntry(result: LastResult, target: CountTarget, on: boolean): Promise<void> {
   let state = entryStates.get(result);
   if (!state) {
-    state = { applied: false, previous: undefined, queue: Promise.resolve() };
+    state = { applied: false, previous: undefined, key: undefined, queue: Promise.resolve() };
     entryStates.set(result, state);
   }
   if (state.applied === on) return state.queue;
@@ -78,10 +81,11 @@ export function syncPlanEntry(result: LastResult, target: CountTarget, on: boole
         settings: DEFAULT_PLAN_SETTINGS,
         entries: [],
       };
-      const cycle = entryCycle(result, target.plan, progress);
-      const key = { week: target.week, slot: target.slot, cycle };
       if (on) {
+        const cycle = entryCycle(result, target.plan, progress);
+        const key = { week: target.week, slot: target.slot, cycle };
         st.previous = progress.entries.find((e) => sameSlot(e, key.week, key.slot, cycle));
+        st.key = key;
         await repos.planProgress.put(
           recordEntry(progress, {
             week: key.week,
@@ -92,8 +96,8 @@ export function syncPlanEntry(result: LastResult, target: CountTarget, on: boole
             ...(cycle > 1 ? { cycle } : {}),
           }),
         );
-      } else {
-        const removed = removeEntry(progress, key);
+      } else if (st.key) {
+        const removed = removeEntry(progress, st.key);
         await repos.planProgress.put(st.previous ? recordEntry(removed, st.previous) : removed);
       }
     } catch (err) {

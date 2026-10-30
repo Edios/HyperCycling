@@ -1,6 +1,6 @@
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings, type PlanSlot } from '../../domain/plan';
 import type { Player } from '../../domain/player';
-import { scaleWorkout } from '../../domain/scale';
+import { scaleForPlan } from '../../domain/scale';
 import type { Segment } from '../../domain/segments';
 import type { SessionConfig } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
@@ -38,7 +38,7 @@ export function parsePlanRef(params: URLSearchParams): PlanRef | undefined {
 /** Plan scaling (session length and difficulty); a failure falls back to the unscaled workout. */
 export function applyPlanSettings(w: Workout, s: PlanSettings = DEFAULT_PLAN_SETTINGS): Workout {
   try {
-    return scaleWorkout(w, { targetMinutes: s.sessionMinutes, difficultyPct: s.difficulty });
+    return scaleForPlan(w, s);
   } catch (err) {
     console.warn('Scaling the workout failed, using it unscaled', err);
     return w;

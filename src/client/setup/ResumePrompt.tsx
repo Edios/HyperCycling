@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PLAN_SETTINGS } from '../../domain/plan';
-import { scaleWorkout } from '../../domain/scale';
+import { scaleForPlan } from '../../domain/scale';
 import { flattenWorkout } from '../../domain/segments';
 import { isActiveSessionFresh, type ActiveSession } from '../../domain/session-log';
 import { builtinWorkouts } from '../data/builtin';
@@ -70,10 +70,7 @@ export function ResumePrompt() {
           const progress = await repos.planProgress.get(active.plan.planId);
           const ps = progress?.settings ?? DEFAULT_PLAN_SETTINGS;
           try {
-            ridden = scaleWorkout(workout, {
-              targetMinutes: ps.sessionMinutes,
-              difficultyPct: ps.difficulty,
-            });
+            ridden = scaleForPlan(workout, ps);
           } catch (err) {
             console.warn('Rebuilding the interrupted workout failed', err);
             await clearActive();

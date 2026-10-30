@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scaleWorkout } from './scale';
+import { scaleForPlan, scaleWorkout } from './scale';
 import {
   totalDurationSec,
   workoutSchema,
@@ -259,5 +259,16 @@ describe('workout scaling schema', () => {
     const noMin = fixture();
     delete noMin.scaling?.minTimes;
     expect(workoutSchema.safeParse(noMin).success).toBe(false);
+  });
+});
+
+describe('scaleForPlan', () => {
+  const settings = { sessionMinutes: 30, difficulty: 5 } as const;
+  it('scales an ordinary workout', () => {
+    expect(totalDurationSec(scaleForPlan(fixture(), settings))).toBe(1800);
+  });
+  it('never scales a test workout', () => {
+    const w = { ...fixture(), tags: ['test'] };
+    expect(scaleForPlan(w, settings)).toEqual(w);
   });
 });

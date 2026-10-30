@@ -42,7 +42,7 @@ export function App() {
         <Route path="/train" element={<TrainingScreen />} />
         <Route path="/summary" element={<SummaryScreen />} />
         <Route path="/players" element={<PlayersScreen />} />
-                <Route
+        <Route
           path="/plans"
           element={
             <SelectShell>

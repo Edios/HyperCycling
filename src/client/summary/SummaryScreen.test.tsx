@@ -20,8 +20,10 @@ interface Db {
   logs: SessionLog[];
   playerPuts: Player[];
   progressPuts: PlanProgress[];
+  gets: number;
+  failGetNo?: number;
 }
-const db: Db = { players: [], progress: [], logs: [], playerPuts: [], progressPuts: [] };
+const db: Db = { players: [], progress: [], logs: [], playerPuts: [], progressPuts: [], gets: 0 };
 
 vi.mock('../data/repositories', () => ({
   getRepositories: () =>
@@ -36,7 +38,11 @@ vi.mock('../data/repositories', () => ({
         },
       },
       planProgress: {
-        get: (id: string) => Promise.resolve(db.progress.find((p) => p.planId === id)),
+        get: (id: string) => {
+          db.gets += 1;
+          if (db.gets === db.failGetNo) return Promise.reject(new Error('disk'));
+          return Promise.resolve(db.progress.find((p) => p.planId === id));
+        },
         put: (p: PlanProgress) => {
           db.progressPuts.push(p);
           db.progress = [...db.progress.filter((x) => x.planId !== p.planId), p];
@@ -123,6 +129,8 @@ beforeEach(() => {
   db.logs = [];
   db.playerPuts = [];
   db.progressPuts = [];
+  db.gets = 0;
+  delete db.failGetNo;
   resetSettingsForTests();
   useLastResult.getState().clear();
 });
@@ -367,6 +375,45 @@ describe('SummaryScreen', () => {
         workoutId: freestyleWorkout.id,
         status: 'done',
       });
+    });
+
+    it('turning off uses the slot the on write resolved, even if the active cycle moved', async () => {
+      const loop = builtinPlans.find(
+        (p) => p.loop && p.weeks[0]?.sessions.some((x) => x.slot === 'freestyle'),
+      ) as Plan;
+      const entries: ProgressEntry[] = loop.weeks.flatMap((w, i) =>
+        w.sessions
+          .filter((x) => !(i === 0 && x.slot === 'freestyle'))
+          .map((x) => ({
+            week: i + 1,
+            slot: x.slot,
+            workoutId: x.workoutId,
+            status: 'done' as const,
+            at: '2026-02-01T00:00:00.000Z',
+          })),
+      );
+      db.settings = { ...DEFAULT_SETTINGS, activePlanId: loop.id };
+      db.progress = [{ ...freshProgress(entries), id: loop.id, planId: loop.id }];
+      useLastResult.getState().set(result({ workout: freestyleWorkout }));
+      renderSummary();
+      const sw = await toggle();
+      // Counting closes cycle 1, so a recomputed cycle would now be 2.
+      await waitFor(() => expect(db.progressPuts).toHaveLength(1));
+      expect(db.progressPuts[0]!.entries).toHaveLength(entries.length + 1);
+      fireEvent.click(sw);
+      await waitFor(() => expect(db.progressPuts).toHaveLength(2));
+      expect(db.progressPuts[1]!.entries).toHaveLength(entries.length);
+    });
+
+    it('off removes nothing when the on write failed before it captured the entry', async () => {
+      db.failGetNo = 2; // 1st get loads the screen, 2nd is the on write
+      useLastResult.getState().set(result({ plan: planRef }));
+      renderSummary();
+      const sw = await toggle();
+      await waitFor(() => expect(db.gets).toBeGreaterThanOrEqual(2));
+      fireEvent.click(sw);
+      await new Promise((r) => setTimeout(r, 50));
+      expect(db.progressPuts).toHaveLength(0);
     });
 
     describe('looping plan', () => {

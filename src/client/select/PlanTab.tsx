@@ -8,7 +8,7 @@ import {
   type PlanSlot,
 } from '../../domain/plan';
 import { flattenWorkout } from '../../domain/segments';
-import { scaleWorkout } from '../../domain/scale';
+import { scaleForPlan } from '../../domain/scale';
 import type { Workout } from '../../domain/workout';
 import { localizedText } from '../data/localized';
 import { useLibrary } from '../data/useLibrary';
@@ -101,15 +101,12 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
   const scaled = useMemo<Workout | undefined>(() => {
     if (!nextWorkout) return undefined;
     try {
-      return scaleWorkout(nextWorkout, {
-        targetMinutes: progress.settings.sessionMinutes,
-        difficultyPct: progress.settings.difficulty,
-      });
+      return scaleForPlan(nextWorkout, progress.settings);
     } catch (err) {
       console.warn('Scaling the next session failed, showing it unscaled', err);
       return nextWorkout;
     }
-  }, [nextWorkout, progress.settings.sessionMinutes, progress.settings.difficulty]);
+  }, [nextWorkout, progress.settings]);
   const segments = useMemo(
     () => (scaled ? flattenWorkout(scaled, settings.effortTable) : []),
     [scaled, settings.effortTable],

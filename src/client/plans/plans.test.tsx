@@ -173,10 +173,13 @@ describe('PlanDetail', () => {
     renderDetail();
     await screen.findByTestId('preview-progres');
     fireEvent.click(screen.getByRole('radio', { name: '45 min' }));
-    const at45 = minutes('preview-progres-minutes');
+    const at45 = minutes('preview-freestyle-minutes');
+    const ramp45 = minutes('preview-progres-minutes');
     fireEvent.click(screen.getByRole('radio', { name: '30 min' }));
-    const at30 = minutes('preview-progres-minutes');
+    const at30 = minutes('preview-freestyle-minutes');
     expect(at30).toBeLessThan(at45);
+    // Week 1 is the ramp test: tests are never scaled to the session length.
+    expect(minutes('preview-progres-minutes')).toBe(ramp45);
     expect(screen.getByTestId('plan-hours')).toHaveTextContent('~1 h');
   });
 

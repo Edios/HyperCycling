@@ -1,5 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import { buildConfig, effectiveHud, layoutOptions, parsePlanRef, pickPlayers } from './model';
+import { DEFAULT_PLAN_SETTINGS } from '../../domain/plan';
+import { totalDurationSec } from '../../domain/workout';
+import { builtinWorkouts } from '../data/builtin';
+import {
+  applyPlanSettings,
+  buildConfig,
+  effectiveHud,
+  layoutOptions,
+  parsePlanRef,
+  pickPlayers,
+} from './model';
+
+describe('applyPlanSettings', () => {
+  it('keeps every test workout at its natural length and difficulty', () => {
+    const tests = builtinWorkouts.filter((w) => w.tags.includes('test'));
+    expect(tests.map((w) => w.id)).toContain('ramp-test');
+    for (const w of tests) {
+      const out = applyPlanSettings(w, {
+        ...DEFAULT_PLAN_SETTINGS,
+        sessionMinutes: 30,
+        difficulty: 5,
+      });
+      expect(totalDurationSec(out), w.id).toBe(totalDurationSec(w));
+      expect(out, w.id).toEqual(w);
+    }
+  });
+  it('still scales an ordinary scalable workout', () => {
+    const w = builtinWorkouts.find((x) => x.scaling && !x.tags.includes('test'))!;
+    const out = applyPlanSettings(w, { ...DEFAULT_PLAN_SETTINGS, sessionMinutes: 30 });
+    expect(totalDurationSec(out)).toBeLessThan(totalDurationSec(w));
+  });
+});
 
 describe('layoutOptions', () => {
   it('Basic offers only Solo and With players', () => {

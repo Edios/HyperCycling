@@ -18,18 +18,21 @@ test('gallery filters and opens a plan', async ({ page }) => {
   await expect(cards).toHaveCount(4);
   await cards
     .filter({ hasText: 'Build Form' })
-    .getByRole('button', { name: /Choose/ })
+    .getByRole('button', { name: /Choose|Customize/ })
     .click();
   await expect(page.getByRole('heading', { level: 1, name: 'Build Form' })).toBeVisible();
 });
 
-test('Build Form at 30 min has a shorter next session than at 45 min', async ({ page }) => {
+test('Build Form at 30 min shortens a scalable session but never the ramp test', async ({
+  page,
+}) => {
   const errors: string[] = [];
   page.on('pageerror', (err) => errors.push(err.message));
 
   await page.goto('./#/plans/build-form');
   await page.getByRole('radio', { name: '45 min' }).check({ force: true });
-  const preview45 = await page.getByTestId('preview-progres-minutes').innerText();
+  // Week 1 progres is the ramp test (never scaled); the freestyle preview follows the length.
+  const preview45 = await page.getByTestId('preview-freestyle-minutes').innerText();
   // Other specs may have activated Build Form already (shared local database): then it is Save changes.
   await page.getByRole('button', { name: /^(Start plan|Save changes)$/ }).click();
   await expect(page.getByTestId('next-session')).toBeVisible();
@@ -38,12 +41,12 @@ test('Build Form at 30 min has a shorter next session than at 45 min', async ({ 
   // Active now: the same screen offers Save changes.
   await page.goto('./#/plans/build-form');
   await page.getByRole('radio', { name: '30 min' }).check({ force: true });
-  const preview30 = await page.getByTestId('preview-progres-minutes').innerText();
+  const preview30 = await page.getByTestId('preview-freestyle-minutes').innerText();
   expect(Number.parseInt(preview30, 10)).toBeLessThan(Number.parseInt(preview45, 10));
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByTestId('next-session')).toBeVisible();
   const at30 = await nextSessionMinutes(page);
 
-  expect(at30).toBeLessThan(at45);
+  expect(at30).toBe(at45);
   expect(errors).toEqual([]);
 });
