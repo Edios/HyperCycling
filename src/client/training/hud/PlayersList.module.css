@@ -49,3 +49,8 @@
 .me .name {
   color: var(--zone);
 }
+
+[data-theme='light'] .watts,
+[data-theme='light'] .me .name {
+  color: color-mix(in srgb, var(--zone) 60%, #000);
+}

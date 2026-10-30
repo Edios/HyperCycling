@@ -11,14 +11,19 @@ export function Countdown({ n, color, reducedMotion = false }: CountdownProps) {
   if (n === null) return null;
   const style: CSSProperties & Record<'--c', string> = { '--c': color };
   return (
-    <div
-      key={n}
-      data-testid="countdown"
-      aria-hidden="true"
-      className={`${styles.root} ${reducedMotion ? '' : styles.tick}`}
-      style={style}
-    >
-      {n}
-    </div>
+    <>
+      <div
+        key={n}
+        data-testid="countdown"
+        aria-hidden="true"
+        className={`${styles.root} ${reducedMotion ? '' : styles.tick}`}
+        style={style}
+      >
+        {n}
+      </div>
+      <span role="status" aria-live="polite" className={styles.srOnly}>
+        {n}
+      </span>
+    </>
   );
 }

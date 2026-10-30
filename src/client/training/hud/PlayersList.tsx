@@ -9,6 +9,11 @@ export interface PlayersListProps {
   showsWatts: boolean;
 }
 
+function safeWatts(ftp: number, ftpPct: number, unit: string): string {
+  if (!Number.isFinite(ftp) || ftp <= 0 || !Number.isFinite(ftpPct)) return '—';
+  return `${targetWatts(ftp, ftpPct)} ${unit}`;
+}
+
 export function PlayersList({ players, ftpPct, showsWatts }: PlayersListProps) {
   const t = useT();
   return (
@@ -21,9 +26,7 @@ export function PlayersList({ players, ftpPct, showsWatts }: PlayersListProps) {
           <li key={p.id} className={`${styles.row} ${p.isMe ? styles.me : ''}`}>
             <span className={styles.name}>{p.name}</span>
             {showsWatts && (
-              <span className={styles.watts}>
-                {targetWatts(p.ftp, ftpPct)} {t('training.watts')}
-              </span>
+              <span className={styles.watts}>{safeWatts(p.ftp, ftpPct, t('training.watts'))}</span>
             )}
           </li>
         ))}

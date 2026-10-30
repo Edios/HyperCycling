@@ -72,6 +72,10 @@ describe('BlockTimer', () => {
     expect(root).toHaveTextContent('block 4 of 9');
     expect(within(root).getByRole('progressbar').firstElementChild).toHaveStyle({ width: '25%' });
   });
+  it('labels the progressbar', () => {
+    render(<BlockTimer remainingSec={10} durationSec={60} index={0} total={2} pulse={false} />);
+    expect(screen.getByRole('progressbar')).toHaveAccessibleName('Time left');
+  });
   it('pulses only when asked and motion is allowed', () => {
     const { rerender } = render(
       <BlockTimer remainingSec={4} durationSec={60} index={0} total={2} pulse />,
@@ -108,6 +112,11 @@ describe('NextBlock', () => {
     expect(root).toHaveTextContent('85 rpm');
     expect(root).toHaveTextContent('3:00');
     expect(root).toHaveTextContent('Recovery');
+  });
+  it('translates @token labels', () => {
+    const next = seg({ index: 1, startSec: 60, durationSec: 60, label: '@recovery' });
+    render(<NextBlock next={next} effortColor="#fff" />);
+    expect(screen.getByTestId('next-block')).toHaveTextContent('Recovery');
   });
   it('shows Finish when there is no next block', () => {
     render(<NextBlock effortColor="#fff" />);
@@ -150,6 +159,12 @@ describe('Timeline', () => {
     expect(root).toHaveTextContent('2:30');
     expect(root).toHaveTextContent(/remaining/i);
   });
+  it('treats non-finite elapsed as 0', () => {
+    render(<Timeline segments={segments} elapsedSec={Number.NaN} />);
+    const root = screen.getByTestId('timeline');
+    expect(root.querySelector<HTMLElement>('[data-cursor]')?.style.left).toBe('0%');
+    expect(root).toHaveTextContent('0:00 / 4:00');
+  });
   it('clamps the cursor after the end', () => {
     render(<Timeline segments={segments} elapsedSec={9999} />);
     expect(
@@ -171,6 +186,16 @@ describe('PlayersList', () => {
     expect(root).toHaveTextContent('184 W');
     expect(root).toHaveTextContent('235 W');
   });
+  it('shows a dash instead of throwing on invalid ftp', () => {
+    const bad = [
+      { id: 'x', name: 'Zero', ftp: 0 },
+      { id: 'y', name: 'Nan', ftp: Number.NaN },
+    ];
+    render(<PlayersList players={bad} ftpPct={92} showsWatts />);
+    const root = screen.getByTestId('players-list');
+    expect(root).toHaveTextContent('Zero');
+    expect(root.textContent?.match(/—/g)).toHaveLength(2);
+  });
   it('shows names only when the bike has no watts', () => {
     render(<PlayersList players={players} ftpPct={92} showsWatts={false} />);
     const root = screen.getByTestId('players-list');
@@ -180,9 +205,14 @@ describe('PlayersList', () => {
 });
 
 describe('CoachOverlay', () => {
-  it('renders nothing without a cue', () => {
+  it('renders nothing visible without a cue but keeps the live region mounted', () => {
     render(<CoachOverlay cue={null} cueKey={0} color="#fff" />);
     expect(screen.queryByTestId('coach-overlay')).toBeNull();
+    expect(screen.getByTestId('coach-live')).toHaveAttribute('aria-live', 'polite');
+  });
+  it('translates @token custom cues', () => {
+    render(<CoachOverlay cue={{ kind: 'custom', text: '@sprint' }} cueKey={1} color="#fff" />);
+    expect(screen.getByTestId('coach-overlay')).toHaveTextContent('Sprint!');
   });
   it.each([
     [{ kind: 'attack' } as const, 'ATTACK!'],
@@ -216,6 +246,14 @@ describe('Countdown', () => {
   it('renders nothing when null', () => {
     render(<Countdown n={null} color="#fff" />);
     expect(screen.queryByTestId('countdown')).toBeNull();
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+  it('hides the visual from assistive tech and announces politely', () => {
+    render(<Countdown n={3} color="#fff" />);
+    expect(screen.getByTestId('countdown')).toHaveAttribute('aria-hidden', 'true');
+    const live = screen.getByRole('status');
+    expect(live).toHaveTextContent('3');
+    expect(live).toHaveAttribute('aria-live', 'polite');
   });
 });
 

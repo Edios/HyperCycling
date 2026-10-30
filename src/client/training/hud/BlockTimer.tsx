@@ -37,6 +37,7 @@ export function BlockTimer({
       <div className={`${tile.value} ${styles.clock}`}>{formatClock(remainingSec)}</div>
       <div
         role="progressbar"
+        aria-label={t('training.timeLeft')}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(pct)}

@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { CoachCue } from '../../../domain/coach';
 import { useT, type MessageKey } from '../../i18n';
+import { translateContentText } from '../content-text';
 import styles from './CoachOverlay.module.css';
 
 export interface CoachOverlayProps {
@@ -24,24 +25,27 @@ const SIMPLE_KEYS: Record<
 
 export function CoachOverlay({ cue, cueKey, color, reducedMotion = false }: CoachOverlayProps) {
   const t = useT();
-  if (!cue) return null;
-  const text =
-    cue.kind === 'custom'
-      ? cue.text
+  const text = !cue
+    ? ''
+    : cue.kind === 'custom'
+      ? translateContentText(cue.text, 'cue')
       : cue.kind === 'cadence'
         ? t('training.cadenceCue', { rpm: cue.rpm })
         : t(SIMPLE_KEYS[cue.kind]);
   const style: CSSProperties & Record<'--c', string> = { '--c': color };
   return (
-    <div
-      key={cueKey}
-      data-testid="coach-overlay"
-      data-animated={!reducedMotion}
-      role="status"
-      className={`${styles.root} ${reducedMotion ? '' : styles.animated}`}
-      style={style}
-    >
-      {text}
+    <div data-testid="coach-live" aria-live="polite" className={styles.live}>
+      {cue && (
+        <div
+          key={cueKey}
+          data-testid="coach-overlay"
+          data-animated={!reducedMotion}
+          className={`${styles.root} ${reducedMotion ? '' : styles.animated}`}
+          style={style}
+        >
+          {text}
+        </div>
+      )}
     </div>
   );
 }

@@ -29,7 +29,8 @@ type BarState = 'past' | 'current' | 'future';
 export function Timeline({ segments, elapsedSec }: TimelineProps) {
   const t = useT();
   const total = segments.reduce((sum, s) => sum + s.durationSec, 0);
-  const clamped = Math.min(Math.max(elapsedSec, 0), total);
+  const safeElapsed = Number.isFinite(elapsedSec) ? elapsedSec : 0;
+  const clamped = Math.min(Math.max(safeElapsed, 0), total);
   const cursorPct = total > 0 ? (clamped / total) * 100 : 0;
 
   return (
@@ -39,7 +40,7 @@ export function Timeline({ segments, elapsedSec }: TimelineProps) {
           {segments.map((s) => {
             const end = s.startSec + s.durationSec;
             const state: BarState =
-              end <= elapsedSec ? 'past' : s.startSec <= elapsedSec ? 'current' : 'future';
+              end <= safeElapsed ? 'past' : s.startSec <= safeElapsed ? 'current' : 'future';
             const topLevel = s.effortStart >= s.effortEnd ? s.effortStart : s.effortEnd;
             const poly = slopePolygons(s.effortStart, s.effortEnd);
             const style: CSSProperties & Record<'--c', string> = {

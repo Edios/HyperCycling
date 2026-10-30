@@ -1,5 +1,6 @@
 import type { Segment } from '../../../domain/segments';
 import { useT } from '../../i18n';
+import { translateContentText } from '../content-text';
 import { formatClock } from '../format';
 import styles from './NextBlock.module.css';
 
@@ -22,7 +23,9 @@ export function NextBlock({ next, effortColor }: NextBlockProps) {
             {next.rpm !== undefined && ` · ${next.rpm} ${t('training.rpm')}`}
             {` · ${formatClock(next.durationSec)}`}
           </span>
-          {next.label && <span className={styles.label}>{next.label}</span>}
+          {next.label && (
+            <span className={styles.label}>{translateContentText(next.label, 'label')}</span>
+          )}
         </>
       ) : (
         <span className={styles.facts}>{t('training.finish')}</span>
