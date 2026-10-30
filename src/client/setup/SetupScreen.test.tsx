@@ -189,11 +189,29 @@ describe('SetupScreen', () => {
     });
   });
 
-  it('Hyperride and YouTube are shown but disabled', async () => {
+  it('Hyperride is selectable, YouTube is still disabled', async () => {
     renderSetup(`/setup/${scalable.id}`);
-    expect(await screen.findByRole('button', { name: /Hyperride/ })).toBeDisabled();
+    expect(await screen.findByRole('button', { name: /Hyperride/ })).toBeEnabled();
     expect(screen.getByRole('button', { name: /YouTube/ })).toBeDisabled();
     expect(screen.getByRole('button', { name: /Basic/ })).toBeEnabled();
+  });
+
+  it('Hyperride offers the overlay layouts (Immersive by default); players disable two', async () => {
+    renderSetup(`/setup/${scalable.id}`);
+    fireEvent.click(await screen.findByRole('button', { name: /Hyperride/ }));
+    expect(screen.getByRole('radio', { name: 'Immersive' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Cockpit' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: /Mirek/ }));
+    expect(screen.getByRole('radio', { name: 'Cockpit' })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'Time in the tunnel' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('radio', { name: 'Column' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    await screen.findByTestId('where');
+    expect(useSessionStore.getState().runtime!.config).toMatchObject({
+      background: 'hyperride',
+      hud: 'column',
+      playerIds: ['p1'],
+    });
   });
 
   it('music is disabled when the workout has no cues, enabled when it has', async () => {

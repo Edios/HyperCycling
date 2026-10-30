@@ -9,12 +9,14 @@ import styles from './Timeline.module.css';
 export interface TimelineProps {
   segments: readonly Segment[];
   elapsedSec: number;
+  /** Shorter strip for the overlay layouts. */
+  compact?: boolean;
 }
 
 const MAX_EFFORT = 10;
 type BarState = 'past' | 'current' | 'future';
 
-export function Timeline({ segments, elapsedSec }: TimelineProps) {
+export function Timeline({ segments, elapsedSec, compact = false }: TimelineProps) {
   const t = useT();
   const total = segments.reduce((sum, s) => sum + s.durationSec, 0);
   const safeElapsed = Number.isFinite(elapsedSec) ? elapsedSec : 0;
@@ -22,7 +24,7 @@ export function Timeline({ segments, elapsedSec }: TimelineProps) {
   const cursorPct = total > 0 ? (clamped / total) * 100 : 0;
 
   return (
-    <div data-testid="timeline" className={styles.root}>
+    <div data-testid="timeline" className={`${styles.root} ${compact ? styles.compact : ''}`}>
       <div className={styles.track}>
         <div className={styles.bars}>
           {segments.map((s) => {

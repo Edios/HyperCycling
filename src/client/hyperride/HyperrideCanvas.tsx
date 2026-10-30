@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { buildWorldFrame } from './frame';
 import { createPathModel } from './path-model';
+import { createSway } from './sway';
 import type { FrameInput, HyperrideQuality, HyperrideWorld } from './world';
 import { DEFAULT_WORLD, WORLDS, type WorldId } from './worlds';
 import styles from './HyperrideCanvas.module.css';
@@ -13,6 +14,8 @@ export interface HyperrideCanvasProps {
   world?: WorldId;
   /** Horizontal view offset as a fraction of the width (0.11 for Column HUD without players). */
   viewOffsetX?: number;
+  /** Called every frame with the HUD inertia offsets in px (omit to skip the computation). */
+  onSway?(x: number, y: number): void;
   /** WebGL missing or the world failed to start: the caller falls back to Basic dark. */
   onUnavailable?(): void;
 }
@@ -86,6 +89,7 @@ export function HyperrideCanvas(props: HyperrideCanvasProps) {
       }
 
       const path = createPathModel({ rand: Math.random });
+      const sway = createSway();
       let last = performance.now();
       let reported = false;
       const loop = (now: number): void => {
@@ -102,7 +106,13 @@ export function HyperrideCanvas(props: HyperrideCanvasProps) {
             segmentIndex: input.state.segmentIndex,
             running: input.state.status === 'running',
           });
-          w.update(buildWorldFrame(input, { dtSec, speed: w.speed, path }));
+          const frame = buildWorldFrame(input, { dtSec, speed: w.speed, path });
+          w.update(frame);
+          const onSway = latest.current.onSway;
+          if (onSway) {
+            const o = sway.step(path, w.distance, frame.slopeTarget, dtSec);
+            onSway(o.x, o.y);
+          }
         } catch (err) {
           if (!reported) console.error('Hyperride frame failed', err);
           reported = true;

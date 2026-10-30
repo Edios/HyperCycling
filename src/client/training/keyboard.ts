@@ -4,6 +4,8 @@ export interface TrainingKeyActions {
   prev(): void;
   next(): void;
   togglePlayers(): void;
+  /** Next overlay layout (Hyperride only; ignored elsewhere). */
+  cycleLayout?(): void;
   fullscreen(): void;
   mute(): void;
   escape(): void;
@@ -38,6 +40,9 @@ export function bindTrainingKeys(target: Window, actions: TrainingKeyActions): (
       case 'KeyG':
         run = actions.togglePlayers;
         break;
+      case 'KeyH':
+        run = actions.cycleLayout;
+        break;
       case 'KeyF':
         run = actions.fullscreen;
         break;
@@ -53,7 +58,7 @@ export function bindTrainingKeys(target: Window, actions: TrainingKeyActions): (
     // Space would otherwise scroll or click the focused button.
     e.preventDefault();
     if (e.repeat) return;
-    run();
+    run?.();
   };
   target.addEventListener('keydown', handler);
   return () => target.removeEventListener('keydown', handler);

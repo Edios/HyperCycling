@@ -92,3 +92,9 @@
   text-transform: uppercase;
   color: var(--mut);
 }
+
+/* Hyperride: the canvas fills the screen, the overlay HUD sits on top. */
+.overlayLayer {
+  position: absolute;
+  inset: 0;
+}

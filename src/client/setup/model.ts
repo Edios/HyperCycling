@@ -12,8 +12,8 @@ export const MAX_SESSION_PLAYERS = 10;
 export type Background = SessionConfig['background'];
 export type Hud = SessionConfig['hud'];
 
-/** Backgrounds the player can pick today; Hyperride and YouTube arrive with M7 and M8. */
-export const ENABLED_BACKGROUNDS: readonly Background[] = ['basic'];
+/** Backgrounds the player can pick today; YouTube arrives with M8. */
+export const ENABLED_BACKGROUNDS: readonly Background[] = ['basic', 'hyperride'];
 
 export interface PlanRef {
   planId: string;
