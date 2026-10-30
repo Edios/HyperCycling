@@ -57,11 +57,16 @@ describe('shortcutToAction', () => {
     const s = sel(1);
     const id = s.selectedId as string;
     expect(shortcutToAction(s, { key: '+' }, T)).toMatchObject({ id, durationSec: 615 });
-    expect(shortcutToAction(s, { key: '-', shiftKey: true }, T)).toMatchObject({ durationSec: 595 });
+    expect(shortcutToAction(s, { key: '-', shiftKey: true }, T)).toMatchObject({
+      durationSec: 595,
+    });
   });
   it('up/down change effort and clamp', () => {
     const s = sel(1);
-    expect(shortcutToAction(s, { key: 'ArrowUp' }, T)).toMatchObject({ type: 'setIntensity', effort: 6 });
+    expect(shortcutToAction(s, { key: 'ArrowUp' }, T)).toMatchObject({
+      type: 'setIntensity',
+      effort: 6,
+    });
     expect(shortcutToAction(s, { key: 'ArrowDown' }, T)).toMatchObject({ effort: 4 });
   });
   it('ramps change the end, Shift changes the start', () => {

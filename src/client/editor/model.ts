@@ -76,7 +76,10 @@ export function isSaveable(w: Workout): boolean {
 }
 
 /** A starting draft: warm-up, one steady block and a cool-down. */
-export function newWorkoutDraft(name: string, now: () => string = () => new Date().toISOString()): Workout {
+export function newWorkoutDraft(
+  name: string,
+  now: () => string = () => new Date().toISOString(),
+): Workout {
   const warm = newId();
   const steady = newId();
   const cool = newId();
@@ -155,7 +158,11 @@ export function shortcutToAction(
   if (k === '+' || k === '=' || k === '-' || k === '_') {
     const dir = k === '+' || k === '=' ? 1 : -1;
     if (b.kind === 'repeat') {
-      return { type: 'updateBlock', id: b.id, patch: { times: Math.min(50, Math.max(2, b.times + dir)) } };
+      return {
+        type: 'updateBlock',
+        id: b.id,
+        patch: { times: Math.min(50, Math.max(2, b.times + dir)) },
+      };
     }
     const step = e.shiftKey ? 5 : 15;
     return { type: 'resizeBlock', id: b.id, durationSec: b.durationSec + dir * step, fine: true };
