@@ -77,3 +77,37 @@
   margin-top: 1vh;
   font-variant-numeric: tabular-nums;
 }
+
+/* Monochrome tone (Hyperride overlays): quiet bars, only the current block carries its colour. */
+.mono_future,
+.mono_next,
+.mono_past {
+  filter: none;
+}
+
+.mono_future {
+  --c: rgba(255, 255, 255, 0.25);
+}
+
+.mono_future .fill,
+.mono_next .fill,
+.mono_past .fill {
+  display: none;
+}
+
+.mono_next {
+  --c: color-mix(in srgb, var(--z) 35%, transparent);
+}
+
+.mono_past {
+  --c: rgba(255, 255, 255, 0.1);
+}
+
+.mono_current {
+  --c: var(--z);
+  filter: drop-shadow(0 -1px 12px var(--z));
+}
+
+.mono_current .fill {
+  background: linear-gradient(to top, transparent, color-mix(in srgb, var(--z) 14%, transparent));
+}
