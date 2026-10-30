@@ -7,7 +7,7 @@ test('dev Hyperride renders the Neon Tunnel without console errors', async ({ pa
   });
   page.on('pageerror', (err) => errors.push(err.message));
 
-  await page.goto('./');
+  await page.goto('about:blank');
   const webgl = await page.evaluate(() => {
     const c = document.createElement('canvas');
     return !!(c.getContext('webgl2') ?? c.getContext('webgl'));
