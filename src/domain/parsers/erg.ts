@@ -1,6 +1,8 @@
 import { newId } from '../ids';
 import type { Block } from '../workout';
 import {
+  parseLooseNumber,
+  tooLarge,
   baseName,
   stripBom,
   clampDuration,
@@ -40,6 +42,7 @@ export function parseCourse(
 ): ImportResult {
   const text = stripBom(input);
   if (text.trim() === '') return { ok: false, error: 'File is empty' };
+  if (tooLarge(text)) return { ok: false, error: 'File too large' };
 
   const headerLines: string[] = [];
   const dataLines: string[] = [];
@@ -66,7 +69,11 @@ export function parseCourse(
 
   let ftp: number | undefined;
   if (unit === 'watts') {
-    const fromHeader = Number(header.values.get('FTP'));
+    const rawFtp = header.values.get('FTP');
+    const fromHeader = parseLooseNumber(rawFtp ?? '');
+    if (rawFtp !== undefined && !(Number.isFinite(fromHeader) && fromHeader > 0)) {
+      warnings.push(`FTP header "${rawFtp.slice(0, 20)}" is not a valid number, ignored`);
+    }
     if (Number.isFinite(fromHeader) && fromHeader > 0) ftp = fromHeader;
     else if (opts?.ftp !== undefined && Number.isFinite(opts.ftp) && opts.ftp > 0) ftp = opts.ftp;
     if (ftp === undefined) {
@@ -76,10 +83,11 @@ export function parseCourse(
 
   const points: { t: number; v: number }[] = [];
   for (const line of dataLines) {
-    const parts = line.split(/[\s,;]+/).filter((p) => p !== '');
-    const t = Number(parts[0]);
-    const v = Number(parts[1]);
-    if (parts.length < 2 || !Number.isFinite(t) || !Number.isFinite(v) || t < 0) {
+    const parts = line.split(/[\s;]+/).filter((p) => p !== '');
+    // Exactly two tokens: a comma is a decimal separator ("0,5\t200").
+    const t = parts.length === 2 ? parseLooseNumber(parts[0] ?? '') : NaN;
+    const v = parts.length === 2 ? parseLooseNumber(parts[1] ?? '') : NaN;
+    if (!Number.isFinite(t) || !Number.isFinite(v) || t < 0) {
       warnings.push(`Unreadable data line skipped: "${line.slice(0, 40)}"`);
       continue;
     }

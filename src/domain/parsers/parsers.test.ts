@@ -237,7 +237,7 @@ describe('parseErg', () => {
       '[COURSE DATA]',
       '0 60',
       'garbage',
-      '1.5,60',
+      '1.5 60',
       '1 70',
       '2.0000001 70',
       '2.00001 400',
@@ -263,6 +263,104 @@ describe('parseErg', () => {
     const single =
       '[COURSE HEADER]\nFTP=200\nMINUTES WATTS\n[COURSE DATA]\n0 100\n[END COURSE DATA]';
     expect(parseErg(single)).toEqual({ ok: false, error: 'No workout blocks found' });
+  });
+});
+
+describe('hardening', () => {
+  const laughs = `<?xml version="1.0"?>
+<!DOCTYPE lolz [
+  <!ENTITY lol "lol">
+  <!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+  <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+]>
+<workout_file><name>&lol3;</name><workout><SteadyState Duration="60" Power="0.5"/></workout></workout_file>`;
+
+  it('rejects DOCTYPE and ENTITY declarations (billion laughs)', () => {
+    expect(parseZwo(laughs)).toEqual({ ok: false, error: 'DOCTYPE/entities not supported' });
+    expect(parseZwo('<!entity x "y"><workout_file/>')).toEqual({
+      ok: false,
+      error: 'DOCTYPE/entities not supported',
+    });
+  });
+
+  it('decodes the standard XML entities itself', () => {
+    const r = okResult(
+      parseZwo(
+        '<workout_file><name>A &amp; B &#65;&#x42; &bogus;</name><workout><SteadyState Duration="60" Power="0.5"><textevent message="x &lt; y"/></SteadyState></workout></workout_file>',
+      ),
+    );
+    expect(r.name).toBe('A & B AB &bogus;');
+    expect(r.blocks[0]).toMatchObject({ cue: 'x < y' });
+  });
+
+  it('accepts comma decimals in ERG data and zwo attributes', () => {
+    const erg = '[COURSE HEADER]\nMINUTES PERCENT\n[COURSE DATA]\n0,5\t50\n1;50\n[END COURSE DATA]';
+    const r = okResult(parseErg(erg));
+    expect(r.blocks).toMatchObject([
+      { kind: 'steady', durationSec: 30, intensity: { ftpPct: 50 } },
+    ]);
+    const z = okResult(
+      parseZwo(
+        '<workout_file><workout><SteadyState Duration="60" Power="0,5"/></workout></workout_file>',
+      ),
+    );
+    expect(z.blocks[0]).toMatchObject({ intensity: { ftpPct: 50 } });
+  });
+
+  it('skips data lines with too many tokens or ambiguous commas', () => {
+    const erg = '[COURSE DATA]\n0 50 7\n1,5,6\n0 50\n1 50\n[END COURSE DATA]';
+    const r = okResult(parseMrc(erg));
+    expect(r.warnings.filter((w) => /unreadable/i.test(w))).toHaveLength(2);
+    expect(r.blocks).toHaveLength(1);
+  });
+
+  it('rejects files over 2 MB in every parser', () => {
+    const big = ' '.repeat(2 * 1024 * 1024 + 1) + 'x';
+    for (const r of [parseZwo(big), parseErg(big), parseMrc(big)]) {
+      expect(r).toEqual({ ok: false, error: 'File too large' });
+    }
+  });
+
+  it('rejects more than 2000 blocks', () => {
+    const steps = Array.from({ length: 2001 }, () => '<SteadyState Duration="5" Power="0.5"/>');
+    const xml = `<workout_file><workout>${steps.join('')}</workout></workout_file>`;
+    expect(parseZwo(xml)).toEqual({ ok: false, error: 'Too many blocks' });
+    const lines = Array.from({ length: 2002 }, (_, i) => `${i} ${i % 2 ? 50 : 60}`);
+    const mrc = `[COURSE DATA]\n${lines.join('\n')}\n[END COURSE DATA]`;
+    expect(parseMrc(mrc)).toEqual({ ok: false, error: 'Too many blocks' });
+    const ok = `<workout_file><workout>${steps.slice(0, 2000).join('')}</workout></workout_file>`;
+    expect(parseZwo(ok).ok).toBe(true);
+  });
+
+  it('truncates long text values and dedupes warnings', () => {
+    const xml = `<workout_file><name>x</name><description>${'d'.repeat(5000)}</description><workout>
+      <SteadyState Duration="60" Power="0.5"><textevent message="${'c'.repeat(1000)}"/></SteadyState>
+      <FreeRide Duration="30"><textevent message="${'q'.repeat(1000)}"/></FreeRide>
+      ${'<Mystery/>'.repeat(5)}
+    </workout></workout_file>`;
+    const r = parseZwo(xml, { fileName: 'f'.repeat(400) + '.zwo' });
+    if (!r.ok) throw new Error(r.error);
+    expect(r.workout.description.length).toBeLessThanOrEqual(2000);
+    expect(r.workout.source.file?.length).toBeLessThanOrEqual(255);
+    const [a, b] = r.workout.blocks;
+    expect(a && 'cue' in a ? a.cue?.length : 0).toBe(200);
+    expect(b && 'cue' in b ? b.cue?.length : 0).toBe(200);
+    expect(r.warnings.filter((w) => w.includes('<Mystery>'))).toHaveLength(1);
+  });
+
+  it('caps the number of warnings', () => {
+    const junk = Array.from({ length: 80 }, (_, i) => `junk${i}`).join('\n');
+    const r = okResult(parseMrc(`[COURSE DATA]\n${junk}\n0 50\n1 50\n[END COURSE DATA]`));
+    expect(r.warnings).toHaveLength(51);
+    expect(r.warnings.at(-1)).toMatch(/more warnings/);
+  });
+
+  it('warns when the FTP header is unreadable', () => {
+    const erg =
+      '[COURSE HEADER]\nFTP = abc\nMINUTES WATTS\n[COURSE DATA]\n0 100\n1 100\n[END COURSE DATA]';
+    const r = parseErg(erg, { ftp: 200 });
+    const { warnings } = okResult(r);
+    expect(warnings.some((w) => /FTP header/.test(w))).toBe(true);
   });
 });
 

@@ -2,6 +2,8 @@ import { XMLParser, XMLValidator } from 'fast-xml-parser';
 import { newId } from '../ids';
 import type { Block, RampBlock, SteadyBlock } from '../workout';
 import {
+  parseLooseNumber,
+  tooLarge,
   stripBom,
   clampDuration,
   clampPct,
@@ -25,8 +27,28 @@ const parser = new XMLParser({
   parseAttributeValue: false,
   parseTagValue: false,
   trimValues: true,
-  processEntities: true,
+  // Entity expansion is off (billion-laughs defence); decodeXml handles the standard ones.
+  processEntities: false,
 });
+
+const XML_ENTITIES: Record<string, string> = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+};
+
+function decodeXml(s: string): string {
+  return s.replace(/&(#x[0-9a-f]{1,6}|#[0-9]{1,7}|amp|lt|gt|quot|apos);/gi, (m, e: string) => {
+    if (e.startsWith('#')) {
+      const code =
+        e[1]?.toLowerCase() === 'x' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : m;
+    }
+    return XML_ENTITIES[e.toLowerCase()] ?? m;
+  });
+}
 
 /** Loose shape of fast-xml-parser's preserveOrder output. */
 type RawNode = Record<string, unknown>;
@@ -41,7 +63,7 @@ function toNodes(raw: unknown): XNode[] {
     const rawAttrs = item[':@'];
     if (rawAttrs && typeof rawAttrs === 'object') {
       for (const [k, v] of Object.entries(rawAttrs as Record<string, unknown>)) {
-        attrs.set(k.replace(/^@_/, '').toLowerCase(), String(v));
+        attrs.set(k.replace(/^@_/, '').toLowerCase(), decodeXml(String(v)));
       }
     }
     const kids = item[tag];
@@ -49,7 +71,7 @@ function toNodes(raw: unknown): XNode[] {
     if (Array.isArray(kids)) {
       for (const k of kids as RawNode[]) {
         const t = k['#text'];
-        if (t !== undefined) text += String(t);
+        if (t !== undefined) text += decodeXml(String(t));
       }
     }
     out.push({ tag, attrs, children: toNodes(kids), text: text.trim() });
@@ -60,7 +82,7 @@ function toNodes(raw: unknown): XNode[] {
 function num(node: XNode, name: string): number | undefined {
   const raw = node.attrs.get(name.toLowerCase());
   if (raw === undefined || raw.trim() === '') return undefined;
-  const n = Number(raw);
+  const n = parseLooseNumber(raw);
   return Number.isFinite(n) ? n : undefined;
 }
 
@@ -225,6 +247,10 @@ function convertBlock(node: XNode, index: number, warnings: string[]): Block[] {
 export function parseZwo(xml: string, opts?: ParseOptions): ImportResult {
   const text = stripBom(xml);
   if (text.trim() === '') return { ok: false, error: 'File is empty' };
+  if (tooLarge(text)) return { ok: false, error: 'File too large' };
+  if (/<!\s*(doctype|entity)/i.test(text)) {
+    return { ok: false, error: 'DOCTYPE/entities not supported' };
+  }
   const valid = XMLValidator.validate(text);
   if (valid !== true) return { ok: false, error: `Malformed XML: ${valid.err.msg}` };
   const roots = toNodes(parser.parse(text));
