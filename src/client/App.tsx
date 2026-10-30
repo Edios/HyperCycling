@@ -4,7 +4,7 @@ import { PlaceholderPage } from './screens/PlaceholderPage';
 import { PlayersScreen } from './players/PlayersScreen';
 import { ResumePrompt } from './setup/ResumePrompt';
 import { SetupScreen } from './setup/SetupScreen';
-import { SummaryPlaceholder } from './screens/SummaryPlaceholder';
+import { SummaryScreen } from './summary/SummaryScreen';
 import { FreestyleTab } from './select/FreestyleTab';
 import { PlanTab } from './select/PlanTab';
 import { SelectShell } from './select/SelectShell';
@@ -38,7 +38,7 @@ export function App() {
         />
         <Route path="/setup/:workoutId" element={<SetupScreen />} />
         <Route path="/train" element={<TrainingScreen />} />
-        <Route path="/summary" element={<SummaryPlaceholder />} />
+        <Route path="/summary" element={<SummaryScreen />} />
         <Route path="/plans" element={<PlaceholderPage titleKey="placeholder.plans" />} />
         <Route path="/players" element={<PlayersScreen />} />
         <Route path="/settings" element={<PlaceholderPage titleKey="nav.settings" />} />

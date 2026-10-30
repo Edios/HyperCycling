@@ -128,3 +128,37 @@ test('Discard on the resume prompt forgets the session', async ({ page }, info) 
   await page.reload();
   await expect(page.getByTestId('resume-prompt')).toBeHidden();
 });
+
+test('plan ride to the summary counts toward the plan; the Plan tab shows it done', async ({
+  page,
+}, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (err) => errors.push(err.message));
+
+  await page.clock.install();
+  await seedSettings(page, info, 'build-form');
+  await expect(page.getByTestId('week-1-progres')).toHaveAttribute('data-status', 'open');
+  await page.getByRole('button', { name: 'Ride', exact: true }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  const training = page.getByTestId('training-screen');
+  await expect(training).toHaveAttribute('data-status', 'idle');
+  await page.keyboard.press('Space');
+  await page.clock.runFor(3200);
+  await expect(training).toHaveAttribute('data-status', 'running');
+  await page.clock.fastForward(4 * 3_600_000);
+
+  await expect(page.getByTestId('summary-screen')).toBeVisible();
+  await expect(page.getByTestId('summary-status')).toHaveText('Completed');
+  await expect(page.getByRole('switch', { name: 'Count toward plan' })).toBeChecked();
+  await expect(page.getByTestId('count-detail')).toContainText('week 1 · Progres');
+
+  await page.getByRole('button', { name: 'Back to plan' }).click();
+  await expect(page.getByTestId('week-1-progres')).toHaveAttribute('data-status', 'done');
+  expect(errors).toEqual([]);
+
+  // Leave the shared local database as it was for the tests that follow.
+  if (info.project.name.startsWith('local')) {
+    const res = await page.request.delete('/api/plan-progress/build-form');
+    expect(res.ok()).toBe(true);
+  }
+});

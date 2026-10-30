@@ -57,7 +57,7 @@ test('solo: countdown, running, block change, pause, skip, finish, summary', asy
   await expect(page.getByTestId('summary-name')).toHaveText('Demo mix');
   await expect(page.getByTestId('summary-status')).toHaveText('Completed');
 
-  await page.getByRole('button', { name: 'Back' }).click();
+  await page.getByRole('button', { name: 'Back to plan' }).click();
   await expect(page.getByRole('link', { name: 'Freestyle' })).toBeVisible();
   expect(errors).toEqual([]);
 });
