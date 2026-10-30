@@ -23,6 +23,8 @@
     "docs:screenshots": "echo \"docs:screenshots: not implemented yet\""
   },
   "dependencies": {
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
     "@fastify/static": "10.1.8",
     "better-sqlite3": "13.0.3",
     "fast-xml-parser": "5.11.2",

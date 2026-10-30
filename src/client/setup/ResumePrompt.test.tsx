@@ -139,6 +139,14 @@ describe('ResumePrompt', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('a session that carries its workout survives the original being deleted', async () => {
+    const copy = { ...workout, id: 'deleted-user-workout', source: { kind: 'user' as const } };
+    db.active = active({ workoutId: copy.id, workout: copy });
+    renderApp();
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(db.cleared).toBe(0);
+  });
+
   const scalable = builtinWorkouts.find((w) => w.scaling)!;
   const atStart = { segmentIndex: 0, workoutElapsedSec: 0, status: 'paused' as const };
   const planRef = { planId: 'plan-x', week: 1, slot: 'progres' as const };

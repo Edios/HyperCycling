@@ -144,6 +144,25 @@ describe('duplicateWorkout', () => {
     expect(w.blocks[0]?.id).toBe('b1');
     expect(w.musicCues[0]?.blockId).toBe('r1a');
   });
+  it('remaps scaling block ids so the copy stays valid', () => {
+    const w = makeWorkout();
+    w.blocks.push({ kind: 'steady', id: 'b9', durationSec: 60, intensity: { effort: 2 } });
+    w.scaling = {
+      warmupBlockId: 'b1',
+      cooldownBlockId: 'b9',
+      flexRepeatId: 'r1',
+      minTimes: 2,
+      maxTimes: 6,
+    };
+    expect(workoutSchema.safeParse(w).success).toBe(true);
+    const d = duplicateWorkout(w, ' (copy)');
+    expect(workoutSchema.safeParse(d).success).toBe(true);
+    expect(d.scaling?.warmupBlockId).toBe(d.blocks[0]?.id);
+    expect(d.scaling?.cooldownBlockId).toBe(d.blocks[2]?.id);
+    expect(d.scaling?.flexRepeatId).toBe(d.blocks[1]?.id);
+    expect(d.scaling).toMatchObject({ minTimes: 2, maxTimes: 6 });
+    expect(w.scaling?.warmupBlockId).toBe('b1');
+  });
   it('works without musicHints and drops source.file', () => {
     const w = makeWorkout({ source: { kind: 'import', file: 'x.zwo' } });
     const d = duplicateWorkout(w, ' 2');

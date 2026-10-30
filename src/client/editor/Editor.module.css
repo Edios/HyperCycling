@@ -1,0 +1,153 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: radial-gradient(ellipse at 70% -20%, #13203a 0%, var(--bg) 55%);
+  color: var(--fg);
+}
+
+[data-theme='light'] .screen {
+  background: var(--bg);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.75rem 1.75rem;
+  border-bottom: 1px solid var(--line);
+  min-height: 4.5rem;
+  box-sizing: border-box;
+}
+
+.back {
+  color: var(--mut);
+  font-size: 1.125rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.back:hover {
+  color: var(--fg);
+}
+
+.name {
+  width: 26rem;
+  max-width: 34vw;
+  height: 3rem;
+  box-sizing: border-box;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.name:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 1px;
+}
+
+.bad {
+  border-color: var(--z9);
+}
+
+.category {
+  width: 16rem;
+}
+
+.total {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.625rem;
+}
+
+.sp {
+  flex: 1;
+}
+
+.icoBtn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  background: transparent;
+  color: var(--mut);
+  font-size: 1.375rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+}
+
+.icoBtn:hover:not(:disabled) {
+  color: var(--fg);
+  background: var(--s1);
+}
+
+.icoBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.icoBtn:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 1px;
+}
+
+.banner,
+.alert {
+  margin: 0;
+  padding: 0.5rem 1.75rem;
+  font-size: 0.9375rem;
+}
+
+.banner {
+  background: var(--s1);
+  color: var(--mut);
+}
+
+.alert {
+  background: rgb(255 61 90 / 0.12);
+  color: var(--z9);
+}
+
+.grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 13.75rem 1fr 22.5rem;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 1.875rem 1.875rem 1.25rem;
+}
+
+.laneLabel {
+  font-size: 0.9375rem;
+  color: var(--mut);
+  margin-bottom: 0.5rem;
+}
+
+.hint {
+  margin: 0.75rem 0 0;
+  color: var(--mut);
+  font-size: 0.9375rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.load {
+  color: var(--mut);
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}

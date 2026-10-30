@@ -1,0 +1,37 @@
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.625rem 1.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.desc {
+  width: 26rem;
+  max-width: 34vw;
+  height: 2.5rem;
+  box-sizing: border-box;
+  padding: 0 0.875rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.desc:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 1px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.tags button {
+  height: 2rem;
+  font-size: 0.875rem;
+}

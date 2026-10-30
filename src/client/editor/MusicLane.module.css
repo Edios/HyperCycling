@@ -1,0 +1,35 @@
+.lane {
+  position: relative;
+  height: 2.5rem;
+  margin-bottom: 0.875rem;
+}
+
+.pill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  padding: 0 0.625rem;
+  border-radius: 0.5rem;
+  background: #1b2a1f;
+  border: 1px solid #2f5a3a;
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.pill:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 1px;
+}
+
+.ghost {
+  background: transparent;
+  border-style: dashed;
+  color: var(--mut);
+}

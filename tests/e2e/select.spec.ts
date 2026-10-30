@@ -72,11 +72,11 @@ test('freestyle tab filters and searches', async ({ page }) => {
   const cards = page.getByTestId('workout-card');
   await expect(cards.first()).toBeVisible();
   const all = await cards.count();
-  await page.getByRole('button', { name: 'HIIT' }).click();
+  await page.getByRole('button', { name: 'HIIT', exact: true }).click();
   const hiit = await cards.count();
   expect(hiit).toBeGreaterThan(0);
   expect(hiit).toBeLessThan(all);
-  await page.getByRole('button', { name: 'All' }).click();
+  await page.getByRole('button', { name: 'All', exact: true }).click();
   await page.getByRole('searchbox').fill('tabata');
   await expect(cards.first()).toContainText(/tabata/i);
   await cards.first().click();
