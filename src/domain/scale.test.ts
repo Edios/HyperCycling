@@ -102,18 +102,6 @@ describe('scaleWorkout durations', () => {
     const out = scaleWorkout(w, { targetMinutes: 45, difficultyPct: 0 });
     expect(Math.abs(totalDurationSec(out) - 2700)).toBeLessThanOrEqual(15);
   });
-  it('uses the repeat as-is when flex bounds are omitted (min 2, max current)', () => {
-    const out = scaleWorkout(fixture({ minTimes: undefined, maxTimes: undefined }), {
-      targetMinutes: 30,
-      difficultyPct: 0,
-    });
-    expect(times(out)).toBe(3);
-    const grown = scaleWorkout(fixture({ minTimes: undefined, maxTimes: undefined }), {
-      targetMinutes: 60,
-      difficultyPct: 0,
-    });
-    expect(times(grown)).toBe(6);
-  });
   it('works without a flex repeat', () => {
     const w = fixture();
     delete w.scaling?.flexRepeatId;
@@ -141,7 +129,26 @@ describe('scaleWorkout durations', () => {
     const out = scaleWorkout(w, { targetMinutes: 60, difficultyPct: 0 });
     expect(dur(out, 'wu')).toBe(900);
   });
-  it('drops music cues that point past the new rep count', () => {
+  it('remaps a cue on a dropped rep to the new last rep, unless that rep has a cue', () => {
+    const track = { provider: 'youtube' as const, id: 'a', title: 't', startAtSec: 0 };
+    const w = fixture();
+    w.musicCues = [{ blockId: 'hard', rep: 6, track }];
+    const out = scaleWorkout(w, { targetMinutes: 30, difficultyPct: 0 });
+    expect(out.musicCues.map((c) => [c.blockId, c.rep])).toEqual([['hard', 3]]);
+    const w2 = fixture();
+    w2.musicCues = [
+      { blockId: 'hard', rep: 3, track },
+      { blockId: 'hard', rep: 5, track },
+      { blockId: 'easy', rep: 5, track },
+      { blockId: 'easy', rep: 6, track },
+    ];
+    const out2 = scaleWorkout(w2, { targetMinutes: 30, difficultyPct: 0 });
+    expect(out2.musicCues.map((c) => [c.blockId, c.rep])).toEqual([
+      ['hard', 3],
+      ['easy', 3],
+    ]);
+  });
+  it('keeps in-range cues and the result stays schema-valid', () => {
     const w = fixture();
     const track = { provider: 'youtube' as const, id: 'a', title: 't', startAtSec: 0 };
     w.musicCues = [
@@ -149,7 +156,7 @@ describe('scaleWorkout durations', () => {
       { blockId: 'hard', rep: 6, track },
     ];
     const out = scaleWorkout(w, { targetMinutes: 30, difficultyPct: 0 });
-    expect(out.musicCues.map((c) => c.rep)).toEqual([2]);
+    expect(out.musicCues.map((c) => c.rep)).toEqual([2, 3]);
     expect(workoutSchema.safeParse(out).success).toBe(true);
   });
 });
@@ -206,6 +213,11 @@ describe('scaleWorkout difficulty', () => {
       to: { ftpPct: 200 },
     });
   });
+  it('rounds ties consistently: 90 at -5 percent gives 86', () => {
+    const w = wk([{ kind: 'steady', id: 'a', durationSec: 600, intensity: { ftpPct: 90 } }]);
+    const out = scaleWorkout(w, { targetMinutes: 30, difficultyPct: -5 });
+    expect(out.blocks[0]).toMatchObject({ intensity: { ftpPct: 86 } });
+  });
   it('zero difficulty and matching target return an equal workout', () => {
     const w = fixture();
     expect(scaleWorkout(w, { targetMinutes: 45, difficultyPct: 0 })).toEqual(w);
@@ -240,5 +252,12 @@ describe('workout scaling schema', () => {
     expect(workoutSchema.safeParse(fixture({ cooldownBlockId: 'main' })).success).toBe(false);
     expect(workoutSchema.safeParse(fixture({ flexRepeatId: 'wu' })).success).toBe(false);
     expect(workoutSchema.safeParse(fixture({ minTimes: 9, maxTimes: 4 })).success).toBe(false);
+    expect(workoutSchema.safeParse(fixture({ cooldownBlockId: 'wu' })).success).toBe(false);
+    const noMax = fixture();
+    delete noMax.scaling?.maxTimes;
+    expect(workoutSchema.safeParse(noMax).success).toBe(false);
+    const noMin = fixture();
+    delete noMin.scaling?.minTimes;
+    expect(workoutSchema.safeParse(noMin).success).toBe(false);
   });
 });

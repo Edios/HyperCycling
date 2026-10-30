@@ -14,10 +14,10 @@ const MIN_REPEAT_TIMES = 2;
 const MIN_FTP_PCT = 20;
 const MAX_FTP_PCT = 200;
 
-function scaleIntensity(i: Intensity, factor: number): Intensity {
+function scaleIntensity(i: Intensity, difficultyPct: number): Intensity {
   const base = i.ftpPct ?? (i.effort === undefined ? undefined : effortToFtpPct(i.effort));
   if (base === undefined) return i;
-  const pct = Math.round(base * factor);
+  const pct = Math.round((base * (100 + difficultyPct)) / 100);
   return { ftpPct: Math.min(MAX_FTP_PCT, Math.max(MIN_FTP_PCT, pct)) };
 }
 
@@ -42,7 +42,8 @@ function stretch(current: number, deltaSec: number, range: readonly [number, num
  * 3. Otherwise the flex repeat's `times` moves within [minTimes, maxTimes] (defaults: 2 and
  *    the current count) to land closest to the target, then the warm-up (5-15 min) and
  *    cool-down (3-10 min) absorb the rest in 30 s steps, warm-up first.
- * Music cues pointing at removed repetitions are dropped.
+ * A music cue on a removed repetition moves to the new last one unless that
+ * block already has a cue there (then it is dropped).
  */
 export function scaleWorkout(
   w: Workout,
@@ -50,17 +51,16 @@ export function scaleWorkout(
 ): Workout {
   const out = structuredClone(w);
   const sc = out.scaling;
-  const factor = 1 + opts.difficultyPct / 100;
 
   if (opts.difficultyPct !== 0) {
     for (const b of out.blocks) {
       if (sc && (b.id === sc.warmupBlockId || b.id === sc.cooldownBlockId)) continue;
       const children = b.kind === 'repeat' ? b.blocks : [b];
       for (const c of children) {
-        if (c.kind === 'steady') c.intensity = scaleIntensity(c.intensity, factor);
+        if (c.kind === 'steady') c.intensity = scaleIntensity(c.intensity, opts.difficultyPct);
         else {
-          c.from = scaleIntensity(c.from, factor);
-          c.to = scaleIntensity(c.to, factor);
+          c.from = scaleIntensity(c.from, opts.difficultyPct);
+          c.to = scaleIntensity(c.to, opts.difficultyPct);
         }
       }
     }
@@ -84,9 +84,17 @@ export function scaleWorkout(
         }
       }
       repeat.times = best;
-      out.musicCues = out.musicCues.filter((c) => {
-        const inRepeat = repeat.blocks.some((child) => child.id === c.blockId);
-        return !inRepeat || c.rep <= best;
+      const childIds = new Set(repeat.blocks.map((child) => child.id));
+      const taken = new Set(
+        out.musicCues
+          .filter((c) => childIds.has(c.blockId) && c.rep === best)
+          .map((c) => c.blockId),
+      );
+      out.musicCues = out.musicCues.flatMap((c) => {
+        if (!childIds.has(c.blockId) || c.rep <= best) return [c];
+        if (taken.has(c.blockId)) return [];
+        taken.add(c.blockId);
+        return [{ ...c, rep: best }];
       });
     }
 

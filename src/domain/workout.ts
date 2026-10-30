@@ -207,6 +207,23 @@ export const workoutSchema: z.ZodType<Workout> = z
           });
         }
       }
+      if (sc.warmupBlockId === sc.cooldownBlockId) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'scaling warm-up and cool-down must be different blocks',
+          path: ['scaling', 'cooldownBlockId'],
+        });
+      }
+      if (
+        sc.flexRepeatId !== undefined &&
+        (sc.minTimes === undefined || sc.maxTimes === undefined)
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'scaling.flexRepeatId requires minTimes and maxTimes',
+          path: ['scaling', 'flexRepeatId'],
+        });
+      }
       if (sc.flexRepeatId !== undefined && !repeatIds.has(sc.flexRepeatId)) {
         ctx.addIssue({
           code: 'custom',
