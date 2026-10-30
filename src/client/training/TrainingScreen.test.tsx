@@ -184,7 +184,7 @@ describe('TrainingScreen', () => {
     await screen.findByTestId('layout-solo');
     key('KeyM');
     expect(useSessionStore.getState().muted).toBe(true);
-    expect(screen.getByRole('button', { name: 'Unmute' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mute' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('Escape pauses and opens the end dialog; Resume continues', async () => {
@@ -199,6 +199,31 @@ describe('TrainingScreen', () => {
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Resume' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(useSessionStore.getState().state.status).toBe('running');
+  });
+
+  it('Escape during the countdown cancels it; Resume returns to the Start prompt', async () => {
+    load();
+    await renderScreen();
+    await screen.findByTestId('layout-solo');
+    key('Space');
+    expect(screen.getByTestId('training-screen').dataset['status']).toBe('countdown');
+    key('Escape');
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(useSessionStore.getState().state.status).toBe('idle');
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Resume' }));
+    expect(useSessionStore.getState().state.status).toBe('idle');
+    expect(screen.getByText('Press Space or click Start')).toBeInTheDocument();
+  });
+
+  it('leaving the route without ending pauses the session and keeps the runtime', async () => {
+    load();
+    const { unmount } = await renderScreen();
+    await screen.findByTestId('layout-solo');
+    key('Space');
+    advance(3100);
+    unmount();
+    expect(useSessionStore.getState().state.status).toBe('paused');
+    expect(useSessionStore.getState().runtime).toBeDefined();
   });
 
   it('ending stores the result and goes to the summary', async () => {

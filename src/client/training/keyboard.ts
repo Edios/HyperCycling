@@ -14,10 +14,16 @@ function isTextField(target: EventTarget | null): boolean {
   return target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
 }
 
+/** Buttons and links activate themselves with Space/Enter. */
+function isActivatable(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && /^(BUTTON|A|SUMMARY)$/.test(target.tagName);
+}
+
 /** Binds the training shortcuts; returns the unbind function. */
 export function bindTrainingKeys(target: Window, actions: TrainingKeyActions): () => void {
   const handler = (e: KeyboardEvent): void => {
     if (e.ctrlKey || e.metaKey || e.altKey || isTextField(e.target)) return;
+    if ((e.code === 'Space' || e.code === 'Enter') && isActivatable(e.target)) return;
     let run: (() => void) | undefined;
     switch (e.code) {
       case 'Space':

@@ -21,7 +21,9 @@ export function SummaryPlaceholder() {
           </p>
           <p>
             {t('summary.ridden')}:{' '}
-            <strong data-testid="summary-ridden">{formatClock(result.riddenSec)}</strong>
+            <strong data-testid="summary-ridden">
+              {formatClock(result.riddenSec, { round: 'floor' })}
+            </strong>
           </p>
         </>
       )}

@@ -52,5 +52,5 @@
 
 [data-theme='light'] .watts,
 [data-theme='light'] .me .name {
-  color: color-mix(in srgb, var(--zone) 60%, #000);
+  color: color-mix(in srgb, var(--zone) 65%, #000);
 }

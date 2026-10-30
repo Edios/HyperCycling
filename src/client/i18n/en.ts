@@ -27,7 +27,7 @@ export const en = {
     previous: 'Previous block',
     nextBlock: 'Next block',
     mute: 'Mute',
-    unmute: 'Unmute',
+    controls: 'Workout controls',
     fullscreen: 'Fullscreen',
     players: 'Players',
     endTitle: 'End workout?',

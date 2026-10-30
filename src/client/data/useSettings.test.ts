@@ -41,6 +41,13 @@ describe('useSettings', () => {
     expect(second.result.current.settings.basicTheme).toBe('light');
   });
 
+  it('fills missing equipment fields from defaults', async () => {
+    db.value = { ...DEFAULT_SETTINGS, equipment: { showsWatts: false } } as unknown as Settings;
+    const { result } = renderHook(() => useSettings());
+    await waitFor(() => expect(result.current.loaded).toBe(true));
+    expect(result.current.settings.equipment).toEqual({ ...DEFAULT_SETTINGS.equipment, showsWatts: false });
+  });
+
   it('falls back to defaults when the repository fails', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     db.fail = true;

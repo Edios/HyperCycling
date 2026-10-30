@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { Segment } from '../../../domain/segments';
 import { useT } from '../../i18n';
 import { translateContentText } from '../content-text';
@@ -17,7 +18,7 @@ export function NextBlock({ next, effortColor }: NextBlockProps) {
       {next ? (
         <>
           <span className={styles.facts}>
-            <span className={styles.effort} style={{ color: effortColor }}>
+            <span className={styles.effort} style={{ '--c': effortColor } as CSSProperties}>
               {next.effortStart}
             </span>
             {next.rpm !== undefined && ` · ${next.rpm} ${t('training.rpm')}`}

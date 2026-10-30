@@ -61,6 +61,18 @@ describe('bindTrainingKeys', () => {
     unbind();
   });
 
+  it('leaves Space to a focused button', () => {
+    const { actions, unbind } = setup();
+    const btn = document.createElement('button');
+    document.body.append(btn);
+    const e = new KeyboardEvent('keydown', { code: 'Space', bubbles: true, cancelable: true });
+    btn.dispatchEvent(e);
+    expect(actions.toggle).not.toHaveBeenCalled();
+    expect(e.defaultPrevented).toBe(false);
+    btn.remove();
+    unbind();
+  });
+
   it('stops after unbind', () => {
     const { actions, unbind } = setup();
     unbind();

@@ -26,6 +26,11 @@
 
 .effort {
   font-weight: 800;
+  color: var(--c);
+}
+
+[data-theme='light'] .effort {
+  color: color-mix(in srgb, var(--c) 65%, #000);
 }
 
 .label {

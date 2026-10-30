@@ -13,6 +13,14 @@ const useSettingsStore = create<SettingsStore>(() => ({
   loaded: false,
 }));
 
+function mergeSettings(stored: Partial<Settings>): Settings {
+  return {
+    ...DEFAULT_SETTINGS,
+    ...stored,
+    equipment: { ...DEFAULT_SETTINGS.equipment, ...stored.equipment },
+  };
+}
+
 let loading: Promise<void> | undefined;
 
 function load(): Promise<void> {
@@ -21,7 +29,7 @@ function load(): Promise<void> {
       const repos = await getRepositories();
       const stored = await repos.settings.get();
       useSettingsStore.setState({
-        settings: stored ? { ...DEFAULT_SETTINGS, ...stored } : DEFAULT_SETTINGS,
+        settings: stored ? mergeSettings(stored) : DEFAULT_SETTINGS,
         loaded: true,
       });
     } catch (err) {

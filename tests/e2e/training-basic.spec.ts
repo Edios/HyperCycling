@@ -73,7 +73,7 @@ test('Escape asks before ending and goes to the summary', async ({ page }) => {
   await page.keyboard.press('Escape');
   await page.getByRole('dialog').getByRole('button', { name: 'End' }).click();
   await expect(page.getByTestId('summary-status')).toHaveText('Ended early');
-  await expect(page.getByTestId('summary-ridden')).toHaveText(/^0:0[56]$/);
+  await expect(page.getByTestId('summary-ridden')).toHaveText('0:05');
 });
 
 test('players: shows target watts for both players', async ({ page }) => {

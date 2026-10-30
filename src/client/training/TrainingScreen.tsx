@@ -52,12 +52,16 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   // The store is emptied only once the screen is gone, so leaving never bounces through "/".
   useEffect(
     () => () => {
-      if (ended.current) useSessionStore.getState().stop();
+      const s = useSessionStore.getState();
+      if (ended.current) s.stop();
+      // Leaving without ending: do not keep running invisibly; the runtime stays for resuming.
+      else if (s.state.status === 'running' || s.state.status === 'countdown') s.pause();
     },
     [],
   );
 
   const sound = useMemo<Sound>(() => createSound(), []);
+  useEffect(() => () => sound.dispose(), [sound]);
   useEffect(() => {
     sound.setEnabled(settings.sounds && !muted);
   }, [sound, settings.sounds, muted]);
@@ -129,8 +133,10 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
 
   const openEnd = useCallback(() => {
     const s = useSessionStore.getState();
-    pausedByDialog.current = s.state.status === 'running';
-    if (pausedByDialog.current) s.pause();
+    const status = s.state.status;
+    pausedByDialog.current = status === 'running';
+    // Pausing a countdown cancels it back to idle; Resume then returns to the Start prompt.
+    if (status === 'running' || status === 'countdown') s.pause();
     setConfirmEnd(true);
   }, []);
 

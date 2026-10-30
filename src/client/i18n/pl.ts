@@ -29,7 +29,7 @@ export const pl: Messages = {
     previous: 'Poprzedni blok',
     nextBlock: 'Następny blok',
     mute: 'Wycisz',
-    unmute: 'Włącz dźwięk',
+    controls: 'Sterowanie treningiem',
     fullscreen: 'Pełny ekran',
     players: 'Zawodnicy',
     endTitle: 'Zakończyć trening?',

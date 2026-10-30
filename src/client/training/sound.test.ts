@@ -86,6 +86,13 @@ describe('createSound', () => {
     }).not.toThrow();
   });
 
+  it('dispose closes the context', () => {
+    const { ctx, raw } = fakeContext();
+    (raw as unknown as { close: () => Promise<void> }).close = vi.fn(() => Promise.resolve());
+    createSound(ctx).dispose();
+    expect((raw as unknown as { close: ReturnType<typeof vi.fn> }).close).toHaveBeenCalled();
+  });
+
   it('unlock resumes a suspended context', () => {
     const { ctx, raw } = fakeContext();
     raw.state = 'suspended';

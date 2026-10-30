@@ -35,9 +35,11 @@ export function ControlsBar(p: ControlsBarProps) {
       data-hidden={p.hidden}
       className={`${styles.bar} ${p.hidden ? styles.hidden : ''}`}
       role="group"
+      aria-label={t('training.controls')}
+      inert={p.hidden}
     >
       <button type="button" aria-label={t('training.previous')} onClick={click(p.onPrev)}>
-        ⏮
+        <span aria-hidden="true">⏮</span>
       </button>
       <button
         type="button"
@@ -45,26 +47,26 @@ export function ControlsBar(p: ControlsBarProps) {
         className={styles.main}
         onClick={click(p.onToggle)}
       >
-        {running ? '⏸' : '▶'}
+        <span aria-hidden="true">{running ? '⏸' : '▶'}</span>
       </button>
       <button type="button" aria-label={t('training.nextBlock')} onClick={click(p.onNext)}>
-        ⏭
+        <span aria-hidden="true">⏭</span>
       </button>
       <button
         type="button"
-        aria-label={p.muted ? t('training.unmute') : t('training.mute')}
+        aria-label={t('training.mute')}
         aria-pressed={p.muted}
         onClick={click(p.onMute)}
       >
-        {p.muted ? '🔇' : '🔊'}
+        <span aria-hidden="true">{p.muted ? '🔇' : '🔊'}</span>
       </button>
       {p.hasPlayers && (
         <button type="button" aria-label={t('training.players')} onClick={click(p.onPlayers)}>
-          👥
+          <span aria-hidden="true">👥</span>
         </button>
       )}
       <button type="button" aria-label={t('training.fullscreen')} onClick={click(p.onFullscreen)}>
-        ⛶
+        <span aria-hidden="true">⛶</span>
       </button>
     </div>
   );

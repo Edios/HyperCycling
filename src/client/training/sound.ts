@@ -5,6 +5,8 @@ export interface Sound {
   setEnabled(enabled: boolean): void;
   /** Creates/resumes the AudioContext; call from a user gesture (Start). */
   unlock(): void;
+  /** Closes the AudioContext (screen unmount). */
+  dispose(): void;
 }
 
 const TICK = { hz: 660, sec: 0.12 };
@@ -60,6 +62,11 @@ export function createSound(ctx?: AudioContext): Sound {
     },
     unlock() {
       context();
+    },
+    dispose() {
+      const c = ac;
+      ac = undefined;
+      if (c && c.state !== 'closed') void c.close().catch(() => undefined);
     },
   };
 }

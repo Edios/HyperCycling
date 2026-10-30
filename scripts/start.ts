@@ -1,11 +1,30 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import open from 'open';
 
 const url = 'http://127.0.0.1:5175';
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
-if (!existsSync('dist/client/index.html')) {
+const builtIndex = 'dist/client/index.html';
+
+function newestMtime(path: string): number {
+  if (!existsSync(path)) return 0;
+  const st = statSync(path);
+  if (!st.isDirectory()) return st.mtimeMs;
+  return readdirSync(path).reduce((m, f) => Math.max(m, newestMtime(join(path, f))), 0);
+}
+
+/** True when the built client is missing or older than any of its sources. */
+function needsBuild(): boolean {
+  if (!existsSync(builtIndex)) return true;
+  const built = statSync(builtIndex).mtimeMs;
+  const sources = ['src', 'public', 'index.html', 'vite.config.ts', 'package.json'];
+  return sources.some((p) => newestMtime(p) > built);
+}
+
+if (needsBuild()) {
+  console.log('Building app…');
   const build = spawnSync(npm, ['run', 'build'], { stdio: 'inherit', shell: true });
   if (build.status !== 0) process.exit(build.status ?? 1);
 }
