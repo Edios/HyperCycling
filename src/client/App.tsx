@@ -5,6 +5,8 @@ import { PlayersScreen } from './players/PlayersScreen';
 import { ResumePrompt } from './setup/ResumePrompt';
 import { SetupScreen } from './setup/SetupScreen';
 import { SummaryScreen } from './summary/SummaryScreen';
+import { PlanDetail } from './plans/PlanDetail';
+import { PlanGallery } from './plans/PlanGallery';
 import { FreestyleTab } from './select/FreestyleTab';
 import { PlanTab } from './select/PlanTab';
 import { SelectShell } from './select/SelectShell';
@@ -39,8 +41,23 @@ export function App() {
         <Route path="/setup/:workoutId" element={<SetupScreen />} />
         <Route path="/train" element={<TrainingScreen />} />
         <Route path="/summary" element={<SummaryScreen />} />
-        <Route path="/plans" element={<PlaceholderPage titleKey="placeholder.plans" />} />
         <Route path="/players" element={<PlayersScreen />} />
+                <Route
+          path="/plans"
+          element={
+            <SelectShell>
+              <PlanGallery />
+            </SelectShell>
+          }
+        />
+        <Route
+          path="/plans/:planId"
+          element={
+            <SelectShell>
+              <PlanDetail />
+            </SelectShell>
+          }
+        />
         <Route path="/settings" element={<PlaceholderPage titleKey="nav.settings" />} />
         {/* Developer shortcut (see DEV_ROUTE): rides any built-in workout with demo players. */}
         {DEV_ROUTE && <Route path="/dev" element={<DevHome />} />}

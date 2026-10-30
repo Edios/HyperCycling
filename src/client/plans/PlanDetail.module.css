@@ -1,0 +1,170 @@
+.page {
+  display: grid;
+  grid-template-columns: 1fr 32.5rem;
+  gap: 2.125rem;
+  align-items: start;
+  padding: 1.5rem 2.5rem;
+}
+
+.left {
+  min-width: 0;
+}
+
+.back {
+  color: var(--mut);
+  text-decoration: none;
+  font-size: 1.0625rem;
+}
+
+.mut {
+  color: var(--mut);
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.head h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 3.125rem;
+  line-height: 1.1;
+}
+
+.head .mut {
+  font-size: 1.125rem;
+  margin-top: 0.25rem;
+}
+
+.hours {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.5rem;
+  white-space: nowrap;
+}
+
+.hours span {
+  font-size: 1.375rem;
+  color: var(--mut);
+}
+
+.panel {
+  padding: 1.375rem 1.625rem;
+  margin-top: 1.25rem;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.panel h3 {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.previews {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.125rem;
+}
+
+.pname {
+  font-weight: 600;
+  font-size: 1.0625rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pmin {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  white-space: nowrap;
+}
+
+.pchart {
+  margin-top: 0.625rem;
+}
+
+.progres {
+  color: var(--z8);
+}
+
+.freestyle {
+  color: var(--z5);
+}
+
+.cfg {
+  padding: 1.625rem;
+}
+
+.cfg h2 {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.75rem;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.lbl {
+  color: var(--mut);
+  font-size: 0.9375rem;
+}
+
+.hint {
+  color: var(--mut);
+}
+
+.select,
+.ftp {
+  height: 2.875rem;
+  border-radius: 0.625rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 0 0.875rem;
+  font: inherit;
+  font-size: 1.0625rem;
+  color: var(--fg);
+}
+
+.ftp {
+  width: 10rem;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.foot button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}

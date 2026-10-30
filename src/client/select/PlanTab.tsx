@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   nextSession,
   weekStatus,
-  workoutOf,
   type Plan,
   type PlanProgress,
   type PlanSlot,
@@ -18,6 +17,7 @@ import { useLang, useT } from '../i18n';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { ProfileChart } from '../ui/ProfileChart';
+import { effectiveSession } from '../plans/effective-session';
 import { minutesOf } from './model';
 import { SwapModal } from './SwapModal';
 import { useActivePlan, useLastSession } from './useActivePlan';
@@ -61,7 +61,13 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
   const [swapping, setSwapping] = useState(false);
 
   const byId = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts]);
-  const next = useMemo(() => nextSession(plan, progress), [plan, progress]);
+  const equipment = settings.equipment;
+  const next = useMemo(() => {
+    const n = nextSession(plan, progress);
+    if (!n) return n;
+    const workoutId = effectiveSession(plan, n.week, n.slot, equipment, progress.settings.layout);
+    return { ...n, workoutId: workoutId ?? n.workoutId };
+  }, [plan, progress, equipment]);
   const planText = localizedText(plan, lang);
 
   const counts = useMemo(() => {
@@ -71,13 +77,14 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
       const st = weekStatus(plan, progress, week);
       for (const slot of SLOTS) {
         // Weeks without a session in this slot (or layout) are not sessions at all.
-        if (workoutOf(plan, week, slot, progress.settings.layout) === undefined) continue;
+        if (effectiveSession(plan, week, slot, equipment, progress.settings.layout) === undefined)
+          continue;
         total++;
         if (st[slot] !== 'open') done++;
       }
     }
     return { done, total };
-  }, [plan, progress]);
+  }, [plan, progress, equipment]);
 
   const perWeek = Math.max(...plan.weeks.map((w) => w.sessions.length));
   const minutes = progress.settings.sessionMinutes;
@@ -217,7 +224,13 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
               >
                 <span className={styles.weekNo}>{t('plan.weekShort', { n: week })}</span>
                 {SLOTS.map((slot) => {
-                  const id = workoutOf(plan, week, slot, progress.settings.layout);
+                  const id = effectiveSession(
+                    plan,
+                    week,
+                    slot,
+                    equipment,
+                    progress.settings.layout,
+                  );
                   const w = id === undefined ? undefined : byId.get(id);
                   return (
                     <span
