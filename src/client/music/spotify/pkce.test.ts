@@ -12,14 +12,14 @@ describe('code verifier', () => {
     expect(generateState()).not.toBe(generateState());
   });
   it('skips random bytes that would bias the alphabet', () => {
-    // 252..255 are rejected (252 = 66 * 3 + 54); only the 0-byte after them is used.
-    const bytes = [255, 254, 253, 252, 0, 1, 2, 3];
+    // 256 - 256 % 66 = 198: bytes 198..255 are rejected, 197 is the last one accepted.
+    const bytes = [255, 254, 199, 198, 197, 0, 1, 2];
     let call = 0;
-    const out = randomString(3, () => {
+    const out = randomString(4, () => {
       call++;
-      return Uint8Array.from(bytes.concat(bytes));
+      return Uint8Array.from(bytes);
     });
-    expect(out).toBe('ABC');
+    expect(out).toBe('~ABC'); // 197 % 66 = 65 -> '~'
     expect(call).toBe(1);
   });
 });

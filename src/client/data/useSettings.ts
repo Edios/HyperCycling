@@ -6,11 +6,14 @@ import { getRepositories } from './repositories';
 interface SettingsStore {
   settings: Settings;
   loaded: boolean;
+  /** True when reading the stored settings failed and the defaults stand in for them. */
+  loadFailed: boolean;
 }
 
 const useSettingsStore = create<SettingsStore>(() => ({
   settings: DEFAULT_SETTINGS,
   loaded: false,
+  loadFailed: false,
 }));
 
 function mergeSettings(stored: Partial<Settings>): Settings {
@@ -31,10 +34,11 @@ export function loadSettings(): Promise<void> {
       useSettingsStore.setState({
         settings: stored ? mergeSettings(stored) : DEFAULT_SETTINGS,
         loaded: true,
+        loadFailed: false,
       });
     } catch (err) {
       console.warn('Loading settings failed, using defaults', err);
-      useSettingsStore.setState({ settings: DEFAULT_SETTINGS, loaded: true });
+      useSettingsStore.setState({ settings: DEFAULT_SETTINGS, loaded: true, loadFailed: true });
     }
   })();
   return loading;
@@ -55,6 +59,11 @@ export async function updateSettings(patch: Partial<Settings>): Promise<void> {
     }
     throw err;
   }
+}
+
+/** True when the stored settings could not be read; writing then would replace them with defaults. */
+export function didSettingsLoadFail(): boolean {
+  return useSettingsStore.getState().loadFailed;
 }
 
 /** Current settings outside React (for non-component code such as music providers). */
@@ -78,5 +87,5 @@ export function useSettings(): {
 
 export function resetSettingsForTests(): void {
   loading = undefined;
-  useSettingsStore.setState({ settings: DEFAULT_SETTINGS, loaded: false });
+  useSettingsStore.setState({ settings: DEFAULT_SETTINGS, loaded: false, loadFailed: false });
 }

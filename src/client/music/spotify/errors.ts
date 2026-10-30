@@ -10,6 +10,8 @@ export type SpotifyErrorCode =
   /** Playback control through the Web API needs Spotify Premium. */
   | 'premiumRequired'
   | 'forbidden'
+  /** Spotify refused the command in the player's current state (e.g. pausing while paused). */
+  | 'restrictionViolated'
   | 'rateLimited'
   | 'network'
   | 'http';

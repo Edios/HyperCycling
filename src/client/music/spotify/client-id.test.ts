@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resolveClientId } from './client-id';
+
+afterEach(() => vi.unstubAllEnvs());
 
 describe('resolveClientId', () => {
   it('prefers the value saved in settings over the build-time default', () => {
@@ -15,7 +17,10 @@ describe('resolveClientId', () => {
     expect(resolveClientId('', '  ')).toBe('');
   });
   it('reads VITE_SPOTIFY_CLIENT_ID from the environment by default', () => {
-    expect(resolveClientId('x')).toBe('x');
-    expect(typeof resolveClientId()).toBe('string');
+    vi.stubEnv('VITE_SPOTIFY_CLIENT_ID', 'env-client');
+    expect(resolveClientId()).toBe('env-client');
+    expect(resolveClientId('saved')).toBe('saved');
+    vi.stubEnv('VITE_SPOTIFY_CLIENT_ID', '');
+    expect(resolveClientId()).toBe('');
   });
 });

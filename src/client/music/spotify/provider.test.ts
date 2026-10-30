@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SpotifySettings } from '../../../domain/settings';
 import type { TrackRef } from '../../../domain/workout';
 import { SPOTIFY_TOKEN_URL } from './auth';
@@ -13,8 +13,15 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
+/** Fake clock: sleeping advances it, and every Web API request can take `latency` ms. */
+const clock = { t: 0, latency: 0 };
+
 const API = 'https://api.spotify.com';
 const NOW = 1_700_000_000_000;
+beforeEach(() => {
+  clock.t = NOW;
+  clock.latency = 0;
+});
 const FRESH: SpotifySettings = {
   clientId: 'cid',
   deviceId: 'DEV1',
@@ -45,9 +52,10 @@ function setup(initial: SpotifySettings | null = FRESH) {
   const sleeps: number[] = [];
   const provider = createSpotifyProvider({
     store,
-    now: () => NOW,
+    now: () => clock.t,
     sleep: (ms) => {
       sleeps.push(ms);
+      clock.t += ms;
       return Promise.resolve();
     },
   });
@@ -67,6 +75,7 @@ function api(reply: (seen: Seen) => Response | undefined = () => undefined) {
   const seen: Seen[] = [];
   server.use(
     http.all(`${API}/*`, async ({ request }) => {
+      clock.t += clock.latency;
       const url = new URL(request.url);
       const text = await request.text();
       const entry: Seen = {
@@ -177,7 +186,12 @@ describe('typed API errors', () => {
       error(403, 'PREMIUM_REQUIRED', 'Player command failed: Premium required'),
       'premiumRequired',
     ],
-    ['403 other -> forbidden', error(403, 'UNKNOWN', 'Restriction violated'), 'forbidden'],
+    ['403 other -> forbidden', error(403, 'UNKNOWN', 'Something else'), 'forbidden'],
+    [
+      '403 restriction -> restrictionViolated',
+      error(403, 'UNKNOWN', 'Player command failed: Restriction violated'),
+      'restrictionViolated',
+    ],
   ])('%s', async (_name, response, code) => {
     api(() => response);
     await expect(setup().provider.play(track, 0)).rejects.toMatchObject({ code });
@@ -283,6 +297,49 @@ describe('token refresh', () => {
     expect(provider.isReady()).toBe(false);
   });
 
+  it('also drops credentials on invalid_client', async () => {
+    tokenEndpoint(() => HttpResponse.json({ error: 'invalid_client' }, { status: 401 }));
+    const { provider, state } = setup({ ...FRESH, expiresAt: NOW });
+    await expect(provider.connect()).rejects.toMatchObject({ code: 'notAuthorized' });
+    expect(state.cfg).toEqual({ clientId: 'cid', deviceId: 'DEV1' });
+  });
+
+  it('keeps credentials on a 429 from the token endpoint and reports rateLimited', async () => {
+    tokenEndpoint(() => new HttpResponse(null, { status: 429, headers: { 'Retry-After': '3' } }));
+    const { provider, state } = setup({ ...FRESH, expiresAt: NOW });
+    await expect(provider.connect()).rejects.toMatchObject({
+      code: 'rateLimited',
+      retryAfterSec: 3,
+    });
+    expect(state.cfg).toEqual({ ...FRESH, expiresAt: NOW });
+    expect(state.writes).toHaveLength(0);
+  });
+
+  it.each([
+    ['500', () => new HttpResponse(null, { status: 500 })],
+    ['503', () => new HttpResponse(null, { status: 503 })],
+    ['proxy 403', () => new HttpResponse('<html>blocked</html>', { status: 403 })],
+    ['400 invalid_request', () => HttpResponse.json({ error: 'invalid_request' }, { status: 400 })],
+    ['400 without body', () => new HttpResponse(null, { status: 400 })],
+  ])('keeps credentials on a token endpoint %s (transient http error)', async (_n, response) => {
+    tokenEndpoint(response);
+    const { provider, state } = setup({ ...FRESH, expiresAt: NOW });
+    await expect(provider.connect()).rejects.toMatchObject({ code: 'http' });
+    expect(state.writes).toHaveLength(0);
+    expect(state.cfg?.refreshToken).toBe('RT-live');
+  });
+
+  it('does not wipe tokens another client already rotated (compare-and-clear)', async () => {
+    const { provider, state } = setup({ ...FRESH, expiresAt: NOW });
+    tokenEndpoint(() => {
+      // while our refresh is in flight, another instance saved a rotated refresh token
+      state.cfg = { ...FRESH, refreshToken: 'RT-rotated-elsewhere' };
+      return HttpResponse.json({ error: 'invalid_grant' }, { status: 400 });
+    });
+    await expect(provider.connect()).rejects.toMatchObject({ code: 'notAuthorized' });
+    expect(state.cfg?.refreshToken).toBe('RT-rotated-elsewhere');
+  });
+
   it('keeps credentials when the refresh fails only because of the network', async () => {
     server.use(http.post(SPOTIFY_TOKEN_URL, () => HttpResponse.error()));
     const { provider, state } = setup({ ...FRESH, expiresAt: NOW });
@@ -336,57 +393,98 @@ describe('connect / isReady / disconnect', () => {
   });
 });
 
+/** Answers GET /v1/me/player with a device at `volume`; every other request gets 204. */
+const playerAt =
+  (volume: number | null, id = 'DEV1') =>
+  (s: Seen): Response | undefined =>
+    s.method === 'GET' && s.path === '/v1/me/player'
+      ? HttpResponse.json({ device: { id, volume_percent: volume } })
+      : undefined;
+
+const volumeCalls = (seen: Seen[]) =>
+  seen.filter((s) => s.path.endsWith('/volume')).map((s) => s.query.volume_percent);
+
 describe('volume and fade', () => {
-  it('fades to 0 in 6 equal steps over the fade time, then pauses and restores the level', async () => {
-    const seen = api();
+  it('reads the device volume, fades from it to 0 in 6 steps, pauses and restores that volume', async () => {
+    const seen = api(playerAt(40));
     const { provider, sleeps } = setup();
     await provider.fadeOut(1500);
     expect(sleeps).toEqual([250, 250, 250, 250, 250, 250]);
     expect(seen.map((s) => `${s.method} ${s.path} ${s.query.volume_percent ?? ''}`.trim())).toEqual(
       [
-        'PUT /v1/me/player/volume 83',
-        'PUT /v1/me/player/volume 67',
-        'PUT /v1/me/player/volume 50',
+        'GET /v1/me/player',
         'PUT /v1/me/player/volume 33',
-        'PUT /v1/me/player/volume 17',
+        'PUT /v1/me/player/volume 27',
+        'PUT /v1/me/player/volume 20',
+        'PUT /v1/me/player/volume 13',
+        'PUT /v1/me/player/volume 7',
         'PUT /v1/me/player/volume 0',
         'PUT /v1/me/player/pause',
-        'PUT /v1/me/player/volume 100',
+        'PUT /v1/me/player/volume 40',
       ],
     );
-    expect(seen.every((s) => s.query.device_id === 'DEV1')).toBe(true);
+    expect(seen.slice(1).every((s) => s.query.device_id === 'DEV1')).toBe(true);
   });
 
-  it('scales the fade from the level set with setVolume and restores to it', async () => {
+  it('never goes above the starting level and restores it (not 100)', async () => {
+    const seen = api(playerAt(35));
+    await setup().provider.fadeOut(600);
+    const levels = volumeCalls(seen).map(Number);
+    expect(Math.max(...levels.slice(0, 6))).toBeLessThanOrEqual(35);
+    expect(levels.at(-1)).toBe(35);
+  });
+
+  it('fades a full-volume device from 100', async () => {
+    const seen = api(playerAt(100));
+    await setup().provider.fadeOut(600);
+    expect(volumeCalls(seen)).toEqual(['83', '67', '50', '33', '17', '0', '100']);
+  });
+
+  it('only pauses, without touching the volume, when the device reports none', async () => {
+    for (const reply of [playerAt(null), playerAt(50, 'OTHER-DEVICE'), () => undefined]) {
+      const seen = api(reply);
+      await setup().provider.fadeOut(600);
+      expect(seen.map((s) => `${s.method} ${s.path}`)).toEqual([
+        'GET /v1/me/player',
+        'PUT /v1/me/player/pause',
+      ]);
+      server.resetHandlers();
+    }
+  });
+
+  it('schedules steps from the start so slow requests do not stretch the fade', async () => {
+    clock.latency = 100;
+    api(playerAt(60));
+    const { provider, sleeps } = setup();
+    const before = clock.t;
+    await provider.fadeOut(1200);
+    // start = after the GET (t=100); step i is due at start + 200 i, and each PUT takes 100 ms
+    expect(sleeps).toEqual([200, 100, 100, 100, 100, 100]);
+    // GET 100 + six steps ending at 1300 + the last PUT 100 + pause 100 + restore 100
+    expect(clock.t - before).toBe(1600);
+  });
+
+  it('setVolume sets an absolute level and clamps to 0..100 percent', async () => {
     const seen = api();
     const { provider } = setup();
     await provider.setVolume(0.6);
-    seen.length = 0;
-    await provider.fadeOut(600);
-    const levels = seen
-      .filter((s) => s.path.endsWith('/volume'))
-      .map((s) => s.query.volume_percent);
-    expect(levels).toEqual(['50', '40', '30', '20', '10', '0', '60']);
-  });
-
-  it('setVolume clamps to 0..100 percent', async () => {
-    const seen = api();
-    const { provider } = setup();
     await provider.setVolume(2);
     await provider.setVolume(-1);
-    expect(seen.map((s) => s.query.volume_percent)).toEqual(['100', '0']);
+    expect(volumeCalls(seen)).toEqual(['60', '100', '0']);
   });
 
-  it('puts the volume back even when a fade step fails, and reports the failure', async () => {
-    let volumeCalls = 0;
+  it('puts the original volume back even when a fade step fails, and reports the failure', async () => {
+    let puts = 0;
     const seen = api((s) => {
+      const player = playerAt(40)(s);
+      if (player) return player;
       if (!s.path.endsWith('/volume')) return undefined;
-      volumeCalls++;
-      return volumeCalls === 3 ? error(429, '') : undefined;
+      puts++;
+      return puts === 3 ? error(429, '') : undefined;
     });
     const { provider } = setup();
     await expect(provider.fadeOut(600)).rejects.toMatchObject({ code: 'rateLimited' });
-    expect(seen.at(-1)?.query.volume_percent).toBe('100');
+    expect(seen.at(-1)?.query.volume_percent).toBe('40');
     expect(seen.some((s) => s.path.endsWith('/pause'))).toBe(false);
   });
 });
@@ -403,8 +501,10 @@ describe('pause / resume', () => {
     ]);
   });
   it('treats "already paused" (403 restriction) as success but not a Premium error', async () => {
-    api(() => error(403, 'UNKNOWN', 'Restriction violated'));
+    api(() => error(403, 'UNKNOWN', 'Player command failed: Restriction violated'));
     await expect(setup().provider.pause()).resolves.toBeUndefined();
+    api(() => error(403, 'UNKNOWN', 'Something else'));
+    await expect(setup().provider.pause()).rejects.toMatchObject({ code: 'forbidden' });
     api(() => error(403, 'PREMIUM_REQUIRED'));
     await expect(setup().provider.pause()).rejects.toMatchObject({ code: 'premiumRequired' });
   });

@@ -116,6 +116,28 @@ const tokenResponseSchema = z.object({
   refresh_token: z.string().min(1).optional(),
 });
 
+/** Grants that can never work again: the user has to run the consent flow once more. */
+const DEAD_GRANT_ERRORS = new Set(['invalid_grant', 'invalid_client']);
+
+async function tokenEndpointError(res: Response): Promise<SpotifyError> {
+  const status = res.status;
+  if (status === 429) {
+    const retry = Number(res.headers.get('Retry-After'));
+    return new SpotifyError('rateLimited', {
+      status,
+      ...(Number.isFinite(retry) && retry > 0 ? { retryAfterSec: retry } : {}),
+    });
+  }
+  if (status === 400 || status === 401) {
+    const body = (await res.json().catch(() => undefined)) as { error?: unknown } | undefined;
+    if (typeof body?.error === 'string' && DEAD_GRANT_ERRORS.has(body.error)) {
+      return new SpotifyError('notAuthorized', { status });
+    }
+  }
+  // Anything else (5xx, proxy 403, other 400s) is transient from our point of view.
+  return new SpotifyError('http', { status });
+}
+
 async function postToken(body: URLSearchParams, env: AuthEnv): Promise<TokenSet> {
   const doFetch = env.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
   const now = env.now ?? Date.now;
@@ -129,10 +151,7 @@ async function postToken(body: URLSearchParams, env: AuthEnv): Promise<TokenSet>
   } catch {
     throw new SpotifyError('network');
   }
-  if (!res.ok) {
-    // 400 invalid_grant / invalid_client: the code or refresh token is no longer usable.
-    throw new SpotifyError(res.status >= 500 ? 'http' : 'notAuthorized', { status: res.status });
-  }
+  if (!res.ok) throw await tokenEndpointError(res);
   const parsed = tokenResponseSchema.safeParse(await res.json().catch(() => undefined));
   if (!parsed.success) throw new SpotifyError('http', { status: res.status });
   const { access_token, expires_in, refresh_token } = parsed.data;

@@ -66,6 +66,7 @@ function toError(res: Response, body: unknown, path: string): SpotifyError {
   const status = res.status;
   const { reason, message } = reasonOf(body);
   if (status === 403) {
+    if (/restriction/i.test(message)) return new SpotifyError('restrictionViolated', { status });
     const premium = reason === 'PREMIUM_REQUIRED' || /premium/i.test(message);
     return new SpotifyError(premium ? 'premiumRequired' : 'forbidden', { status });
   }
@@ -82,20 +83,23 @@ function toError(res: Response, body: unknown, path: string): SpotifyError {
   return new SpotifyError('http', { status });
 }
 
+/** One refresh at a time per store, even across client instances (refresh tokens may rotate). */
+const refreshLocks = new WeakMap<SpotifyStore, Promise<string>>();
+
 export function createSpotifyClient(options: ClientOptions): SpotifyClient {
   const { store } = options;
   const doFetch = options.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
   const now = options.now ?? Date.now;
-  let refreshing: Promise<string> | undefined;
 
   const isFresh = (cfg: SpotifySettings): boolean =>
     Boolean(cfg.accessToken) &&
     cfg.expiresAt !== undefined &&
     cfg.expiresAt - now() > EXPIRY_SKEW_MS;
 
-  /** One refresh at a time: concurrent callers share it (refresh tokens may rotate). */
   function refresh(cfg: SpotifySettings): Promise<string> {
-    refreshing ??= (async () => {
+    const running = refreshLocks.get(store);
+    if (running) return running;
+    const started = (async () => {
       if (!cfg.refreshToken) throw new SpotifyError('notAuthorized');
       let tokens: TokenSet;
       try {
@@ -104,8 +108,10 @@ export function createSpotifyClient(options: ClientOptions): SpotifyClient {
           { fetch: doFetch, now },
         );
       } catch (err) {
+        // Only a rejected grant means the refresh token is dead. Rate limits, outages and
+        // network errors keep the credentials so the next attempt can still succeed.
         if (err instanceof SpotifyError && err.code === 'notAuthorized') {
-          await dropTokens(); // the refresh token is dead: show "disconnected" instead of failing forever
+          await dropTokens(cfg.refreshToken); // show "disconnected" instead of failing forever
         }
         throw err;
       }
@@ -118,14 +124,17 @@ export function createSpotifyClient(options: ClientOptions): SpotifyClient {
       }
       return tokens.accessToken;
     })().finally(() => {
-      refreshing = undefined;
+      refreshLocks.delete(store);
     });
-    return refreshing;
+    refreshLocks.set(store, started);
+    return started;
   }
 
-  async function dropTokens(): Promise<void> {
+  /** Clears the tokens; with `onlyIfRefreshToken` only if that token is still the stored one. */
+  async function dropTokens(onlyIfRefreshToken?: string): Promise<void> {
     const cfg = store.read();
     if (!cfg) return;
+    if (onlyIfRefreshToken !== undefined && cfg.refreshToken !== onlyIfRefreshToken) return;
     const cleared = { ...cfg };
     delete cleared.accessToken;
     delete cleared.refreshToken;
@@ -191,6 +200,6 @@ export function createSpotifyClient(options: ClientOptions): SpotifyClient {
     hasCredentials() {
       return hasCredentials(store.read());
     },
-    clearCredentials: dropTokens,
+    clearCredentials: () => dropTokens(),
   };
 }

@@ -10,7 +10,7 @@ import {
   SPOTIFY_SCOPES,
   SPOTIFY_TOKEN_URL,
 } from './auth';
-import { completeSpotifyCallbackOnLoad } from './callback';
+import { completeSpotifyCallbackOnLoad, getLastSpotifyCallbackResult } from './callback';
 import type { SpotifyStore } from './client';
 import { challengeFor } from './pkce';
 
@@ -216,7 +216,9 @@ describe('completeSpotifyCallbackOnLoad', () => {
       replaceUrl: vi.fn(),
       now: () => NOW,
     });
-    expect(result.status).toBe('connected');
+    expect(result).toEqual({ status: 'connected', clientId: 'cid' }); // no tokens in the outcome
+    expect(getLastSpotifyCallbackResult()).toEqual({ status: 'connected', clientId: 'cid' });
+    expect(JSON.stringify(getLastSpotifyCallbackResult())).not.toMatch(/AT1|RT1/);
     expect(store.value).toEqual({
       clientId: 'cid',
       deviceId: 'dev',
@@ -235,6 +237,24 @@ describe('completeSpotifyCallbackOnLoad', () => {
     });
     expect(result).toMatchObject({ status: 'error', error: { code: 'stateMismatch' } });
     expect(write).not.toHaveBeenCalled();
+  });
+
+  it('never throws when sessionStorage is blocked', async () => {
+    const blocked = {
+      getItem: () => {
+        throw new DOMException('blocked', 'SecurityError');
+      },
+      setItem: () => undefined,
+      removeItem: () => {
+        throw new DOMException('blocked', 'SecurityError');
+      },
+    };
+    const result = await completeSpotifyCallbackOnLoad(memoryStore(), {
+      search: '?code=C&state=ST',
+      replaceUrl: vi.fn(),
+      storage: blocked,
+    });
+    expect(result).toMatchObject({ status: 'error', error: { code: 'stateMismatch' } });
   });
 
   it('turns a failing settings write into an error result instead of throwing', async () => {

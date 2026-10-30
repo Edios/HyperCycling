@@ -13,8 +13,12 @@ async function bootstrap(container: HTMLElement): Promise<void> {
   // Returning from the Spotify consent page: finish the login before anything reads settings.
   const query = new URLSearchParams(location.search);
   if (query.has('code') || query.has('error')) {
-    await loadSettings();
-    await completeSpotifyCallbackOnLoad(settingsSpotifyStore);
+    try {
+      await loadSettings();
+      await completeSpotifyCallbackOnLoad(settingsSpotifyStore);
+    } catch {
+      // The app must still start; the settings screen shows the Spotify state.
+    }
   }
   createRoot(container).render(
     <StrictMode>

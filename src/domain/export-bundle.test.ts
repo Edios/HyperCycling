@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { parseExportBundle, stripSecrets, type ExportBundle } from './export-bundle';
+import {
+  exportBundleSchema,
+  parseExportBundle,
+  stripSecrets,
+  type ExportBundle,
+} from './export-bundle';
 import { DEFAULT_SETTINGS } from './settings';
 
 const good = () => ({
@@ -127,23 +132,15 @@ describe('parseExportBundle duplicate ids', () => {
 });
 
 describe('stripSecrets', () => {
-  const withSpotify = (): ExportBundle => {
-    const parsed = parseExportBundle({
-      ...good(),
-      settings: {
-        ...DEFAULT_SETTINGS,
-        spotify: {
-          clientId: 'cid',
-          deviceId: 'dev',
-          accessToken: 'access-secret',
-          refreshToken: 'refresh-secret',
-          expiresAt: 123,
-        },
-      },
-    });
-    if (!parsed.ok) throw new Error('fixture must parse');
-    return parsed.bundle;
+  const tokens = {
+    clientId: 'cid',
+    deviceId: 'dev',
+    accessToken: 'access-secret',
+    refreshToken: 'refresh-secret',
+    expiresAt: 123,
   };
+  const withSpotify = (): ExportBundle =>
+    exportBundleSchema.parse({ ...good(), settings: { ...DEFAULT_SETTINGS, spotify: tokens } });
 
   it('accepts spotify settings with tokens (backward compatible with clientId only)', () => {
     expect(withSpotify().settings?.spotify?.accessToken).toBe('access-secret');
@@ -152,6 +149,11 @@ describe('stripSecrets', () => {
       settings: { ...DEFAULT_SETTINGS, spotify: { clientId: 'cid' } },
     });
     expect(minimal.ok).toBe(true);
+  });
+  it('drops tokens from an imported file so a file can never plant credentials', () => {
+    const r = parseExportBundle({ ...good(), settings: { ...DEFAULT_SETTINGS, spotify: tokens } });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.bundle.settings?.spotify).toEqual({ clientId: 'cid', deviceId: 'dev' });
   });
   it('removes access token, refresh token and expiry but keeps clientId and deviceId', () => {
     const stripped = stripSecrets(withSpotify());

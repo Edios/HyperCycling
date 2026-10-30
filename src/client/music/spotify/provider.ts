@@ -55,6 +55,13 @@ const searchSchema = z.object({
   }),
 });
 
+const playerSchema = z.object({
+  device: z
+    .object({ id: z.string().nullable(), volume_percent: z.number().nullable().optional() })
+    .nullable()
+    .optional(),
+});
+
 const defaultSleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 const clamp01 = (v: number): number => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1);
@@ -67,8 +74,7 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
   });
   const sleep = options.sleep ?? defaultSleep;
   let connected = false;
-  /** Level the user asked for (0..1); fades return to it. */
-  let baseVolume = 1;
+  const now = options.now ?? Date.now;
 
   async function listDevices(): Promise<SpotifyDevice[]> {
     const body = await client.request('GET', '/v1/me/player/devices');
@@ -88,10 +94,20 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
     return active.id;
   }
 
-  async function putVolume(device: string, level: number): Promise<void> {
+  async function putVolume(device: string, percent: number): Promise<void> {
     await client.request('PUT', '/v1/me/player/volume', {
-      query: { volume_percent: Math.round(level * 100), device_id: device },
+      query: { volume_percent: Math.round(percent), device_id: device },
     });
+  }
+
+  /** The device's current volume (0..100), or undefined when Spotify does not report it. */
+  async function currentVolume(device: string): Promise<number | undefined> {
+    const parsed = playerSchema.safeParse(await client.request('GET', '/v1/me/player'));
+    const d = parsed.success ? parsed.data.device : undefined;
+    // Only trust the reading when it belongs to the device we are about to fade.
+    return d && d.id === device && typeof d.volume_percent === 'number'
+      ? d.volume_percent
+      : undefined;
   }
 
   return {
@@ -122,17 +138,25 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
     },
 
     /**
-     * Lowers the volume to 0 in FADE_STEPS equal steps over `ms`, pauses, then puts the volume
-     * back to the chosen level so the next track starts at normal loudness.
+     * Reads the device's current volume, lowers it to 0 in FADE_STEPS equal steps over `ms`
+     * (step i is due at start + i * ms / FADE_STEPS, so request latency does not stretch the
+     * fade), pauses, then puts the original volume back for the next track. When the device
+     * does not report a volume it only pauses: guessing a level could make things louder.
      */
     async fadeOut(ms) {
       const device = await resolveDeviceId();
+      const original = await currentVolume(device);
+      if (original === undefined) {
+        await client.request('PUT', '/v1/me/player/pause', { query: { device_id: device } });
+        return;
+      }
       const stepMs = Math.max(0, ms) / FADE_STEPS;
+      const start = now();
       let failure: unknown;
       try {
         for (let i = 1; i <= FADE_STEPS; i++) {
-          await sleep(stepMs);
-          await putVolume(device, baseVolume * (1 - i / FADE_STEPS));
+          await sleep(Math.max(0, start + i * stepMs - now()));
+          await putVolume(device, original * (1 - i / FADE_STEPS));
         }
         await client.request('PUT', '/v1/me/player/pause', { query: { device_id: device } });
       } catch (err) {
@@ -140,7 +164,7 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
       }
       // Always try to undo the fade, even after a failure, so the volume is not left at 0.
       try {
-        await putVolume(device, baseVolume);
+        await putVolume(device, original);
       } catch (err) {
         failure ??= err;
       }
@@ -153,7 +177,7 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
         await client.request('PUT', '/v1/me/player/pause', { query: { device_id: device } });
       } catch (err) {
         // Spotify answers 403 "Restriction violated" when the player is already paused.
-        if (!(err instanceof SpotifyError && err.code === 'forbidden')) throw err;
+        if (!(err instanceof SpotifyError && err.code === 'restrictionViolated')) throw err;
       }
     },
 
@@ -163,8 +187,7 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
     },
 
     async setVolume(v) {
-      baseVolume = clamp01(v);
-      await putVolume(await resolveDeviceId(), baseVolume);
+      await putVolume(await resolveDeviceId(), clamp01(v) * 100);
     },
 
     listDevices,

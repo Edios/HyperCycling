@@ -94,5 +94,6 @@ export function parseExportBundle(json: unknown): ParseExportResult {
       details: i ? `${i.path.join('.')}: ${i.message}` : 'invalid',
     };
   }
-  return { ok: true, bundle: r.data };
+  // A file must never plant credentials: tokens exist only in the local settings.
+  return { ok: true, bundle: stripSecrets(r.data) };
 }
