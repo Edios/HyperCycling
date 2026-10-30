@@ -38,7 +38,7 @@ async function makeRepos() {
   return createHttpRepositories('http://127.0.0.1:5175', injectFetch(app));
 }
 
-runRepositoryContract('http', makeRepos, { replaceAllClearsActiveSession: true });
+runRepositoryContract('http', makeRepos);
 
 it('surfaces the server error message for an invalid player', async () => {
   const repos = await makeRepos();

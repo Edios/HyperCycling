@@ -74,6 +74,7 @@ export function registerDataRoutes(
           options.backup.db,
           options.backup.dir,
           (options.now ?? (() => new Date()))(),
+          (err) => req.log.warn(err),
         );
       } catch (err) {
         req.log.error(err);
@@ -81,7 +82,6 @@ export function registerDataRoutes(
       }
     }
     await repos.replaceAll(parsed.bundle);
-    await repos.activeSession.clear(); // a saved session may point at data that no longer exists
     return reply.code(204).send();
   });
 

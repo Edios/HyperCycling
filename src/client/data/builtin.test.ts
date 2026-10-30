@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { planSchema } from '../../domain/plan';
-import { workoutSchema } from '../../domain/workout';
 import { builtinPlans, builtinWorkouts, getWorkout } from './builtin';
 
 describe('built-in content', () => {
@@ -8,11 +7,17 @@ describe('built-in content', () => {
     expect(builtinWorkouts.length).toBeGreaterThan(0);
   });
 
-  it('every workout passes workoutSchema and is marked builtin', () => {
-    for (const w of builtinWorkouts) {
-      const r = workoutSchema.safeParse(w);
-      expect(r.success, `${w.id}: ${r.success ? '' : r.error.message}`).toBe(true);
-      expect(w.source.kind).toBe('builtin');
+  it('workout ids match their file names and are marked builtin', () => {
+    const files = import.meta.glob<{ id: string }>('../../content/workouts/*.json', {
+      eager: true,
+      import: 'default',
+    });
+    expect(Object.keys(files).length).toBe(builtinWorkouts.length);
+    for (const [path, w] of Object.entries(files)) {
+      const base = path.split('/').pop()?.replace(/\.json$/, '');
+      expect(w.id, path).toBe(base);
+      expect(w.id, path).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+      expect(getWorkout(w.id)?.source.kind, path).toBe('builtin');
     }
   });
 

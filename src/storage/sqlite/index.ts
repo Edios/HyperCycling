@@ -121,6 +121,8 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
     }
     if (b.settings) singletonPut.run('settings', JSON.stringify(b.settings));
     else singletonDel.run('settings');
+    // a saved session may point at data that no longer exists
+    singletonDel.run('activeSession');
   });
 
   return {

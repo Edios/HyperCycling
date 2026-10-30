@@ -131,6 +131,8 @@ export async function createIndexedDbRepositories(
         writes.push(
           b.settings ? singletons.put(b.settings, 'settings') : singletons.delete('settings'),
         );
+        // a saved session may point at data that no longer exists
+        writes.push(singletons.delete('activeSession'));
         await Promise.all(writes);
         await tx.done;
       } catch (err) {

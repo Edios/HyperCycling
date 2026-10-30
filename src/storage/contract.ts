@@ -146,16 +146,7 @@ const collections: CollectionCase[] = [
 ];
 
 /** Behaviour every storage backend must share. */
-export interface ContractOptions {
-  /** True when replaceAll goes through the server import route, which also drops the active session. */
-  replaceAllClearsActiveSession?: boolean;
-}
-
-export function runRepositoryContract(
-  name: string,
-  makeRepos: () => Promise<Repositories>,
-  options: ContractOptions = {},
-): void {
+export function runRepositoryContract(name: string, makeRepos: () => Promise<Repositories>): void {
   describe(`repository contract: ${name}`, () => {
     let repos: Repositories;
     beforeEach(async () => {
@@ -334,12 +325,10 @@ export function runRepositoryContract(
         expect(withoutExportedAt(await repos.exportAll())).toEqual(before);
       });
 
-      it(`${options.replaceAllClearsActiveSession ? 'clears' : 'keeps'} the active session when replacing data`, async () => {
+      it('clears the active session when replacing data', async () => {
         await repos.activeSession.put(active());
         await repos.replaceAll(bundle());
-        expect(await repos.activeSession.get()).toEqual(
-          options.replaceAllClearsActiveSession ? undefined : active(),
-        );
+        expect(await repos.activeSession.get()).toBeUndefined();
       });
     });
   });
