@@ -1,0 +1,12 @@
+dist
+coverage
+test-results
+playwright-report
+data
+package-lock.json
+.superpowers
+docs/superpowers
+docs/design
+PROGRESS.md
+tools/local
+.playwright-mcp
