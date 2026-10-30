@@ -20,17 +20,21 @@ test('players: add two, mark me, edit, delete; everything survives a reload', as
   await add(page, a, '190');
   await add(page, b, '310');
 
-  await page.getByRole('radio', { name: `This is me: ${a}` }).click();
-  await expect(page.getByRole('radio', { name: `This is me: ${a}` })).toBeChecked();
-  await page.getByRole('radio', { name: `This is me: ${b}` }).click();
-  await expect(page.getByRole('radio', { name: `This is me: ${b}` })).toBeChecked();
-  await expect(page.getByRole('radio', { name: `This is me: ${a}` })).not.toBeChecked();
+  await page.getByRole('button', { name: `This is me: ${a}` }).click();
+  await expect(page.getByRole('button', { name: `This is me: ${a}`, pressed: true })).toBeVisible();
+  await page.getByRole('button', { name: `This is me: ${b}` }).click();
+  await expect(page.getByRole('button', { name: `This is me: ${b}`, pressed: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: `This is me: ${a}`, pressed: false }),
+  ).toBeVisible();
 
   await page.reload();
   await expect(page.getByTestId('player-row').filter({ hasText: a })).toContainText('190');
   await expect(page.getByTestId('player-row').filter({ hasText: b })).toContainText('310');
-  await expect(page.getByRole('radio', { name: `This is me: ${b}` })).toBeChecked();
-  await expect(page.getByRole('radio', { name: `This is me: ${a}` })).not.toBeChecked();
+  await expect(page.getByRole('button', { name: `This is me: ${b}`, pressed: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: `This is me: ${a}`, pressed: false }),
+  ).toBeVisible();
 
   await page.getByRole('button', { name: `Edit ${a}` }).click();
   const edit = page.getByTestId('player-edit');

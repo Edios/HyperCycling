@@ -1,7 +1,7 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ComponentPropsWithRef } from 'react';
 import styles from './Button.module.css';
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ComponentPropsWithRef<'button'> {
   variant?: 'default' | 'primary';
   size?: 'normal' | 'big';
 }

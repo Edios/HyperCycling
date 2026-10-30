@@ -11,6 +11,7 @@ vi.mock('../data/repositories', () => ({
     Promise.resolve({
       players: {
         list: () => Promise.resolve(structuredClone(db.players)),
+        get: (id: string) => Promise.resolve(structuredClone(db.players.find((x) => x.id === id))),
         put: (p: Player) => {
           const i = db.players.findIndex((x) => x.id === p.id);
           if (i >= 0) db.players[i] = structuredClone(p);
@@ -22,7 +23,13 @@ vi.mock('../data/repositories', () => ({
           return Promise.resolve();
         },
       },
-      settings: { get: () => Promise.resolve(db.settings), put: () => Promise.resolve() },
+      settings: {
+        get: () => Promise.resolve(db.settings),
+        put: (v: Settings) => {
+          db.settings = v;
+          return Promise.resolve();
+        },
+      },
     }),
 }));
 
@@ -43,7 +50,13 @@ function setValue(el: HTMLElement, value: string) {
   fireEvent.change(el, { target: { value } });
 }
 
-function addPlayer(name: string, ftp: string) {
+async function addPlayer(name: string, ftp: string) {
+  // Submit is disabled while the previous one is still saving.
+  await waitFor(() =>
+    expect(
+      within(screen.getByTestId('add-player-form')).getByRole('button', { name: 'Add' }),
+    ).toBeEnabled(),
+  );
   const form = screen.getByTestId('add-player-form');
   setValue(within(form).getByLabelText('Name'), name);
   setValue(within(form).getByLabelText('FTP (W)'), ftp);
@@ -68,7 +81,7 @@ describe('PlayersScreen', () => {
   it('adds a player and stores it', async () => {
     renderScreen();
     await screen.findByText('Add your first player');
-    addPlayer('Basia', '210');
+    await addPlayer('Basia', '210');
     expect(await screen.findByText('Basia')).toBeInTheDocument();
     expect(screen.getByText('210')).toBeInTheDocument();
     expect(db.players).toHaveLength(1);
@@ -79,13 +92,13 @@ describe('PlayersScreen', () => {
   it('validates name and FTP with translated messages', async () => {
     renderScreen();
     await screen.findByText('Add your first player');
-    addPlayer('Basia', '20');
+    await addPlayer('Basia', '20');
     expect(await screen.findByText('FTP must be a whole number from 50 to 600')).toBeVisible();
-    addPlayer('Basia', '210.5');
+    await addPlayer('Basia', '210.5');
     expect(screen.getByText('FTP must be a whole number from 50 to 600')).toBeVisible();
-    addPlayer('', '200');
+    await addPlayer('', '200');
     expect(await screen.findByText('Name must be 1 to 24 characters')).toBeVisible();
-    addPlayer('x'.repeat(25), '200');
+    await addPlayer('x'.repeat(25), '200');
     expect(screen.getByText('Name must be 1 to 24 characters')).toBeVisible();
     expect(db.players).toHaveLength(0);
   });
@@ -143,12 +156,20 @@ describe('PlayersScreen', () => {
     ];
     renderScreen();
     await screen.findByText('Ania');
-    expect(screen.getByRole('radio', { name: 'This is me: Ania' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'This is me: Tomek' })).not.toBeChecked();
-    fireEvent.click(screen.getByRole('radio', { name: 'This is me: Tomek' }));
+    expect(
+      screen.getByRole('button', { name: 'This is me: Ania', pressed: true }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'This is me: Tomek', pressed: false }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'This is me: Tomek' }));
     await waitFor(() => expect(db.players.filter((p) => p.isMe).map((p) => p.id)).toEqual(['b']));
-    expect(screen.getByRole('radio', { name: 'This is me: Ania' })).not.toBeChecked();
-    expect(screen.getByRole('radio', { name: 'This is me: Tomek' })).toBeChecked();
+    expect(
+      screen.getByRole('button', { name: 'This is me: Ania', pressed: false }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'This is me: Tomek', pressed: true }),
+    ).toBeInTheDocument();
   });
 
   it('notes that watts are hidden when equipment.showsWatts is false', async () => {
@@ -158,5 +179,72 @@ describe('PlayersScreen', () => {
     };
     renderScreen();
     expect(await screen.findByText(/Watts are hidden/)).toBeInTheDocument();
+  });
+
+  it('repairs data with more than one me on load', async () => {
+    db.players = [
+      { id: 'a', name: 'Ania', ftp: 190, isMe: true },
+      { id: 'b', name: 'Tomek', ftp: 310, isMe: true },
+    ];
+    renderScreen();
+    await screen.findByText('Ania');
+    await waitFor(() => expect(db.players.filter((p) => p.isMe).map((p) => p.id)).toEqual(['a']));
+    expect(screen.getAllByRole('button', { pressed: true, name: /This is me/ })).toHaveLength(1);
+  });
+
+  it('editing never writes a stale isMe', async () => {
+    db.players = [
+      { id: 'a', name: 'Ania', ftp: 190 },
+      { id: 'b', name: 'Tomek', ftp: 310 },
+    ];
+    renderScreen();
+    await screen.findByText('Ania');
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Ania' }));
+    // Another tab makes Ania "me" while the edit form is open.
+    db.players[0] = { id: 'a', name: 'Ania', ftp: 190, isMe: true };
+    const row = screen.getByTestId('player-edit');
+    setValue(within(row).getByLabelText('FTP (W)'), '200');
+    fireEvent.click(within(row).getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(db.players[0]).toMatchObject({ ftp: 200, isMe: true }));
+  });
+
+  it('Escape cancels the edit and focus returns to the Edit button', async () => {
+    db.players = [{ id: 'a', name: 'Ania', ftp: 190 }];
+    renderScreen();
+    await screen.findByText('Ania');
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Ania' }));
+    const row = screen.getByTestId('player-edit');
+    await waitFor(() => expect(within(row).getByLabelText('Name')).toHaveFocus());
+    fireEvent.keyDown(within(row).getByLabelText('Name'), { key: 'Escape' });
+    expect(screen.queryByTestId('player-edit')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Edit Ania' })).toHaveFocus());
+  });
+
+  it('limits the name input to 24 characters', async () => {
+    renderScreen();
+    await screen.findByText('Add your first player');
+    expect(within(screen.getByTestId('add-player-form')).getByLabelText('Name')).toHaveAttribute(
+      'maxlength',
+      '24',
+    );
+  });
+
+  it('deleting a player prunes it from the last session', async () => {
+    db.players = [
+      { id: 'a', name: 'Ania', ftp: 190 },
+      { id: 'b', name: 'Tomek', ftp: 310 },
+    ];
+    db.settings = {
+      ...DEFAULT_SETTINGS,
+      lastSession: { background: 'basic', hud: 'solo', playerIds: ['a', 'b'], music: false },
+    };
+    renderScreen();
+    await screen.findByText('Ania');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Delete Ania' })).toBeEnabled());
+    // Wait for settings to load into the store before deleting.
+    await waitFor(() => expect(db.settings?.lastSession?.playerIds).toEqual(['a', 'b']));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Ania' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete' }));
+    await waitFor(() => expect(db.settings?.lastSession?.playerIds).toEqual(['b']));
   });
 });
