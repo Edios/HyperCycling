@@ -1,0 +1,46 @@
+:root {
+  --bg: #070a12;
+  --s1: #101624;
+  --s2: #151d2f;
+  --line: #1d2536;
+  --fg: #eef1f7;
+  --mut: #8d97ab;
+  --muted: var(--mut);
+  --act: #3d8bff;
+  --glass: rgb(16 22 36 / 0.72);
+
+  --z1: #8fa3b8;
+  --z2: #8fa3b8;
+  --z3: #3d8bff;
+  --z4: #3d8bff;
+  --z5: #35d07f;
+  --z6: #35d07f;
+  --z7: #ffd23f;
+  --z8: #ff8c2a;
+  --z9: #ff3d5a;
+  --z10: #ff3d5a;
+
+  /* Current and next segment zone colors; set per segment by the HUD. */
+  --zone: var(--z4);
+  --zone-next: var(--z4);
+
+  --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-body: 'Barlow', system-ui, sans-serif;
+}
+
+[data-theme='light'] {
+  --bg: #f3f5f9;
+  --s1: #ffffff;
+  --s2: #eef1f6;
+  --line: #dfe4ee;
+  --fg: #0d1424;
+  --mut: #5d6679;
+  --glass: rgb(255 255 255 / 0.78);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+}

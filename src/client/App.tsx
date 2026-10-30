@@ -1,7 +1,10 @@
+import { useT } from './i18n';
+
 export function App() {
+  const t = useT();
   return (
     <main data-testid="app-shell">
-      <h1>Spinning Tutor</h1>
+      <h1>{t('app.title')}</h1>
     </main>
   );
 }
