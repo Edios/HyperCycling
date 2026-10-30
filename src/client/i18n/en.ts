@@ -42,6 +42,9 @@ export const en = {
     ridden: 'Time ridden',
     back: 'Back',
   },
+  hyperride: {
+    unavailable: 'WebGL is not available on this computer. Using the Basic background.',
+  },
   dev: {
     title: 'Workouts',
     ride: 'Ride',

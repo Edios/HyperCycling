@@ -44,6 +44,9 @@ export const pl: Messages = {
     ridden: 'Przejechany czas',
     back: 'Wróć',
   },
+  hyperride: {
+    unavailable: 'Ten komputer nie obsługuje WebGL. Używam tła Basic.',
+  },
   dev: {
     title: 'Treningi',
     ride: 'Jedź',
