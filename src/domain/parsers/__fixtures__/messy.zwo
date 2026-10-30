@@ -1,0 +1,12 @@
+<workout_file>
+  <name>Messy One</name>
+  <workout>
+    <SteadyState Duration="0" Power="0.7"/>
+    <Mystery Duration="30"/>
+    <SteadyState Duration="120" Power="0.65"/>
+    <SteadyState Duration="60" Power="250"/>
+    <SteadyState Duration="90" Power="0.9" Cadence="200"/>
+    <Ramp Duration="60" PowerLow="0.7" PowerHigh="0.7"/>
+    <IntervalsT Repeat="1" OnDuration="30" OffDuration="30" OnPower="1.2" OffPower="0.5"/>
+  </workout>
+</workout_file>
