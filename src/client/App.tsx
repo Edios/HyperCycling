@@ -1,7 +1,7 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { DevHome } from './screens/DevHome';
 import { PlaceholderPage } from './screens/PlaceholderPage';
-import { SetupPlaceholder } from './screens/SetupPlaceholder';
+import { SetupScreen } from './setup/SetupScreen';
 import { SummaryPlaceholder } from './screens/SummaryPlaceholder';
 import { FreestyleTab } from './select/FreestyleTab';
 import { PlanTab } from './select/PlanTab';
@@ -33,7 +33,7 @@ export function App() {
             </SelectShell>
           }
         />
-        <Route path="/setup/:workoutId" element={<SetupPlaceholder />} />
+        <Route path="/setup/:workoutId" element={<SetupScreen />} />
         <Route path="/train" element={<TrainingScreen />} />
         <Route path="/summary" element={<SummaryPlaceholder />} />
         <Route path="/plans" element={<PlaceholderPage titleKey="placeholder.plans" />} />

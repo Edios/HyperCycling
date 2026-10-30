@@ -53,6 +53,9 @@ test('plan tab with an active plan: Ride starts the training screen', async ({ p
   await expect(page.getByTestId('plan-done')).toContainText('0 of');
 
   await page.getByRole('button', { name: 'Ride', exact: true }).click();
+  await expect(page.getByTestId('setup-screen')).toBeVisible();
+  await expect(page.getByTestId('setup-badge')).toContainText('Progres · week 1');
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
   await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'idle');
   expect(errors).toEqual([]);
@@ -76,5 +79,7 @@ test('freestyle tab filters and searches', async ({ page }) => {
   await page.getByRole('searchbox').fill('tabata');
   await expect(cards.first()).toContainText(/tabata/i);
   await cards.first().click();
+  await expect(page.getByTestId('setup-screen')).toBeVisible();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
 });
