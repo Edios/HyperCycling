@@ -1,0 +1,51 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.125rem 1.25rem 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  background: var(--s1);
+  color: var(--fg);
+  text-decoration: none;
+  min-height: 10rem;
+}
+
+.card:hover {
+  border-color: #2c3852;
+  background: var(--s2);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.8125rem;
+  color: var(--mut);
+}
+
+.min {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--fg);
+}
+
+.min small {
+  font-size: 0.875rem;
+  color: var(--mut);
+}
+
+.name {
+  margin: 0 0 auto;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.1;
+}

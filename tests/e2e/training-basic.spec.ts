@@ -3,8 +3,10 @@ import { expect, test, type Page } from '@playwright/test';
 /** The page clock is installed before navigation so performance.now and rAF are controllable. */
 async function openTraining(page: Page, buttonName: 'Ride' | 'Ride with players'): Promise<void> {
   await page.clock.install();
-  await page.goto('./');
-  await page.getByRole('button', { name: buttonName, exact: true }).first().click();
+  await page.goto('./#/dev');
+  // The deterministic demo workout is not the first row since the built-in content landed.
+  const row = page.getByTestId('workout-row').filter({ hasText: 'Demo mix' });
+  await row.getByRole('button', { name: buttonName, exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
 }
 
@@ -55,7 +57,7 @@ test('solo: countdown, running, block change, pause, skip, finish, summary', asy
   await expect(page.getByTestId('summary-status')).toHaveText('Completed');
 
   await page.getByRole('button', { name: 'Back' }).click();
-  await expect(page.getByRole('heading', { name: 'Workouts' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Freestyle' })).toBeVisible();
   expect(errors).toEqual([]);
 });
 

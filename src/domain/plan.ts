@@ -139,7 +139,7 @@ function sessionOf(plan: Plan, week: number, slot: PlanSlot): string | undefined
  * Workout served by a slot. In `doubleProgres` the `freestyle` slot is served by the week's
  * `progresAlt` (fallback: the week's progres workout), so the slot name stays 'freestyle'.
  */
-function workoutOf(
+export function workoutOf(
   plan: Plan,
   week: number,
   slot: PlanSlot,

@@ -1,15 +1,15 @@
 {
   "id": "tempo-45",
   "name": "Tempo 45",
-  "description": "Three ten-minute tempo blocks with two easy minutes between them.",
+  "description": "Three ten-minute tempo blocks with three easy minutes between them.",
   "localized": {
     "en": {
       "name": "Tempo 45",
-      "description": "Three ten-minute tempo blocks with two easy minutes between them."
+      "description": "Three ten-minute tempo blocks with three easy minutes between them."
     },
     "pl": {
       "name": "Tempo 45",
-      "description": "Trzy dziesięciominutowe odcinki w tempie, dwie minuty luzu między nimi."
+      "description": "Trzy dziesięciominutowe odcinki w tempie, trzy minuty luzu między nimi."
     }
   },
   "category": "freestyle",
