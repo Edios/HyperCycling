@@ -27,6 +27,93 @@ const ALLOWED_TAGS = new Set([
   'recovery',
 ]);
 
+/** Classic training repertoire: category -> workouts (explicit ids, or every workout with a tag). */
+const CATEGORY: Record<string, { ids: string[] } | { tag: string }> = {
+  'pyramids and ladders': {
+    ids: [
+      'pyramid-classic',
+      'pyramid-reverse',
+      'pyramid-sweet-spot',
+      'ladder-up',
+      'ladder-down',
+      'ladder-1-2-3',
+    ],
+  },
+  'threshold blocks': {
+    ids: [
+      'two-by-twenty',
+      'threshold-30-steady',
+      'threshold-2x15',
+      'threshold-3x10',
+      'four-eights',
+    ],
+  },
+  'over-unders and criss-cross': {
+    ids: [
+      'over-under-classic',
+      'first-over-unders',
+      'over-unders-2-1',
+      'criss-cross-threshold',
+      'criss-cross-sweet-spot',
+      'criss-cross-vo2',
+    ],
+  },
+  'sweet spot': { tag: 'sweetspot' },
+  tempo: { tag: 'tempo' },
+  'long VO2 intervals': {
+    ids: ['four-fours', 'vo2-5x3', 'short-threes', 'vo2-3x5', 'vo2-ramp'],
+  },
+  'short intervals (30-30, 30-15, 40-20, Tabata)': {
+    ids: [
+      'thirty-fifteen',
+      'thirty-fifteen-2x10',
+      'tabata-20-10',
+      'forty-twenty',
+      'billat-30-30',
+      'gibala-10x1',
+      'micro-fifteen-fifteen',
+    ],
+  },
+  'FTP tests': { ids: ['ramp-test', 'ftp-test-20', 'ftp-test-2x8'] },
+  'hill repeats': {
+    ids: [
+      'hill-repeats-seated',
+      'hill-repeats-standing',
+      'hill-long-20',
+      'hill-surges',
+      'standing-climbs',
+    ],
+  },
+  'low-cadence strength': {
+    ids: ['leg-strength', 'low-cadence-4x6', 'big-gear-ladder', 'torque-surges'],
+  },
+  'cadence drills': {
+    ids: ['spin-ups-classic', 'high-cadence-endurance', 'high-cadence-drills', 'cadence-warmup'],
+  },
+  'sprint sets': {
+    ids: [
+      'sprints-6x15',
+      'sprints-standing-starts',
+      'sprint-steps',
+      'sprint-ladder',
+      'saddle-attack',
+    ],
+  },
+  recovery: { tag: 'recovery' },
+  'long zone 2': { ids: ['easy-ride-60', 'zone2-60', 'zone2-cadence-60', 'zone2-75'] },
+  'music class': { tag: 'music' },
+  'Zwift-style mixed': {
+    ids: [
+      'mixed-surges-60',
+      'rolling-ramps',
+      'endurance-bursts',
+      'sweet-spot-and-attacks',
+      'staircase',
+      'waves',
+    ],
+  },
+};
+
 const byId = new Map(builtinWorkouts.map((w) => [w.id, w]));
 const get = (id: string): Workout => {
   const w = byId.get(id);
@@ -226,9 +313,23 @@ describe('built-in workouts', () => {
     expect(new Set(builtinWorkouts.map((w) => w.id)).size).toBe(builtinWorkouts.length);
   });
 
-  it('ships at least 45 freestyle library workouts', () => {
+  it('ships at least 80 freestyle library workouts', () => {
     const freestyle = builtinWorkouts.filter((w) => w.category === 'freestyle' && isLibrary(w));
-    expect(freestyle.length).toBeGreaterThanOrEqual(45);
+    expect(freestyle.length).toBeGreaterThanOrEqual(80);
+  });
+
+  it('covers every classic workout category with at least 3 workouts', () => {
+    const freestyle = builtinWorkouts.filter((w) => w.category === 'freestyle' && isLibrary(w));
+    const ids = new Set(freestyle.map((w) => w.id));
+    for (const [category, spec] of Object.entries(CATEGORY)) {
+      const members =
+        'tag' in spec
+          ? freestyle.filter((w) => w.tags.includes(spec.tag)).map((w) => w.id)
+          : spec.ids;
+      for (const id of members)
+        expect(ids.has(id), `${category}: unknown workout ${id}`).toBe(true);
+      expect(members.length, category).toBeGreaterThanOrEqual(3);
+    }
   });
 
   it('plan-only sessions are progres, everything else is freestyle', () => {
@@ -408,6 +509,23 @@ describe('built-in workouts', () => {
     const sc = get('tabata-lite').scaling;
     expect(sc?.minTimes).toBe(8);
     expect(sc?.maxTimes).toBe(8);
+  });
+
+  it('recovery workouts never exceed 60 % FTP, long zone 2 rides never exceed 85 %', () => {
+    const maxPct = (w: Workout): number =>
+      Math.max(...flattenWorkout(w).map((x) => Math.max(x.ftpPctStart, x.ftpPctEnd)));
+    for (const w of builtinWorkouts.filter((x) => x.tags.includes('recovery'))) {
+      expect(maxPct(w), w.id).toBeLessThanOrEqual(60);
+    }
+    for (const id of ['zone2-60', 'zone2-cadence-60', 'zone2-75']) {
+      expect(maxPct(get(id)), id).toBeLessThanOrEqual(85);
+    }
+  });
+
+  it('FTP tests start with a 10 minute warm-up ramp', () => {
+    for (const id of ['ftp-test-20', 'ftp-test-2x8']) {
+      expect(flattenWorkout(get(id))[0]?.durationSec, id).toBe(600);
+    }
   });
 
   it('ramp test climbs 6 % per minute from 50 % for 25 steps', () => {

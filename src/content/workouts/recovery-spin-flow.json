@@ -1,0 +1,91 @@
+{
+  "id": "recovery-spin-flow",
+  "name": "Recovery Flow",
+  "description": "Easy spinning with a light cadence wave: a few minutes slow, a few minutes faster, never hard.",
+  "localized": {
+    "en": {
+      "name": "Recovery Flow",
+      "description": "Easy spinning with a light cadence wave: a few minutes slow, a few minutes faster, never hard."
+    },
+    "pl": {
+      "name": "Regeneracyjny przepływ",
+      "description": "Lekkie kręcenie z falą kadencji: kilka minut wolniej, kilka szybciej, nigdy mocno."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["recovery", "cadence"],
+  "source": {
+    "kind": "builtin",
+    "file": "recovery-spin-flow.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "rsfx-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 55
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "repeat",
+      "id": "rsfx-f",
+      "times": 3,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "rsfx-lo",
+          "durationSec": 240,
+          "intensity": {
+            "ftpPct": 50
+          },
+          "rpm": 80,
+          "position": "seated",
+          "label": "@recovery"
+        },
+        {
+          "kind": "steady",
+          "id": "rsfx-hi",
+          "durationSec": 240,
+          "intensity": {
+            "ftpPct": 52
+          },
+          "rpm": 95,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "rsfx-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 55
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "rsfx-wu",
+    "cooldownBlockId": "rsfx-cd",
+    "flexRepeatId": "rsfx-f",
+    "minTimes": 2,
+    "maxTimes": 4
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

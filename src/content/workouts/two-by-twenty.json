@@ -1,0 +1,148 @@
+{
+  "id": "two-by-twenty",
+  "name": "Two by Twenty",
+  "description": "The classic long threshold session: two twenty-minute blocks just under your FTP with a five-minute break.",
+  "localized": {
+    "en": {
+      "name": "Two by Twenty",
+      "description": "The classic long threshold session: two twenty-minute blocks just under your FTP with a five-minute break."
+    },
+    "pl": {
+      "name": "Dwa razy dwadzieścia",
+      "description": "Klasyczna długa sesja progowa: dwa dwudziestominutowe odcinki tuż pod FTP i pięć minut przerwy."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["threshold"],
+  "source": {
+    "kind": "builtin",
+    "file": "two-by-twenty.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "tbtx-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "tbtx-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tbtx-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tbtx-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tbtx-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tbtx-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tbtx-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "tbtx-b",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "tbtx-w",
+          "durationSec": 1200,
+          "intensity": {
+            "ftpPct": 95
+          },
+          "rpm": 90,
+          "position": "seated",
+          "label": "@steady"
+        },
+        {
+          "kind": "steady",
+          "id": "tbtx-r",
+          "durationSec": 300,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 85,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "tbtx-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "tbtx-wu",
+    "cooldownBlockId": "tbtx-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

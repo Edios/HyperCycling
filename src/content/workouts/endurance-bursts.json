@@ -1,0 +1,152 @@
+{
+  "id": "endurance-bursts",
+  "name": "Endurance with Bursts",
+  "description": "Easy endurance riding with a short burst every seven minutes to keep things interesting.",
+  "localized": {
+    "en": {
+      "name": "Endurance with Bursts",
+      "description": "Easy endurance riding with a short burst every seven minutes to keep things interesting."
+    },
+    "pl": {
+      "name": "Wytrzymałość z wyskokami",
+      "description": "Spokojna jazda wytrzymałościowa z krótkim wyskokiem co siedem minut, żeby się nie nudzić."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["endurance", "sprint"],
+  "source": {
+    "kind": "builtin",
+    "file": "endurance-bursts.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "ebx-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "ebx-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ebx-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ebx-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ebx-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ebx-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ebx-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "ebx-e",
+      "times": 6,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "ebx-base",
+          "durationSec": 420,
+          "intensity": {
+            "ftpPct": 66
+          },
+          "rpm": 90,
+          "position": "seated",
+          "label": "@steady"
+        },
+        {
+          "kind": "steady",
+          "id": "ebx-burst",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 140
+          },
+          "rpm": 105,
+          "position": "seated",
+          "label": "@sprint",
+          "cue": "@sprint"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "ebx-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "ebx-wu",
+    "cooldownBlockId": "ebx-cd",
+    "flexRepeatId": "ebx-e",
+    "minTimes": 4,
+    "maxTimes": 8
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}
