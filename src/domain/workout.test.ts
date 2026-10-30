@@ -151,3 +151,74 @@ describe('duplicateWorkout', () => {
     expect(d.musicHints).toBeUndefined();
   });
 });
+
+describe('workoutSchema integrity rules', () => {
+  const st = (id: string, extra: object = {}): Block => ({
+    kind: 'steady',
+    id,
+    durationSec: 10,
+    intensity: { effort: 3 },
+    ...extra,
+  });
+  const rep = (id: string, times: number, children: Block[]): Block =>
+    ({ kind: 'repeat', id, times, blocks: children }) as Block;
+  const ok = (w: Workout): boolean => workoutSchema.safeParse(w).success;
+
+  it('rejects duplicate ids, including repeat children', () => {
+    expect(ok(makeWorkout({ blocks: [st('a'), st('a')], musicCues: [] }))).toBe(false);
+    expect(ok(makeWorkout({ blocks: [st('a'), rep('r', 2, [st('a')])], musicCues: [] }))).toBe(
+      false,
+    );
+    expect(ok(makeWorkout({ blocks: [rep('r', 2, [st('r')])], musicCues: [] }))).toBe(false);
+  });
+  it('rejects cues targeting a repeat block', () => {
+    const w = makeWorkout({
+      blocks: [rep('r', 2, [st('c')])],
+      musicCues: [{ blockId: 'r', rep: 1, track }],
+    });
+    expect(ok(w)).toBe(false);
+  });
+  it('limits cue rep by parent repeat times, and to 1 outside repeats', () => {
+    const blocks = [st('a'), rep('r', 3, [st('c')])];
+    expect(ok(makeWorkout({ blocks, musicCues: [{ blockId: 'c', rep: 3, track }] }))).toBe(true);
+    expect(ok(makeWorkout({ blocks, musicCues: [{ blockId: 'c', rep: 4, track }] }))).toBe(false);
+    expect(ok(makeWorkout({ blocks, musicCues: [{ blockId: 'a', rep: 1, track }] }))).toBe(true);
+    expect(ok(makeWorkout({ blocks, musicCues: [{ blockId: 'a', rep: 2, track }] }))).toBe(false);
+  });
+  it('accepts boundary values and a cue to a ramp inside a repeat', () => {
+    const ramp: Block = {
+      kind: 'ramp',
+      id: 'rp',
+      durationSec: 14400,
+      from: { effort: 1 },
+      to: { effort: 10 },
+    };
+    const blocks = [
+      st('a', { durationSec: 1, rpm: 30 }),
+      st('b', { durationSec: 14400, rpm: 150 }),
+      rep('r2', 2, [st('x')]),
+      rep('r50', 50, [ramp as never]),
+    ];
+    expect(ok(makeWorkout({ blocks, musicCues: [{ blockId: 'rp', rep: 50, track }] }))).toBe(true);
+  });
+});
+
+describe('duplicateWorkout details', () => {
+  it('refreshes updatedAt, suffixes localized names, truncates to 80', () => {
+    const w = makeWorkout({
+      name: 'n'.repeat(80),
+      localized: {
+        pl: { name: 'Polska', description: 'd' },
+        en: { name: 'English', description: 'd' },
+      },
+    });
+    const d = duplicateWorkout(w, ' (copy)');
+    expect(d.name).toHaveLength(80);
+    expect(d.name.endsWith(' (copy)')).toBe(true);
+    expect(d.localized?.pl?.name).toBe('Polska (copy)');
+    expect(d.localized?.en?.name).toBe('English (copy)');
+    expect(d.updatedAt).not.toBe(w.updatedAt);
+    expect(w.localized?.pl?.name).toBe('Polska');
+    expect(workoutSchema.safeParse(d).success).toBe(true);
+  });
+});

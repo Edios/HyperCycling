@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { effortLevelSchema, type EffortLevel } from './effort';
-import type { Lang, Localized } from './lang';
+import { LANGS, type Lang, type Localized } from './lang';
 import { newId } from './ids';
 
 export type Position = 'seated' | 'standing';
@@ -134,12 +134,6 @@ const musicCueSchema = z.object({
 
 const localizedSchema = z.object({ name: z.string(), description: z.string() });
 
-function collectIds(blocks: Block[]): string[] {
-  return blocks.flatMap((b) =>
-    b.kind === 'repeat' ? [b.id, ...b.blocks.map((c) => c.id)] : [b.id],
-  );
-}
-
 export const workoutSchema: z.ZodType<Workout> = z
   .object({
     id: z.string().min(1),
@@ -162,13 +156,38 @@ export const workoutSchema: z.ZodType<Workout> = z
     updatedAt: z.string(),
   })
   .superRefine((w, ctx) => {
-    const ids = new Set(collectIds(w.blocks));
+    // Block ids must be unique across the workout, repeat children included.
+    const seen = new Set<string>();
+    // blockId -> max allowed rep (1 outside repeats); repeat ids are not valid cue targets.
+    const maxRep = new Map<string, number>();
+    const register = (id: string, path: (string | number)[], rep: number | null): void => {
+      if (seen.has(id)) {
+        ctx.addIssue({ code: 'custom', message: `duplicate block id ${id}`, path });
+      }
+      seen.add(id);
+      if (rep !== null) maxRep.set(id, rep);
+    };
+    w.blocks.forEach((b, i) => {
+      if (b.kind === 'repeat') {
+        register(b.id, ['blocks', i, 'id'], null);
+        b.blocks.forEach((c, j) => register(c.id, ['blocks', i, 'blocks', j, 'id'], b.times));
+      } else {
+        register(b.id, ['blocks', i, 'id'], 1);
+      }
+    });
     w.musicCues.forEach((cue, i) => {
-      if (!ids.has(cue.blockId)) {
+      const max = maxRep.get(cue.blockId);
+      if (max === undefined) {
         ctx.addIssue({
           code: 'custom',
-          message: `music cue references unknown block ${cue.blockId}`,
+          message: `music cue must target an existing steady or ramp block, got ${cue.blockId}`,
           path: ['musicCues', i, 'blockId'],
+        });
+      } else if (cue.rep > max) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `music cue rep ${cue.rep} exceeds ${max}`,
+          path: ['musicCues', i, 'rep'],
         });
       }
     });
@@ -186,32 +205,38 @@ export function totalDurationSec(w: Workout): number {
   return total;
 }
 
+const MAX_NAME = 80;
+
+function withSuffix(name: string, suffix: string): string {
+  return name.slice(0, Math.max(0, MAX_NAME - suffix.length)) + suffix.slice(0, MAX_NAME);
+}
+
 export function duplicateWorkout(w: Workout, nameSuffix: string): Workout {
+  const copy = structuredClone(w);
   const idMap = new Map<string, string>();
-  const remap = (oldId: string): string => {
+  const remap = (b: Block | SteadyBlock | RampBlock): void => {
     const fresh = newId();
-    idMap.set(oldId, fresh);
-    return fresh;
+    idMap.set(b.id, fresh);
+    b.id = fresh;
   };
-  const blocks: Block[] = w.blocks.map((b) =>
-    b.kind === 'repeat'
-      ? { ...b, id: remap(b.id), blocks: b.blocks.map((c) => ({ ...c, id: remap(c.id) })) }
-      : { ...b, id: remap(b.id) },
-  );
-  const copy: Workout = {
-    ...structuredClone(w),
-    id: newId(),
-    name: w.name + nameSuffix,
-    source: { kind: 'user' },
-    blocks: structuredClone(blocks),
-    musicCues: w.musicCues.map((c) => ({
-      ...structuredClone(c),
-      blockId: idMap.get(c.blockId) ?? c.blockId,
-    })),
-  };
-  if (w.musicHints) {
+  for (const b of copy.blocks) {
+    remap(b);
+    if (b.kind === 'repeat') b.blocks.forEach(remap);
+  }
+  copy.id = newId();
+  copy.name = withSuffix(w.name, nameSuffix);
+  if (copy.localized) {
+    for (const lang of LANGS) {
+      const loc = copy.localized[lang];
+      if (loc) loc.name = withSuffix(loc.name, nameSuffix);
+    }
+  }
+  copy.source = { kind: 'user' };
+  copy.updatedAt = new Date().toISOString();
+  for (const c of copy.musicCues) c.blockId = idMap.get(c.blockId) ?? c.blockId;
+  if (copy.musicHints) {
     copy.musicHints = Object.fromEntries(
-      Object.entries(w.musicHints).map(([k, v]) => [idMap.get(k) ?? k, v]),
+      Object.entries(copy.musicHints).map(([k, v]) => [idMap.get(k) ?? k, v]),
     );
   }
   return copy;
