@@ -84,6 +84,18 @@ test('Hyperride: canvas renders under the HUD, H cycles layouts, G toggles playe
   await page.keyboard.press('KeyH');
   await expect(page.getByTestId('layout-immersive')).toBeVisible();
 
+  // A hard block: only the current block carries colour in the timeline.
+  for (let i = 0; i < 12; i += 1) {
+    const effort = Number(
+      (await page.getByTestId('effort-value-number').textContent())?.trim() ?? '0',
+    );
+    if (effort >= 8) break;
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(150);
+  }
+  await expect(page.getByTestId('timeline')).toHaveAttribute('data-tone', 'mono');
+  await shot('immersive-high-effort');
+
   await page.keyboard.press('KeyG');
   await expect(page.getByTestId('players-list')).toBeVisible();
   expect(errors).toEqual([]);

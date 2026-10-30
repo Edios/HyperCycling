@@ -166,6 +166,35 @@ describe('Timeline', () => {
     expect(bars[0]?.getAttribute('data-state')).toBe('past');
     expect(bars[1]?.getAttribute('data-state')).toBe('current');
   });
+  it('mono tone: past, current, next and future bars get their own classes; cursor stays', () => {
+    const four = [
+      ...segments,
+      seg({ index: 3, startSec: 240, durationSec: 60, effortStart: 5, effortEnd: 5 }),
+    ];
+    render(<Timeline segments={four} elapsedSec={90} tone="mono" />);
+    const root = screen.getByTestId('timeline');
+    expect(root.dataset['tone']).toBe('mono');
+    const bars = root.querySelectorAll<HTMLElement>('[data-state]');
+    expect(Array.from(bars).map((b) => b.dataset['state'])).toEqual([
+      'past',
+      'current',
+      'next',
+      'future',
+    ]);
+    expect(bars[0]?.className).toMatch(/mono_past/);
+    expect(bars[1]?.className).toMatch(/mono_current/);
+    expect(bars[2]?.className).toMatch(/mono_next/);
+    expect(bars[3]?.className).toMatch(/mono_future/);
+    // the zone colour is exposed for the CSS of the current and next bars
+    expect(bars[1]?.style.getPropertyValue('--z')).not.toBe('');
+    expect(bars[1]?.style.getPropertyValue('--c')).toBe('');
+    expect(root.querySelector('[data-cursor]')).not.toBeNull();
+  });
+  it('colour tone keeps the full colour classes', () => {
+    render(<Timeline segments={segments} elapsedSec={90} />);
+    expect(screen.getByTestId('timeline').dataset['tone']).toBe('color');
+    expect(screen.getByTestId('timeline').innerHTML).not.toMatch(/mono_/);
+  });
   it('sizes bars by duration and positions the cursor', () => {
     render(<Timeline segments={segments} elapsedSec={120} />);
     const root = screen.getByTestId('timeline');

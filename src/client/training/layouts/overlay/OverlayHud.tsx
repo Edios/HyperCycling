@@ -144,7 +144,7 @@ export function OverlayHud({
       <div className={styles.free}>{coach}</div>
       <div className={styles.controls}>{controls}</div>
       <div className={styles.bottom}>
-        <Timeline segments={segments} elapsedSec={view.elapsedSec} compact />
+        <Timeline segments={segments} elapsedSec={view.elapsedSec} compact tone="mono" />
       </div>
     </div>
   );
