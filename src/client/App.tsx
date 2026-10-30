@@ -10,6 +10,7 @@ import { PlanGallery } from './plans/PlanGallery';
 import { FreestyleTab } from './select/FreestyleTab';
 import { PlanTab } from './select/PlanTab';
 import { SelectShell } from './select/SelectShell';
+import { DevHyperride } from './screens/DevHyperride';
 import { TrainingScreen } from './training/TrainingScreen';
 
 /** The demo list is for development and e2e only: dev builds, or any build opened with ?dev. */
@@ -39,6 +40,7 @@ export function App() {
           }
         />
         <Route path="/setup/:workoutId" element={<SetupScreen />} />
+        <Route path="/dev/hyperride" element={<DevHyperride />} />
         <Route path="/train" element={<TrainingScreen />} />
         <Route path="/summary" element={<SummaryScreen />} />
         <Route path="/players" element={<PlayersScreen />} />

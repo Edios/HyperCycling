@@ -266,6 +266,9 @@ export const en = {
     cancel: 'Cancel',
   },
   placeholder: { body: 'This screen arrives in a later update.', plans: 'Plans' },
+  hyperride: {
+    unavailable: 'WebGL is not available on this computer. Using the Basic background.',
+  },
   dev: {
     title: 'Workouts',
     ride: 'Ride',

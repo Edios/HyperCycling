@@ -268,6 +268,9 @@ export const pl: Messages = {
     cancel: 'Anuluj',
   },
   placeholder: { body: 'Ten ekran pojawi się w kolejnej aktualizacji.', plans: 'Plany' },
+  hyperride: {
+    unavailable: 'Ten komputer nie obsługuje WebGL. Używam tła Basic.',
+  },
   dev: {
     title: 'Treningi',
     ride: 'Jedź',
