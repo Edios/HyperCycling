@@ -1,0 +1,151 @@
+{
+  "id": "hill-repeats-seated",
+  "name": "Seated Hill Repeats",
+  "description": "Six four-minute climbs in the saddle at a low, strong cadence, then a roll back down.",
+  "localized": {
+    "en": {
+      "name": "Seated Hill Repeats",
+      "description": "Six four-minute climbs in the saddle at a low, strong cadence, then a roll back down."
+    },
+    "pl": {
+      "name": "Podjazdy siedząc",
+      "description": "Sześć czterominutowych podjazdów w siodle przy niskiej, mocnej kadencji, potem zjazd na regenerację."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["climb"],
+  "source": {
+    "kind": "builtin",
+    "file": "hill-repeats-seated.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "hrsx-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "hrsx-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hrsx-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hrsx-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hrsx-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hrsx-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hrsx-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "hrsx-h",
+      "times": 6,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "hrsx-up",
+          "durationSec": 240,
+          "intensity": {
+            "ftpPct": 92
+          },
+          "rpm": 70,
+          "position": "seated",
+          "label": "@climb"
+        },
+        {
+          "kind": "steady",
+          "id": "hrsx-dn",
+          "durationSec": 120,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 85,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "hrsx-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "hrsx-wu",
+    "cooldownBlockId": "hrsx-cd",
+    "flexRepeatId": "hrsx-h",
+    "minTimes": 4,
+    "maxTimes": 8
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

@@ -1,0 +1,180 @@
+{
+  "id": "hour-of-power",
+  "name": "Hour of Power",
+  "description": "A full music class: a flat song, a climb song, a short sprint and a breather, repeated four times. Let the playlist run the ride.",
+  "localized": {
+    "en": {
+      "name": "Hour of Power",
+      "description": "A full music class: a flat song, a climb song, a short sprint and a breather, repeated four times. Let the playlist run the ride."
+    },
+    "pl": {
+      "name": "Godzina mocy",
+      "description": "Pełne zajęcia z muzyką: piosenka na płaskim, piosenka na podjazd, krótki sprint i oddech, cztery razy. Niech playlista prowadzi jazdę."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "climb", "sprint"],
+  "source": {
+    "kind": "builtin",
+    "file": "hour-of-power.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "hopx-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "hopx-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hopx-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hopx-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hopx-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hopx-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hopx-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "hopx-h",
+      "times": 4,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "hopx-flat",
+          "durationSec": 300,
+          "intensity": {
+            "ftpPct": 75
+          },
+          "rpm": 95,
+          "position": "seated",
+          "label": "@steady"
+        },
+        {
+          "kind": "steady",
+          "id": "hopx-climb",
+          "durationSec": 240,
+          "intensity": {
+            "ftpPct": 90
+          },
+          "rpm": 68,
+          "position": "seated",
+          "label": "@climb"
+        },
+        {
+          "kind": "steady",
+          "id": "hopx-spr",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 150
+          },
+          "rpm": 105,
+          "position": "seated",
+          "label": "@sprint",
+          "cue": "@sprint"
+        },
+        {
+          "kind": "steady",
+          "id": "hopx-rec",
+          "durationSec": 160,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 85,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "hopx-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "musicHints": {
+    "hopx-flat": "Steady upbeat song, 115-125 BPM, about 5 min. Ride seated in rhythm.",
+    "hopx-climb": "Slow, heavy, building song, 65-75 BPM, about 4 min. Pedal in time with the beat.",
+    "hopx-spr": "The drop or final chorus: sprint for the whole 20 seconds, around 128 BPM.",
+    "hopx-rec": "Calm song, 80-95 BPM, about 2:40. Breathe and drink."
+  },
+  "scaling": {
+    "warmupBlockId": "hopx-wu",
+    "cooldownBlockId": "hopx-cd",
+    "flexRepeatId": "hopx-h",
+    "minTimes": 2,
+    "maxTimes": 5
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

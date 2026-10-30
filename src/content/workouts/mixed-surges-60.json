@@ -1,0 +1,163 @@
+{
+  "id": "mixed-surges-60",
+  "name": "Tempo with Surges",
+  "description": "Steady tempo riding broken by a short surge, like a group ride. Four rounds, each with a breather.",
+  "localized": {
+    "en": {
+      "name": "Tempo with Surges",
+      "description": "Steady tempo riding broken by a short surge, like a group ride. Four rounds, each with a breather."
+    },
+    "pl": {
+      "name": "Tempo z zrywami",
+      "description": "Równe tempo przerywane krótkim zrywem, jak na jeździe grupowej. Cztery rundy, każda z oddechem."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["tempo", "sprint"],
+  "source": {
+    "kind": "builtin",
+    "file": "mixed-surges-60.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "ms6x-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "ms6x-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ms6x-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ms6x-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ms6x-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ms6x-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ms6x-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "ms6x-m",
+      "times": 4,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "ms6x-t",
+          "durationSec": 420,
+          "intensity": {
+            "ftpPct": 75
+          },
+          "rpm": 90,
+          "position": "seated",
+          "label": "@steady"
+        },
+        {
+          "kind": "steady",
+          "id": "ms6x-su",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 120
+          },
+          "rpm": 100,
+          "position": "seated",
+          "label": "@interval",
+          "cue": "@attack"
+        },
+        {
+          "kind": "steady",
+          "id": "ms6x-r",
+          "durationSec": 120,
+          "intensity": {
+            "ftpPct": 70
+          },
+          "rpm": 88,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "ms6x-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "ms6x-wu",
+    "cooldownBlockId": "ms6x-cd",
+    "flexRepeatId": "ms6x-m",
+    "minTimes": 3,
+    "maxTimes": 6
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

@@ -1,0 +1,151 @@
+{
+  "id": "recovery-spin-45",
+  "name": "Recovery Spin 45",
+  "description": "A long, gentle spin with a quick leg shake-out every eight minutes. Conversation pace all the way.",
+  "localized": {
+    "en": {
+      "name": "Recovery Spin 45",
+      "description": "A long, gentle spin with a quick leg shake-out every eight minutes. Conversation pace all the way."
+    },
+    "pl": {
+      "name": "Regeneracyjne kręcenie 45",
+      "description": "Długie, łagodne kręcenie z krótkim rozruchem nóg co osiem minut. Cały czas tempo rozmowy."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["recovery"],
+  "source": {
+    "kind": "builtin",
+    "file": "recovery-spin-45.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "rs4x-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "rs4x-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rs4x-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rs4x-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rs4x-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rs4x-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rs4x-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "rs4x-e",
+      "times": 4,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "rs4x-ea",
+          "durationSec": 480,
+          "intensity": {
+            "ftpPct": 52
+          },
+          "rpm": 85,
+          "position": "seated",
+          "label": "@recovery"
+        },
+        {
+          "kind": "steady",
+          "id": "rs4x-sp",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 52
+          },
+          "rpm": 95,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "rs4x-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "rs4x-wu",
+    "cooldownBlockId": "rs4x-cd",
+    "flexRepeatId": "rs4x-e",
+    "minTimes": 3,
+    "maxTimes": 5
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

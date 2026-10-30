@@ -1,0 +1,152 @@
+{
+  "id": "sprints-6x15",
+  "name": "Six Fifteens",
+  "description": "Six all-out fifteen-second sprints with long recoveries. Quality over quantity: go full gas, then rest fully.",
+  "localized": {
+    "en": {
+      "name": "Six Fifteens",
+      "description": "Six all-out fifteen-second sprints with long recoveries. Quality over quantity: go full gas, then rest fully."
+    },
+    "pl": {
+      "name": "Sześć piętnastek",
+      "description": "Sześć piętnastosekundowych sprintów na maksa z długimi przerwami. Jakość, nie ilość: pełny gaz, potem pełny odpoczynek."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["sprint"],
+  "source": {
+    "kind": "builtin",
+    "file": "sprints-6x15.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "s6x-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "s6x-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "s6x-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "s6x-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "s6x-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "s6x-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "s6x-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "s6x-s",
+      "times": 6,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "s6x-go",
+          "durationSec": 15,
+          "intensity": {
+            "ftpPct": 170
+          },
+          "rpm": 108,
+          "position": "seated",
+          "label": "@sprint",
+          "cue": "@sprint"
+        },
+        {
+          "kind": "steady",
+          "id": "s6x-off",
+          "durationSec": 285,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 85,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "s6x-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "s6x-wu",
+    "cooldownBlockId": "s6x-cd",
+    "flexRepeatId": "s6x-s",
+    "minTimes": 4,
+    "maxTimes": 8
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

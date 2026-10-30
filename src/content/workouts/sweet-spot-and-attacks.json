@@ -1,0 +1,163 @@
+{
+  "id": "sweet-spot-and-attacks",
+  "name": "Sweet Spot and Attacks",
+  "description": "Three ten-minute sweet spot blocks, each ending with a half-minute attack. Fatigue teaches you to sprint.",
+  "localized": {
+    "en": {
+      "name": "Sweet Spot and Attacks",
+      "description": "Three ten-minute sweet spot blocks, each ending with a half-minute attack. Fatigue teaches you to sprint."
+    },
+    "pl": {
+      "name": "Sweet spot i ataki",
+      "description": "Trzy dziesięciominutowe odcinki sweet spot, każdy kończy się półminutowym atakiem. Zmęczenie uczy sprintu."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["sweetspot", "sprint"],
+  "source": {
+    "kind": "builtin",
+    "file": "sweet-spot-and-attacks.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "ssaax-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "ssaax-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ssaax-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ssaax-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ssaax-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ssaax-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ssaax-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "ssaax-s",
+      "times": 3,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "ssaax-ss",
+          "durationSec": 600,
+          "intensity": {
+            "ftpPct": 90
+          },
+          "rpm": 90,
+          "position": "seated",
+          "label": "@steady"
+        },
+        {
+          "kind": "steady",
+          "id": "ssaax-at",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 100,
+          "position": "seated",
+          "label": "@interval",
+          "cue": "@attack"
+        },
+        {
+          "kind": "steady",
+          "id": "ssaax-r",
+          "durationSec": 300,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 85,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "ssaax-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "ssaax-wu",
+    "cooldownBlockId": "ssaax-cd",
+    "flexRepeatId": "ssaax-s",
+    "minTimes": 2,
+    "maxTimes": 4
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

@@ -1,0 +1,151 @@
+{
+  "id": "recovery-spin-flow",
+  "name": "Recovery Flow",
+  "description": "Easy spinning with a light cadence wave: a few minutes slow, a few minutes faster, never hard.",
+  "localized": {
+    "en": {
+      "name": "Recovery Flow",
+      "description": "Easy spinning with a light cadence wave: a few minutes slow, a few minutes faster, never hard."
+    },
+    "pl": {
+      "name": "Regeneracyjny przepływ",
+      "description": "Lekkie kręcenie z falą kadencji: kilka minut wolniej, kilka szybciej, nigdy mocno."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["recovery", "cadence"],
+  "source": {
+    "kind": "builtin",
+    "file": "recovery-spin-flow.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "rsfx-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "rsfx-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rsfx-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rsfx-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rsfx-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rsfx-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rsfx-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "rsfx-f",
+      "times": 3,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "rsfx-lo",
+          "durationSec": 240,
+          "intensity": {
+            "ftpPct": 50
+          },
+          "rpm": 80,
+          "position": "seated",
+          "label": "@recovery"
+        },
+        {
+          "kind": "steady",
+          "id": "rsfx-hi",
+          "durationSec": 240,
+          "intensity": {
+            "ftpPct": 52
+          },
+          "rpm": 95,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "rsfx-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "rsfx-wu",
+    "cooldownBlockId": "rsfx-cd",
+    "flexRepeatId": "rsfx-f",
+    "minTimes": 2,
+    "maxTimes": 4
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}
