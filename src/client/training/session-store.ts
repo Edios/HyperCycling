@@ -72,6 +72,7 @@ export interface SessionSideEffects {
   clear(): Promise<void>;
 }
 
+let engine: SessionEngine | undefined;
 let overrides: SessionSideEffects | null = null;
 let defaultWakeLock: WakeLockController | undefined;
 let autosave: Autosave | undefined;
@@ -79,8 +80,7 @@ let autosave: Autosave | undefined;
 /** Test hook: pass `null` to restore the real wake lock and repositories. */
 export function configureSessionSideEffects(fx: SessionSideEffects | null): void {
   overrides = fx;
-  autosave?.dispose();
-  autosave = undefined;
+  disposeAutosave();
 }
 
 function wakeLock(): WakeLockController {
@@ -89,18 +89,59 @@ function wakeLock(): WakeLockController {
   return defaultWakeLock;
 }
 
-function save(a: ActiveSession): Promise<void> {
-  if (overrides) return overrides.save(a);
+/** All persistence runs on one chain so a late save can never land after a clear. */
+let chain: Promise<void> = Promise.resolve();
+/** Bumped whenever pending saves must be dropped (dispose, stop, finish, load). */
+let generation = 0;
+
+function enqueue(op: () => Promise<void>, label: string): Promise<void> {
+  const run = async (): Promise<void> => {
+    try {
+      await op();
+    } catch (err) {
+      console.warn(label + ' failed', err);
+    }
+  };
+  chain = chain.then(run);
+  return chain;
+}
+
+function rawSave(fx: SessionSideEffects | null, a: ActiveSession): Promise<void> {
+  if (fx) return fx.save(a);
   return getRepositories().then((r) => r.activeSession.put(a));
 }
 
+function rawClear(fx: SessionSideEffects | null): Promise<void> {
+  if (fx) return fx.clear();
+  return getRepositories().then((r) => r.activeSession.clear());
+}
+
+function save(a: ActiveSession): Promise<void> {
+  const gen = generation;
+  const fx = overrides;
+  return enqueue(async () => {
+    if (gen === generation) await rawSave(fx, a);
+  }, 'Autosave');
+}
+
 function clearActive(): Promise<void> {
-  const p = overrides ? overrides.clear() : getRepositories().then((r) => r.activeSession.clear());
-  return p.catch(() => undefined);
+  generation++; // drop saves that have not started yet
+  const fx = overrides;
+  return enqueue(() => rawClear(fx), 'Clearing active session');
+}
+
+function disposeAutosave(): void {
+  generation++;
+  autosave?.dispose();
+  autosave = undefined;
 }
 
 function getAutosave(): Autosave {
-  autosave ??= createAutosave({ save, clear: clearActive });
+  autosave ??= createAutosave({
+    save,
+    clear: clearActive,
+    canResume: () => engine?.canResume() ?? false,
+  });
   return autosave;
 }
 
@@ -117,8 +158,6 @@ export function subscribeSessionEvents(cb: Listener): () => void {
 }
 
 // ---- store -------------------------------------------------------------------------------------
-
-let engine: SessionEngine | undefined;
 
 export const useSessionStore = create<SessionStore>((set, get) => {
   const sync = (): void => {
@@ -142,8 +181,13 @@ export const useSessionStore = create<SessionStore>((set, get) => {
     muted: false,
 
     load(r, snapshot) {
-      autosave?.dispose();
-      autosave = undefined;
+      if (engine) {
+        // Unload the previous session cleanly. Resuming from a snapshot keeps the stored record.
+        engine = undefined;
+        disposeAutosave();
+        void wakeLock().release();
+        if (!snapshot) void clearActive();
+      }
       engine = snapshot
         ? restoreSessionEngine(r.segments, clock, snapshot)
         : createSessionEngine(r.segments, clock);
@@ -183,8 +227,7 @@ export const useSessionStore = create<SessionStore>((set, get) => {
     stop() {
       const hadRuntime = engine !== undefined;
       engine = undefined;
-      autosave?.dispose();
-      autosave = undefined;
+      disposeAutosave();
       set({ runtime: undefined, state: IDLE_STATE });
       void wakeLock().release();
       if (hadRuntime) void clearActive();
@@ -199,16 +242,27 @@ export const useSessionStore = create<SessionStore>((set, get) => {
       const events = engine.tick();
       sync();
       const state = get().state;
-      for (const e of events) for (const l of [...listeners]) l(e, state);
-      if (events.some((e) => e.type === 'finished')) {
-        autosave?.dispose();
-        autosave = undefined;
-        void wakeLock().release();
-        void clearActive();
-      } else if (events.some((e) => e.type === 'segmentChanged')) {
-        getAutosave().onEvent(get());
-      } else {
-        getAutosave().onTick(get());
+      const finished = events.some((e) => e.type === 'finished');
+      try {
+        for (const e of events) {
+          for (const l of [...listeners]) {
+            try {
+              l(e, state);
+            } catch (err) {
+              console.error('Session event listener failed', err);
+            }
+          }
+        }
+      } finally {
+        if (finished) {
+          disposeAutosave();
+          void wakeLock().release();
+          void clearActive();
+        }
+      }
+      if (!finished) {
+        if (events.some((e) => e.type === 'segmentChanged')) getAutosave().onEvent(get());
+        else getAutosave().onTick(get());
       }
       return events;
     },

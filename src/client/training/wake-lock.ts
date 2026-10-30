@@ -10,18 +10,24 @@ export interface WakeLockController {
 export function createWakeLock(nav: Navigator = navigator): WakeLockController {
   let held = false;
   let sentinel: WakeLockSentinel | null = null;
+  let pending = false;
 
   async function request(): Promise<void> {
-    if (!('wakeLock' in nav) || !nav.wakeLock) return;
+    if (!('wakeLock' in nav) || !nav.wakeLock || pending) return;
+    pending = true;
     try {
       const s = await nav.wakeLock.request('screen');
       if (!held) {
         await s.release().catch(() => undefined);
         return;
       }
+      const previous = sentinel;
       sentinel = s;
+      if (previous && previous !== s) await previous.release().catch(() => undefined);
     } catch {
       // Denied or unsupported at runtime: the workout must not be affected.
+    } finally {
+      pending = false;
     }
   }
 

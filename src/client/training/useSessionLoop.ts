@@ -12,8 +12,12 @@ export function useSessionLoop(): void {
     if (!loaded) return;
     let frame = 0;
     const loop = (): void => {
-      useSessionStore.getState().tick();
-      frame = requestAnimationFrame(loop);
+      frame = requestAnimationFrame(loop); // schedule first: a failing tick must not stop the loop
+      try {
+        useSessionStore.getState().tick();
+      } catch (err) {
+        console.error('Session tick failed', err);
+      }
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);

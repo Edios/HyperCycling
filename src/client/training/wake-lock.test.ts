@@ -59,4 +59,31 @@ describe('createWakeLock', () => {
     } as unknown as Navigator;
     await expect(createWakeLock(nav).acquire()).resolves.toBeUndefined();
   });
+
+  it('does not issue concurrent requests and releases a replaced sentinel', async () => {
+    const sentinels: { release: ReturnType<typeof vi.fn> }[] = [];
+    let resolve: () => void = () => undefined;
+    const request = vi.fn(
+      () =>
+        new Promise((res) => {
+          resolve = () => {
+            const s = { release: vi.fn(async () => undefined) };
+            sentinels.push(s);
+            res(s);
+          };
+        }),
+    );
+    const wl = createWakeLock({ wakeLock: { request } } as unknown as Navigator);
+    const p = wl.acquire();
+    setVisibility('visible'); // while the first request is pending
+    expect(request).toHaveBeenCalledTimes(1);
+    resolve();
+    await p;
+    setVisibility('visible');
+    expect(request).toHaveBeenCalledTimes(2);
+    resolve();
+    await vi.waitFor(() => expect(sentinels[0]?.release).toHaveBeenCalledTimes(1));
+    await wl.release();
+    expect(sentinels[1]?.release).toHaveBeenCalledTimes(1);
+  });
 });

@@ -34,6 +34,8 @@ function makeRuntime(plan?: SessionRuntime['plan']): SessionRuntime {
   return rt;
 }
 
+const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+
 let now = 0;
 const saved: ActiveSession[] = [];
 const wl = { acquire: vi.fn(async () => undefined), release: vi.fn(async () => undefined) };
@@ -127,7 +129,7 @@ describe('session store', () => {
     expect(useSessionStore.getState().muted).toBe(false);
   });
 
-  it('stop unloads the runtime, clears the active session and releases the wake lock', () => {
+  it('stop unloads the runtime, clears the active session and releases the wake lock', async () => {
     const s = useSessionStore.getState();
     s.load(makeRuntime());
     s.start();
@@ -135,11 +137,12 @@ describe('session store', () => {
     s.stop();
     expect(useSessionStore.getState().runtime).toBeUndefined();
     expect(useSessionStore.getState().state.status).toBe('idle');
+    await flush();
     expect(cleared).toBe(before + 1);
     expect(wl.release).toHaveBeenCalled();
   });
 
-  it('tick publishes each engine event exactly once and finish clears + releases', () => {
+  it('tick publishes each engine event exactly once and finish clears + releases', async () => {
     const s = useSessionStore.getState();
     const seen: string[] = [];
     const unsub = subscribeSessionEvents((e) => seen.push(e.type));
@@ -156,6 +159,7 @@ describe('session store', () => {
     s.tick();
     expect(useSessionStore.getState().state.status).toBe('finished');
     expect(seen.filter((t) => t === 'finished')).toHaveLength(1);
+    await flush();
     expect(cleared).toBe(clearedBefore + 1);
     expect(wl.release).toHaveBeenCalled();
     s.tick();
@@ -179,7 +183,7 @@ describe('session store', () => {
     expect(wl.acquire).toHaveBeenCalledTimes(2);
   });
 
-  it('autosaves immediately on pause and on segment change, never during countdown', () => {
+  it('autosaves immediately on pause and on segment change, never during countdown', async () => {
     const plan = { planId: 'p', week: 2, slot: 'progres' as const };
     const s = useSessionStore.getState();
     s.load(makeRuntime(plan));
@@ -190,8 +194,10 @@ describe('session store', () => {
     now = 3000;
     s.tick();
     now = 5000;
+    await flush();
     const beforePause = saved.length; // first running tick saves once
     s.pause();
+    await flush();
     expect(saved).toHaveLength(beforePause + 1);
     const last = saved.at(-1);
     expect(last?.snapshot.status).toBe('paused');
@@ -201,8 +207,119 @@ describe('session store', () => {
     s.resume();
     now = 14000;
     s.tick();
+    await flush();
     expect(saved.length).toBeGreaterThanOrEqual(2);
     expect(saved.at(-1)?.snapshot.segmentIndex).toBe(1);
+  });
+});
+
+describe('session store resilience', () => {
+  it('a throwing listener does not abort tick; finish still clears and releases', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const s = useSessionStore.getState();
+    const seen: string[] = [];
+    const u1 = subscribeSessionEvents(() => {
+      throw new Error('boom');
+    });
+    const u2 = subscribeSessionEvents((e) => seen.push(e.type));
+    s.load(makeRuntime());
+    s.start();
+    now = 3000;
+    s.tick();
+    now = 30000;
+    const clearedBefore = cleared;
+    const releasedBefore = wl.release.mock.calls.length;
+    expect(() => s.tick()).not.toThrow();
+    expect(seen).toContain('finished');
+    await flush();
+    expect(cleared).toBe(clearedBefore + 1);
+    expect(wl.release.mock.calls.length).toBeGreaterThan(releasedBefore);
+    expect(err).toHaveBeenCalled();
+    u1();
+    u2();
+    err.mockRestore();
+  });
+
+  it('a late save never lands after clear', async () => {
+    const order: string[] = [];
+    let releaseSave: () => void = () => undefined;
+    configureSessionSideEffects({
+      wakeLock: wl,
+      save: () =>
+        new Promise<void>((res) => {
+          releaseSave = () => {
+            order.push('save');
+            res();
+          };
+        }),
+      clear: async () => {
+        order.push('clear');
+      },
+    });
+    const s = useSessionStore.getState();
+    s.load(makeRuntime());
+    s.start();
+    now = 3000;
+    s.tick();
+    now = 4000;
+    s.tick(); // first running tick starts a slow save
+    s.pause(); // queued second save
+    await flush(); // the first save is now in flight
+    s.stop(); // clear queued behind the slow save; pending save dropped
+    releaseSave();
+    await vi.waitFor(() => expect(order).toContain('clear'));
+    expect(order.at(-1)).toBe('clear');
+    expect(order.filter((o) => o === 'save')).toHaveLength(1);
+  });
+
+  it('logs rejected saves and synchronous throws instead of swallowing', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    configureSessionSideEffects({
+      wakeLock: wl,
+      save: async () => {
+        throw new Error('disk');
+      },
+      clear: () => {
+        throw new Error('sync');
+      },
+    });
+    const s = useSessionStore.getState();
+    s.load(makeRuntime());
+    s.start();
+    now = 3000;
+    s.tick();
+    now = 4000;
+    s.tick();
+    await flush();
+    s.stop();
+    await vi.waitFor(() => expect(warn.mock.calls.length).toBeGreaterThanOrEqual(2));
+    warn.mockRestore();
+  });
+
+  it('load over a running session releases the lock and drops its autosave', async () => {
+    const s = useSessionStore.getState();
+    s.load(makeRuntime());
+    s.start();
+    now = 3000;
+    s.tick();
+    const releases = wl.release.mock.calls.length;
+    const clears = cleared;
+    s.load(makeRuntime());
+    expect(wl.release.mock.calls.length).toBeGreaterThan(releases);
+    await flush();
+    expect(cleared).toBe(clears + 1);
+    expect(useSessionStore.getState().state.status).toBe('idle');
+  });
+
+  it('load with a snapshot over a running session keeps the stored record', async () => {
+    const s = useSessionStore.getState();
+    s.load(makeRuntime());
+    s.start();
+    const clears = cleared;
+    s.load(makeRuntime(), { segmentIndex: 0, workoutElapsedSec: 2, status: 'paused' });
+    await flush();
+    expect(cleared).toBe(clears);
+    expect(useSessionStore.getState().state.status).toBe('paused');
   });
 });
 

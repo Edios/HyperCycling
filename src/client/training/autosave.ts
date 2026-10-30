@@ -13,13 +13,19 @@ export interface AutosaveOptions {
   save(a: ActiveSession): Promise<void>;
   clear(): Promise<void>;
   intervalMs?: number;
+  /** Persistence gate (the engine's canResume). Defaults to running/paused state. */
+  canResume?(): boolean;
 }
 
 /** Builds the record to persist, or undefined when a snapshot would be meaningless. */
-export function toActiveSession(s: SessionStore): ActiveSession | undefined {
+export function toActiveSession(
+  s: SessionStore,
+  canResume?: () => boolean,
+): ActiveSession | undefined {
   const { runtime, state } = s;
   if (!runtime) return undefined;
   if (state.status !== 'running' && state.status !== 'paused') return undefined;
+  if (canResume && !canResume()) return undefined;
   const active: ActiveSession = {
     workoutId: runtime.workout.id,
     config: runtime.config,
@@ -41,10 +47,14 @@ export function createAutosave(opts: AutosaveOptions): Autosave {
   let disposed = false;
 
   function write(s: SessionStore): void {
-    const a = toActiveSession(s);
+    const a = toActiveSession(s, opts.canResume);
     if (!a) return;
     lastSavedAt = Date.now();
-    void opts.save(a).catch(() => undefined); // persistence failures never affect the workout
+    try {
+      opts.save(a).catch((err: unknown) => console.warn('Autosave failed', err));
+    } catch (err) {
+      console.warn('Autosave failed', err); // persistence failures never affect the workout
+    }
   }
 
   return {

@@ -66,4 +66,23 @@ describe('useSessionLoop', () => {
     unmount();
     expect(cancelled).toEqual([2]);
   });
+
+  it('keeps looping when tick throws', () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    useSessionStore.getState().load({
+      workout,
+      segments: flattenWorkout(workout),
+      config: { background: 'basic', hud: 'solo', playerIds: [], music: false },
+      players: [],
+    });
+    vi.spyOn(useSessionStore.getState(), 'tick').mockImplementation(() => {
+      throw new Error('boom');
+    });
+    render(<Host />);
+    frames[0]?.(0);
+    expect(frames).toHaveLength(2);
+    frames[1]?.(0);
+    expect(frames).toHaveLength(3);
+    err.mockRestore();
+  });
 });
