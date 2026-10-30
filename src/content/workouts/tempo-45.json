@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -111,7 +111,7 @@
         {
           "kind": "steady",
           "id": "t4-3",
-          "durationSec": 120,
+          "durationSec": 180,
           "intensity": {
             "effort": 2
           },
@@ -132,7 +132,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],

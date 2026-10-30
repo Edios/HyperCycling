@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -105,7 +105,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Build-up"
+      "label": "@steady"
     },
     {
       "kind": "repeat",
@@ -117,11 +117,11 @@
           "id": "fm-3",
           "durationSec": 240,
           "intensity": {
-            "ftpPct": 88
+            "ftpPct": 82
           },
           "rpm": 68,
           "position": "seated",
-          "label": "Climb"
+          "label": "@climb"
         },
         {
           "kind": "steady",
@@ -132,8 +132,8 @@
           },
           "rpm": 108,
           "position": "seated",
-          "label": "Sprint",
-          "cue": "Sprint!"
+          "label": "@sprint",
+          "cue": "@sprint"
         },
         {
           "kind": "steady",
@@ -159,7 +159,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],
@@ -167,7 +167,8 @@
   "musicHints": {
     "fm-1": "Easy warm-up song, 95-110 BPM, relaxed mood, about 4 min.",
     "fm-3": "Song that builds, 80-95 BPM, about 4 min. Climb seated and keep the effort steady.",
-    "fm-4": "Sprint at the last big drop of the song."
+    "fm-4": "Sprint at the last big drop of the song. Keep the beat near 108 BPM.",
+    "fm-5": "Stay with the current song, feel the beat around 88 BPM."
   },
   "scaling": {
     "warmupBlockId": "fm-wu",

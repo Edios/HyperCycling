@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -102,7 +102,7 @@
       },
       "rpm": 85,
       "position": "seated",
-      "label": "Wave 1"
+      "label": "@steady"
     },
     {
       "kind": "steady",
@@ -113,8 +113,8 @@
       },
       "rpm": 93,
       "position": "seated",
-      "label": "Chorus surge",
-      "cue": "Chorus!"
+      "label": "@interval",
+      "cue": "@attack"
     },
     {
       "kind": "steady",
@@ -125,7 +125,7 @@
       },
       "rpm": 88,
       "position": "seated",
-      "label": "Wave 2"
+      "label": "@steady"
     },
     {
       "kind": "steady",
@@ -136,8 +136,8 @@
       },
       "rpm": 96,
       "position": "seated",
-      "label": "Chorus surge",
-      "cue": "Chorus!"
+      "label": "@interval",
+      "cue": "@attack"
     },
     {
       "kind": "steady",
@@ -148,7 +148,7 @@
       },
       "rpm": 92,
       "position": "seated",
-      "label": "Wave 3"
+      "label": "@steady"
     },
     {
       "kind": "steady",
@@ -159,8 +159,8 @@
       },
       "rpm": 100,
       "position": "seated",
-      "label": "Chorus surge",
-      "cue": "Chorus!"
+      "label": "@interval",
+      "cue": "@attack"
     },
     {
       "kind": "steady",
@@ -171,7 +171,7 @@
       },
       "rpm": 95,
       "position": "seated",
-      "label": "Wave 4"
+      "label": "@steady"
     },
     {
       "kind": "steady",
@@ -182,8 +182,8 @@
       },
       "rpm": 103,
       "position": "seated",
-      "label": "Chorus surge",
-      "cue": "Peak chorus!"
+      "label": "@interval",
+      "cue": "@attack"
     },
     {
       "kind": "steady",
@@ -194,7 +194,7 @@
       },
       "rpm": 92,
       "position": "seated",
-      "label": "Wave 5"
+      "label": "@steady"
     },
     {
       "kind": "steady",
@@ -205,8 +205,8 @@
       },
       "rpm": 100,
       "position": "seated",
-      "label": "Chorus surge",
-      "cue": "Chorus!"
+      "label": "@interval",
+      "cue": "@attack"
     },
     {
       "kind": "steady",
@@ -217,7 +217,7 @@
       },
       "rpm": 88,
       "position": "seated",
-      "label": "Wave 6"
+      "label": "@steady"
     },
     {
       "kind": "steady",
@@ -228,8 +228,8 @@
       },
       "rpm": 96,
       "position": "seated",
-      "label": "Chorus surge",
-      "cue": "Chorus!"
+      "label": "@interval",
+      "cue": "@attack"
     },
     {
       "kind": "steady",
@@ -240,7 +240,7 @@
       },
       "rpm": 85,
       "position": "seated",
-      "label": "Wave 7"
+      "label": "@steady"
     },
     {
       "kind": "steady",
@@ -251,8 +251,8 @@
       },
       "rpm": 93,
       "position": "seated",
-      "label": "Chorus surge",
-      "cue": "Chorus!"
+      "label": "@interval",
+      "cue": "@attack"
     },
     {
       "kind": "ramp",
@@ -266,19 +266,26 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],
   "fallbackPlaylist": [],
   "musicHints": {
-    "rw-1": "Song with a clear beat, 110-120 BPM, steady and groovy, about 4 min. Pedal on the beat.",
-    "rw-3": "Song with a clear beat, 113-123 BPM, steady and groovy, about 4 min. Pedal on the beat.",
-    "rw-5": "Song with a clear beat, 117-127 BPM, steady and groovy, about 4 min. Pedal on the beat.",
-    "rw-7": "Song with a clear beat, 120-130 BPM, steady and groovy, about 4 min. Pedal on the beat.",
-    "rw-9": "Song with a clear beat, 117-127 BPM, steady and groovy, about 4 min. Pedal on the beat.",
-    "rw-11": "Song with a clear beat, 113-123 BPM, steady and groovy, about 4 min. Pedal on the beat.",
-    "rw-13": "Song with a clear beat, 110-120 BPM, steady and groovy, about 4 min. Pedal on the beat."
+    "rw-1": "Song at 85 BPM (or double time, 170-190 BPM), calm mood, about 4 min. Pedal on the beat.",
+    "rw-3": "Song at 88 BPM (or double time, 170-190 BPM), groovy mood, about 4 min. Pedal on the beat.",
+    "rw-5": "Song at 92 BPM (or double time, 170-190 BPM), driving mood, about 4 min. Pedal on the beat.",
+    "rw-7": "Song at 95 BPM (or double time, 170-190 BPM), euphoric mood, about 4 min. Pedal on the beat.",
+    "rw-9": "Song at 92 BPM (or double time, 170-190 BPM), uplifting mood, about 4 min. Pedal on the beat.",
+    "rw-11": "Song at 88 BPM (or double time, 170-190 BPM), bold mood, about 4 min. Pedal on the beat.",
+    "rw-13": "Song at 85 BPM (or double time, 170-190 BPM), mellow mood, about 4 min. Pedal on the beat.",
+    "rw-2": "Stay with the current song, feel the beat around 93 BPM.",
+    "rw-4": "Stay with the current song, feel the beat around 96 BPM.",
+    "rw-6": "Stay with the current song, feel the beat around 100 BPM.",
+    "rw-8": "Stay with the current song, feel the beat around 103 BPM.",
+    "rw-10": "Stay with the current song, feel the beat around 100 BPM.",
+    "rw-12": "Stay with the current song, feel the beat around 96 BPM.",
+    "rw-14": "Stay with the current song, feel the beat around 93 BPM."
   },
   "scaling": {
     "warmupBlockId": "rw-wu",

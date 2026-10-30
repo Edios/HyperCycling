@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -107,7 +107,7 @@
           },
           "rpm": 70,
           "position": "seated",
-          "label": "Seated climb"
+          "label": "@climb"
         },
         {
           "kind": "steady",
@@ -118,8 +118,8 @@
           },
           "rpm": 65,
           "position": "standing",
-          "label": "Standing climb",
-          "cue": "Stand up!"
+          "label": "@climb",
+          "cue": "@standUp"
         },
         {
           "kind": "steady",
@@ -130,7 +130,7 @@
           },
           "rpm": 100,
           "position": "seated",
-          "label": "20/20/20 hard"
+          "label": "@interval"
         },
         {
           "kind": "steady",
@@ -141,7 +141,7 @@
           },
           "rpm": 95,
           "position": "seated",
-          "label": "20/20/20 medium"
+          "label": "@interval"
         },
         {
           "kind": "steady",
@@ -252,7 +252,7 @@
           },
           "rpm": 75,
           "position": "seated",
-          "label": "30/30 hard"
+          "label": "@interval"
         },
         {
           "kind": "steady",
@@ -338,7 +338,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],
@@ -347,7 +347,25 @@
     "mw-2": "Slow, heavy groove, 70-85 BPM, about 4 min.",
     "mw-3": "Big anthem with a long build, 80-100 BPM, about 4 min.",
     "mw-4": "Punchy song, 120-130 BPM, about 4 min. Cycle hard, medium, easy every 20 seconds.",
-    "mw-16": "Driving rock or electronic song, 125-140 BPM, about 4 min. Add resistance on every hard 30 seconds."
+    "mw-16": "Driving rock or electronic song, 125-140 BPM, about 4 min. Add resistance on every hard 30 seconds.",
+    "mw-5": "Stay with the current song, feel the beat around 95 BPM.",
+    "mw-6": "Stay with the current song, feel the beat around 88 BPM.",
+    "mw-7": "Stay with the current song, feel the beat around 100 BPM.",
+    "mw-8": "Stay with the current song, feel the beat around 95 BPM.",
+    "mw-9": "Stay with the current song, feel the beat around 88 BPM.",
+    "mw-10": "Stay with the current song, feel the beat around 100 BPM.",
+    "mw-11": "Stay with the current song, feel the beat around 95 BPM.",
+    "mw-12": "Stay with the current song, feel the beat around 88 BPM.",
+    "mw-13": "Stay with the current song, feel the beat around 100 BPM.",
+    "mw-14": "Stay with the current song, feel the beat around 95 BPM.",
+    "mw-15": "Stay with the current song, feel the beat around 88 BPM.",
+    "mw-17": "Stay with the current song, feel the beat around 88 BPM.",
+    "mw-18": "Stay with the current song, feel the beat around 75 BPM.",
+    "mw-19": "Stay with the current song, feel the beat around 88 BPM.",
+    "mw-20": "Stay with the current song, feel the beat around 75 BPM.",
+    "mw-21": "Stay with the current song, feel the beat around 88 BPM.",
+    "mw-22": "Stay with the current song, feel the beat around 75 BPM.",
+    "mw-23": "Stay with the current song, feel the beat around 88 BPM."
   },
   "scaling": {
     "warmupBlockId": "mw-wu",

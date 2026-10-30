@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { en } from '../client/i18n/en';
+import { pl } from '../client/i18n/pl';
 import { builtinPlans, builtinWorkouts } from '../client/data/builtin';
 import { planSchema, weeklyLoad, type Plan } from '../domain/plan';
 import { scaleWorkout } from '../domain/scale';
@@ -40,14 +42,38 @@ const DEFAULT_RANGE: [number, number] = [2400, 3000];
 const QUICK_BOOST_RANGE: [number, number] = [1500, 2400];
 /** Explicit exceptions to the default 45-minute window. */
 const DURATION_EXCEPTIONS: Record<string, [number, number]> = {
-  // Ramp tests are a measurement, not a 45 minute session.
-  'ramp-test': [1500, 1800],
+  // Ramp test: warm-up + 25 one-minute steps + cool-down, a measurement and not a 45 minute session.
+  'ramp-test': [2000, 2400],
   // Design: "Tempo z kadencją ... (35 min)".
   'tempo-cadence-3x6': [2000, 2300],
   // Seiler 4 x 8 format is a 55 minute session by design.
   'four-eights': [2400, 3300],
   'four-eights-102': [2400, 3300],
 };
+
+/** Minutes at or above 85 % FTP (segment mean), the same definition as weeklyLoad. */
+function hardMinutes(w: Workout): number {
+  let sec = 0;
+  for (const seg of flattenWorkout(w)) {
+    if ((seg.ftpPctStart + seg.ftpPctEnd) / 2 >= 85) sec += seg.durationSec;
+  }
+  return sec / 60;
+}
+
+/** Hard minutes plus minutes in the 80-85 % band at half weight. */
+function weightedMinutes(w: Workout): number {
+  let sec = 0;
+  for (const seg of flattenWorkout(w)) {
+    const mean = (seg.ftpPctStart + seg.ftpPctEnd) / 2;
+    if (mean >= 85) sec += seg.durationSec;
+    else if (mean >= 80) sec += seg.durationSec / 2;
+  }
+  return sec / 60;
+}
+
+const weekWorkouts = (plan: Plan, i: number): Workout[] =>
+  (plan.weeks[i]?.sessions ?? []).map((x) => get(x.workoutId));
+const sum = (xs: number[]): number => xs.reduce((a, b) => a + b, 0);
 
 function sessionIds(plan: Plan): string[] {
   const ids = new Set<string>();
@@ -121,6 +147,60 @@ describe('built-in plans', () => {
         expect(cur, `${p.id} week ${i + 1}: ${cur} vs ${prev}`).toBeLessThanOrEqual(prev * 0.75);
       });
     }
+  });
+
+  it('light weeks also stay light when 80-85 % time counts at half weight', () => {
+    for (const p of builtinPlans) {
+      p.weeks.forEach((week, i) => {
+        if (!week.light || i === 0) return;
+        const cur = sum(weekWorkouts(p, i).map(weightedMinutes));
+        const prev = sum(weekWorkouts(p, i - 1).map(weightedMinutes));
+        expect(cur, `${p.id} week ${i + 1}: ${cur} vs ${prev}`).toBeLessThanOrEqual(prev * 0.75);
+      });
+    }
+  });
+
+  it('no non-light week adds more than 50 % hard minutes over the previous non-light week', () => {
+    for (const p of builtinPlans) {
+      const load = weeklyLoad(p, get);
+      let prev: number | undefined;
+      p.weeks.forEach((week, i) => {
+        if (week.light) return;
+        const cur = load[i] ?? 0;
+        if (prev !== undefined) {
+          expect(cur, `${p.id} week ${i + 1}: ${cur} vs ${prev}`).toBeLessThanOrEqual(prev * 1.5);
+        }
+        prev = cur;
+      });
+    }
+  });
+
+  it('weekly hard share fits the plan level', () => {
+    const limits: Record<string, [number, number] | undefined> = {
+      beginner: [0.25, 0.45],
+      intermediate: [0, 0.55],
+      short: [0, 0.55],
+    };
+    for (const p of builtinPlans) {
+      const range = limits[p.level];
+      if (!range) continue;
+      const load = weeklyLoad(p, get);
+      p.weeks.forEach((week, i) => {
+        if (week.light) return;
+        const total = sum(weekWorkouts(p, i).map((w) => totalDurationSec(w) / 60));
+        const share = (load[i] ?? 0) / total;
+        const where = `${p.id} week ${i + 1}: ${share.toFixed(3)}`;
+        expect(share, where).toBeGreaterThanOrEqual(range[0]);
+        expect(share, where).toBeLessThanOrEqual(range[1]);
+      });
+    }
+  });
+
+  it('hard minutes helper agrees with weeklyLoad', () => {
+    const p = builtinPlans[0];
+    if (!p) throw new Error('no plans');
+    const load = weeklyLoad(p, get);
+    expect(sum(weekWorkouts(p, 0).map(hardMinutes))).toBeCloseTo(load[0] ?? 0, 0);
   });
 
   it('plans and weeks have localized text', () => {
@@ -246,14 +326,99 @@ describe('built-in workouts', () => {
     }
   });
 
-  it('ramp test climbs 6 % per minute from 50 % to the 140 % cap', () => {
+  it('every main block of a music workout has a BPM hint', () => {
+    for (const w of builtinWorkouts.filter((x) => x.tags.includes('music'))) {
+      const main = w.blocks.slice(1, -1);
+      const ids = main.flatMap((b) => (b.kind === 'repeat' ? b.blocks.map((c) => c.id) : [b.id]));
+      // Warm-up spin-up steady blocks are not part of the music script.
+      const spin = new Set(w.blocks.filter((b) => b.id.includes('-wu')).map((b) => b.id));
+      for (const id of ids.filter((x) => !spin.has(x))) {
+        expect(w.musicHints?.[id], `${w.id} block ${id}`).toMatch(/BPM/);
+      }
+    }
+  });
+
+  it('cues and labels are known tokens', () => {
+    const cues = new Set([
+      'standUp',
+      'sitDown',
+      'sprint',
+      'attack',
+      'goUntilFail',
+      'breathe',
+      'spinUp',
+      'holdIt',
+      'lastOne',
+    ]);
+    const labels = new Set([
+      'warmup',
+      'cooldown',
+      'recovery',
+      'climb',
+      'sprint',
+      'steady',
+      'interval',
+      'test',
+    ]);
+    const check = (text: string | undefined, known: Set<string>, where: string): void => {
+      if (text === undefined) return;
+      expect(text.startsWith('@') && known.has(text.slice(1)), `${where}: ${text}`).toBe(true);
+    };
+    for (const w of builtinWorkouts.filter(isLibrary)) {
+      for (const b of w.blocks) {
+        for (const c of b.kind === 'repeat' ? b.blocks : [b]) {
+          check(c.cue, cues, `${w.id} ${c.id} cue`);
+          check(c.label, labels, `${w.id} ${c.id} label`);
+        }
+      }
+    }
+  });
+
+  it('tokens exist in both dictionaries', () => {
+    for (const k of [
+      'standUp',
+      'sitDown',
+      'sprint',
+      'attack',
+      'goUntilFail',
+      'breathe',
+      'spinUp',
+      'holdIt',
+      'lastOne',
+    ]) {
+      expect(en.coach[k as keyof typeof en.coach], k).toBeTruthy();
+      expect(pl.coach[k as keyof typeof pl.coach], k).toBeTruthy();
+    }
+    for (const k of [
+      'warmup',
+      'cooldown',
+      'recovery',
+      'climb',
+      'sprint',
+      'steady',
+      'interval',
+      'test',
+    ]) {
+      expect(en.block[k as keyof typeof en.block], k).toBeTruthy();
+      expect(pl.block[k as keyof typeof pl.block], k).toBeTruthy();
+    }
+  });
+
+  it('tabata-lite only stretches warm-up and cool-down', () => {
+    const sc = get('tabata-lite').scaling;
+    expect(sc?.minTimes).toBe(8);
+    expect(sc?.maxTimes).toBe(8);
+  });
+
+  it('ramp test climbs 6 % per minute from 50 % for 25 steps', () => {
     const t = get('ramp-test');
     expect(t.tags).toContain('test');
-    const segs = flattenWorkout(t).filter((s) => s.label?.startsWith('Step'));
+    const segs = flattenWorkout(t).filter((s) => s.label === '@test');
     expect(segs.map((s) => s.ftpPctStart)).toEqual(
-      Array.from({ length: 16 }, (_, i) => 50 + 6 * i),
+      Array.from({ length: 25 }, (_, i) => 50 + 6 * i),
     );
     expect(segs.every((s) => s.durationSec === 60)).toBe(true);
-    expect(segs[segs.length - 1]?.cue).toBe("Go until you can't!");
+    expect(segs[12]?.ftpPctStart).toBe(122);
+    expect(segs[12]?.cue).toBe('@goUntilFail');
   });
 });

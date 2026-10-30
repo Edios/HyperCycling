@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -107,7 +107,7 @@
           },
           "rpm": 108,
           "position": "seated",
-          "cue": "Sprint!"
+          "cue": "@sprint"
         },
         {
           "kind": "steady",
@@ -117,7 +117,8 @@
             "effort": 2
           },
           "rpm": 85,
-          "position": "seated"
+          "position": "seated",
+          "cue": "@breathe"
         },
         {
           "kind": "steady",
@@ -213,7 +214,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],

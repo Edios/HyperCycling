@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -105,7 +105,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Build-up"
+      "label": "@steady"
     },
     {
       "kind": "repeat",
@@ -117,7 +117,7 @@
           "id": "cp-3",
           "durationSec": 60,
           "intensity": {
-            "ftpPct": 84
+            "ftpPct": 75
           },
           "rpm": 85,
           "position": "seated"
@@ -127,7 +127,7 @@
           "id": "cp-4",
           "durationSec": 120,
           "intensity": {
-            "ftpPct": 84
+            "ftpPct": 75
           },
           "rpm": 95,
           "position": "seated"
@@ -137,7 +137,7 @@
           "id": "cp-5",
           "durationSec": 180,
           "intensity": {
-            "ftpPct": 84
+            "ftpPct": 75
           },
           "rpm": 105,
           "position": "seated"
@@ -147,7 +147,7 @@
           "id": "cp-6",
           "durationSec": 120,
           "intensity": {
-            "ftpPct": 84
+            "ftpPct": 75
           },
           "rpm": 95,
           "position": "seated"
@@ -157,7 +157,7 @@
           "id": "cp-7",
           "durationSec": 60,
           "intensity": {
-            "ftpPct": 84
+            "ftpPct": 75
           },
           "rpm": 85,
           "position": "seated"
@@ -186,7 +186,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],

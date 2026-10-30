@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -107,7 +107,7 @@
           },
           "rpm": 70,
           "position": "seated",
-          "label": "Seated climb"
+          "label": "@climb"
         },
         {
           "kind": "steady",
@@ -118,8 +118,8 @@
           },
           "rpm": 65,
           "position": "standing",
-          "label": "Standing finish",
-          "cue": "Stand up!"
+          "label": "@climb",
+          "cue": "@standUp"
         },
         {
           "kind": "steady",
@@ -145,14 +145,15 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],
   "fallbackPlaylist": [],
   "musicHints": {
     "mc-2": "Building song, 80-100 BPM, about 3 min. Ride the verse seated.",
-    "mc-3": "Stand for the final chorus."
+    "mc-3": "Stand for the final chorus. Keep the beat near 65 BPM.",
+    "mc-4": "Stay with the current song, feel the beat around 90 BPM."
   },
   "scaling": {
     "warmupBlockId": "mc-wu",

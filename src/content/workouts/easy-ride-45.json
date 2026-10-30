@@ -9,7 +9,7 @@
     },
     "pl": {
       "name": "Spokojna dwójka 45",
-      "description": "Spokojna jazda w strefie 2 z czterema krótkimi minutami szybszej kadencji."
+      "description": "Spokojna jazda w strefie 2 z czterema minutowymi odcinkami szybszej kadencji."
     }
   },
   "category": "freestyle",
@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -117,7 +117,7 @@
           },
           "rpm": 100,
           "position": "seated",
-          "cue": "Spin it up!"
+          "cue": "@spinUp"
         }
       ]
     },
@@ -133,7 +133,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],

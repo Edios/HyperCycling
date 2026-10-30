@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -117,7 +117,7 @@
           },
           "rpm": 65,
           "position": "standing",
-          "cue": "Stand up!"
+          "cue": "@standUp"
         },
         {
           "kind": "steady",
@@ -128,7 +128,7 @@
           },
           "rpm": 68,
           "position": "seated",
-          "cue": "Sit down"
+          "cue": "@sitDown"
         },
         {
           "kind": "steady",
@@ -139,7 +139,7 @@
           },
           "rpm": 65,
           "position": "standing",
-          "cue": "Stand up!"
+          "cue": "@standUp"
         },
         {
           "kind": "steady",
@@ -165,7 +165,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],

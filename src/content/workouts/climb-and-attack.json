@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -102,7 +102,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Settle in"
+      "label": "@steady"
     },
     {
       "kind": "steady",
@@ -113,7 +113,7 @@
       },
       "rpm": 70,
       "position": "seated",
-      "label": "Climb 1"
+      "label": "@climb"
     },
     {
       "kind": "steady",
@@ -124,8 +124,8 @@
       },
       "rpm": 108,
       "position": "seated",
-      "label": "Sprint 15 s",
-      "cue": "Sprint!"
+      "label": "@sprint",
+      "cue": "@sprint"
     },
     {
       "kind": "steady",
@@ -146,7 +146,7 @@
       },
       "rpm": 70,
       "position": "seated",
-      "label": "Climb 2"
+      "label": "@climb"
     },
     {
       "kind": "steady",
@@ -157,8 +157,8 @@
       },
       "rpm": 108,
       "position": "seated",
-      "label": "Sprint 20 s",
-      "cue": "Sprint!"
+      "label": "@sprint",
+      "cue": "@sprint"
     },
     {
       "kind": "steady",
@@ -179,7 +179,7 @@
       },
       "rpm": 70,
       "position": "seated",
-      "label": "Climb 3"
+      "label": "@climb"
     },
     {
       "kind": "steady",
@@ -190,8 +190,8 @@
       },
       "rpm": 108,
       "position": "seated",
-      "label": "Sprint 30 s",
-      "cue": "Sprint!"
+      "label": "@sprint",
+      "cue": "@sprint"
     },
     {
       "kind": "steady",
@@ -212,7 +212,7 @@
       },
       "rpm": 88,
       "position": "seated",
-      "label": "Breather"
+      "label": "@recovery"
     },
     {
       "kind": "steady",
@@ -223,7 +223,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Verse"
+      "label": "@steady"
     },
     {
       "kind": "steady",
@@ -234,8 +234,8 @@
       },
       "rpm": 100,
       "position": "seated",
-      "label": "Chorus surge",
-      "cue": "Chorus!"
+      "label": "@interval",
+      "cue": "@attack"
     },
     {
       "kind": "steady",
@@ -256,7 +256,7 @@
       },
       "rpm": 100,
       "position": "seated",
-      "label": "Chorus surge"
+      "label": "@interval"
     },
     {
       "kind": "steady",
@@ -277,7 +277,7 @@
       },
       "rpm": 100,
       "position": "seated",
-      "label": "Chorus surge"
+      "label": "@interval"
     },
     {
       "kind": "steady",
@@ -298,7 +298,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Surprise song"
+      "label": "@interval"
     },
     {
       "kind": "steady",
@@ -309,7 +309,7 @@
       },
       "rpm": 108,
       "position": "seated",
-      "cue": "Sprint!"
+      "cue": "@sprint"
     },
     {
       "kind": "steady",
@@ -330,7 +330,7 @@
       },
       "rpm": 108,
       "position": "seated",
-      "cue": "Sprint!"
+      "cue": "@sprint"
     },
     {
       "kind": "steady",
@@ -351,7 +351,7 @@
       },
       "rpm": 108,
       "position": "seated",
-      "cue": "Sprint!"
+      "cue": "@sprint"
     },
     {
       "kind": "steady",
@@ -375,7 +375,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],
@@ -387,7 +387,25 @@
     "caa-8": "Epic, slow-burning song, 95-110 BPM, about 3.5 min.",
     "caa-11": "Calm song, 70-90 BPM, about 3 min.",
     "caa-12": "Pop or rock song with clear verses and loud choruses, 110-125 BPM, about 4 min.",
-    "caa-19": "Unpredictable song with sudden changes, 100-130 BPM, about 4 min. Sprint whenever it surprises you."
+    "caa-19": "Unpredictable song with sudden changes, 100-130 BPM, about 4 min. Sprint whenever it surprises you.",
+    "caa-3": "Stay with the current song, feel the beat around 108 BPM.",
+    "caa-4": "Stay with the current song, feel the beat around 88 BPM.",
+    "caa-6": "Stay with the current song, feel the beat around 108 BPM.",
+    "caa-7": "Stay with the current song, feel the beat around 88 BPM.",
+    "caa-9": "Stay with the current song, feel the beat around 108 BPM.",
+    "caa-10": "Stay with the current song, feel the beat around 88 BPM.",
+    "caa-13": "Stay with the current song, feel the beat around 100 BPM.",
+    "caa-14": "Stay with the current song, feel the beat around 90 BPM.",
+    "caa-15": "Stay with the current song, feel the beat around 100 BPM.",
+    "caa-16": "Stay with the current song, feel the beat around 90 BPM.",
+    "caa-17": "Stay with the current song, feel the beat around 100 BPM.",
+    "caa-18": "Stay with the current song, feel the beat around 90 BPM.",
+    "caa-20": "Stay with the current song, feel the beat around 108 BPM.",
+    "caa-21": "Stay with the current song, feel the beat around 90 BPM.",
+    "caa-22": "Stay with the current song, feel the beat around 108 BPM.",
+    "caa-23": "Stay with the current song, feel the beat around 90 BPM.",
+    "caa-24": "Stay with the current song, feel the beat around 108 BPM.",
+    "caa-25": "Stay with the current song, feel the beat around 90 BPM."
   },
   "scaling": {
     "warmupBlockId": "caa-wu",

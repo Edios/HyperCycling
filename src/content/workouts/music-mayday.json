@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -107,7 +107,7 @@
           },
           "rpm": 88,
           "position": "seated",
-          "label": "Easy song"
+          "label": "@steady"
         },
         {
           "kind": "steady",
@@ -118,8 +118,8 @@
           },
           "rpm": 98,
           "position": "seated",
-          "label": "Chorus surge",
-          "cue": "Chorus!"
+          "label": "@interval",
+          "cue": "@attack"
         }
       ]
     },
@@ -135,14 +135,14 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],
   "fallbackPlaylist": [],
   "musicHints": {
     "mm-2": "Relaxed feel-good song, 90-105 BPM, about 5-6 min.",
-    "mm-3": "The loudest chorus of the song: surge for the full minute."
+    "mm-3": "The loudest chorus of the song: surge for the full minute. Keep the beat near 98 BPM."
   },
   "scaling": {
     "warmupBlockId": "mm-wu",

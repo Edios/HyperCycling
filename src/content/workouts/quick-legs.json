@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -110,7 +110,7 @@
           },
           "rpm": 95,
           "position": "seated",
-          "label": "Song 1 climb"
+          "label": "@climb"
         },
         {
           "kind": "steady",
@@ -121,8 +121,8 @@
           },
           "rpm": 106,
           "position": "seated",
-          "label": "Sprint",
-          "cue": "Sprint!"
+          "label": "@sprint",
+          "cue": "@sprint"
         },
         {
           "kind": "steady",
@@ -146,7 +146,7 @@
           },
           "rpm": 95,
           "position": "seated",
-          "label": "Song 2 climb"
+          "label": "@climb"
         },
         {
           "kind": "steady",
@@ -157,8 +157,8 @@
           },
           "rpm": 106,
           "position": "seated",
-          "label": "Sprint",
-          "cue": "Sprint!"
+          "label": "@sprint",
+          "cue": "@sprint"
         },
         {
           "kind": "steady",
@@ -182,7 +182,7 @@
           },
           "rpm": 95,
           "position": "seated",
-          "label": "Song 3 climb"
+          "label": "@climb"
         },
         {
           "kind": "steady",
@@ -193,8 +193,8 @@
           },
           "rpm": 108,
           "position": "seated",
-          "label": "Sprint",
-          "cue": "Sprint!"
+          "label": "@sprint",
+          "cue": "@sprint"
         },
         {
           "kind": "steady",
@@ -215,7 +215,7 @@
           },
           "rpm": 88,
           "position": "seated",
-          "label": "Recovery song"
+          "label": "@recovery"
         }
       ]
     },
@@ -231,7 +231,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],
@@ -240,7 +240,13 @@
     "ql-2": "Mid-tempo song, 100-115 BPM, steady building mood, about 3.5 min. Do the sprint at its biggest drop.",
     "ql-5": "Driving song, 110-125 BPM, rising energy, about 3.5 min. Sprint at the middle of the track.",
     "ql-8": "Anthem with a long build, 115-130 BPM, about 4 min. Longest sprint at the final chorus.",
-    "ql-11": "Chill song, 70-90 BPM, relaxed mood, about 3 min."
+    "ql-11": "Chill song, 70-90 BPM, relaxed mood, about 3 min.",
+    "ql-3": "Stay with the current song, feel the beat around 106 BPM.",
+    "ql-4": "Stay with the current song, feel the beat around 90 BPM.",
+    "ql-6": "Stay with the current song, feel the beat around 106 BPM.",
+    "ql-7": "Stay with the current song, feel the beat around 90 BPM.",
+    "ql-9": "Stay with the current song, feel the beat around 108 BPM.",
+    "ql-10": "Stay with the current song, feel the beat around 90 BPM."
   },
   "scaling": {
     "warmupBlockId": "ql-wu",

@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -107,7 +107,7 @@
           },
           "rpm": 90,
           "position": "seated",
-          "label": "Easy song"
+          "label": "@steady"
         },
         {
           "kind": "steady",
@@ -118,8 +118,8 @@
           },
           "rpm": 98,
           "position": "seated",
-          "label": "Chorus surge",
-          "cue": "Chorus!"
+          "label": "@interval",
+          "cue": "@attack"
         }
       ]
     },
@@ -135,14 +135,14 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],
   "fallbackPlaylist": [],
   "musicHints": {
     "lm3-2": "Easy upbeat song, 100-110 BPM, about 4 min.",
-    "lm3-3": "Chorus of the song: lift the effort and pedal on the beat."
+    "lm3-3": "Chorus of the song: lift the effort and pedal on the beat. Keep the beat near 98 BPM."
   },
   "scaling": {
     "warmupBlockId": "lm3-wu",

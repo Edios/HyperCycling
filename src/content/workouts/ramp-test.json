@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -102,7 +102,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Step 1"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -113,7 +113,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Step 2"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -124,7 +124,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Step 3"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -135,7 +135,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Step 4"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -146,7 +146,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Step 5"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -157,7 +157,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Step 6"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -168,7 +168,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Step 7"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -179,7 +179,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Step 8"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -190,7 +190,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Step 9"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -201,7 +201,7 @@
       },
       "rpm": 95,
       "position": "seated",
-      "label": "Step 10"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -212,7 +212,7 @@
       },
       "rpm": 95,
       "position": "seated",
-      "label": "Step 11"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -223,7 +223,7 @@
       },
       "rpm": 95,
       "position": "seated",
-      "label": "Step 12"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -234,7 +234,8 @@
       },
       "rpm": 95,
       "position": "seated",
-      "label": "Step 13"
+      "label": "@test",
+      "cue": "@goUntilFail"
     },
     {
       "kind": "steady",
@@ -245,7 +246,7 @@
       },
       "rpm": 95,
       "position": "seated",
-      "label": "Step 14"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -256,7 +257,7 @@
       },
       "rpm": 95,
       "position": "seated",
-      "label": "Step 15"
+      "label": "@test"
     },
     {
       "kind": "steady",
@@ -267,8 +268,106 @@
       },
       "rpm": 95,
       "position": "seated",
-      "label": "Step 16",
-      "cue": "Go until you can't!"
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-17",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 146
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-18",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 152
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-19",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 158
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-20",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 164
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-21",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 170
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-22",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 176
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-23",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 182
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-24",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 188
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-25",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 194
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
     },
     {
       "kind": "ramp",
@@ -282,7 +381,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],

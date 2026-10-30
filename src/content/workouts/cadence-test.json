@@ -9,7 +9,7 @@
     },
     "pl": {
       "name": "Test kadencji",
-      "description": "Cztery pięciominutowe odcinki z kadencją 80, 90, 100 i 110, by znaleźć swoją wygodną."
+      "description": "Cztery pięciominutowe odcinki z kadencją 80, 90, 100 i 110, żeby znaleźć najwygodniejszą kadencję."
     }
   },
   "category": "freestyle",
@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -145,7 +145,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],

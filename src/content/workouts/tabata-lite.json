@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -132,7 +132,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],
@@ -141,8 +141,8 @@
     "warmupBlockId": "tl-wu",
     "cooldownBlockId": "tl-cd",
     "flexRepeatId": "tl-1",
-    "minTimes": 4,
-    "maxTimes": 24
+    "minTimes": 8,
+    "maxTimes": 8
   },
   "schemaVersion": 1,
   "updatedAt": "2026-10-30T00:00:00.000Z"

@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -106,7 +106,8 @@
             "ftpPct": 103
           },
           "rpm": 92,
-          "position": "seated"
+          "position": "seated",
+          "cue": "@holdIt"
         },
         {
           "kind": "steady",
@@ -132,7 +133,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],

@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -105,7 +105,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Build-up"
+      "label": "@steady"
     },
     {
       "kind": "repeat",
@@ -121,7 +121,7 @@
           },
           "rpm": 108,
           "position": "seated",
-          "cue": "Sprint!"
+          "cue": "@sprint"
         },
         {
           "kind": "steady",
@@ -142,7 +142,7 @@
           },
           "rpm": 108,
           "position": "seated",
-          "cue": "Sprint!"
+          "cue": "@sprint"
         },
         {
           "kind": "steady",
@@ -163,7 +163,7 @@
           },
           "rpm": 108,
           "position": "seated",
-          "cue": "Sprint!"
+          "cue": "@sprint"
         },
         {
           "kind": "steady",
@@ -184,7 +184,7 @@
           },
           "rpm": 108,
           "position": "seated",
-          "cue": "Sprint!"
+          "cue": "@sprint"
         },
         {
           "kind": "steady",
@@ -205,7 +205,7 @@
           },
           "rpm": 108,
           "position": "seated",
-          "cue": "Sprint!"
+          "cue": "@sprint"
         },
         {
           "kind": "steady",
@@ -241,7 +241,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],

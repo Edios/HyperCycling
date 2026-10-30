@@ -1,15 +1,15 @@
 {
   "id": "first-over-unders",
   "name": "First Over-Unders",
-  "description": "Two sets of three cycles: 2 minutes over threshold and 1 minute under.",
+  "description": "Two sets of two cycles: 2 minutes over threshold and 1 minute under.",
   "localized": {
     "en": {
       "name": "First Over-Unders",
-      "description": "Two sets of three cycles: 2 minutes over threshold and 1 minute under."
+      "description": "Two sets of two cycles: 2 minutes over threshold and 1 minute under."
     },
     "pl": {
       "name": "Pierwsze over-under",
-      "description": "Dwie serie po trzy cykle: 2 minuty nad progiem i minuta pod progiem."
+      "description": "Dwie serie po dwa cykle: 2 minuty nad progiem i minuta poniżej."
     }
   },
   "category": "freestyle",
@@ -31,7 +31,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Warm-up"
+      "label": "@warmup"
     },
     {
       "kind": "steady",
@@ -96,7 +96,7 @@
     {
       "kind": "ramp",
       "id": "fou-1",
-      "durationSec": 240,
+      "durationSec": 600,
       "from": {
         "ftpPct": 65
       },
@@ -105,7 +105,7 @@
       },
       "rpm": 90,
       "position": "seated",
-      "label": "Build-up"
+      "label": "@steady"
     },
     {
       "kind": "repeat",
@@ -127,7 +127,7 @@
           "id": "fou-4",
           "durationSec": 60,
           "intensity": {
-            "ftpPct": 90
+            "ftpPct": 80
           },
           "rpm": 90,
           "position": "seated"
@@ -147,7 +147,7 @@
           "id": "fou-6",
           "durationSec": 60,
           "intensity": {
-            "ftpPct": 90
+            "ftpPct": 80
           },
           "rpm": 90,
           "position": "seated"
@@ -155,26 +155,6 @@
         {
           "kind": "steady",
           "id": "fou-7",
-          "durationSec": 120,
-          "intensity": {
-            "ftpPct": 105
-          },
-          "rpm": 92,
-          "position": "seated"
-        },
-        {
-          "kind": "steady",
-          "id": "fou-8",
-          "durationSec": 60,
-          "intensity": {
-            "ftpPct": 90
-          },
-          "rpm": 90,
-          "position": "seated"
-        },
-        {
-          "kind": "steady",
-          "id": "fou-9",
           "durationSec": 180,
           "intensity": {
             "effort": 2
@@ -196,7 +176,7 @@
       },
       "rpm": 80,
       "position": "seated",
-      "label": "Cool-down"
+      "label": "@cooldown"
     }
   ],
   "musicCues": [],
