@@ -25,15 +25,21 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'cross-env VITE_E2E=1 npm run build && npm start',
+      command: 'npm run build:e2e && npm start',
       url: `http://127.0.0.1:${E2E_PORT}/api/health`,
-      env: { NO_OPEN: '1', PORT: String(E2E_PORT), DB_PATH: process.env.E2E_DB_PATH },
+      env: {
+        NO_OPEN: '1',
+        PORT: String(E2E_PORT),
+        DB_PATH: process.env.E2E_DB_PATH,
+        // The e2e client (with test fixtures) lives apart from the normal dist/client build.
+        STATIC_DIR: 'dist/e2e',
+      },
       reuseExistingServer: false,
       timeout: 120_000,
     },
     {
       command:
-        'cross-env VITE_E2E=1 npm run build:pages && cross-env VITE_BASE=/Spinning-Tutor/ vite preview --outDir dist/pages --host 127.0.0.1 --port 5176 --strictPort',
+        'npm run build:pages:e2e && cross-env VITE_BASE=/Spinning-Tutor/ vite preview --outDir dist/e2e-pages --host 127.0.0.1 --port 5176 --strictPort',
       url: 'http://127.0.0.1:5176/Spinning-Tutor/',
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,

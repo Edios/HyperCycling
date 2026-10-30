@@ -142,7 +142,7 @@ for (const size of [
         }
         await expect(page.getByTestId('effort-value-number')).toContainText('10');
 
-        // Shared baseline: the big numbers in the row end on the same bottom edge.
+        // Shared bottom edge: the big numbers in the row end on the same bottom edge.
         const bottoms = await Promise.all(
           ['effort-value-number', 'rpm-value-number', 'block-timer-value'].map(async (id) => {
             // Layout box (offsetParent chain), unaffected by the flip/pulse transforms.

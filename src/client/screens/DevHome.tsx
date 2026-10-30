@@ -16,9 +16,6 @@ const DEMO_PLAYERS: Player[] = [
   { id: 'demo-2', name: 'Ania', ftp: 190 },
 ];
 
-/** Extra fixtures exist in dev and e2e builds only (VITE_E2E); production `?dev` never ships them. */
-const WITH_FIXTURES = Boolean(import.meta.env.DEV || import.meta.env['VITE_E2E']);
-
 export function DevHome() {
   const t = useT();
   const [lang] = useLang();
@@ -26,8 +23,10 @@ export function DevHome() {
   const { settings, loaded } = useSettings();
   const [extra, setExtra] = useState<Workout[]>([]);
   useEffect(() => {
-    if (!WITH_FIXTURES) return;
-    void import('./dev-fixtures').then((m) => setExtra(m.longBlockWorkouts));
+    // Inline condition so Vite folds it away (and drops the chunk) in production builds.
+    if (import.meta.env.DEV || import.meta.env.VITE_E2E === '1') {
+      void import('./dev-fixtures').then((m) => setExtra(m.longBlockWorkouts));
+    }
   }, []);
 
   const ride = (workout: Workout, withPlayers: boolean): void => {
