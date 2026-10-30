@@ -260,7 +260,7 @@ export const pl: Messages = {
       effortFrom: 'Wysiłek na początku',
       effortTo: 'Wysiłek na końcu',
       approxFtp: '{label} · ~{pct}% FTP',
-      exactFtp: 'Dokładne % FTP (opcjonalnie)',
+      exactFtp: 'Dokładne % FTP',
       exactFtpError: '% FTP musi być od 20 do 200',
       time: 'Czas',
       timeError: 'Użyj m:ss, co najmniej 0:05',

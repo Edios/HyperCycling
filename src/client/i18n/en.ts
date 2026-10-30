@@ -258,7 +258,7 @@ export const en = {
       effortFrom: 'Effort at start',
       effortTo: 'Effort at end',
       approxFtp: '{label} · ~{pct}% FTP',
-      exactFtp: 'Exact % FTP (optional)',
+      exactFtp: 'Exact % FTP',
       exactFtpError: '% FTP must be from 20 to 200',
       time: 'Time',
       timeError: 'Use m:ss, at least 0:05',

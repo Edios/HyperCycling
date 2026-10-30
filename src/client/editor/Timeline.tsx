@@ -123,7 +123,8 @@ export function Timeline({ workout, selectedId, readOnly, table, dispatch }: Tim
     const to = leaf.kind === 'steady' ? from : intensityEffort(leaf.to, table);
     const top: EffortLevel = to > from ? to : from;
     const poly = slopePolygons(from, to, '3px');
-    const selected = leaf.id === selectedId;
+    const isTarget = leaf.id === selectedId;
+    const selected = isTarget && showHandles;
     const style: CSSProperties & Record<'--c', string> = {
       '--c': effortRow(top, table).color,
       flexGrow: leaf.durationSec,
@@ -135,10 +136,10 @@ export function Timeline({ workout, selectedId, readOnly, table, dispatch }: Tim
         data-bar
         data-testid="editor-block"
         data-block-id={leaf.id}
-        data-selected={selected}
+        data-selected={isTarget}
         data-effort={top}
         data-duration={leaf.durationSec}
-        className={`${chart.bar} ${styles.bar} ${selected ? styles.selected : ''}`}
+        className={`${chart.bar} ${styles.bar} ${selected ? styles.selected : ''} ${isTarget && !showHandles ? styles.echo : ''}`}
         style={style}
         onClick={(e) => {
           e.stopPropagation();

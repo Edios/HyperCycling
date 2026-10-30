@@ -182,7 +182,7 @@ describe('inspector', () => {
     const cue = screen.getByLabelText('On-screen command');
     fireEvent.change(cue, { target: { value: 'Stand up!' } });
     fireEvent.blur(cue);
-    const ftp = screen.getByLabelText('Exact % FTP (optional)');
+    const ftp = screen.getByLabelText('Exact % FTP');
     fireEvent.change(ftp, { target: { value: '88' } });
     fireEvent.blur(ftp);
     expect(screen.getByTestId('effort-caption')).toHaveTextContent('~88% FTP');

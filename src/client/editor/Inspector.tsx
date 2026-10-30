@@ -7,7 +7,7 @@ import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Segmented';
 import { formatClock } from '../training/format';
 import type { EditorAction } from './editor-state';
-import { findBlock, intensityEffort, parentRepeat, rpmOutsideUsual, type Leaf } from './model';
+import { findBlock, intensityEffort, rpmOutsideUsual, type Leaf } from './model';
 import styles from './Inspector.module.css';
 
 const LEVELS: EffortLevel[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -130,27 +130,29 @@ function EffortPicker({
           );
         })}
       </div>
-      <small className={styles.caption} data-testid="effort-caption">
-        {t('editor.inspector.approxFtp', {
-          label: t(`effort.${row.labelKey}`),
-          pct,
-        })}
-      </small>
-      <CommitField
-        label={t('editor.inspector.exactFtp')}
-        value={intensity.ftpPct === undefined ? '' : String(intensity.ftpPct)}
-        inputMode="numeric"
-        suffix="%"
-        testId="exact-ftp"
-        validate={(s) => {
-          if (s.trim() === '') return undefined;
-          const n = Number(s);
-          return Number.isFinite(n) && n >= 20 && n <= 200
-            ? undefined
-            : t('editor.inspector.exactFtpError');
-        }}
-        onCommit={(s) => onExact(s.trim() === '' ? undefined : Number(s))}
-      />
+      <div className={styles.ftpRow}>
+        <small className={styles.caption} data-testid="effort-caption">
+          {t('editor.inspector.approxFtp', {
+            label: t(`effort.${row.labelKey}`),
+            pct,
+          })}
+        </small>
+        <CommitField
+          label={t('editor.inspector.exactFtp')}
+          value={intensity.ftpPct === undefined ? '' : String(intensity.ftpPct)}
+          inputMode="numeric"
+          suffix="%"
+          testId="exact-ftp"
+          validate={(s) => {
+            if (s.trim() === '') return undefined;
+            const n = Number(s);
+            return Number.isFinite(n) && n >= 20 && n <= 200
+              ? undefined
+              : t('editor.inspector.exactFtpError');
+          }}
+          onCommit={(s) => onExact(s.trim() === '' ? undefined : Number(s))}
+        />
+      </div>
     </div>
   );
 }
@@ -306,7 +308,6 @@ function LeafInspector({
   const id = leaf.id;
   const patch = (p: Record<string, unknown>): void =>
     dispatch({ type: 'updateBlock', id, patch: p });
-  const parent = parentRepeat(workout, id);
   const cue = workout.musicCues.find((c) => c.blockId === id && c.rep === 1);
   const hint = workout.musicHints?.[id];
 
@@ -402,7 +403,6 @@ function LeafInspector({
       />
 
       {hint && <MusicHint text={hint} />}
-      {parent && <p className={styles.note}>{t('editor.repeatLabel', { n: parent.times })}</p>}
     </>
   );
 }

@@ -6,7 +6,7 @@ const ZWO = path.join(process.cwd(), 'src/domain/parsers/__fixtures__/normal.zwo
 
 async function openMine(page: Page, name: string) {
   await page.goto('./#/freestyle');
-  await page.getByRole('button', { name: 'Mine' }).click();
+  await page.getByRole('button', { name: 'Mine', exact: true }).click();
   const card = page.getByTestId('workout-card').filter({ hasText: name });
   await expect(card).toBeVisible();
   return card;
