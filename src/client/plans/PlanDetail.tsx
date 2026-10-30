@@ -26,6 +26,7 @@ import { Field } from '../ui/Field';
 import { Modal } from '../ui/Modal';
 import { ProfileChart } from '../ui/ProfileChart';
 import { Segmented } from '../ui/Segmented';
+import { Toast } from '../ui/Toast';
 import { effectiveSession } from './effective-session';
 import { LoadBars } from './LoadBars';
 import { hoursPerWeek, planLoad, testWeeks } from './model';
@@ -99,8 +100,8 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
   const [cfg, setCfg] = useState<PlanSettings>(stored ?? DEFAULT_PLAN_SETTINGS);
   const [pickWeek, setPickWeek] = useState((stored?.startWeek ?? 1) > 1);
   const [ftpText, setFtpText] = useState(data.me ? String(data.me.ftp) : '');
-  const [me, setMe] = useState(data.me);
-  const [confirming, setConfirming] = useState(false);
+  const [confirming, setConfirming] = useState<false | 'choose' | 'reset'>(false);
+  const [error, setError] = useState<string | undefined>();
 
   const equipment = settings.equipment;
   const text = localizedText(plan, lang);
@@ -113,12 +114,12 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
   const lightWeeks = plan.weeks.flatMap((w, i) => (w.light ? [i + 1] : []));
 
   const ftpValue = Number(ftpText);
-  const ftpDirty = ftpText.trim() !== '' && ftpValue !== me?.ftp;
+  const ftpDirty = ftpText.trim() !== '' && ftpValue !== data.me?.ftp;
   const ftpError = ftpDirty && (!Number.isInteger(ftpValue) || ftpValue < 50 || ftpValue > 600);
 
   const set = (patch: Partial<PlanSettings>): void => setCfg((c) => ({ ...c, ...patch }));
 
-  const previewWeek = 1;
+  const previewWeek = cfg.startWeek;
   const slots: { slot: PlanSlot; label: MessageKey; cls: string | undefined }[] = [
     { slot: 'progres', label: 'tag.progres', cls: styles.progres },
     cfg.layout === 'doubleProgres'
@@ -126,26 +127,23 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
       : { slot: 'freestyle', label: 'tag.freestyle', cls: styles.freestyle },
   ];
 
+  /** Writes the FTP of the isMe player (re-read from storage so there is never a second one). */
   async function saveFtp(): Promise<void> {
     if (!ftpDirty || ftpError) return;
-    const player: Player = me
-      ? { ...me, ftp: ftpValue }
+    const repos = await getRepositories();
+    const mine = (await repos.players.list()).find((p) => p.isMe);
+    const player: Player = mine
+      ? { ...mine, ftp: ftpValue }
       : { id: newId(), name: t('plans.me'), ftp: ftpValue, isMe: true };
-    try {
-      const repos = await getRepositories();
-      await repos.players.put(player);
-      setMe(player);
-    } catch (err) {
-      console.warn('Saving FTP failed', err);
-    }
+    await repos.players.put(player);
   }
 
-  async function commit(): Promise<void> {
-    if (equipment.showsWatts) await saveFtp();
+  async function commit(mode: 'keep' | 'reset'): Promise<void> {
     try {
       const repos = await getRepositories();
+      if (equipment.showsWatts) await saveFtp();
       const progress: PlanProgress =
-        isActive && data.progress
+        mode === 'keep' && data.progress
           ? { ...data.progress, settings: cfg }
           : {
               id: plan.id,
@@ -156,15 +154,21 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
             };
       await repos.planProgress.put(progress);
     } catch (err) {
-      console.warn('Saving plan progress failed', err);
+      console.warn('Saving the plan failed', err);
+      setConfirming(false);
+      setError(t('plans.saveFailed'));
+      return;
     }
     if (!isActive) await updateSettings({ activePlanId: plan.id });
     navigate('/');
   }
 
+  const otherActive = settings.activePlanId !== undefined && !isActive;
+  const hasProgress = !isActive && data.progress !== undefined;
+
   function onPrimary(): void {
-    if (settings.activePlanId !== undefined && !isActive) setConfirming(true);
-    else void commit();
+    if (otherActive || hasProgress) setConfirming('choose');
+    else void commit('keep');
   }
 
   const current = builtinPlans.find((p) => p.id === settings.activePlanId);
@@ -180,7 +184,9 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
             <h1>{text.name}</h1>
             <div className={styles.mut}>
               {t('plans.headerMeta', {
-                weeks: weeksLabel(plan.weeks.length),
+                weeks: plan.loop
+                  ? t('plans.looping', { weeks: weeksLabel(plan.weeks.length) })
+                  : weeksLabel(plan.weeks.length),
                 audience: t(`plans.audience.${plan.level}` as MessageKey),
               })}
             </div>
@@ -331,7 +337,6 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
                   className={styles.ftp}
                   value={ftpText}
                   onChange={(e) => setFtpText(e.target.value)}
-                  onBlur={() => void saveFtp()}
                 />
               )}
             </Field>
@@ -346,21 +351,51 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
         </div>
       </Card>
 
-      {confirming && (
+      {confirming === 'choose' && (
         <Modal title={t('plans.confirmTitle')} onClose={() => setConfirming(false)}>
-          <p>
-            {t('plans.confirmBody', {
-              current: current ? localizedText(current, lang).name : '',
-            })}
-          </p>
+          {otherActive && (
+            <p>
+              {t('plans.confirmBody', {
+                current: current ? localizedText(current, lang).name : '',
+              })}
+            </p>
+          )}
+          {hasProgress && (
+            <p>
+              {t('plans.existingBody', {
+                done: data.progress?.entries.filter((e) => e.status === 'done').length ?? 0,
+              })}
+            </p>
+          )}
           <div className={styles.modalButtons}>
             <Button onClick={() => setConfirming(false)}>{t('plans.cancel')}</Button>
-            <Button variant="primary" onClick={() => void commit()}>
-              {t('plans.confirmYes', { name: text.name })}
+            {hasProgress ? (
+              <>
+                <Button onClick={() => setConfirming('reset')}>{t('plans.startOver')}</Button>
+                <Button variant="primary" onClick={() => void commit('keep')}>
+                  {t('plans.continue')}
+                </Button>
+              </>
+            ) : (
+              <Button variant="primary" onClick={() => void commit('keep')}>
+                {t('plans.confirmYes', { name: text.name })}
+              </Button>
+            )}
+          </div>
+        </Modal>
+      )}
+      {confirming === 'reset' && (
+        <Modal title={t('plans.resetTitle')} onClose={() => setConfirming(false)}>
+          <p>{t('plans.resetBody')}</p>
+          <div className={styles.modalButtons}>
+            <Button onClick={() => setConfirming('choose')}>{t('plans.cancel')}</Button>
+            <Button variant="primary" onClick={() => void commit('reset')}>
+              {t('plans.resetYes')}
             </Button>
           </div>
         </Modal>
       )}
+      {error && <Toast message={error} onClose={() => setError(undefined)} />}
     </div>
   );
 }

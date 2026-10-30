@@ -1,3 +1,4 @@
+import { totalDurationSec } from '../../domain/workout';
 import { weeklyLoad, type Plan, type PlanLayout } from '../../domain/plan';
 import type { Equipment } from '../../domain/settings';
 import { getWorkout } from '../data/builtin';
@@ -56,4 +57,19 @@ export function testWeeks(plan: Plan, equipment: Equipment, layout: PlanLayout):
     if (hit) out.push(i + 1);
   });
   return out;
+}
+
+/** Typical session length of a built-in plan: mean of its sessions, to the nearest 5 minutes. */
+export function typicalMinutes(plan: Plan): number {
+  let sec = 0;
+  let n = 0;
+  for (const week of plan.weeks) {
+    for (const s of week.sessions) {
+      const w = getWorkout(s.workoutId);
+      if (!w) continue;
+      sec += totalDurationSec(w);
+      n++;
+    }
+  }
+  return n === 0 ? 45 : Math.round(sec / n / 60 / 5) * 5;
 }

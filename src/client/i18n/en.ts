@@ -168,6 +168,14 @@ export const en = {
     confirmBody:
       '“{current}” is your active plan. Your progress in it is kept, and you can return to it later.',
     confirmYes: 'Start {name}',
+    saveFailed: 'Couldn’t save the plan. Nothing was changed.',
+    existingBody:
+      'You already have progress in this plan ({done} sessions done). Continue where you left off, or start over?',
+    continue: 'Continue',
+    startOver: 'Start over',
+    resetTitle: 'Erase progress?',
+    resetBody: 'Starting over erases your progress in this plan. This can’t be undone.',
+    resetYes: 'Erase and start over',
     cancel: 'Cancel',
   },
   placeholder: { body: 'This screen arrives in a later update.', plans: 'Plans' },

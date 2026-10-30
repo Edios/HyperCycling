@@ -170,6 +170,14 @@ export const pl: Messages = {
     confirmBody:
       '„{current}” to Twój aktywny plan. Twój postęp w nim zostaje zachowany i możesz do niego wrócić.',
     confirmYes: 'Zacznij {name}',
+    saveFailed: 'Nie udało się zapisać planu. Nic nie zostało zmienione.',
+    existingBody:
+      'Masz już postęp w tym planie ({done} ukończonych sesji). Kontynuować czy zacząć od nowa?',
+    continue: 'Kontynuuj',
+    startOver: 'Zacznij od nowa',
+    resetTitle: 'Wymazać postęp?',
+    resetBody: 'Zaczęcie od nowa wymaże Twój postęp w tym planie. Tego nie można cofnąć.',
+    resetYes: 'Wymaż i zacznij od nowa',
     cancel: 'Anuluj',
   },
   placeholder: { body: 'Ten ekran pojawi się w kolejnej aktualizacji.', plans: 'Plany' },

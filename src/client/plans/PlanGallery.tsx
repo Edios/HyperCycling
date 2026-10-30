@@ -8,7 +8,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
 import { LoadBars } from './LoadBars';
-import { matchesFilter, planLoad, type LevelFilter } from './model';
+import { matchesFilter, planLoad, typicalMinutes, type LevelFilter } from './model';
 import { useWeeksLabel } from './useWeeksLabel';
 import styles from './PlanGallery.module.css';
 
@@ -64,7 +64,7 @@ export function PlanGallery() {
               <div className={styles.meta}>
                 {t('plans.cardMeta', {
                   weeks: plan.loop ? t('plans.looping', { weeks }) : weeks,
-                  minutes: 45,
+                  minutes: typicalMinutes(plan),
                 })}
               </div>
               <p className={styles.desc}>{text.description}</p>
