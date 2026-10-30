@@ -15,7 +15,6 @@ export interface YouTubeBackgroundProps {
   startSec?: number;
   /** True while the engine is paused; the video follows. */
   paused: boolean;
-  muted?: boolean;
   onFail: (reason: YoutubeFailure) => void;
 }
 
@@ -24,18 +23,15 @@ export function YouTubeBackground({
   videoId,
   startSec = 0,
   paused,
-  muted = true,
   onFail,
 }: YouTubeBackgroundProps) {
   const frameRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | undefined>(undefined);
   const readyRef = useRef(false);
   const pausedRef = useRef(paused);
-  const mutedRef = useRef(muted);
   const onFailRef = useRef(onFail);
   useEffect(() => {
     pausedRef.current = paused;
-    mutedRef.current = muted;
     onFailRef.current = onFail;
   });
 
@@ -57,13 +53,13 @@ export function YouTubeBackground({
       .then((YT) => {
         if (!alive) return;
         timer = setTimeout(() => fail('unavailable'), PLAYER_READY_TIMEOUT_MS);
-        playerRef.current = new YT.Player(target, {
+        const player = new YT.Player(target, {
           videoId,
           width: '100%',
           height: '100%',
           playerVars: {
             autoplay: 1,
-            mute: mutedRef.current ? 1 : 0,
+            mute: 1,
             controls: 0,
             modestbranding: 1,
             playsinline: 1,
@@ -77,21 +73,25 @@ export function YouTubeBackground({
           },
           events: {
             onReady: (e) => {
+              // A player from a cleaned-up effect run may still become ready; ignore it.
+              if (!alive) return;
               clearTimeout(timer);
               readyRef.current = true;
-              if (mutedRef.current) e.target.mute();
-              else e.target.unMute();
+              e.target.mute();
               if (pausedRef.current) e.target.pauseVideo();
               else e.target.playVideo();
             },
             onError: (e) => {
-              clearTimeout(timer);
+              if (!alive) return;
+              // Unknown codes keep the ready timeout running.
               if (e.data !== undefined && ERROR_CODES.has(e.data)) {
+                clearTimeout(timer);
                 fail(EMBED_BLOCKED.has(e.data) ? 'embed-blocked' : 'unavailable');
               }
             },
           },
         });
+        playerRef.current = player;
       })
       .catch((err: unknown) => {
         console.warn('YouTube player could not start', err);
@@ -105,11 +105,13 @@ export function YouTubeBackground({
       const player = playerRef.current;
       playerRef.current = undefined;
       try {
-        player?.destroy();
+        // Before the player is ready `destroy` may not exist yet.
+        player?.destroy?.();
       } catch (err) {
         console.warn('Stopping the YouTube player failed', err);
       }
-      target.remove();
+      // YT replaced `target` with its iframe, so clear everything it put in the frame.
+      frame.replaceChildren();
     };
   }, [videoId, startSec]);
 
@@ -119,13 +121,6 @@ export function YouTubeBackground({
     if (paused) player.pauseVideo();
     else player.playVideo();
   }, [paused]);
-
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!player || !readyRef.current) return;
-    if (muted) player.mute();
-    else player.unMute();
-  }, [muted]);
 
   return (
     <div data-testid="youtube-background" className={styles.root} aria-hidden="true">

@@ -23,6 +23,7 @@ describe('parseYoutubeUrl', () => {
     [`https://youtu.be/${ID}?t=1h2m3s`, 3723],
     [`https://www.youtube.com/embed/${ID}?start=45`, 45],
     [`https://www.youtube.com/watch?v=${ID}&t=garbage`, 0],
+    [`https://www.youtube.com/watch?v=${ID}&t=99999999999999999999`, 86_400],
   ])('%s', (url, startSec) => {
     expect(parseYoutubeUrl(url)).toEqual({ videoId: ID, startSec });
   });

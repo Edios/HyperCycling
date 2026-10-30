@@ -4,6 +4,8 @@ export interface ParsedYoutubeUrl {
   startSec: number;
 }
 
+/** A start time beyond a day is nonsense; this also keeps huge numbers finite. */
+const MAX_START_SEC = 86_400;
 const ID = /^[A-Za-z0-9_-]{11}$/;
 const HOSTS = new Set(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com']);
 
@@ -21,7 +23,7 @@ function startFrom(url: URL): number {
     const v = url.searchParams.get(key);
     if (v !== null) {
       const sec = parseStartTime(v);
-      if (sec !== undefined) return sec;
+      if (sec !== undefined) return Math.min(sec, MAX_START_SEC);
     }
   }
   return 0;

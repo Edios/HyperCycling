@@ -9,6 +9,7 @@ const fake = vi.hoisted(() => ({
     calls: string[];
   }[],
   reject: false,
+  noDestroy: false,
 }));
 
 vi.mock('./loadIframeApi', () => ({
@@ -18,7 +19,13 @@ vi.mock('./loadIframeApi', () => ({
       : Promise.resolve({
           Player: class {
             calls: string[] = [];
-            constructor(_el: unknown, opts: YTPlayerOptions) {
+            destroy: (() => void) | undefined = () => {
+              this.calls.push('destroy');
+            };
+            constructor(el: HTMLElement, opts: YTPlayerOptions) {
+              // The real API swaps its target element for an iframe.
+              el.replaceWith(document.createElement('iframe'));
+              if (fake.noDestroy) this.destroy = undefined;
               fake.players.push({ opts, calls: this.calls });
             }
             playVideo() {
@@ -32,9 +39,6 @@ vi.mock('./loadIframeApi', () => ({
             }
             unMute() {
               this.calls.push('unmute');
-            }
-            destroy() {
-              this.calls.push('destroy');
             }
           },
         }),
@@ -61,6 +65,7 @@ const flush = () => act(async () => void (await Promise.resolve()));
 beforeEach(() => {
   fake.players.length = 0;
   fake.reject = false;
+  fake.noDestroy = false;
 });
 afterEach(() => vi.useRealTimers());
 
@@ -113,6 +118,64 @@ describe('YouTubeBackground', () => {
     await flush();
     unmount();
     expect(last().calls).toContain('destroy');
+  });
+
+  it('removes the iframe on unmount even when the player has no destroy yet', async () => {
+    fake.noDestroy = true;
+    const { unmount } = render(
+      <YouTubeBackground videoId="dQw4w9WgXcQ" paused={false} onFail={vi.fn()} />,
+    );
+    await flush();
+    expect(document.querySelector('iframe')).not.toBeNull();
+    unmount();
+    expect(document.querySelector('iframe')).toBeNull();
+  });
+
+  it('ignores a stale onReady after unmount', async () => {
+    const { unmount } = render(
+      <YouTubeBackground videoId="dQw4w9WgXcQ" paused={false} onFail={vi.fn()} />,
+    );
+    await flush();
+    const stale = events();
+    const t = target();
+    unmount();
+    last().calls.length = 0;
+    act(() => stale.onReady({ target: t }));
+    expect(last().calls).toEqual([]);
+  });
+
+  it('a videoId change replaces the player and the stale one is ignored', async () => {
+    const { rerender } = render(
+      <YouTubeBackground videoId="dQw4w9WgXcQ" paused={false} onFail={vi.fn()} />,
+    );
+    await flush();
+    const staleEvents = events();
+    const staleCalls = last().calls;
+    rerender(<YouTubeBackground videoId="aaaaaaaaaaa" paused={false} onFail={vi.fn()} />);
+    await flush();
+    expect(fake.players).toHaveLength(2);
+    expect(document.querySelectorAll('iframe')).toHaveLength(1);
+    const t = {
+      ...target(),
+      mute: () => staleCalls.push('mute'),
+      playVideo: () => staleCalls.push('play'),
+    };
+    staleCalls.length = 0;
+    act(() => staleEvents.onReady({ target: t }));
+    expect(staleCalls).toEqual([]);
+    // The stale ready must not mark the new player ready: pausing does nothing to it yet.
+    rerender(<YouTubeBackground videoId="aaaaaaaaaaa" paused onFail={vi.fn()} />);
+    expect(last().calls).toEqual([]);
+  });
+
+  it('an unknown error code keeps the ready timeout running', async () => {
+    vi.useFakeTimers();
+    const onFail = vi.fn();
+    render(<YouTubeBackground videoId="dQw4w9WgXcQ" paused={false} onFail={onFail} />);
+    await flush();
+    act(() => events().onError({ target: target(), data: 999 }));
+    act(() => void vi.advanceTimersByTime(PLAYER_READY_TIMEOUT_MS));
+    expect(onFail).toHaveBeenCalledWith('unavailable');
   });
 
   it.each([

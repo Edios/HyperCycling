@@ -124,6 +124,21 @@ describe('YouTube background in the training screen', () => {
     expect(root).toHaveAttribute('data-theme', 'dark');
   });
 
+  it('a YouTube failure leaves the running session untouched', async () => {
+    load('https://youtu.be/dQw4w9WgXcQ');
+    await renderScreen();
+    act(() => useSessionStore.getState().start());
+    now += 3100;
+    act(() => void useSessionStore.getState().tick());
+    now += 2000;
+    act(() => void useSessionStore.getState().tick());
+    const before = useSessionStore.getState().state;
+    expect(before.status).toBe('running');
+    act(() => props().onFail('unavailable'));
+    expect(useSessionStore.getState().state).toEqual(before);
+    expect(before.workoutElapsedSec).toBeGreaterThan(0);
+  });
+
   it('an unplayable video shows the generic message', async () => {
     load('https://youtu.be/dQw4w9WgXcQ');
     await renderScreen();

@@ -32,7 +32,12 @@ export interface IframeApiHost {
   YT?: YTNamespace;
   onYouTubeIframeAPIReady?: () => void;
   document: {
-    createElement(tag: 'script'): { src: string; async: boolean; onerror: (() => void) | null };
+    createElement(tag: 'script'): {
+      src: string;
+      async: boolean;
+      onerror: (() => void) | null;
+      remove(): void;
+    };
     head: { appendChild(node: unknown): unknown };
   };
   setTimeout(cb: () => void, ms: number): unknown;
@@ -56,9 +61,12 @@ export function loadIframeApi(
   if (existing) return existing;
 
   const promise = new Promise<YTNamespace>((resolve, reject) => {
+    const script = host.document.createElement('script');
     const previous = host.onYouTubeIframeAPIReady;
     const fail = (message: string): void => {
       host.clearTimeout(timer);
+      // Drop the dead script so a retry does not stack a second one next to it.
+      script.remove();
       pending.delete(host);
       reject(new Error(message));
     };
@@ -72,7 +80,6 @@ export function loadIframeApi(
       if (host.YT?.Player) resolve(host.YT);
       else fail('YouTube IFrame API loaded without a player');
     };
-    const script = host.document.createElement('script');
     script.src = IFRAME_API_URL;
     script.async = true;
     script.onerror = () => fail('YouTube IFrame API failed to load');

@@ -11,13 +11,21 @@ interface FakeScript {
   src: string;
   async: boolean;
   onerror: (() => void) | null;
+  remove(): void;
 }
 
 function fakeHost() {
   const scripts: FakeScript[] = [];
   const host: IframeApiHost = {
     document: {
-      createElement: () => ({ src: '', async: false, onerror: null }),
+      createElement: () => ({
+        src: '',
+        async: false,
+        onerror: null,
+        remove() {
+          scripts.splice(scripts.indexOf(this as FakeScript), 1);
+        },
+      }),
       head: { appendChild: (n) => scripts.push(n as FakeScript) },
     },
     setTimeout: (cb, ms) => setTimeout(cb, ms),
@@ -69,7 +77,18 @@ describe('loadIframeApi', () => {
     await vi.advanceTimersByTimeAsync(IFRAME_API_TIMEOUT_MS);
     expect(await caught).toMatch(/timed out/);
     void loadIframeApi(host).catch(() => undefined);
-    expect(scripts).toHaveLength(2);
+    // The dead script is gone, so the retry leaves exactly one.
+    expect(scripts).toHaveLength(1);
+  });
+
+  it('rejects when the API calls back but YT has no Player yet', async () => {
+    const { host, scripts } = fakeHost();
+    host.YT = {} as unknown as YTNamespace;
+    const p = loadIframeApi(host);
+    expect(scripts).toHaveLength(1);
+    host.onYouTubeIframeAPIReady?.();
+    await expect(p).rejects.toThrow(/without a player/);
+    expect(scripts).toHaveLength(0);
   });
 
   it('rejects when the script fails to load', async () => {
@@ -77,5 +96,6 @@ describe('loadIframeApi', () => {
     const p = loadIframeApi(host);
     scripts[0]?.onerror?.();
     await expect(p).rejects.toThrow(/failed to load/);
+    expect(scripts).toHaveLength(0);
   });
 });
