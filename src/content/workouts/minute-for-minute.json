@@ -1,0 +1,149 @@
+{
+  "id": "minute-for-minute",
+  "name": "Minute for Minute",
+  "description": "Nine rounds of one minute hard and one minute easy.",
+  "localized": {
+    "en": {
+      "name": "Minute for Minute",
+      "description": "Nine rounds of one minute hard and one minute easy."
+    },
+    "pl": {
+      "name": "Minuta za minutę",
+      "description": "Dziewięć razy minuta mocno i minuta luzu."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["vo2", "hiit"],
+  "source": {
+    "kind": "builtin",
+    "file": "minute-for-minute.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "mfm-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "mfm-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mfm-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mfm-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mfm-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mfm-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mfm-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "mfm-1",
+      "times": 9,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "mfm-2",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 120
+          },
+          "rpm": 100,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mfm-3",
+          "durationSec": 60,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "mfm-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "mfm-wu",
+    "cooldownBlockId": "mfm-cd",
+    "flexRepeatId": "mfm-1",
+    "minTimes": 3,
+    "maxTimes": 14
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

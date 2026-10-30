@@ -1,0 +1,156 @@
+{
+  "id": "music-mayday",
+  "name": "Music Holiday Ride",
+  "description": "An easy Zone 2 ride with four one-minute surges on the choruses.",
+  "localized": {
+    "en": {
+      "name": "Music Holiday Ride",
+      "description": "An easy Zone 2 ride with four one-minute surges on the choruses."
+    },
+    "pl": {
+      "name": "Muzyczna majówka",
+      "description": "Spokojna jazda w strefie 2 z czterema minutowymi zrywami na refrenach."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "endurance"],
+  "source": {
+    "kind": "builtin",
+    "file": "music-mayday.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "mm-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "mm-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mm-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mm-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mm-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mm-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mm-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "mm-1",
+      "times": 4,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "mm-2",
+          "durationSec": 360,
+          "intensity": {
+            "ftpPct": 70
+          },
+          "rpm": 88,
+          "position": "seated",
+          "label": "@steady"
+        },
+        {
+          "kind": "steady",
+          "id": "mm-3",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 105
+          },
+          "rpm": 98,
+          "position": "seated",
+          "label": "@interval",
+          "cue": "@attack"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "mm-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "musicHints": {
+    "mm-2": "Relaxed feel-good song, 90-105 BPM, about 5-6 min.",
+    "mm-3": "The loudest chorus of the song: surge for the full minute. Keep the beat near 98 BPM."
+  },
+  "scaling": {
+    "warmupBlockId": "mm-wu",
+    "cooldownBlockId": "mm-cd",
+    "flexRepeatId": "mm-1",
+    "minTimes": 2,
+    "maxTimes": 6
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

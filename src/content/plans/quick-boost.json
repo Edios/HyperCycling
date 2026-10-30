@@ -1,0 +1,75 @@
+{
+  "id": "quick-boost",
+  "name": "Quick Boost",
+  "description": "Four short and intense weeks for busy times: sessions of 25 to 40 minutes, almost all hard work.",
+  "localized": {
+    "en": {
+      "name": "Quick Boost",
+      "description": "Four short and intense weeks for busy times: sessions of 25 to 40 minutes, almost all hard work."
+    },
+    "pl": {
+      "name": "Szybki zastrzyk",
+      "description": "Cztery krótkie i intensywne tygodnie na okres, gdy brakuje czasu: sesje po 25 do 40 minut, prawie sama mocna praca."
+    }
+  },
+  "level": "short",
+  "loop": false,
+  "weeks": [
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "forty-twenty"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "tabata-20-10"
+        }
+      ],
+      "progresAlt": "forty-twenty"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "four-fours"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "waves"
+        }
+      ],
+      "progresAlt": "four-fours"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "thirty-fifteen"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "ladder-1-2-3"
+        }
+      ],
+      "progresAlt": "thirty-fifteen"
+    },
+    {
+      "light": true,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "short-threes"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "light-music-30"
+        }
+      ],
+      "progresAlt": "short-threes"
+    }
+  ]
+}

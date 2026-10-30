@@ -1,0 +1,395 @@
+{
+  "id": "ramp-test",
+  "name": "Ramp Test",
+  "description": "Every minute 6 % harder until you cannot go on; the result helps set your FTP.",
+  "localized": {
+    "en": {
+      "name": "Ramp Test",
+      "description": "Every minute 6 % harder until you cannot go on; the result helps set your FTP."
+    },
+    "pl": {
+      "name": "Test rampowy",
+      "description": "Co minutę o 6 % mocniej, aż do odmowy; wynik pomaga ustalić FTP."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["test"],
+  "source": {
+    "kind": "builtin",
+    "file": "ramp-test.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "rt-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-1",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 50
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-2",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 56
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-3",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 62
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-4",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 68
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-5",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 74
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-6",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 80
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-7",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 86
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-8",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 92
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-9",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 98
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-10",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 104
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-11",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 110
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-12",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 116
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-13",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 122
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test",
+      "cue": "@goUntilFail"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-14",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 128
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-15",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 134
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-16",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 140
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-17",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 146
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-18",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 152
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-19",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 158
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-20",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 164
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-21",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 170
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-22",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 176
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-23",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 182
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-24",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 188
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "steady",
+      "id": "rt-25",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 194
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@test"
+    },
+    {
+      "kind": "ramp",
+      "id": "rt-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "rt-wu",
+    "cooldownBlockId": "rt-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

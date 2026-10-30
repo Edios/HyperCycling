@@ -1,0 +1,159 @@
+{
+  "id": "cadence-test",
+  "name": "Cadence Test",
+  "description": "Four five-minute steps at 80, 90, 100 and 110 rpm to find your comfortable cadence.",
+  "localized": {
+    "en": {
+      "name": "Cadence Test",
+      "description": "Four five-minute steps at 80, 90, 100 and 110 rpm to find your comfortable cadence."
+    },
+    "pl": {
+      "name": "Test kadencji",
+      "description": "Cztery pięciominutowe odcinki z kadencją 80, 90, 100 i 110, żeby znaleźć najwygodniejszą kadencję."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["test", "cadence"],
+  "source": {
+    "kind": "builtin",
+    "file": "cadence-test.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "ct-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "ct-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ct-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ct-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ct-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ct-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ct-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ct-1",
+      "durationSec": 300,
+      "intensity": {
+        "ftpPct": 70
+      },
+      "rpm": 80,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ct-2",
+      "durationSec": 300,
+      "intensity": {
+        "ftpPct": 70
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ct-3",
+      "durationSec": 300,
+      "intensity": {
+        "ftpPct": 70
+      },
+      "rpm": 100,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ct-4",
+      "durationSec": 300,
+      "intensity": {
+        "ftpPct": 70
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "ramp",
+      "id": "ct-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "ct-wu",
+    "cooldownBlockId": "ct-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

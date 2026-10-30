@@ -1,0 +1,159 @@
+{
+  "id": "easy-ride-30",
+  "name": "Easy Zone 2 - 30",
+  "description": "A relaxed Zone 2 spin at a pace where you can still talk.",
+  "localized": {
+    "en": {
+      "name": "Easy Zone 2 - 30",
+      "description": "A relaxed Zone 2 spin at a pace where you can still talk."
+    },
+    "pl": {
+      "name": "Spokojna dwójka 30",
+      "description": "Spokojna jazda w strefie 2, w tempie, przy którym możesz rozmawiać."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["endurance"],
+  "source": {
+    "kind": "builtin",
+    "file": "easy-ride-30.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "er3-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "er3-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er3-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er3-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er3-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er3-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er3-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er3-1",
+      "durationSec": 120,
+      "intensity": {
+        "ftpPct": 68
+      },
+      "rpm": 88,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "er3-2",
+      "times": 3,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "er3-3",
+          "durationSec": 240,
+          "intensity": {
+            "ftpPct": 70
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "er3-4",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 72
+          },
+          "rpm": 95,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "er3-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "er3-wu",
+    "cooldownBlockId": "er3-cd",
+    "flexRepeatId": "er3-2",
+    "minTimes": 2,
+    "maxTimes": 10
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

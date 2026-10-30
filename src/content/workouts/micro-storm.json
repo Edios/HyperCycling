@@ -1,0 +1,339 @@
+{
+  "id": "micro-storm",
+  "name": "Micro Storm",
+  "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy.",
+  "localized": {
+    "en": {
+      "name": "Micro Storm",
+      "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy."
+    },
+    "pl": {
+      "name": "Mikro-burza",
+      "description": "Trzy serie po dziesięć razy 30 sekund mocno i 30 sekund luzu."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["hiit", "vo2"],
+  "source": {
+    "kind": "builtin",
+    "file": "micro-storm.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "ms-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "ms-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ms-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ms-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ms-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ms-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ms-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "ms-1",
+      "times": 3,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "ms-2",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-3",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-4",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-5",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-6",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-7",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-8",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-9",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-10",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-11",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-12",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-13",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-14",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-15",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-16",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-17",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-18",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-19",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-20",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-21",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-22",
+          "durationSec": 120,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "ms-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "ms-wu",
+    "cooldownBlockId": "ms-cd",
+    "flexRepeatId": "ms-1",
+    "minTimes": 2,
+    "maxTimes": 3
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

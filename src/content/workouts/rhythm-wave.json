@@ -1,0 +1,296 @@
+{
+  "id": "rhythm-wave",
+  "name": "Rhythm Wave",
+  "description": "A tempo pyramid ridden on the beat with harder surges on the choruses.",
+  "localized": {
+    "en": {
+      "name": "Rhythm Wave",
+      "description": "A tempo pyramid ridden on the beat with harder surges on the choruses."
+    },
+    "pl": {
+      "name": "Fala rytmu",
+      "description": "Piramida tempa w rytm muzyki z mocniejszymi zrywami na refrenach."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "tempo"],
+  "source": {
+    "kind": "builtin",
+    "file": "rhythm-wave.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "rw-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-1",
+      "durationSec": 210,
+      "intensity": {
+        "ftpPct": 72
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-2",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 92
+      },
+      "rpm": 93,
+      "position": "seated",
+      "label": "@interval",
+      "cue": "@attack"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-3",
+      "durationSec": 210,
+      "intensity": {
+        "ftpPct": 76
+      },
+      "rpm": 88,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-4",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 96
+      },
+      "rpm": 96,
+      "position": "seated",
+      "label": "@interval",
+      "cue": "@attack"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-5",
+      "durationSec": 210,
+      "intensity": {
+        "ftpPct": 80
+      },
+      "rpm": 92,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-6",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 100
+      },
+      "rpm": 100,
+      "position": "seated",
+      "label": "@interval",
+      "cue": "@attack"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-7",
+      "durationSec": 210,
+      "intensity": {
+        "ftpPct": 84
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-8",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 104
+      },
+      "rpm": 103,
+      "position": "seated",
+      "label": "@interval",
+      "cue": "@attack"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-9",
+      "durationSec": 210,
+      "intensity": {
+        "ftpPct": 80
+      },
+      "rpm": 92,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-10",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 100
+      },
+      "rpm": 100,
+      "position": "seated",
+      "label": "@interval",
+      "cue": "@attack"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-11",
+      "durationSec": 210,
+      "intensity": {
+        "ftpPct": 76
+      },
+      "rpm": 88,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-12",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 96
+      },
+      "rpm": 96,
+      "position": "seated",
+      "label": "@interval",
+      "cue": "@attack"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-13",
+      "durationSec": 210,
+      "intensity": {
+        "ftpPct": 72
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "steady",
+      "id": "rw-14",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 92
+      },
+      "rpm": 93,
+      "position": "seated",
+      "label": "@interval",
+      "cue": "@attack"
+    },
+    {
+      "kind": "ramp",
+      "id": "rw-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "musicHints": {
+    "rw-1": "Song at 85 BPM (or double time, 170-190 BPM), calm mood, about 4 min. Pedal on the beat.",
+    "rw-3": "Song at 88 BPM (or double time, 170-190 BPM), groovy mood, about 4 min. Pedal on the beat.",
+    "rw-5": "Song at 92 BPM (or double time, 170-190 BPM), driving mood, about 4 min. Pedal on the beat.",
+    "rw-7": "Song at 95 BPM (or double time, 170-190 BPM), euphoric mood, about 4 min. Pedal on the beat.",
+    "rw-9": "Song at 92 BPM (or double time, 170-190 BPM), uplifting mood, about 4 min. Pedal on the beat.",
+    "rw-11": "Song at 88 BPM (or double time, 170-190 BPM), bold mood, about 4 min. Pedal on the beat.",
+    "rw-13": "Song at 85 BPM (or double time, 170-190 BPM), mellow mood, about 4 min. Pedal on the beat.",
+    "rw-2": "Stay with the current song, feel the beat around 93 BPM.",
+    "rw-4": "Stay with the current song, feel the beat around 96 BPM.",
+    "rw-6": "Stay with the current song, feel the beat around 100 BPM.",
+    "rw-8": "Stay with the current song, feel the beat around 103 BPM.",
+    "rw-10": "Stay with the current song, feel the beat around 100 BPM.",
+    "rw-12": "Stay with the current song, feel the beat around 96 BPM.",
+    "rw-14": "Stay with the current song, feel the beat around 93 BPM."
+  },
+  "scaling": {
+    "warmupBlockId": "rw-wu",
+    "cooldownBlockId": "rw-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

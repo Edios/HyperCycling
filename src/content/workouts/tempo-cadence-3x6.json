@@ -1,0 +1,199 @@
+{
+  "id": "tempo-cadence-3x6",
+  "name": "Tempo with Cadence",
+  "description": "Three six-minute tempo blocks with the cadence switching every minute between 65 and 95.",
+  "localized": {
+    "en": {
+      "name": "Tempo with Cadence",
+      "description": "Three six-minute tempo blocks with the cadence switching every minute between 65 and 95."
+    },
+    "pl": {
+      "name": "Tempo z kadencją",
+      "description": "Trzy sześciominutowe odcinki tempa, co minutę zmiana kadencji z 65 na 95."
+    }
+  },
+  "category": "progres",
+  "tags": ["tempo", "cadence"],
+  "source": {
+    "kind": "builtin",
+    "file": "tempo-cadence-3x6.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "tc3-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "tc3-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tc3-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tc3-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tc3-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tc3-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tc3-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "tc3-1",
+      "times": 3,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "tc3-2",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 80
+          },
+          "rpm": 65,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tc3-3",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 80
+          },
+          "rpm": 95,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tc3-4",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 80
+          },
+          "rpm": 65,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tc3-5",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 80
+          },
+          "rpm": 95,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tc3-6",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 80
+          },
+          "rpm": 65,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tc3-7",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 80
+          },
+          "rpm": 95,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tc3-8",
+          "durationSec": 90,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "tc3-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "tc3-wu",
+    "cooldownBlockId": "tc3-cd",
+    "flexRepeatId": "tc3-1",
+    "minTimes": 2,
+    "maxTimes": 4
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

@@ -1,0 +1,131 @@
+{
+  "id": "build-form",
+  "name": "Build Form",
+  "description": "Eight weeks to raise your FTP: sweet spot growing into threshold, with VO2 and micro-burst spice.",
+  "localized": {
+    "en": {
+      "name": "Build Form",
+      "description": "Eight weeks to raise your FTP: sweet spot growing into threshold, with VO2 and micro-burst spice."
+    },
+    "pl": {
+      "name": "Budowa formy",
+      "description": "Osiem tygodni na podniesienie FTP: sweet spot przechodzący w próg oraz interwały VO2 i mikro-zrywy."
+    }
+  },
+  "level": "intermediate",
+  "loop": false,
+  "weeks": [
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "ramp-test"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "five-attacks"
+        }
+      ],
+      "progresAlt": "sweet-spot-2x10"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "sweet-spot-3x8-91"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "thirty-fifteen-2x10"
+        }
+      ],
+      "progresAlt": "sweet-spot-3x8-91"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "sweet-spot-2x12-92"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "music-climbs"
+        }
+      ],
+      "progresAlt": "sweet-spot-2x12-92"
+    },
+    {
+      "light": true,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "sweet-spot-2x8"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "cadence-pyramid"
+        }
+      ],
+      "progresAlt": "sweet-spot-2x8"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "sweet-spot-3x10"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "vo2-5x3"
+        }
+      ],
+      "progresAlt": "sweet-spot-3x10"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "four-eights"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "sprint-ladder"
+        }
+      ],
+      "progresAlt": "four-eights"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "threshold-3x10"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "micro-storm"
+        }
+      ],
+      "progresAlt": "threshold-3x10"
+    },
+    {
+      "light": true,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "ramp-test"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "rhythm-wave"
+        }
+      ],
+      "progresAlt": "sweet-spot-2x10"
+    }
+  ]
+}

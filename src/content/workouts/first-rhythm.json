@@ -1,0 +1,163 @@
+{
+  "id": "first-rhythm",
+  "name": "First Rhythm",
+  "description": "Three five-minute hard tempo blocks with two easy minutes between them.",
+  "localized": {
+    "en": {
+      "name": "First Rhythm",
+      "description": "Three five-minute hard tempo blocks with two easy minutes between them."
+    },
+    "pl": {
+      "name": "Pierwszy rytm",
+      "description": "Trzy pięciominutowe odcinki w mocnym tempie, dwie minuty luzu pomiędzy."
+    }
+  },
+  "category": "progres",
+  "tags": ["tempo"],
+  "source": {
+    "kind": "builtin",
+    "file": "first-rhythm.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "fr-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "fr-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "fr-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "fr-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "fr-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "fr-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "fr-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "ramp",
+      "id": "fr-1",
+      "durationSec": 360,
+      "from": {
+        "ftpPct": 65
+      },
+      "to": {
+        "ftpPct": 80
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "repeat",
+      "id": "fr-2",
+      "times": 3,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "fr-3",
+          "durationSec": 300,
+          "intensity": {
+            "ftpPct": 85
+          },
+          "rpm": 90,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "fr-4",
+          "durationSec": 120,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "fr-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "fr-wu",
+    "cooldownBlockId": "fr-cd",
+    "flexRepeatId": "fr-2",
+    "minTimes": 2,
+    "maxTimes": 4
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

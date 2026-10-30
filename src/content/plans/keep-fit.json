@@ -1,0 +1,75 @@
+{
+  "id": "keep-fit",
+  "name": "Keep Fit",
+  "description": "A four-week loop to stay in shape after a plan, with changing accents and a light week every cycle.",
+  "localized": {
+    "en": {
+      "name": "Keep Fit",
+      "description": "A four-week loop to stay in shape after a plan, with changing accents and a light week every cycle."
+    },
+    "pl": {
+      "name": "Forma na stałe",
+      "description": "Czterotygodniowa pętla do utrzymania formy po planie: zmienne akcenty i lżejszy tydzień w każdym cyklu."
+    }
+  },
+  "level": "any",
+  "loop": true,
+  "weeks": [
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "sweet-spot-2x15"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "standing-climbs"
+        }
+      ],
+      "progresAlt": "sweet-spot-2x15"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "four-eights-102"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "sprint-ladder"
+        }
+      ],
+      "progresAlt": "three-eights-102"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "thirty-fifteen"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "climb-and-attack"
+        }
+      ],
+      "progresAlt": "thirty-fifteen"
+    },
+    {
+      "light": true,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "easy-ride-45"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "cadence-pyramid"
+        }
+      ],
+      "progresAlt": "easy-ride-45"
+    }
+  ]
+}

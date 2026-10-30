@@ -1,0 +1,149 @@
+{
+  "id": "tabata-lite",
+  "name": "Tabata Lite",
+  "description": "A single set of eight rounds of 20 seconds hard and 10 seconds easy.",
+  "localized": {
+    "en": {
+      "name": "Tabata Lite",
+      "description": "A single set of eight rounds of 20 seconds hard and 10 seconds easy."
+    },
+    "pl": {
+      "name": "Tabata-lite",
+      "description": "Jedna seria osiem razy 20 sekund mocno i 10 sekund luzu."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["hiit"],
+  "source": {
+    "kind": "builtin",
+    "file": "tabata-lite.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "tl-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "tl-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tl-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tl-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tl-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tl-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tl-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "tl-1",
+      "times": 8,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "tl-2",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 130
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tl-3",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "tl-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "tl-wu",
+    "cooldownBlockId": "tl-cd",
+    "flexRepeatId": "tl-1",
+    "minTimes": 8,
+    "maxTimes": 8
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}
