@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PLAN_SETTINGS } from '../../domain/plan';
+import { scaleWorkout } from '../../domain/scale';
 import { flattenWorkout } from '../../domain/segments';
 import { isActiveSessionFresh, type ActiveSession } from '../../domain/session-log';
 import { builtinWorkouts } from '../data/builtin';
@@ -12,7 +13,7 @@ import { formatClock } from '../training/format';
 import { useSessionStore, type SessionRuntime } from '../training/session-store';
 import { Button } from '../ui/Button';
 import { ProfileChart } from '../ui/ProfileChart';
-import { applyPlanSettings, buildRuntime, pickPlayers, totalSec } from './model';
+import { buildRuntime, pickPlayers, snapshotFits, totalSec } from './model';
 import styles from './ResumePrompt.module.css';
 
 interface Pending {
@@ -44,6 +45,8 @@ export function ResumePrompt() {
     effortTable.current = settings.effortTable;
   });
   const [pending, setPending] = useState<Pending | undefined>();
+  // Never replace a session that is already on screen.
+  const sessionOpen = useSessionStore((s) => s.runtime !== undefined);
 
   useEffect(() => {
     if (!loaded) return undefined;
@@ -61,12 +64,24 @@ export function ResumePrompt() {
           await clearActive();
           return;
         }
-        const progress = active.plan ? await repos.planProgress.get(active.plan.planId) : undefined;
-        const ridden = active.plan
-          ? applyPlanSettings(workout, progress?.settings ?? DEFAULT_PLAN_SETTINGS)
-          : workout;
+        let ridden = active.workout ?? workout;
+        if (!active.workout && active.plan) {
+          // Older records carry no workout: rebuild it from the plan's stored settings.
+          const progress = await repos.planProgress.get(active.plan.planId);
+          const ps = progress?.settings ?? DEFAULT_PLAN_SETTINGS;
+          try {
+            ridden = scaleWorkout(workout, {
+              targetMinutes: ps.sessionMinutes,
+              difficultyPct: ps.difficulty,
+            });
+          } catch (err) {
+            console.warn('Rebuilding the interrupted workout failed', err);
+            await clearActive();
+            return;
+          }
+        }
         const segments = flattenWorkout(ridden, effortTable.current);
-        if (active.snapshot.segmentIndex >= segments.length) {
+        if (!snapshotFits(segments, active.snapshot)) {
           await clearActive();
           return;
         }
@@ -79,7 +94,6 @@ export function ResumePrompt() {
             ? { hud: 'solo' as const }
             : {}),
         };
-        // Never replace a session that is already on screen.
         if (!live || useSessionStore.getState().runtime) return;
         setPending({
           runtime: buildRuntime(ridden, segments, config, players, active.plan),
@@ -98,7 +112,7 @@ export function ResumePrompt() {
     };
   }, [loaded]);
 
-  if (!pending) return null;
+  if (!pending || sessionOpen) return null;
   const { runtime, active, minutesAgo } = pending;
   const total = totalSec(runtime.segments);
   const snap = active.snapshot;

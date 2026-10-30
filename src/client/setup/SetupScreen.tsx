@@ -145,13 +145,10 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
     setChosenHud(undefined); // layout follows the selection again
   };
 
+  /** Throws when the rider could not be stored, so the form can say so and nobody gets selected. */
   const addPlayer = async (p: Player): Promise<void> => {
-    try {
-      const repos = await getRepositories();
-      await repos.players.put(p);
-    } catch (err) {
-      console.warn('Saving the new player failed', err);
-    }
+    const repos = await getRepositories();
+    await repos.players.put(p);
     setPlayers((cur) => [...cur, p]);
     setSelected((cur) => (cur.length >= MAX_SESSION_PLAYERS ? cur : [...cur, p.id]));
     setChosenHud(undefined);
@@ -162,11 +159,9 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
     const config = buildConfig({ background, hud: chosenHud, playerIds: selected, music }, hasCues);
     const runtime = buildRuntime(scaled, segments, config, pickPlayers(players, selected), plan);
     // Persist the choices as the user left them (music stays on even for a workout without cues).
-    void updateSettings({
-      sounds: beeps,
-      coach,
-      lastSession: { ...config, music },
-    });
+    updateSettings({ sounds: beeps, coach, lastSession: { ...config, music } }).catch((err) =>
+      console.warn('Saving the session choices failed', err),
+    );
     useSessionStore.getState().load(runtime);
     navigate('/train');
   };
@@ -324,7 +319,7 @@ function AddPlayerForm({
   const t = useT();
   const [name, setName] = useState('');
   const [ftp, setFtp] = useState('');
-  const [errors, setErrors] = useState<{ name?: string; ftp?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; ftp?: string; save?: string }>({});
 
   const submit = (e: FormEvent): void => {
     e.preventDefault();
@@ -342,7 +337,11 @@ function AddPlayerForm({
       });
       return;
     }
-    void onAdd(parsed.data);
+    setErrors({});
+    onAdd(parsed.data).catch((err) => {
+      console.warn('Saving the new player failed', err);
+      setErrors({ save: t('setup.saveError') });
+    });
   };
 
   return (
@@ -352,7 +351,7 @@ function AddPlayerForm({
           <input
             id={id}
             value={name}
-            maxLength={60}
+            maxLength={24}
             autoFocus
             onChange={(e) => setName(e.target.value)}
           />
@@ -363,6 +362,11 @@ function AddPlayerForm({
           <input id={id} inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} />
         )}
       </Field>
+      {errors.save && (
+        <p role="alert" className={styles.saveError}>
+          {errors.save}
+        </p>
+      )}
       <div className={styles.addButtons}>
         <Button onClick={onCancel}>{t('setup.playerCancel')}</Button>
         <Button type="submit" variant="primary">

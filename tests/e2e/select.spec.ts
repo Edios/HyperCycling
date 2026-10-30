@@ -1,4 +1,5 @@
-import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import type { Page, TestInfo } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { DEFAULT_SETTINGS } from '../../src/domain/settings';
 
 /**
@@ -11,7 +12,7 @@ async function seedSettings(
   activePlanId: string | null,
 ): Promise<void> {
   const settings = { ...DEFAULT_SETTINGS, ...(activePlanId ? { activePlanId } : {}) };
-  if (info.project.name === 'local') {
+  if (info.project.name.startsWith('local')) {
     const res = await page.request.put('/api/settings', { data: settings });
     expect(res.ok()).toBe(true);
     await page.goto('./');

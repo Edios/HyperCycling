@@ -1,4 +1,5 @@
-import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import type { Page, TestInfo } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { DEFAULT_SETTINGS } from '../../src/domain/settings';
 
 /** Stores settings through the storage the project's build uses (HTTP API or IndexedDB) and loads the app. */

@@ -1,11 +1,14 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { PlanProgress } from '../../domain/plan';
 import type { Player } from '../../domain/player';
+import { scaleWorkout } from '../../domain/scale';
 import type { ActiveSession } from '../../domain/session-log';
 
 interface Db {
   active?: ActiveSession;
+  progress?: PlanProgress;
   players: Player[];
   cleared: number;
 }
@@ -17,7 +20,7 @@ vi.mock('../data/repositories', () => ({
       workouts: { list: () => Promise.resolve([]), get: () => Promise.resolve(undefined) },
       settings: { get: () => Promise.resolve(undefined), put: () => Promise.resolve() },
       players: { list: () => Promise.resolve(db.players) },
-      planProgress: { get: () => Promise.resolve(undefined) },
+      planProgress: { get: () => Promise.resolve(db.progress) },
       activeSession: {
         get: () => Promise.resolve(db.active),
         clear: () => {
@@ -72,6 +75,7 @@ function active(over: Partial<ActiveSession> = {}, ageMs = 12 * 60_000): ActiveS
 
 beforeEach(() => {
   db.active = undefined;
+  db.progress = undefined;
   db.players = [ania];
   db.cleared = 0;
   resetSettingsForTests();
@@ -132,6 +136,68 @@ describe('ResumePrompt', () => {
     db.active = active({ workoutId: 'no-such-workout' });
     renderApp();
     await waitFor(() => expect(db.cleared).toBe(1));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  const scalable = builtinWorkouts.find((w) => w.scaling)!;
+  const atStart = { segmentIndex: 0, workoutElapsedSec: 0, status: 'paused' as const };
+  const planRef = { planId: 'plan-x', week: 1, slot: 'progres' as const };
+  const planProgress = (sessionMinutes: 30 | 45 | 60): PlanProgress => ({
+    id: 'plan-x',
+    planId: 'plan-x',
+    startedAt: '2026-01-01T00:00:00.000Z',
+    settings: { sessionMinutes, difficulty: 0, layout: 'progresFreestyle', startWeek: 1 },
+    entries: [],
+  });
+
+  it('resumes the stored workout even when the plan settings changed since', async () => {
+    const ridden = scaleWorkout(scalable, { targetMinutes: 30, difficultyPct: 5 });
+    db.progress = planProgress(60);
+    db.active = active({
+      workoutId: scalable.id,
+      workout: ridden,
+      plan: planRef,
+      snapshot: atStart,
+      config: { background: 'basic', hud: 'solo', playerIds: [], music: false },
+    });
+    renderApp();
+    fireEvent.click(await screen.findByRole('button', { name: 'Resume' }));
+    await screen.findByText('/train');
+    expect(useSessionStore.getState().runtime?.workout).toEqual(ridden);
+  });
+
+  it('without a stored workout rebuilds it from the plan settings', async () => {
+    db.progress = planProgress(30);
+    db.active = active({
+      workoutId: scalable.id,
+      plan: planRef,
+      snapshot: atStart,
+      config: { background: 'basic', hud: 'solo', playerIds: [], music: false },
+    });
+    renderApp();
+    fireEvent.click(await screen.findByRole('button', { name: 'Resume' }));
+    await screen.findByText('/train');
+    expect(useSessionStore.getState().runtime?.workout).toEqual(
+      scaleWorkout(scalable, { targetMinutes: 30, difficultyPct: 0 }),
+    );
+  });
+
+  it('clears a snapshot that lies outside its segment', async () => {
+    db.active = active({ snapshot: { segmentIndex: 1, workoutElapsedSec: 0, status: 'paused' } });
+    renderApp();
+    await waitFor(() => expect(db.cleared).toBe(1));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('hides when a session starts while it is open', async () => {
+    db.active = active();
+    renderApp();
+    await screen.findByRole('dialog');
+    act(() => {
+      useSessionStore.setState({
+        runtime: { workout, segments: [], config: active().config, players: [] },
+      });
+    });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

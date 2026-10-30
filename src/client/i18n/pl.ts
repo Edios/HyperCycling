@@ -72,6 +72,7 @@ export const pl: Messages = {
     playerSave: 'Dodaj osobę',
     playerCancel: 'Anuluj',
     nameError: 'Podaj imię od 1 do 24 znaków.',
+    saveError: 'Nie udało się zapisać osoby. Spróbuj ponownie.',
     ftpError: 'FTP musi być liczbą całkowitą od 50 do 600.',
     beeps: 'Piknięcia',
     coachCues: 'Komendy na ekranie',

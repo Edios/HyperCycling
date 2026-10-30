@@ -10,15 +10,29 @@ process.env.E2E_DB_PATH ??= path.join(tmpdir(), `spinning-tutor-e2e-${Date.now()
 export default defineConfig({
   testDir: 'tests/e2e',
   globalTeardown: './tests/e2e/global-teardown.ts',
-  // The local project shares one database; a stored interrupted session from one test would pop
-  // the resume prompt in another, so tests run one at a time.
-  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   projects: [
     {
       name: 'local',
+      testIgnore: /(setup|training-basic)\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], baseURL: `http://127.0.0.1:${E2E_PORT}` },
+    },
+    {
+      // Files that start a training session autosave it to the shared local database, which would
+      // pop the resume prompt in tests running at the same time; so they run one file at a time.
+      name: 'local-training',
+      testMatch: /training-basic\.spec\.ts/,
+      dependencies: ['local'],
+      use: { ...devices['Desktop Chrome'], baseURL: `http://127.0.0.1:${E2E_PORT}` },
+    },
+    {
+      // These tests keep a stored session around on purpose; running them after the other
+      // local tests (which clear it before each test) keeps the shared database predictable.
+      name: 'local-resume',
+      testMatch: /setup\.spec\.ts/,
+      dependencies: ['local-training'],
       use: { ...devices['Desktop Chrome'], baseURL: `http://127.0.0.1:${E2E_PORT}` },
     },
     {

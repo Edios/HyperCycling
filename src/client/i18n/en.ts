@@ -70,6 +70,7 @@ export const en = {
     playerSave: 'Add rider',
     playerCancel: 'Cancel',
     nameError: 'Enter a name of 1 to 24 characters.',
+    saveError: 'The rider could not be saved. Try again.',
     ftpError: 'FTP must be a whole number from 50 to 600.',
     beeps: 'Beeps',
     coachCues: 'On-screen cues',

@@ -12,6 +12,7 @@ interface Db {
   players: Player[];
   progress: PlanProgress[];
   puts: Player[];
+  failPut?: boolean;
 }
 const db: Db = { players: [], progress: [], puts: [] };
 const saved: Settings[] = [];
@@ -31,6 +32,7 @@ vi.mock('../data/repositories', () => ({
       players: {
         list: () => Promise.resolve(db.players),
         put: (p: Player) => {
+          if (db.failPut) return Promise.reject(new Error('disk'));
           db.puts.push(p);
           return Promise.resolve();
         },
@@ -85,6 +87,7 @@ beforeEach(() => {
   db.players = [mirek, ania];
   db.progress = [];
   db.puts = [];
+  db.failPut = false;
   saved.length = 0;
   resetSettingsForTests();
   useSessionStore.setState({ runtime: undefined });
@@ -227,6 +230,17 @@ describe('SetupScreen', () => {
     expect(chip).toHaveAttribute('aria-pressed', 'true');
     expect(db.puts).toHaveLength(1);
     expect(db.puts[0]).toMatchObject({ name: 'Kasia', ftp: 220 });
+  });
+
+  it('a failed save shows an error and does not add or select the rider', async () => {
+    db.failPut = true;
+    renderSetup(`/setup/${scalable.id}`);
+    fireEvent.click(await screen.findByRole('button', { name: '+ Add' }));
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Kasia' } });
+    fireEvent.change(screen.getByLabelText('FTP (W)'), { target: { value: '220' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add rider' }));
+    expect(await screen.findByText('The rider could not be saved. Try again.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Kasia/ })).not.toBeInTheDocument();
   });
 
   it('allows at most 10 riders in a session', async () => {

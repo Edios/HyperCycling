@@ -120,3 +120,16 @@ export function pickPlayers(all: readonly Player[], ids: readonly string[]): Pla
     return p ? [p] : [];
   });
 }
+
+/** True when the saved position lies inside the segment it names (the last one is inclusive). */
+export function snapshotFits(
+  segments: readonly Segment[],
+  snap: { segmentIndex: number; workoutElapsedSec: number },
+): boolean {
+  const seg = segments[snap.segmentIndex];
+  if (!seg || !Number.isFinite(snap.workoutElapsedSec)) return false;
+  const t = snap.workoutElapsedSec;
+  const end = seg.startSec + seg.durationSec;
+  const last = snap.segmentIndex === segments.length - 1;
+  return t >= seg.startSec && (last ? t <= end : t < end);
+}
