@@ -23,6 +23,7 @@ export const en = {
     pause: 'Pause',
     resume: 'Resume',
     paused: 'Paused',
+    musicTrackFailed: 'Cannot play "{title}". The workout goes on without it.',
     pressToStart: 'Press Space or click Start',
     previous: 'Previous block',
     nextBlock: 'Next block',

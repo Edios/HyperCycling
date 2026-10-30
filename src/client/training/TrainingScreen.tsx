@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
 import type { FrameInput } from '../hyperride/world';
+import { useMusicDirector } from '../music/useMusicDirector';
 import { Toast } from '../ui/Toast';
 import { parseYoutubeUrl } from '../youtube/parseYoutubeUrl';
 import { YouTubeBackground, type YoutubeFailure } from '../youtube/YouTubeBackground';
@@ -16,6 +17,7 @@ import {
 } from './overlay-layouts';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { cueForTransition, type CoachCue } from '../../domain/coach';
+import type { TrackRef } from '../../domain/workout';
 import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
 import { ControlsBar } from './ControlsBar';
@@ -83,6 +85,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const [showPlayers, setShowPlayers] = useState(
     wantsOverlay ? hasPlayers : runtime.config.hud === 'players' && hasPlayers,
   );
+  // A track that cannot be played only shows a notice; the workout carries on.
+  const [musicWarning, setMusicWarning] = useState<{ id: number; title: string } | null>(null);
+  const musicWarningCount = useRef(0);
+  const onMusicWarning = useCallback(
+    (track: TrackRef) => setMusicWarning({ id: ++musicWarningCount.current, title: track.title }),
+    [],
+  );
+  useMusicDirector(runtime, onMusicWarning);
   const rootRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef(settings);
   useEffect(() => {
@@ -354,6 +364,13 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             youtubeFailure === 'embed-blocked' ? 'youtube.embedBlocked' : 'youtube.unavailable',
           )}
           onClose={() => setYoutubeToastDismissed(true)}
+        />
+      )}
+      {musicWarning && (
+        <Toast
+          key={musicWarning.id}
+          message={t('training.musicTrackFailed', { title: musicWarning.title })}
+          onClose={() => setMusicWarning(null)}
         />
       )}
       <EdgeFlash trigger={flash} color={view.color} reducedMotion={reducedMotion} />

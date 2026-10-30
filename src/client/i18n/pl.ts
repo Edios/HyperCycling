@@ -25,6 +25,7 @@ export const pl: Messages = {
     pause: 'Pauza',
     resume: 'Wznów',
     paused: 'Pauza',
+    musicTrackFailed: 'Nie można odtworzyć "{title}". Trening trwa dalej bez muzyki.',
     pressToStart: 'Naciśnij spację lub kliknij Start',
     previous: 'Poprzedni blok',
     nextBlock: 'Następny blok',
