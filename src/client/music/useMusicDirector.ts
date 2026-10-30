@@ -34,6 +34,9 @@ export function useMusicDirector(
       cues,
       fallback,
       getProvider: (kind) => providers.get(kind),
+      // The store snapshot is refreshed by the engine loop (requestAnimationFrame). In a hidden tab
+      // that loop stops, so the schedule freezes with it and the poll sees the same snapshot; the
+      // music catches up through the engine's `skipped` segment event when the tab returns.
       getState: () => useSessionStore.getState().state,
       subscribeEvents: subscribeSessionEvents,
       subscribeState: (cb) => useSessionStore.subscribe(cb),

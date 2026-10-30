@@ -7,6 +7,12 @@ import type { MusicProvider } from './types';
 export const FADE_OUT_MS = 1500;
 export const RETRY_DELAY_MS = 3000;
 export const POLL_MS = 1000;
+/** A provider call that has not settled by then counts as a rejection. */
+export const CONNECT_TIMEOUT_MS = 10_000;
+export const PLAY_TIMEOUT_MS = 10_000;
+/** Pause and resume are quick; a fade gets its own length plus this slack. */
+export const CONTROL_TIMEOUT_MS = 5_000;
+export const FADE_SLACK_MS = 2_000;
 
 export interface MusicDirectorOptions {
   segments: Segment[];
@@ -44,11 +50,58 @@ interface FailureRecord {
 }
 
 /**
+ * Runs `call` but gives up on waiting after `ms`: the returned promise then rejects. If the
+ * call settles successfully after that, `onLateSuccess` is told (its result is stale by then).
+ */
+function bounded(
+  call: () => Promise<void>,
+  ms: number,
+  label: string,
+  onLateSuccess?: () => void,
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    let timedOut = false;
+    let done = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      reject(new Error(`Music provider ${label} timed out after ${ms} ms`));
+    }, ms);
+    let pending: Promise<void>;
+    try {
+      pending = call();
+    } catch (err) {
+      clearTimeout(timer);
+      reject(err);
+      return;
+    }
+    pending.then(
+      () => {
+        if (timedOut) {
+          onLateSuccess?.();
+          return;
+        }
+        done = true;
+        clearTimeout(timer);
+        resolve();
+      },
+      (err: unknown) => {
+        if (timedOut || done) return;
+        done = true;
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
+/**
  * Keeps the music in step with the workout: desired track = `musicAt(elapsed)`. A changed key
  * fades the old track out (1.5 s) and then starts the new one at its current offset. Pause and
  * resume follow the engine; a seek is just a state change that the same reconcile loop picks up.
  *
  * It only reads the engine. Whatever a provider does (or fails to do), the workout is untouched.
+ * Every provider call is bounded by a timeout, so a call that never settles cannot wedge the
+ * director: it is treated like a rejection.
  */
 export function createMusicDirector(options: MusicDirectorOptions): MusicDirector {
   const fadeMs = options.fadeMs ?? FADE_OUT_MS;
@@ -65,6 +118,9 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
   let unsubscribeState: (() => void) | undefined;
   let poll: ReturnType<typeof setInterval> | undefined;
   const failures = new Map<string, FailureRecord>();
+  /** Id of the newest `play` issued to each provider; older completions are stale. */
+  const latestPlay = new Map<MusicProvider, number>();
+  let playCounter = 0;
   const retryTimers = new Set<ReturnType<typeof setTimeout>>();
 
   const desiredNow = (state: EngineState): ScheduledTrack | null =>
@@ -78,15 +134,20 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       : null;
 
   /** Provider calls whose failure matters little (fade, pause): log and carry on. */
-  async function quietly(label: string, call: () => Promise<void>): Promise<void> {
+  async function quietly(
+    label: string,
+    call: () => Promise<void>,
+    timeoutMs: number = CONTROL_TIMEOUT_MS,
+  ): Promise<void> {
     try {
-      await call();
+      await bounded(call, timeoutMs, label);
     } catch (err) {
       console.warn(`Music ${label} failed`, err);
     }
   }
 
   function recordFailure(track: TrackRef, key: string, err: unknown): void {
+    if (disposed) return; // a failure caused by tearing down is not worth a warning
     console.warn('Music track could not be played', err);
     const record = failures.get(key) ?? { count: 0, retryReady: false };
     record.count += 1;
@@ -109,18 +170,33 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
   async function startTrack(desired: ScheduledTrack): Promise<boolean> {
     const record = failures.get(desired.key);
     if (record && !(record.count === 1 && record.retryReady)) return false; // waiting or given up
+    if (disposed) return false;
     let offsetSec = desired.offsetSec;
     const provider = options.getProvider(desired.track.provider);
     try {
       if (!provider) throw new Error(`No ${desired.track.provider} music provider available`);
       if (!provider.isReady()) {
-        await provider.connect();
+        await bounded(() => provider.connect(), CONNECT_TIMEOUT_MS, 'connect');
+        if (disposed) return false;
         // Connecting can take a while; the engine has moved on.
         const fresh = desiredNow(options.getState());
         if (fresh?.key !== desired.key) return true; // the loop will decide again
         offsetSec = fresh.offsetSec;
       }
-      await provider.play(desired.track, offsetSec);
+      const playId = ++playCounter;
+      latestPlay.set(provider, playId);
+      await bounded(
+        () => provider.play(desired.track, offsetSec),
+        PLAY_TIMEOUT_MS,
+        'play',
+        // The timed-out play started after all. Silence it, unless a newer play has taken over
+        // that provider or the track is now the one we track as playing.
+        () => {
+          if (latestPlay.get(provider) === playId && current?.provider !== provider) {
+            void quietly('pause', () => provider.pause());
+          }
+        },
+      );
     } catch (err) {
       recordFailure(desired.track, desired.key, err);
       return false;
@@ -133,6 +209,9 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     current = { key: desired.key, provider, halted: false };
     return true;
   }
+
+  const fade = (playing: Playing): Promise<void> =>
+    quietly('fade out', () => playing.provider.fadeOut(fadeMs), fadeMs + FADE_SLACK_MS);
 
   /** One decision. Returns true when it did something, so the loop looks again. */
   async function step(): Promise<boolean> {
@@ -151,7 +230,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       const playing = current;
       if (!playing) return false;
       current = null;
-      if (!playing.halted) await quietly('fade out', () => playing.provider.fadeOut(fadeMs));
+      if (!playing.halted) await fade(playing);
       return true;
     }
 
@@ -160,7 +239,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       if (!playing.halted) return false;
       playing.halted = false;
       try {
-        await playing.provider.resume();
+        await bounded(() => playing.provider.resume(), CONTROL_TIMEOUT_MS, 'resume');
       } catch (err) {
         console.warn('Music resume failed', err);
         if (current === playing) current = null; // start the track again from the right offset
@@ -172,7 +251,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       // The old track fades out first; the new one then starts from a fresh offset.
       const playing = current;
       current = null;
-      if (!playing.halted) await quietly('fade out', () => playing.provider.fadeOut(fadeMs));
+      if (!playing.halted) await fade(playing);
       return true;
     }
 
@@ -194,7 +273,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
           again = (await step()) || dirty;
         } catch (err) {
           console.error('Music director step failed', err);
-          again = false;
+          again = dirty; // a trigger that arrived meanwhile must not wait for the next poll
         }
       }
     } finally {

@@ -2,7 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EngineEvent, EngineState } from '../../domain/session-engine';
 import type { Segment } from '../../domain/segments';
 import type { MusicCue, TrackRef } from '../../domain/workout';
-import { createMusicDirector, type MusicDirectorOptions } from './director';
+import {
+  CONNECT_TIMEOUT_MS,
+  CONTROL_TIMEOUT_MS,
+  FADE_SLACK_MS,
+  PLAY_TIMEOUT_MS,
+  createMusicDirector,
+  type MusicDirectorOptions,
+} from './director';
 import { createFakeMusicProvider, type FakeMusicProvider } from './fake-provider';
 import type { MusicProvider } from './types';
 
@@ -339,9 +346,9 @@ describe('music director: failures (review focus #5)', () => {
     expect(spotify.log).toEqual(['play:A@5', 'play:A@8']);
     expect(warnings).toHaveLength(1);
 
-    // Nothing here ever wrote to the engine.
-    expect(engine.state).toEqual({ ...before, workoutElapsedSec: 8 });
-    expect(engine.state.status).toBe('running');
+    // The director has no write path to the engine; TrainingScreen.music.test.tsx shows the real
+    // session store carrying on while a provider fails.
+    expect(engine.state.status).toBe(before.status);
   });
 
   it('polling during the wait does not retry early', async () => {
@@ -442,6 +449,215 @@ describe('music director: failures (review focus #5)', () => {
     engine.set({ status: 'running', workoutElapsedSec: 40 });
     await settle();
     expect(base.log).toEqual(['play:A@0', 'pause', 'play:A@40']);
+  });
+});
+
+describe('music director: a hung provider call', () => {
+  const never = () => new Promise<void>(() => undefined);
+
+  it('a play that never settles times out: one warning, one retry, then silence', async () => {
+    const hung: MusicProvider = { ...createFakeMusicProvider(), play: vi.fn(never) };
+    make({ cues: [cue('a', track('A'))], getProvider: () => hung }).start();
+    await runAt(0);
+    expect(hung.play).toHaveBeenCalledTimes(1);
+    expect(warnings).toHaveLength(0);
+
+    await advance(PLAY_TIMEOUT_MS - 1);
+    expect(warnings).toHaveLength(0);
+    await advance(1);
+    expect(warnings.map((w) => w.id)).toEqual(['A']);
+
+    await advance(3000); // the retry, which hangs again
+    expect(hung.play).toHaveBeenCalledTimes(2);
+    await advance(PLAY_TIMEOUT_MS);
+    await advance(60_000);
+    expect(hung.play).toHaveBeenCalledTimes(2);
+    expect(warnings).toHaveLength(1);
+  });
+
+  it('a hung play does not stop later cues from being followed', async () => {
+    const base = createFakeMusicProvider();
+    const hungOnA: MusicProvider = {
+      ...base,
+      play: (t, offset) => (t.id === 'A' ? never() : base.play(t, offset)),
+    };
+    make({
+      cues: [cue('a', track('A')), cue('b', track('B'))],
+      getProvider: () => hungOnA,
+    }).start();
+    await runAt(0);
+    await advance(PLAY_TIMEOUT_MS);
+    await runAt(100);
+    expect(base.log).toEqual(['play:B@0']);
+  });
+
+  it('pauses a timed-out play that succeeds later', async () => {
+    let finish: () => void = () => undefined;
+    const base = createFakeMusicProvider();
+    const slow: MusicProvider = {
+      ...base,
+      play: () => new Promise<void>((resolve) => (finish = resolve)),
+    };
+    make({ cues: [cue('a', track('A'))], getProvider: () => slow }).start();
+    await runAt(0);
+    await advance(PLAY_TIMEOUT_MS);
+    expect(warnings).toHaveLength(1);
+    finish();
+    await settle();
+    expect(base.log).toEqual(['pause']);
+  });
+
+  it('ignores the late success of a play that a newer play has replaced', async () => {
+    const finishers: (() => void)[] = [];
+    const base = createFakeMusicProvider();
+    const slow: MusicProvider = {
+      ...base,
+      play: () => new Promise<void>((resolve) => finishers.push(resolve)),
+    };
+    make({ cues: [cue('a', track('A'))], getProvider: () => slow }).start();
+    await runAt(0);
+    await advance(PLAY_TIMEOUT_MS + 3000); // first play timed out, the retry is now in flight
+    expect(finishers).toHaveLength(2);
+    finishers[0]?.(); // stale
+    await settle();
+    expect(base.log).toEqual([]); // not paused: the retry is the live one
+    finishers[1]?.();
+    await settle();
+    // The retry finished in time and is now what plays; polling leaves it alone.
+    await advance(5000);
+    expect(base.log).toEqual([]);
+  });
+
+  it('a connect that never settles times out like a failed track', async () => {
+    const base = createFakeMusicProvider({ ready: false });
+    const hung: MusicProvider = { ...base, connect: vi.fn(never) };
+    make({ cues: [cue('a', track('A'))], getProvider: () => hung }).start();
+    await runAt(0);
+    await advance(CONNECT_TIMEOUT_MS);
+    expect(warnings.map((w) => w.id)).toEqual(['A']);
+    await advance(3000);
+    expect(hung.connect).toHaveBeenCalledTimes(2);
+    expect(base.log).toEqual([]);
+  });
+
+  it('a fadeOut that never settles still lets the next track start', async () => {
+    const base = createFakeMusicProvider();
+    const hungFade: MusicProvider = { ...base, fadeOut: vi.fn(never) };
+    make({
+      cues: [cue('a', track('A')), cue('b', track('B'))],
+      getProvider: () => hungFade,
+    }).start();
+    await runAt(0);
+    await runAt(100);
+    expect(base.log).toEqual(['play:A@0']);
+    await advance(1500 + FADE_SLACK_MS);
+    expect(base.log).toEqual(['play:A@0', 'play:B@0']);
+    expect(warnings).toHaveLength(0);
+  });
+
+  it('a pause that never settles does not block resuming', async () => {
+    const base = createFakeMusicProvider();
+    const hungPause: MusicProvider = { ...base, pause: vi.fn(never) };
+    make({ cues: [cue('a', track('A'))], getProvider: () => hungPause }).start();
+    await runAt(0);
+    engine.set({ status: 'paused' });
+    await settle();
+    engine.set({ status: 'running', workoutElapsedSec: 10 });
+    await advance(CONTROL_TIMEOUT_MS);
+    expect(base.log).toEqual(['play:A@0', 'resume']);
+  });
+
+  it('a resume that never settles replays the track', async () => {
+    const base = createFakeMusicProvider();
+    const hungResume: MusicProvider = { ...base, resume: vi.fn(never) };
+    make({ cues: [cue('a', track('A'))], getProvider: () => hungResume }).start();
+    await runAt(0);
+    engine.set({ status: 'paused' });
+    await settle();
+    engine.set({ status: 'running', workoutElapsedSec: 10 });
+    await advance(CONTROL_TIMEOUT_MS);
+    await advance(1000);
+    expect(base.log).toEqual(['play:A@0', 'pause', 'play:A@10']);
+  });
+});
+
+describe('music director: retry and dispose edge cases', () => {
+  it('a retry that comes due while paused waits for the resume', async () => {
+    spotify.failNextPlays(1);
+    make({ cues: [cue('a', track('A'))] }).start();
+    await runAt(5);
+    engine.set({ status: 'paused' });
+    await advance(10_000);
+    expect(spotify.log).toEqual(['play:A@5']);
+    engine.set({ status: 'running', workoutElapsedSec: 20 });
+    await settle();
+    expect(spotify.log).toEqual(['play:A@5', 'play:A@20']);
+    expect(warnings).toHaveLength(1);
+  });
+
+  it('dispose during a fade starts nothing afterwards', async () => {
+    const slow = createFakeMusicProvider({ fadeDurationMs: 1500 });
+    const director = make({
+      cues: [cue('a', track('A')), cue('b', track('B'))],
+      getProvider: () => slow,
+    });
+    director.start();
+    await runAt(0);
+    await runAt(100);
+    director.dispose();
+    await advance(5000);
+    expect(slow.log).toEqual(['play:A@0', 'fadeOut:1500']);
+  });
+
+  it('dispose during connect plays nothing and warns about nothing', async () => {
+    let connected: () => void = () => undefined;
+    const base = createFakeMusicProvider({ ready: false });
+    const connecting: MusicProvider = {
+      ...base,
+      connect: () => new Promise<void>((resolve) => (connected = resolve)),
+    };
+    const director = make({ cues: [cue('a', track('A'))], getProvider: () => connecting });
+    director.start();
+    await runAt(0);
+    director.dispose();
+    connected();
+    await advance(PLAY_TIMEOUT_MS * 2);
+    expect(base.log).toEqual([]);
+    expect(warnings).toHaveLength(0);
+  });
+
+  it('a play rejected because of dispose gives no warning and arms no retry', async () => {
+    let fail: (e: Error) => void = () => undefined;
+    const base = createFakeMusicProvider();
+    const failing: MusicProvider = {
+      ...base,
+      play: () => new Promise<void>((_, reject) => (fail = reject)),
+    };
+    const director = make({ cues: [cue('a', track('A'))], getProvider: () => failing });
+    director.start();
+    await runAt(0);
+    director.dispose();
+    fail(new Error('player disposed'));
+    await advance(10_000);
+    expect(warnings).toHaveLength(0);
+  });
+
+  it('a step that throws is recovered by the next trigger', async () => {
+    let calls = 0;
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    make({
+      cues: [cue('a', track('A'))],
+      getState: () => {
+        calls += 1;
+        if (calls === 2) throw new Error('state unavailable');
+        return engine.state;
+      },
+    }).start();
+    engine.set({ status: 'running', workoutElapsedSec: 0 });
+    await settle();
+    await advance(1000);
+    expect(errors).toHaveBeenCalled();
+    expect(spotify.log).toEqual(['play:A@0']);
   });
 });
 

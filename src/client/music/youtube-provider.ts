@@ -14,8 +14,9 @@ export interface YTMusicPlayer extends YTPlayer {
 }
 
 const STATE_PLAYING = 1;
-/** Steps of the fade-out; each one is a `setVolume` call. */
+/** Planned steps of the fade-out; each one is a `setVolume` call. */
 const FADE_STEPS = 10;
+const MAX_FADE_STEPS = 100;
 /** The player must start playing this soon after `play`, else the track counts as failed. */
 export const PLAY_START_TIMEOUT_MS = 8_000;
 
@@ -26,6 +27,8 @@ export interface YoutubeMusicProviderOptions {
   parent?: HTMLElement;
   /** Test seam for the wait between fade steps. */
   sleep?: (ms: number) => Promise<void>;
+  /** Test seam for the clock the fade follows (milliseconds, monotonic). */
+  now?: () => number;
 }
 
 export interface YoutubeMusicProvider extends MusicProvider {
@@ -52,6 +55,7 @@ export function createYoutubeMusicProvider(
 ): YoutubeMusicProvider {
   const loadApi = options.loadApi ?? (() => loadIframeApi());
   const sleep = options.sleep ?? defaultSleep;
+  const now = options.now ?? (() => performance.now());
 
   let api: YTNamespace | undefined;
   let player: YTMusicPlayer | undefined;
@@ -62,6 +66,10 @@ export function createYoutubeMusicProvider(
   let fadeGeneration = 0;
   let pending: Pending | undefined;
   let playToken = 0;
+  /** Bumped when a player is created or dropped; callbacks of an older player are ignored. */
+  let instance = 0;
+  /** False while the track should be silent (paused, faded out, timed out, disposed). */
+  let wantPlaying = false;
 
   const settle = (err?: Error): void => {
     const p = pending;
@@ -88,6 +96,7 @@ export function createYoutubeMusicProvider(
     frame.appendChild(target);
     parent.appendChild(frame);
     host = frame;
+    const mine = ++instance;
 
     return new Promise<YTMusicPlayer>((resolve, reject) => {
       new YT.Player(target, {
@@ -105,14 +114,28 @@ export function createYoutubeMusicProvider(
         },
         events: {
           onReady: (e: YTPlayerEvent) => {
+            if (mine !== instance) {
+              // The player was dropped while it loaded; do not leave a detached one running.
+              try {
+                (e.target as YTMusicPlayer).destroy?.();
+              } catch (err) {
+                console.warn('Stopping a stale YouTube music player failed', err);
+              }
+              return;
+            }
             player = e.target as YTMusicPlayer;
             apply();
             resolve(player);
           },
           onStateChange: (e: YTPlayerEvent) => {
-            if (e.data === STATE_PLAYING) settle();
+            if (mine !== instance || e.data !== STATE_PLAYING) return;
+            if (pending) settle();
+            // Playing although nobody waits for it (a track that timed out, or a pause that
+            // lost a race): keep it silent.
+            else if (!wantPlaying) player?.pauseVideo();
           },
           onError: (e: YTPlayerEvent) => {
+            if (mine !== instance) return;
             const err = new Error(`YouTube player error ${String(e.data)}`);
             settle(err);
             reject(err); // no-op once the player is ready
@@ -125,15 +148,19 @@ export function createYoutubeMusicProvider(
   function waitForPlayback(): Promise<void> {
     settle(new Error('Superseded by a newer track'));
     return new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(
-        () => settle(new Error('YouTube track did not start playing')),
-        PLAY_START_TIMEOUT_MS,
-      );
+      const timer = setTimeout(() => {
+        // The video may still start later; it must stay silent then.
+        wantPlaying = false;
+        settle(new Error('YouTube track did not start playing'));
+        player?.pauseVideo();
+      }, PLAY_START_TIMEOUT_MS);
       pending = { resolve, reject, timer };
     });
   }
 
   const dropPlayer = (): void => {
+    instance++;
+    wantPlaying = false;
     settle(new Error('YouTube music player was disposed'));
     const p = player;
     player = undefined;
@@ -160,6 +187,7 @@ export function createYoutubeMusicProvider(
       fadeGeneration++;
       const startSec = Math.max(0, Math.floor(offsetSec));
       const YT = api;
+      wantPlaying = true;
       const playback = waitForPlayback();
       const start = (async (): Promise<void> => {
         if (!playerReady) {
@@ -185,23 +213,32 @@ export function createYoutubeMusicProvider(
       const current = player;
       if (!current) return;
       const generation = ++fadeGeneration;
-      const wait = ms / FADE_STEPS;
-      for (let i = 1; i <= FADE_STEPS; i++) {
-        await sleep(wait);
+      const startedAt = now();
+      // The volume follows elapsed time, not the step count, so a throttled tab (late timers)
+      // still ends the fade on schedule. The cap only guards against a stuck clock.
+      let silent = false;
+      for (let step = 0; step < MAX_FADE_STEPS && !silent; step++) {
+        await sleep(ms / FADE_STEPS);
         if (generation !== fadeGeneration) return; // a newer play/pause took over
-        current.setVolume(Math.round(volume * 100 * (1 - i / FADE_STEPS)));
+        const progress = ms <= 0 ? 1 : Math.min(1, (now() - startedAt) / ms);
+        current.setVolume(Math.round(volume * 100 * (1 - progress)));
+        silent = progress >= 1;
       }
+      if (!silent) current.setVolume(0);
+      wantPlaying = false;
       current.pauseVideo();
     },
 
     pause() {
       fadeGeneration++;
+      wantPlaying = false;
       player?.pauseVideo();
       return Promise.resolve();
     },
 
     resume() {
       fadeGeneration++;
+      wantPlaying = true;
       apply();
       player?.playVideo();
       return Promise.resolve();

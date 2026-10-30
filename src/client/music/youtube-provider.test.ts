@@ -69,14 +69,24 @@ function makeApi(): YTNamespace {
 }
 
 let provider: YoutubeMusicProvider;
-const sleep = vi.fn(() => Promise.resolve());
+let clock = 0;
+const sleep = vi.fn((ms: number) => {
+  clock += ms;
+  return Promise.resolve();
+});
+const now = () => clock;
 
 beforeEach(() => {
   players = [];
   autoReady = true;
   autoPlay = true;
   sleep.mockClear();
-  provider = createYoutubeMusicProvider({ loadApi: () => Promise.resolve(makeApi()), sleep });
+  clock = 0;
+  provider = createYoutubeMusicProvider({
+    loadApi: () => Promise.resolve(makeApi()),
+    sleep,
+    now,
+  });
 });
 
 afterEach(() => {
@@ -225,6 +235,64 @@ describe('YouTube music provider', () => {
 
     autoReady = true;
     await provider.play(track('abc'), 0);
+    expect(players).toHaveLength(2);
+  });
+
+  it('a fade follows elapsed time, so late timers still end it in silence', async () => {
+    const throttled = createYoutubeMusicProvider({
+      loadApi: () => Promise.resolve(makeApi()),
+      // Every wait takes four times as long as asked, as in a throttled background tab.
+      sleep: (ms) => {
+        clock += ms * 4;
+        return Promise.resolve();
+      },
+      now,
+    });
+    await throttled.connect();
+    await throttled.play(track('abc'), 0);
+    players[0]?.calls.splice(0);
+    await throttled.fadeOut(1500);
+    const volumes = players[0]?.volumes.slice(-3) ?? [];
+    expect(volumes.at(-1)).toBe(0);
+    expect(players[0]?.volumes.length).toBeLessThan(10);
+    expect(players[0]?.calls.at(-1)).toBe('pause');
+    throttled.dispose();
+  });
+
+  it('keeps a track that starts after its timeout silent', async () => {
+    vi.useFakeTimers();
+    autoPlay = false;
+    await provider.connect();
+    const playing = provider.play(track('abc'), 0);
+    const assertion = expect(playing).rejects.toThrow(/did not start/);
+    await vi.advanceTimersByTimeAsync(PLAY_START_TIMEOUT_MS);
+    await assertion;
+    const pausesBefore = players[0]?.calls.filter((c) => c === 'pause').length ?? 0;
+    players[0]?.state(1); // the video starts audibly after all
+    const pausesAfter = players[0]?.calls.filter((c) => c === 'pause').length ?? 0;
+    expect(pausesAfter).toBe(pausesBefore + 1);
+  });
+
+  it('ignores callbacks of a player that was dropped', async () => {
+    vi.useFakeTimers();
+    autoReady = false;
+    await provider.connect();
+    const first = provider.play(track('abc'), 0);
+    const assertion = expect(first).rejects.toThrow(/did not start/);
+    await vi.advanceTimersByTimeAsync(PLAY_START_TIMEOUT_MS);
+    await assertion;
+
+    autoReady = true;
+    await provider.play(track('def'), 0);
+    expect(players).toHaveLength(2);
+    // The abandoned player wakes up late: it is destroyed and cannot disturb the live one.
+    players[0]?.ready();
+    expect(players[0]?.calls).toContain('destroy');
+    players[0]?.error(150);
+    players[0]?.state(1);
+    expect(players[1]?.calls).not.toContain('destroy');
+    expect(players[1]?.calls).not.toContain('pause');
+    await expect(provider.play(track('ghi'), 3)).resolves.toBeUndefined();
     expect(players).toHaveLength(2);
   });
 
