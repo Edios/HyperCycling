@@ -1,4 +1,4 @@
-import { segmentAt, type Segment } from './segments';
+import type { Segment } from './segments';
 
 export type EngineStatus = 'idle' | 'countdown' | 'running' | 'paused' | 'finished';
 
@@ -35,6 +35,8 @@ export interface SessionEngine {
   tick(): EngineEvent[];
   getState(): EngineState;
   snapshot(): EngineSnapshot;
+  /** False when idle/countdown or finished: a snapshot would be meaningless and must not be persisted. */
+  canResume(): boolean;
 }
 
 export interface SessionEngineOptions {
@@ -85,7 +87,14 @@ function build(
   const endEmitted = new Set<number>();
 
   function indexAtMs(ms: number): number {
-    return Math.max(0, segmentAt(segments, ms / 1000));
+    let lo = 0;
+    let hi = last;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if ((startMsOf[mid] ?? 0) <= ms) lo = mid;
+      else hi = mid - 1;
+    }
+    return lo;
   }
 
   function elapsedMsAt(now: number): number {
@@ -136,8 +145,18 @@ function build(
     },
 
     pause() {
+      if (status === 'countdown') {
+        status = 'idle';
+        lastCountdownN = null;
+        return;
+      }
       if (status !== 'running' || runStart === null) return;
-      accMs = elapsedMsAt(nowMs());
+      const elapsed = elapsedMsAt(nowMs());
+      if (elapsed >= totalMs) {
+        finishNow();
+        return;
+      }
+      accMs = elapsed;
       runStart = null;
       status = 'paused';
     },
@@ -167,8 +186,8 @@ function build(
     },
 
     seek(segmentIndex) {
-      if (!isActive()) return;
-      jumpTo(segmentIndex);
+      if (!isActive() || !Number.isFinite(segmentIndex)) return;
+      jumpTo(Math.trunc(segmentIndex));
     },
 
     tick() {
@@ -257,6 +276,10 @@ function build(
       };
     },
 
+    canResume() {
+      return status === 'running' || status === 'paused';
+    },
+
     snapshot() {
       const now = nowMs();
       const elapsed = status === 'idle' || status === 'countdown' ? 0 : elapsedMsAt(now);
@@ -282,6 +305,8 @@ export function restoreSessionEngine(
   segments: Segment[],
   nowMs: () => number,
   snap: EngineSnapshot,
+  opts: SessionEngineOptions = {},
 ): SessionEngine {
-  return build(segments, nowMs, {}, Math.round(snap.workoutElapsedSec * 1000));
+  const sec = snap.workoutElapsedSec;
+  return build(segments, nowMs, opts, Number.isFinite(sec) && sec > 0 ? Math.round(sec * 1000) : 0);
 }

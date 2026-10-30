@@ -23,7 +23,10 @@ function makeSegments(durations: number[]): Segment[] {
   });
 }
 
-function setup(durations: number[], opts?: { startCountdownSec?: number; gapThresholdSec?: number }) {
+function setup(
+  durations: number[],
+  opts?: { startCountdownSec?: number; gapThresholdSec?: number },
+) {
   let now = 0;
   const engine = createSessionEngine(makeSegments(durations), () => now, opts);
   return {
@@ -52,7 +55,11 @@ describe('session engine', () => {
 
   it('starts idle', () => {
     const { engine } = setup([10]);
-    expect(engine.getState()).toMatchObject({ status: 'idle', segmentIndex: 0, workoutElapsedSec: 0 });
+    expect(engine.getState()).toMatchObject({
+      status: 'idle',
+      segmentIndex: 0,
+      workoutElapsedSec: 0,
+    });
     expect(engine.tick()).toEqual([]);
   });
 
@@ -220,7 +227,11 @@ describe('session engine', () => {
     t.at(3000 + 4000);
     t.engine.tick();
     t.engine.next();
-    expect(t.engine.getState()).toMatchObject({ segmentIndex: 1, segmentElapsedSec: 0, workoutElapsedSec: 20 });
+    expect(t.engine.getState()).toMatchObject({
+      segmentIndex: 1,
+      segmentElapsedSec: 0,
+      workoutElapsedSec: 20,
+    });
     expect(t.engine.tick()).toEqual([{ type: 'segmentChanged', from: 0, to: 1, skipped: true }]);
     expect(t.engine.tick()).toEqual([]);
   });
@@ -283,7 +294,11 @@ describe('session engine', () => {
     t.startRunning();
     t.engine.pause();
     t.engine.seek(99);
-    expect(t.engine.getState()).toMatchObject({ status: 'paused', segmentIndex: 2, segmentElapsedSec: 0 });
+    expect(t.engine.getState()).toMatchObject({
+      status: 'paused',
+      segmentIndex: 2,
+      segmentElapsedSec: 0,
+    });
     expect(t.engine.tick()).toEqual([{ type: 'segmentChanged', from: 0, to: 2, skipped: true }]);
     t.engine.seek(-5);
     expect(t.engine.getState()).toMatchObject({ status: 'paused', segmentIndex: 0 });
@@ -340,7 +355,11 @@ describe('session engine', () => {
       { type: 'segmentChanged', from: 0, to: 2, skipped: true },
       { type: 'finished' },
     ]);
-    expect(t.engine.getState()).toMatchObject({ status: 'finished', workoutElapsedSec: 30, segmentIndex: 2 });
+    expect(t.engine.getState()).toMatchObject({
+      status: 'finished',
+      workoutElapsedSec: 30,
+      segmentIndex: 2,
+    });
   });
 
   it('gap during countdown moves silently into the workout', () => {
@@ -360,7 +379,11 @@ describe('session engine', () => {
     expect(snap).toEqual({ segmentIndex: 1, workoutElapsedSec: 25, status: 'running' });
 
     t.advance(120_000);
-    const restored = restoreSessionEngine(makeSegments([20, 20]), () => 3000 + 25_000 + 120_000, snap);
+    const restored = restoreSessionEngine(
+      makeSegments([20, 20]),
+      () => 3000 + 25_000 + 120_000,
+      snap,
+    );
     expect(restored.getState()).toMatchObject({
       status: 'paused',
       segmentIndex: 1,
@@ -422,12 +445,104 @@ describe('session engine', () => {
     expect(t.engine.getState().status).toBe('idle');
     t.engine.start();
     t.engine.start();
-    t.engine.pause(); // not allowed during countdown
     t.engine.next();
     expect(t.engine.getState().status).toBe('countdown');
+    t.engine.pause(); // cancels the countdown
+    expect(t.engine.getState().status).toBe('idle');
+    t.engine.start();
     t.startRunning();
     t.engine.resume(); // already running
     t.engine.start(); // already running
     expect(t.engine.getState().status).toBe('running');
+  });
+
+  describe('fix round 1', () => {
+    it('pause at or after the end finishes immediately', () => {
+      const t = setup([10]);
+      t.startRunning();
+      t.at(3000 + 10_000);
+      t.engine.pause();
+      expect(t.engine.getState().status).toBe('finished');
+      expect(t.engine.tick()).toEqual([{ type: 'finished' }]);
+    });
+
+    it('pause during countdown cancels back to idle; next/prev stay no-ops', () => {
+      const t = setup([10, 10]);
+      t.engine.start();
+      t.engine.tick();
+      t.engine.next();
+      t.engine.prev();
+      expect(t.engine.getState().status).toBe('countdown');
+      t.engine.pause();
+      expect(t.engine.getState().status).toBe('idle');
+      expect(t.engine.tick()).toEqual([]);
+      t.at(5000);
+      t.engine.start();
+      expect(t.engine.tick()).toEqual([{ type: 'countdownTick', n: 3, phase: 'start' }]);
+    });
+
+    it('seek truncates and ignores non-finite input', () => {
+      const t = setup([10, 10, 10]);
+      t.startRunning();
+      t.engine.seek(1.9);
+      expect(t.engine.getState().segmentIndex).toBe(1);
+      t.engine.seek(Number.NaN);
+      t.engine.seek(Number.POSITIVE_INFINITY);
+      expect(t.engine.getState().segmentIndex).toBe(1);
+    });
+
+    it('restore accepts options and sanitises elapsed', () => {
+      const segs = makeSegments([10, 10]);
+      for (const bad of [Number.NaN, -5, Number.NEGATIVE_INFINITY]) {
+        const e = restoreSessionEngine(segs, () => 0, {
+          segmentIndex: 0,
+          workoutElapsedSec: bad,
+          status: 'paused',
+        });
+        expect(e.getState().workoutElapsedSec).toBe(0);
+      }
+      const big = restoreSessionEngine(segs, () => 0, {
+        segmentIndex: 0,
+        workoutElapsedSec: 1e9,
+        status: 'paused',
+      });
+      expect(big.getState().workoutElapsedSec).toBe(20);
+      let now = 0;
+      const e = restoreSessionEngine(
+        segs,
+        () => now,
+        { segmentIndex: 0, workoutElapsedSec: 1, status: 'paused' },
+        { gapThresholdSec: 100 },
+      );
+      e.resume();
+      e.tick();
+      now = 10_000;
+      expect(e.tick()).toEqual([{ type: 'segmentChanged', from: 0, to: 1, skipped: false }]);
+    });
+
+    it('index and remaining time agree at fractional boundaries', () => {
+      const t = setup([0.1, 0.2, 10]);
+      t.startRunning();
+      for (let ms = 0; ms <= 600; ms += 10) {
+        t.at(3000 + ms);
+        t.engine.tick();
+        const s = t.engine.getState();
+        expect(s.segmentRemainingSec).toBeGreaterThan(0);
+        expect(s.segmentElapsedSec).toBeGreaterThanOrEqual(0);
+      }
+    });
+
+    it('canResume is false when idle or finished, true otherwise', () => {
+      const t = setup([10]);
+      expect(t.engine.canResume()).toBe(false);
+      t.engine.start();
+      expect(t.engine.canResume()).toBe(false);
+      t.startRunning();
+      expect(t.engine.canResume()).toBe(true);
+      t.engine.pause();
+      expect(t.engine.canResume()).toBe(true);
+      t.engine.next();
+      expect(t.engine.canResume()).toBe(false);
+    });
   });
 });
