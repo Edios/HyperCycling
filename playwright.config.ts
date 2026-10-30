@@ -10,6 +10,9 @@ process.env.E2E_DB_PATH ??= path.join(tmpdir(), `spinning-tutor-e2e-${Date.now()
 export default defineConfig({
   testDir: 'tests/e2e',
   globalTeardown: './tests/e2e/global-teardown.ts',
+  // The local project shares one database; a stored interrupted session from one test would pop
+  // the resume prompt in another, so tests run one at a time.
+  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',

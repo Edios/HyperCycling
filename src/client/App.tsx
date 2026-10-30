@@ -1,6 +1,7 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { DevHome } from './screens/DevHome';
 import { PlaceholderPage } from './screens/PlaceholderPage';
+import { ResumePrompt } from './setup/ResumePrompt';
 import { SetupScreen } from './setup/SetupScreen';
 import { SummaryPlaceholder } from './screens/SummaryPlaceholder';
 import { FreestyleTab } from './select/FreestyleTab';
@@ -16,6 +17,7 @@ const DEV_ROUTE =
 export function App() {
   return (
     <HashRouter>
+      <ResumePrompt />
       <Routes>
         <Route
           path="/"
