@@ -167,7 +167,11 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
       }
     } catch (err) {
       console.warn('Saving the plan failed', err);
-      if (activated) await updateSettings({ activePlanId: previousActive });
+      if (activated) {
+        await updateSettings({ activePlanId: previousActive }).catch((e: unknown) =>
+          console.warn('Restoring the active plan failed', e),
+        );
+      }
       setConfirming(false);
       setError(t('plans.saveFailed'));
       return;

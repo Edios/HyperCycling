@@ -63,4 +63,14 @@ describe('useSettings', () => {
     expect(result.current.settings.coach).toBe(false);
     expect(put).toHaveBeenCalledWith(expect.objectContaining({ coach: false }));
   });
+
+  it('updateSettings rejects and rolls back when saving fails', async () => {
+    const { result } = renderHook(() => useSettings());
+    await waitFor(() => expect(result.current.loaded).toBe(true));
+    put.mockRejectedValueOnce(new Error('disk full'));
+    await act(async () => {
+      await expect(result.current.updateSettings({ coach: false })).rejects.toThrow('disk full');
+    });
+    expect(result.current.settings.coach).toBe(DEFAULT_SETTINGS.coach);
+  });
 });

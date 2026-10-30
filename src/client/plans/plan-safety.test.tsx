@@ -17,6 +17,7 @@ interface Db {
   players: Player[];
   puts: { progress: PlanProgress[]; players: Player[]; settings: Settings[] };
   failProgressPut: boolean;
+  failSettingsPut: boolean;
   /** Players returned by list() after the first call (a player created meanwhile). */
   laterPlayers?: Player[];
   listCalls: number;
@@ -26,6 +27,7 @@ const db: Db = {
   players: [],
   puts: { progress: [], players: [], settings: [] },
   failProgressPut: false,
+  failSettingsPut: false,
   listCalls: 0,
 };
 
@@ -36,6 +38,7 @@ vi.mock('../data/repositories', () => ({
       settings: {
         get: () => Promise.resolve(db.settings),
         put: (s: Settings) => {
+          if (db.failSettingsPut) return Promise.reject(new Error('settings offline'));
           db.puts.settings.push(s);
           return Promise.resolve();
         },
@@ -111,6 +114,7 @@ beforeEach(() => {
   db.players = [];
   db.puts = { progress: [], players: [], settings: [] };
   db.failProgressPut = false;
+  db.failSettingsPut = false;
   db.laterPlayers = undefined;
   db.listCalls = 0;
   resetSettingsForTests();
@@ -239,6 +243,20 @@ describe('PlanDetail progress safety', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('Couldn’t save the plan');
     expect(db.puts.progress).toHaveLength(0);
     expect(db.puts.settings.at(-1)?.activePlanId).toBe(quickBoost.id);
+    expect(screen.queryByTestId('where')).not.toBeInTheDocument();
+  });
+
+  it('Start over does not erase progress when activation fails', async () => {
+    db.settings = { ...DEFAULT_SETTINGS, activePlanId: quickBoost.id };
+    db.progress = [withProgress()];
+    db.failSettingsPut = true;
+    renderDetail();
+    await screen.findByTestId('preview-progres');
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Start over' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Erase and start over' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Couldn’t save the plan');
+    expect(db.puts.progress).toHaveLength(0);
     expect(screen.queryByTestId('where')).not.toBeInTheDocument();
   });
 });
