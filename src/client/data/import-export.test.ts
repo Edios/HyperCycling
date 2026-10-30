@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto';
 import { describe, expect, it, vi } from 'vitest';
+import { DEFAULT_SETTINGS } from '../../domain/settings';
 import { bundle } from '../../storage/contract';
 import { createIndexedDbRepositories } from '../../storage/indexeddb';
 import { exportFileName, exportToFile, importFromFile, readBlobText } from './import-export';
@@ -26,6 +27,22 @@ describe('exportToFile', () => {
     const text = await readBlobText(blob);
     expect(text).toContain('\n  ');
     expect(JSON.parse(text)).toMatchObject({ app: 'spinning-tutor', schemaVersion: 1 });
+  });
+  it('never writes Spotify tokens into the exported file', async () => {
+    const repos = await makeRepos();
+    const b = bundle();
+    await repos.replaceAll({
+      ...b,
+      settings: {
+        ...DEFAULT_SETTINGS,
+        spotify: { clientId: 'cid', accessToken: 'AT-secret', refreshToken: 'RT-secret', expiresAt: 5 },
+      },
+    });
+    const text = await readBlobText(await exportToFile(repos));
+    expect(text).not.toContain('secret');
+    expect(JSON.parse(text).settings.spotify).toEqual({ clientId: 'cid' });
+    // the stored copy keeps its tokens: only the file is scrubbed
+    expect((await repos.settings.get())?.spotify?.refreshToken).toBe('RT-secret');
   });
 });
 

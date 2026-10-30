@@ -58,6 +58,20 @@ export const exportBundleSchema: z.ZodType<ExportBundle> = z
     }
   }) as unknown as z.ZodType<ExportBundle>;
 
+/**
+ * Returns the bundle without credentials: Spotify tokens must never leave the device inside a
+ * shareable file. The client ID and device choice are not secret and stay.
+ */
+export function stripSecrets(bundle: ExportBundle): ExportBundle {
+  const spotify = bundle.settings?.spotify;
+  if (!bundle.settings || !spotify) return bundle;
+  const safe = { ...spotify };
+  delete safe.accessToken;
+  delete safe.refreshToken;
+  delete safe.expiresAt;
+  return { ...bundle, settings: { ...bundle.settings, spotify: safe } };
+}
+
 export function parseExportBundle(json: unknown): ParseExportResult {
   let data: unknown = json;
   if (typeof json === 'string') {

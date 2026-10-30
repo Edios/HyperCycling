@@ -1,13 +1,26 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { loadSettings } from './data/useSettings';
+import { completeSpotifyCallbackOnLoad, settingsSpotifyStore } from './music/spotify';
 import './theme/tokens.css';
 import './theme/fonts.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element #root not found');
-createRoot(root).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+
+async function bootstrap(container: HTMLElement): Promise<void> {
+  // Returning from the Spotify consent page: finish the login before anything reads settings.
+  const query = new URLSearchParams(location.search);
+  if (query.has('code') || query.has('error')) {
+    await loadSettings();
+    await completeSpotifyCallbackOnLoad(settingsSpotifyStore);
+  }
+  createRoot(container).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
+
+void bootstrap(root);
