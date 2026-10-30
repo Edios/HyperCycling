@@ -284,3 +284,41 @@
   margin: 0;
   color: var(--z9);
 }
+
+.recentTitle {
+  margin: 0.5rem 0 0.375rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--mut);
+}
+
+.recent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent button {
+  max-width: 100%;
+  padding: 0.375rem 0.625rem;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--s1);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.recent button:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+}

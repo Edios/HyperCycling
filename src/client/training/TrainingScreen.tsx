@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
 import type { FrameInput } from '../hyperride/world';
 import { Toast } from '../ui/Toast';
+import { parseYoutubeUrl } from '../youtube/parseYoutubeUrl';
+import { YouTubeBackground, type YoutubeFailure } from '../youtube/YouTubeBackground';
 import { Cockpit } from './layouts/overlay/Cockpit';
 import { Column } from './layouts/overlay/Column';
 import { Immersive } from './layouts/overlay/Immersive';
@@ -60,11 +62,26 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const [hyperrideFailed, setHyperrideFailed] = useState(false);
   const [unavailableDismissed, setUnavailableDismissed] = useState(false);
   const hyperride = wantsHyperride && !hyperrideFailed;
+  // A video that cannot be played (or a link that cannot be read) also means Basic (dark).
+  const youtubeTarget = useMemo(
+    () =>
+      runtime.config.background === 'youtube' && runtime.config.youtubeUrl
+        ? parseYoutubeUrl(runtime.config.youtubeUrl)
+        : null,
+    [runtime.config.background, runtime.config.youtubeUrl],
+  );
+  const wantsYoutube = runtime.config.background === 'youtube';
+  const [youtubeFailure, setYoutubeFailure] = useState<YoutubeFailure | undefined>();
+  const [youtubeToastDismissed, setYoutubeToastDismissed] = useState(false);
+  const youtube = youtubeFailure === undefined ? youtubeTarget : null;
+  const wantsOverlay = wantsHyperride || wantsYoutube;
+  const overlay = hyperride || youtube !== null;
+  const onYoutubeFail = useCallback((reason: YoutubeFailure) => setYoutubeFailure(reason), []);
   const [overlayHud, setOverlayHud] = useState<OverlayHudId>(() =>
     initialOverlayHud(runtime.config.hud),
   );
   const [showPlayers, setShowPlayers] = useState(
-    wantsHyperride ? hasPlayers : runtime.config.hud === 'players' && hasPlayers,
+    wantsOverlay ? hasPlayers : runtime.config.hud === 'players' && hasPlayers,
   );
   const rootRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef(settings);
@@ -191,14 +208,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const togglePlayers = useCallback(() => {
     if (!hasPlayers) return;
     // Cockpit and Tunnel time have no room for players: showing them switches to Immersive.
-    if (hyperride && !showPlayers)
+    if (overlay && !showPlayers)
       setOverlayHud((h) => (h === 'cockpit' || h === 'tunnelTime' ? 'immersive' : h));
     setShowPlayers((v) => !v);
-  }, [hasPlayers, hyperride, showPlayers]);
+  }, [hasPlayers, overlay, showPlayers]);
 
   const cycleLayout = useCallback(() => {
-    if (hyperride) setOverlayHud((h) => nextOverlayHud(h, showPlayers && hasPlayers));
-  }, [hyperride, showPlayers, hasPlayers]);
+    if (overlay) setOverlayHud((h) => nextOverlayHud(h, showPlayers && hasPlayers));
+  }, [overlay, showPlayers, hasPlayers]);
 
   const getFrameInput = useCallback(
     (): FrameInput => ({
@@ -288,9 +305,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     <div
       ref={rootRef}
       data-testid="training-screen"
-      data-theme={wantsHyperride ? 'dark' : settings.basicTheme}
+      data-theme={wantsOverlay ? 'dark' : settings.basicTheme}
       data-status={status}
-      data-background={hyperride ? 'hyperride' : 'basic'}
+      data-background={hyperride ? 'hyperride' : youtube !== null ? 'youtube' : 'basic'}
       data-cursor-hidden={hideControls}
       className={`${styles.root} ${hideControls ? styles.noCursor : ''}`}
       style={rootStyle}
@@ -308,6 +325,18 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             <Overlay {...layoutProps} withPlayers={playersOn} />
           </div>
         </>
+      ) : youtube !== null ? (
+        <>
+          <YouTubeBackground
+            videoId={youtube.videoId}
+            startSec={youtube.startSec}
+            paused={status === 'paused'}
+            onFail={onYoutubeFail}
+          />
+          <div className={`${styles.layout} ${styles.overlayLayer}`}>
+            <Overlay {...layoutProps} withPlayers={playersOn} />
+          </div>
+        </>
       ) : (
         <>
           <div className={styles.topbar} aria-hidden="true" />
@@ -318,6 +347,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       )}
       {wantsHyperride && hyperrideFailed && !unavailableDismissed && (
         <Toast message={t('hyperride.unavailable')} onClose={() => setUnavailableDismissed(true)} />
+      )}
+      {wantsYoutube && youtube === null && !youtubeToastDismissed && (
+        <Toast
+          message={t(
+            youtubeFailure === 'embed-blocked' ? 'youtube.embedBlocked' : 'youtube.unavailable',
+          )}
+          onClose={() => setYoutubeToastDismissed(true)}
+        />
       )}
       <EdgeFlash trigger={flash} color={view.color} reducedMotion={reducedMotion} />
       <div className={styles.center}>

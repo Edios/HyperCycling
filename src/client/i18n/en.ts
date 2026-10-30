@@ -67,6 +67,10 @@ export const en = {
     backgroundBasic: 'Basic',
     backgroundHyperride: 'Hyperride',
     backgroundYoutube: 'YouTube video',
+    youtubeUrl: 'YouTube link',
+    youtubeHint: 'A watch, youtu.be, Shorts or embed link. A start time (t=1m30s) is respected.',
+    youtubeInvalid: 'This does not look like a YouTube video link.',
+    youtubeRecent: 'Recent links',
     soon: 'soon',
     layout: 'Screen layout',
     layoutSolo: 'Solo',
@@ -266,6 +270,10 @@ export const en = {
     cancel: 'Cancel',
   },
   placeholder: { body: 'This screen arrives in a later update.', plans: 'Plans' },
+  youtube: {
+    embedBlocked: 'This video cannot be embedded. Using the Basic background.',
+    unavailable: 'The video cannot be played. Using the Basic background.',
+  },
   hyperride: {
     unavailable: 'WebGL is not available on this computer. Using the Basic background.',
   },

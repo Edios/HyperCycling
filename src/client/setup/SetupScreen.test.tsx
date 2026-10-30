@@ -189,10 +189,10 @@ describe('SetupScreen', () => {
     });
   });
 
-  it('Hyperride is selectable, YouTube is still disabled', async () => {
+  it('Hyperride, YouTube and Basic are all selectable', async () => {
     renderSetup(`/setup/${scalable.id}`);
     expect(await screen.findByRole('button', { name: /Hyperride/ })).toBeEnabled();
-    expect(screen.getByRole('button', { name: /YouTube/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /YouTube/ })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Basic/ })).toBeEnabled();
   });
 
