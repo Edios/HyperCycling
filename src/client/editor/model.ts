@@ -60,6 +60,12 @@ export function blockTotalSec(b: Block): number {
   return b.kind === 'repeat' ? b.times * blockSpanSec(b) : b.durationSec;
 }
 
+/** Rounds a duration to 15 s (5 s when `fine`), never below 5 s; matches the reducer's resizeBlock. */
+export function snapSec(sec: number, fine: boolean): number {
+  const step = fine ? 5 : 15;
+  return Math.max(5, Math.round(sec / step) * step);
+}
+
 export function clampEffort(n: number): EffortLevel {
   return Math.min(10, Math.max(1, Math.round(n))) as EffortLevel;
 }

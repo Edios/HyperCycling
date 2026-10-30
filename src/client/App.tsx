@@ -1,4 +1,6 @@
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import { useState } from 'react';
+import { createHashRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
+import { EditorScreen } from './editor/EditorScreen';
 import { DevHome } from './screens/DevHome';
 import { PlaceholderPage } from './screens/PlaceholderPage';
 import { PlayersScreen } from './players/PlayersScreen';
@@ -15,44 +17,52 @@ const DEV_ROUTE =
   import.meta.env.DEV ||
   (typeof location !== 'undefined' && new URLSearchParams(location.search).has('dev'));
 
-export function App() {
+function Root() {
   return (
-    <HashRouter>
+    <>
       <ResumePrompt />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <SelectShell>
-              <PlanTab />
-            </SelectShell>
-          }
-        />
-        <Route
-          path="/freestyle"
-          element={
+      <Outlet />
+    </>
+  );
+}
+
+const planPage = (
+  <SelectShell>
+    <PlanTab />
+  </SelectShell>
+);
+
+function routes(): RouteObject[] {
+  return [
+    {
+      element: <Root />,
+      children: [
+        { path: '/', element: planPage },
+        {
+          path: '/freestyle',
+          element: (
             <SelectShell>
               <FreestyleTab />
             </SelectShell>
-          }
-        />
-        <Route path="/setup/:workoutId" element={<SetupScreen />} />
-        <Route path="/train" element={<TrainingScreen />} />
-        <Route path="/summary" element={<SummaryPlaceholder />} />
-        <Route path="/plans" element={<PlaceholderPage titleKey="placeholder.plans" />} />
-        <Route path="/players" element={<PlayersScreen />} />
-        <Route path="/settings" element={<PlaceholderPage titleKey="nav.settings" />} />
-        {/* Developer shortcut (see DEV_ROUTE): rides any built-in workout with demo players. */}
-        {DEV_ROUTE && <Route path="/dev" element={<DevHome />} />}
-        <Route
-          path="*"
-          element={
-            <SelectShell>
-              <PlanTab />
-            </SelectShell>
-          }
-        />
-      </Routes>
-    </HashRouter>
-  );
+          ),
+        },
+        { path: '/setup/:workoutId', element: <SetupScreen /> },
+        { path: '/train', element: <TrainingScreen /> },
+        { path: '/summary', element: <SummaryPlaceholder /> },
+        { path: '/plans', element: <PlaceholderPage titleKey="placeholder.plans" /> },
+        { path: '/players', element: <PlayersScreen /> },
+        { path: '/editor/:workoutId', element: <EditorScreen /> },
+        { path: '/settings', element: <PlaceholderPage titleKey="nav.settings" /> },
+        // Developer shortcut (see DEV_ROUTE): rides any built-in workout with demo players.
+        ...(DEV_ROUTE ? [{ path: '/dev', element: <DevHome /> }] : []),
+        { path: '*', element: planPage },
+      ],
+    },
+  ];
+}
+
+// A data router (not <HashRouter>) is required for useBlocker, which guards unsaved editor changes.
+export function App() {
+  const [router] = useState(() => createHashRouter(routes()));
+  return <RouterProvider router={router} />;
 }

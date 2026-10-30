@@ -1,0 +1,316 @@
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { Link, useBlocker, useNavigate } from 'react-router-dom';
+import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { totalDurationSec, type Workout } from '../../domain/workout';
+import { getRepositories } from '../data/repositories';
+import { useSettings } from '../data/useSettings';
+import { useLang, useT, type MessageKey } from '../i18n';
+import { formatClock } from '../training/format';
+import { Button } from '../ui/Button';
+import { Modal } from '../ui/Modal';
+import { Segmented } from '../ui/Segmented';
+import { Toast } from '../ui/Toast';
+import { duplicateAndSave } from './duplicate';
+import {
+  createEditorState,
+  editorReducer,
+  type EditorState,
+  type NewBlockKind,
+} from './editor-state';
+import { Inspector } from './Inspector';
+import { isSaveable, shortcutToAction } from './model';
+import { MusicLane } from './MusicLane';
+import { Palette, PALETTE_PREFIX } from './Palette';
+import { Timeline, TIMELINE_DROP_ID } from './Timeline';
+import styles from './Editor.module.css';
+
+export interface EditorProps {
+  initial: Workout;
+  /** Built-in workouts cannot be edited; the user duplicates them instead. */
+  readOnly: boolean;
+  /** Not stored yet: Save is available straight away and navigates to the stored id. */
+  isNew: boolean;
+}
+
+function initState(initial: Workout, isNew: boolean): EditorState {
+  const base = createEditorState(initial);
+  // A draft or imported workout starts unsaved: a different reference makes undo-to-start stay dirty.
+  return isNew ? { ...base, saved: { ...initial }, dirty: true } : base;
+}
+
+export function Editor({ initial, readOnly, isNew }: EditorProps) {
+  const t = useT();
+  const [lang] = useLang();
+  const navigate = useNavigate();
+  const { settings } = useSettings();
+  const table = settings.effortTable;
+  const [state, dispatch] = useReducer(editorReducer, undefined, () => initState(initial, isNew));
+  const { workout } = state;
+  const [toast, setToast] = useState<string | undefined>();
+  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [focusTrack, setFocusTrack] = useState(false);
+  const [nameDraft, setNameDraft] = useState(workout.name);
+  const [nameSeen, setNameSeen] = useState(workout.name);
+  if (nameSeen !== workout.name) {
+    setNameSeen(workout.name);
+    setNameDraft(workout.name);
+  }
+
+  const stateRef = useRef(state);
+  const dirtyRef = useRef(state.dirty && !readOnly);
+  useEffect(() => {
+    stateRef.current = state;
+    dirtyRef.current = state.dirty && !readOnly;
+  });
+  const canSave = !readOnly && state.dirty && isSaveable(workout) && !saving;
+
+  // Leaving with unsaved changes: in-app navigation via the router blocker, reload/close via beforeunload.
+  const blocker = useBlocker(() => dirtyRef.current);
+  useEffect(() => {
+    const onUnload = (e: BeforeUnloadEvent): void => {
+      if (!dirtyRef.current) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onUnload);
+    return () => window.removeEventListener('beforeunload', onUnload);
+  }, []);
+
+  const save = useCallback(async (): Promise<void> => {
+    const current = stateRef.current;
+    if (readOnly || !current.dirty || !isSaveable(current.workout)) return;
+    setSaving(true);
+    try {
+      const repos = await getRepositories();
+      await repos.workouts.put(current.workout);
+      dirtyRef.current = false;
+      dispatch({ type: 'markSaved' });
+      setToast(t('editor.saved'));
+      if (isNew)
+        void navigate(`/editor/${encodeURIComponent(current.workout.id)}`, { replace: true });
+    } catch (err) {
+      console.warn('Saving the workout failed', err);
+      setToast(t('editor.saveFailed'));
+    } finally {
+      setSaving(false);
+    }
+  }, [readOnly, isNew, navigate, t]);
+
+  // Keyboard: arrows select, Delete removes, Ctrl+D/Z/Y, +/- and ↑/↓ edit. Ignored while typing.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (document.querySelector('[role="dialog"]')) return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        void save();
+        return;
+      }
+      const action = shortcutToAction(stateRef.current, e, table);
+      if (!action) return;
+      if (readOnly && action.type !== 'select') return;
+      e.preventDefault();
+      dispatch(action);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [readOnly, table, save]);
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  const onDragEnd = (e: DragEndEvent): void => {
+    if (readOnly || !e.over) return;
+    const activeId = String(e.active.id);
+    const overId = String(e.over.id);
+    const ids = workout.blocks.map((b) => b.id);
+    if (activeId.startsWith(PALETTE_PREFIX)) {
+      const kind = activeId.slice(PALETTE_PREFIX.length) as NewBlockKind;
+      let atIndex = ids.length;
+      const overIndex = overId === TIMELINE_DROP_ID ? -1 : ids.indexOf(overId);
+      if (overIndex >= 0) {
+        const moved = e.active.rect.current.translated;
+        const centre = e.over.rect.left + e.over.rect.width / 2;
+        const after = moved ? moved.left + moved.width / 2 > centre : false;
+        atIndex = after ? overIndex + 1 : overIndex;
+      }
+      dispatch({ type: 'addBlock', kind, atIndex });
+      return;
+    }
+    const from = ids.indexOf(activeId);
+    const to = ids.indexOf(overId);
+    if (from >= 0 && to >= 0 && from !== to) dispatch({ type: 'moveBlock', from, to });
+  };
+
+  const duplicate = async (): Promise<void> => {
+    try {
+      const copy = await duplicateAndSave(workout, lang, t('editor.copySuffix'));
+      void navigate(`/editor/${encodeURIComponent(copy.id)}`);
+    } catch (err) {
+      console.warn('Duplicating failed', err);
+      setToast(t('editor.saveFailed'));
+    }
+  };
+
+  const remove = async (): Promise<void> => {
+    try {
+      const repos = await getRepositories();
+      await repos.workouts.remove(workout.id);
+      dirtyRef.current = false;
+      void navigate('/freestyle');
+    } catch (err) {
+      console.warn('Deleting the workout failed', err);
+      setConfirmDelete(false);
+      setToast(t('editor.saveFailed'));
+    }
+  };
+
+  const errorKey = state.errors[0];
+  const onTrackFocused = useCallback(() => setFocusTrack(false), []);
+
+  return (
+    <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+      <div className={styles.screen} data-testid="editor-screen" data-readonly={readOnly}>
+        <header className={styles.bar}>
+          <Link to="/freestyle" className={styles.back}>
+            {t('editor.back')}
+          </Link>
+          <input
+            className={`${styles.name} ${nameDraft.trim() === '' ? styles.bad : ''}`}
+            aria-label={t('editor.nameLabel')}
+            value={nameDraft}
+            maxLength={80}
+            readOnly={readOnly}
+            onChange={(e) => {
+              setNameDraft(e.target.value);
+              if (e.target.value.trim() !== '') {
+                dispatch({ type: 'updateMeta', patch: { name: e.target.value } });
+              }
+            }}
+            onBlur={() => setNameDraft(workout.name)}
+          />
+          <div className={styles.category}>
+            <Segmented
+              label={t('editor.category')}
+              value={workout.category}
+              options={[
+                { value: 'progres', label: t('editor.categoryProgres'), disabled: readOnly },
+                { value: 'freestyle', label: t('editor.categoryFreestyle'), disabled: readOnly },
+              ]}
+              onChange={(category) => dispatch({ type: 'updateMeta', patch: { category } })}
+            />
+          </div>
+          <div className={styles.total} aria-label={t('editor.total')} data-testid="editor-total">
+            {formatClock(totalDurationSec(workout))}
+          </div>
+          <div className={styles.sp} />
+          <button
+            type="button"
+            className={styles.icoBtn}
+            aria-label={t('editor.undo')}
+            title={`${t('editor.undo')} (Ctrl+Z)`}
+            disabled={readOnly || state.past.length === 0}
+            onClick={() => dispatch({ type: 'undo' })}
+          >
+            ↶
+          </button>
+          <button
+            type="button"
+            className={styles.icoBtn}
+            aria-label={t('editor.redo')}
+            title={`${t('editor.redo')} (Ctrl+Y)`}
+            disabled={readOnly || state.future.length === 0}
+            onClick={() => dispatch({ type: 'redo' })}
+          >
+            ↷
+          </button>
+          {!isNew && !readOnly && (
+            <>
+              <Button onClick={() => void duplicate()}>{t('editor.duplicate')}</Button>
+              <Button onClick={() => setConfirmDelete(true)}>{t('editor.delete')}</Button>
+            </>
+          )}
+          {readOnly ? (
+            <Button variant="primary" onClick={() => void duplicate()}>
+              {t('editor.duplicateToEdit')}
+            </Button>
+          ) : (
+            <Button variant="primary" disabled={!canSave} onClick={() => void save()}>
+              {t('editor.save')}
+            </Button>
+          )}
+        </header>
+
+        {readOnly && (
+          <p className={styles.banner} role="status">
+            {t('editor.readOnly')}
+          </p>
+        )}
+        {errorKey && (
+          <p className={styles.alert} role="alert" data-testid="editor-error">
+            {t(errorKey as MessageKey)}
+          </p>
+        )}
+
+        <div className={styles.grid}>
+          <Palette readOnly={readOnly} onAdd={(kind) => dispatch({ type: 'addBlock', kind })} />
+          <main className={styles.center}>
+            <div className={styles.laneLabel}>{t('editor.music')}</div>
+            <MusicLane
+              workout={workout}
+              selectedId={state.selectedId}
+              table={table}
+              readOnly={readOnly}
+              onPick={(blockId) => {
+                dispatch({ type: 'select', id: blockId });
+                setFocusTrack(true);
+              }}
+            />
+            <Timeline
+              workout={workout}
+              selectedId={state.selectedId}
+              readOnly={readOnly}
+              table={table}
+              dispatch={dispatch}
+            />
+            <p className={styles.hint}>{t('editor.timelineHint')}</p>
+          </main>
+          <Inspector
+            workout={workout}
+            selectedId={state.selectedId}
+            readOnly={readOnly}
+            table={table}
+            dispatch={dispatch}
+            focusTrack={focusTrack}
+            onTrackFocused={onTrackFocused}
+          />
+        </div>
+
+        {blocker.state === 'blocked' && (
+          <Modal title={t('editor.leaveTitle')} onClose={() => blocker.reset()}>
+            <p>{t('editor.leaveBody')}</p>
+            <div className={styles.actions}>
+              <Button onClick={() => blocker.reset()}>{t('editor.leaveStay')}</Button>
+              <Button variant="primary" onClick={() => blocker.proceed()}>
+                {t('editor.leaveGo')}
+              </Button>
+            </div>
+          </Modal>
+        )}
+        {confirmDelete && (
+          <Modal title={t('editor.deleteTitle')} onClose={() => setConfirmDelete(false)}>
+            <p>{t('editor.deleteBody', { name: workout.name })}</p>
+            <div className={styles.actions}>
+              <Button onClick={() => setConfirmDelete(false)}>{t('editor.cancel')}</Button>
+              <Button variant="primary" onClick={() => void remove()}>
+                {t('editor.delete')}
+              </Button>
+            </div>
+          </Modal>
+        )}
+        {toast && <Toast message={toast} onClose={() => setToast(undefined)} />}
+      </div>
+    </DndContext>
+  );
+}

@@ -1,14 +1,23 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import type { Workout } from '../../domain/workout';
 
 const mine = vi.hoisted(() => ({ list: [] as Workout[] }));
+const put = vi.hoisted(() => vi.fn());
 
 vi.mock('../data/repositories', () => ({
   getRepositories: () =>
     Promise.resolve({
-      workouts: { list: () => Promise.resolve(mine.list) },
+      workouts: {
+        list: () => Promise.resolve(mine.list),
+        put: (w: Workout) => {
+          put(w);
+          return Promise.resolve();
+        },
+      },
       settings: { get: () => Promise.resolve(undefined) },
     }),
 }));
@@ -18,10 +27,15 @@ vi.setConfig({ testTimeout: 20_000 });
 import { builtinWorkouts } from '../data/builtin';
 import { FreestyleTab } from './FreestyleTab';
 
+function Where() {
+  return <div data-testid="at">{useLocation().pathname}</div>;
+}
+
 function renderTab() {
   return render(
     <MemoryRouter>
       <FreestyleTab />
+      <Where />
     </MemoryRouter>,
   );
 }
@@ -72,14 +86,60 @@ describe('FreestyleTab', () => {
     expect(first.getAttribute('href')).toMatch(/^\/setup\/.+/);
   });
 
-  it('import and new workout are disabled stubs', async () => {
+  it('New workout opens the editor draft', async () => {
     renderTab();
-    const imp = await screen.findByRole('button', { name: 'Import file' });
-    const add = screen.getByRole('button', { name: /New workout/ });
-    for (const b of [imp, add]) {
-      expect(b).toBeDisabled();
-      expect(b).toHaveAttribute('title', 'Coming soon');
-    }
+    fireEvent.click(await screen.findByRole('button', { name: /New workout/ }));
+    await waitFor(() => expect(screen.getByTestId('at')).toHaveTextContent('/editor/new'));
+  });
+
+  it('Import file opens the import dialog, shows warnings and opens the editor with the result', async () => {
+    renderTab();
+    fireEvent.click(await screen.findByRole('button', { name: 'Import file' }));
+    const dialog = await screen.findByRole('dialog');
+    const text = readFileSync(
+      join(process.cwd(), 'src/domain/parsers/__fixtures__/messy.zwo'),
+      'utf8',
+    );
+    const file = new File([text], 'messy.zwo', { type: 'application/xml' });
+    fireEvent.change(within(dialog).getByTestId('import-input'), { target: { files: [file] } });
+    expect(await within(dialog).findByTestId('import-warnings')).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Open in editor' }));
+    await waitFor(() => expect(screen.getByTestId('at')).toHaveTextContent('/editor/new'));
+  });
+
+  it('import dialog rejects unsupported files and accepts a drop', async () => {
+    renderTab();
+    fireEvent.click(await screen.findByRole('button', { name: 'Import file' }));
+    const dialog = await screen.findByRole('dialog');
+    const bad = new File(['x'], 'notes.txt');
+    fireEvent.drop(within(dialog).getByTestId('import-drop'), {
+      dataTransfer: { files: [bad] },
+    });
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Only .zwo, .erg and .mrc');
+    const text = readFileSync(
+      join(process.cwd(), 'src/domain/parsers/__fixtures__/normal.zwo'),
+      'utf8',
+    );
+    fireEvent.drop(within(dialog).getByTestId('import-drop'), {
+      dataTransfer: { files: [new File([text], 'normal.zwo')] },
+    });
+    expect(await within(dialog).findByTestId('import-result')).toBeInTheDocument();
+  });
+
+  it('every card has a Duplicate button that saves a copy and opens it', async () => {
+    renderTab();
+    await screen.findAllByTestId('workout-card');
+    const first = builtinWorkouts[0] as Workout;
+    const buttons = screen.getAllByRole('button', { name: /^Duplicate:/ });
+    expect(buttons).toHaveLength(builtinWorkouts.length);
+    fireEvent.click(buttons[0] as HTMLElement);
+    await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
+    const copy = put.mock.calls[0]?.[0] as Workout;
+    expect(copy.id).not.toBe(first.id);
+    expect(copy.source.kind).toBe('user');
+    await waitFor(() => expect(screen.getByTestId('at')).toHaveTextContent(`/editor/${copy.id}`), {
+      timeout: 8000,
+    });
   });
 
   it('includes user workouts under the Mine filter', async () => {

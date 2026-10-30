@@ -40,3 +40,14 @@ export async function importFile(file: FileLike): Promise<ImportOutcome> {
   if (!result.ok) return { ok: false, errorKey: 'importer.parseFailed', reason: result.error };
   return { ok: true, workout: result.workout, warnings: result.warnings };
 }
+
+/** Reads a browser File as text; falls back to FileReader where Blob.text is missing. */
+export function readFileText(file: File): Promise<string> {
+  if (typeof file.text === 'function') return file.text();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ''));
+    reader.onerror = () => reject(reader.error ?? new Error('read failed'));
+    reader.readAsText(file);
+  });
+}

@@ -3,7 +3,7 @@ import type { Workout } from '../../domain/workout';
 import { useT } from '../i18n';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
-import { importFile, type ImportOutcome } from './import-file';
+import { importFile, readFileText, type ImportOutcome } from './import-file';
 import styles from './ImportModal.module.css';
 
 export interface ImportModalProps {
@@ -24,7 +24,9 @@ export function ImportModal({ onClose, onOpen }: ImportModalProps) {
     if (!file) return;
     setBusy(true);
     try {
-      setOutcome(await importFile(file));
+      setOutcome(
+        await importFile({ name: file.name, size: file.size, text: () => readFileText(file) }),
+      );
     } finally {
       setBusy(false);
     }
