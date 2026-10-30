@@ -15,6 +15,33 @@ const DEMO_PLAYERS: Player[] = [
   { id: 'demo-2', name: 'Ania', ftp: 190 },
 ];
 
+/** One very long block, so e2e can check that big clock values such as "59:59" fit their tile. */
+function longBlockWorkout(durationSec: number): Workout {
+  const name = `Long block ${formatClock(durationSec)}`;
+  return {
+    id: `dev-long-${durationSec}`,
+    name,
+    description: 'Dev only: a single long block.',
+    category: 'freestyle',
+    tags: ['dev'],
+    source: { kind: 'builtin' },
+    blocks: [
+      { kind: 'steady', id: 'long', durationSec, intensity: { effort: 5 }, rpm: 90 },
+      { kind: 'steady', id: 'after', durationSec: 30, intensity: { effort: 7 }, rpm: 95 },
+    ],
+    musicCues: [],
+    fallbackPlaylist: [],
+    schemaVersion: 1,
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  };
+}
+
+const DEV_WORKOUTS: Workout[] = [
+  ...builtinWorkouts,
+  longBlockWorkout(3599),
+  longBlockWorkout(3600),
+];
+
 export function DevHome() {
   const t = useT();
   const [lang] = useLang();
@@ -43,7 +70,7 @@ export function DevHome() {
       <h1>{t('app.title')}</h1>
       <h2>{t('dev.title')}</h2>
       <ul>
-        {builtinWorkouts.map((w) => (
+        {DEV_WORKOUTS.map((w) => (
           <li key={w.id} data-testid="workout-row">
             <span>{w.localized?.[lang]?.name ?? w.name}</span>{' '}
             <span>{formatClock(totalDurationSec(w))}</span>{' '}

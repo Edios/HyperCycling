@@ -42,13 +42,10 @@
 
 .nextRow {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4vh;
+  gap: 2.4vh;
   margin-top: 3vh;
-}
-
-.nextRow > :first-child {
-  flex: 1;
 }
 
 .free {

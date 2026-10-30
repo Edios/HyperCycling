@@ -6,6 +6,7 @@ import { CoachOverlay } from './CoachOverlay';
 import { Countdown } from './Countdown';
 import { EdgeFlash } from './EdgeFlash';
 import { EffortValue } from './EffortValue';
+import { fitCqw } from './fit';
 import { NextBlock } from './NextBlock';
 import { PlayersList } from './PlayersList';
 import { RpmValue } from './RpmValue';
@@ -91,6 +92,31 @@ describe('BlockTimer', () => {
     expect(
       within(screen.getByTestId('block-timer')).getByRole('progressbar').firstElementChild,
     ).toHaveStyle({ width: '0%' });
+  });
+});
+
+describe('fit-to-tile sizing', () => {
+  const fit = (el: HTMLElement) => el.style.getPropertyValue('--fit');
+  it.each([
+    [189, '34'],
+    [600, '28'],
+    [3599, '28'],
+    [3600, '21'],
+  ])('block timer %i s uses fit %s cqw', (sec, expected) => {
+    render(<BlockTimer remainingSec={sec} durationSec={3600} index={0} total={1} pulse={false} />);
+    expect(fit(screen.getByTestId('block-timer-value'))).toBe(expected);
+  });
+  it('shrinks as the character count grows', () => {
+    const sizes = [2, 4, 5, 7].map((n) => Number(fitCqw(n)));
+    expect(sizes).toEqual([60, 34, 28, 21]);
+  });
+  it('rpm value is sized by its digits', () => {
+    render(<RpmValue rpm={90} isTarget={false} />);
+    expect(fit(screen.getByTestId('rpm-value-number'))).toBe('60');
+  });
+  it('effort value leaves room for the /10 scale', () => {
+    render(<EffortValue effort={10} ftpPct={100} labelKey="hard" variant="tile" />);
+    expect(fit(screen.getByTestId('effort-value-number'))).toBe('44');
   });
 });
 

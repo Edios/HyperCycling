@@ -1,5 +1,6 @@
 import { formatClock } from '../format';
 import { useT } from '../../i18n';
+import { fitStyle } from './fit';
 import tile from './Tile.module.css';
 import styles from './BlockTimer.module.css';
 
@@ -27,6 +28,7 @@ export function BlockTimer({
   const t = useT();
   const pct = durationSec > 0 ? Math.min(100, Math.max(0, (remainingSec / durationSec) * 100)) : 0;
   const pulsing = pulse && !reducedMotion;
+  const clock = formatClock(remainingSec);
   return (
     <div
       data-testid="block-timer"
@@ -34,7 +36,13 @@ export function BlockTimer({
       className={`${tile.tile} ${tile[size]} ${pulsing ? styles.pulse : ''}`}
     >
       <div className={tile.label}>{t('training.timeLeft')}</div>
-      <div className={`${tile.value} ${styles.clock}`}>{formatClock(remainingSec)}</div>
+      <div
+        data-testid="block-timer-value"
+        className={`${tile.value} ${styles.clock}`}
+        style={fitStyle(clock.length)}
+      >
+        {clock}
+      </div>
       <div
         role="progressbar"
         aria-label={t('training.timeLeft')}

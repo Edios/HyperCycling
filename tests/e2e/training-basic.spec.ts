@@ -91,3 +91,57 @@ test('players: shows target watts for both players', async ({ page }) => {
   await page.keyboard.press('KeyG');
   await expect(page.getByTestId('layout-solo')).toBeVisible();
 });
+
+const inside = (
+  inner: { x: number; y: number; width: number; height: number },
+  outer: typeof inner,
+) =>
+  inner.x >= outer.x - 0.5 &&
+  inner.y >= outer.y - 0.5 &&
+  inner.x + inner.width <= outer.x + outer.width + 0.5 &&
+  inner.y + inner.height <= outer.y + outer.height + 0.5;
+
+for (const size of [
+  { width: 1920, height: 1080 },
+  { width: 1280, height: 720 },
+]) {
+  for (const [name, text] of [
+    ['Long block 59:59', '59:59'],
+    ['Long block 1:00:00', '1:00:00'],
+  ] as const) {
+    for (const button of ['Ride', 'Ride with players'] as const) {
+      test(`big numbers fit their tiles: ${text} ${button} at ${size.width}x${size.height}`, async ({
+        page,
+      }) => {
+        await page.setViewportSize(size);
+        await page.clock.install();
+        await page.goto('./?dev#/dev');
+        const row = page.getByTestId('workout-row').filter({ hasText: name });
+        await row.getByRole('button', { name: button, exact: true }).click();
+        await expect(page.getByTestId('training-screen')).toBeVisible();
+
+        const value = page.getByTestId('block-timer-value');
+        await expect(value).toHaveText(text);
+        const tile = (await page.getByTestId('block-timer').boundingBox())!;
+        // The text node box, not the (tile-wide) element box.
+        const text_ = await value.evaluate((el) => {
+          const r = document.createRange();
+          r.selectNodeContents(el);
+          const b = r.getBoundingClientRect();
+          return { x: b.x, y: b.y, width: b.width, height: b.height };
+        });
+        expect(inside(text_, tile)).toBe(true);
+        // Padding to spare: at least 3% of the tile width on each side.
+        expect(text_.x - tile.x).toBeGreaterThan(tile.width * 0.03);
+        expect(tile.x + tile.width - (text_.x + text_.width)).toBeGreaterThan(tile.width * 0.03);
+
+        // Layout: NEXT card centred, controls bar right below it, also centred.
+        const next = (await page.getByTestId('next-block').boundingBox())!;
+        const controls = (await page.getByTestId('controls').boundingBox())!;
+        expect(controls.y).toBeGreaterThanOrEqual(next.y + next.height - 0.5);
+        const mid = (b: typeof next) => b.x + b.width / 2;
+        expect(Math.abs(mid(next) - mid(controls))).toBeLessThan(2);
+      });
+    }
+  }
+}
