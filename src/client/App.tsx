@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { createHashRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
 import { EditorScreen } from './editor/EditorScreen';
 import { DevHome } from './screens/DevHome';
@@ -62,7 +61,9 @@ function routes(): RouteObject[] {
 }
 
 // A data router (not <HashRouter>) is required for useBlocker, which guards unsaved editor changes.
+// Created once at module level: a router created during render would be duplicated by StrictMode.
+const router = createHashRouter(routes());
+
 export function App() {
-  const [router] = useState(() => createHashRouter(routes()));
   return <RouterProvider router={router} />;
 }

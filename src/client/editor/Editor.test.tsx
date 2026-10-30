@@ -7,6 +7,7 @@ const repo = vi.hoisted(() => ({
   store: new Map<string, unknown>(),
   put: vi.fn(),
   remove: vi.fn(),
+  active: undefined as { workoutId: string } | undefined,
 }));
 
 vi.mock('../data/repositories', () => ({
@@ -27,6 +28,7 @@ vi.mock('../data/repositories', () => ({
         list: () => Promise.resolve([...repo.store.values()]),
       },
       settings: { get: () => Promise.resolve(undefined) },
+      activeSession: { get: () => Promise.resolve(repo.active) },
     }),
 }));
 
@@ -82,6 +84,7 @@ beforeEach(() => {
   repo.store.clear();
   repo.put.mockClear();
   repo.remove.mockClear();
+  repo.active = undefined;
 });
 
 describe('new workout', () => {
@@ -261,11 +264,11 @@ describe('keyboard', () => {
 
   it('+/- change the duration by 15 s, Shift by 5 s', async () => {
     await openSelected();
-    press('+');
+    press('+', { code: 'Equal' });
     expect(block(1)).toHaveAttribute('data-duration', '615');
-    press('-', { shiftKey: true });
+    press('-', { code: 'Minus', shiftKey: true });
     expect(block(1)).toHaveAttribute('data-duration', '610');
-    press('-');
+    press('-', { code: 'NumpadSubtract' });
     expect(block(1)).toHaveAttribute('data-duration', '595');
   });
 
@@ -338,6 +341,7 @@ describe('dirty state and leaving', () => {
 
   it('asks before leaving with unsaved changes; Stay keeps, Leave goes', async () => {
     const router = await openNew();
+    fireEvent.click(screen.getByTestId('palette-steady'));
     fireEvent.click(screen.getByRole('link', { name: '‹ Freestyle' }));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('You have unsaved changes');
@@ -456,5 +460,180 @@ describe('header', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(repo.put).toHaveBeenCalled());
     expect(repo.put.mock.calls[0]?.[0]).toMatchObject({ name: 'Renamed', category: 'progres' });
+  });
+});
+
+describe('review round 1', () => {
+  it('an untouched new draft leaves without asking but can still be saved', async () => {
+    const router = await openNew();
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('link', { name: '‹ Freestyle' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/freestyle'));
+  });
+
+  it('Alt+arrows move the selected top-level block', async () => {
+    await openNew();
+    fireEvent.click(block(1));
+    const id = block(1).getAttribute('data-block-id');
+    press('ArrowRight', { altKey: true });
+    expect(block(2).getAttribute('data-block-id')).toBe(id);
+    expect(block(2)).toHaveAttribute('data-selected', 'true');
+    press('ArrowLeft', { altKey: true });
+    press('ArrowLeft', { altKey: true });
+    expect(block(0).getAttribute('data-block-id')).toBe(id);
+    press('ArrowLeft', { altKey: true });
+    expect(block(0).getAttribute('data-block-id')).toBe(id);
+  });
+
+  it('Ctrl+S saves while typing in a field, including a half-edited one', async () => {
+    repo.store.set('user-1', userWorkout());
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    fireEvent.click(block(0));
+    const time = screen.getByLabelText('Time');
+    time.focus();
+    fireEvent.change(time, { target: { value: '4:00' } });
+    fireEvent.keyDown(time, { key: 's', ctrlKey: true });
+    await waitFor(() => expect(repo.put).toHaveBeenCalledTimes(1));
+    expect((repo.put.mock.calls[0]?.[0] as Workout).blocks[0]).toMatchObject({ durationSec: 240 });
+  });
+
+  it('shows the hard minutes next to the total', async () => {
+    repo.store.set('user-1', userWorkout()); // 2 min at effort 8 (100 %)
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    expect(screen.getByTestId('editor-load')).toHaveTextContent('2 min at 85% FTP or more');
+  });
+
+  it('edits the description and toggles tags', async () => {
+    repo.store.set('user-1', userWorkout());
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    const desc = screen.getByLabelText('Description');
+    fireEvent.change(desc, { target: { value: 'Hard stuff' } });
+    fireEvent.blur(desc);
+    fireEvent.click(screen.getByRole('button', { name: 'HIIT' }));
+    fireEvent.click(screen.getByRole('button', { name: 'VO2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'VO2' }));
+    expect(screen.getByRole('button', { name: 'HIIT' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'VO2' })).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(repo.put).toHaveBeenCalled());
+    expect(repo.put.mock.calls[0]?.[0]).toMatchObject({
+      description: 'Hard stuff',
+      tags: ['hiit'],
+    });
+  });
+
+  it('manages the fallback playlist: add, reorder, remove, reject bad links', async () => {
+    repo.store.set('user-1', userWorkout());
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    const url = screen.getByTestId('fallback-url');
+    const add = () =>
+      fireEvent.click(
+        within(screen.getByTestId('fallback-playlist')).getByRole('button', { name: 'Add' }),
+      );
+    fireEvent.change(url, { target: { value: 'nope' } });
+    add();
+    expect(within(screen.getByTestId('fallback-playlist')).getByRole('alert')).toBeInTheDocument();
+    fireEvent.change(url, {
+      target: { value: 'https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC' },
+    });
+    add();
+    fireEvent.change(url, { target: { value: 'https://youtu.be/dQw4w9WgXcQ?t=30' } });
+    add();
+    let tracks = screen.getAllByTestId('fallback-track');
+    expect(tracks).toHaveLength(2);
+    expect(tracks[0]).toHaveTextContent('Spotify');
+    fireEvent.click(screen.getByRole('button', { name: 'Move up 2' }));
+    tracks = screen.getAllByTestId('fallback-track');
+    expect(tracks[0]).toHaveTextContent('YouTube');
+    fireEvent.click(screen.getByRole('button', { name: 'Remove track 1' }));
+    expect(screen.getAllByTestId('fallback-track')).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(repo.put).toHaveBeenCalled());
+    expect((repo.put.mock.calls[0]?.[0] as Workout).fallbackPlaylist).toMatchObject([
+      { provider: 'spotify', id: '4uLU6hMCjMI75M1A2tKUQC' },
+    ]);
+  });
+
+  it('read-only built-ins cannot change the fallback playlist', async () => {
+    renderAt(`/editor/${encodeURIComponent((builtinWorkouts[0] as Workout).id)}`);
+    await screen.findByTestId('editor-screen');
+    expect(screen.getByTestId('fallback-url')).toBeDisabled();
+  });
+
+  it('keeps an unpinned track draft per block and fills the start from a YouTube t=', async () => {
+    repo.store.set('user-1', userWorkout());
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    fireEvent.click(block(0));
+    fireEvent.change(screen.getByTestId('track-url'), {
+      target: { value: 'https://youtu.be/dQw4w9WgXcQ?t=1m30s' },
+    });
+    expect(screen.getByTestId('track-start')).toHaveValue('1:30');
+    fireEvent.click(block(1));
+    expect(screen.getByTestId('track-url')).toHaveValue('');
+    fireEvent.click(block(0));
+    expect(screen.getByTestId('track-url')).toHaveValue('https://youtu.be/dQw4w9WgXcQ?t=1m30s');
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    expect(screen.getByTestId('music-pill')).toHaveTextContent('♫ YouTube · from 1:30');
+  });
+
+  it('a different track id starts with an empty title; the same id keeps it', async () => {
+    const withCue = userWorkout({
+      musicCues: [
+        {
+          blockId: 'a',
+          rep: 1,
+          track: { provider: 'youtube', id: 'dQw4w9WgXcQ', title: 'Old song', startAtSec: 0 },
+        },
+      ],
+    });
+    repo.store.set('user-1', withCue);
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    fireEvent.click(block(0));
+    expect(screen.getByTestId('music-pill')).toHaveTextContent('Old song');
+    fireEvent.change(screen.getByTestId('track-start'), { target: { value: '0:10' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    expect(screen.getByTestId('music-pill')).toHaveTextContent('Old song');
+    fireEvent.change(screen.getByTestId('track-url'), {
+      target: { value: 'https://youtu.be/abcdefghijk' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    expect(screen.getByTestId('music-pill')).not.toHaveTextContent('Old song');
+  });
+
+  it('Duplicate on unsaved changes saves the original first', async () => {
+    repo.store.set('user-1', userWorkout());
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    fireEvent.click(block(0));
+    press('+', { code: 'Equal' });
+    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+    await waitFor(() => expect(repo.put).toHaveBeenCalledTimes(2));
+    expect((repo.put.mock.calls[0]?.[0] as Workout).id).toBe('user-1');
+    expect((repo.put.mock.calls[0]?.[0] as Workout).blocks[0]).toMatchObject({ durationSec: 315 });
+    expect((repo.put.mock.calls[1]?.[0] as Workout).id).not.toBe('user-1');
+  });
+
+  it('says why Save is disabled', async () => {
+    await openNew();
+    for (let i = 0; i < 3; i++) {
+      fireEvent.click(block(0));
+      press('Delete');
+    }
+    expect(screen.getByTestId('save-blocked')).toHaveTextContent('Add at least one block');
+  });
+
+  it('Delete warns when the workout is in an interrupted session', async () => {
+    repo.store.set('user-1', userWorkout());
+    repo.active = { workoutId: 'user-1' };
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(await screen.findByTestId('delete-active-warning')).toBeInTheDocument();
   });
 });

@@ -64,7 +64,15 @@ export function EditorScreen() {
   }, [workoutId, builtin]);
 
   if (draft) {
-    return <Editor key={`${location.key}:new`} initial={draft} readOnly={false} isNew />;
+    return (
+      <Editor
+        key={`${location.key}:new`}
+        initial={draft}
+        readOnly={false}
+        isNew
+        startDirty={importedFrom(location.state) !== undefined}
+      />
+    );
   }
   const current: Loaded | undefined = builtin
     ? { status: 'ready', workout: builtin, readOnly: true, isNew: false }

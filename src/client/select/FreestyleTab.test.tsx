@@ -126,6 +126,41 @@ describe('FreestyleTab', () => {
     expect(await within(dialog).findByTestId('import-result')).toBeInTheDocument();
   });
 
+  it('an ERG in watts without FTP asks for an FTP and retries with it', async () => {
+    renderTab();
+    fireEvent.click(await screen.findByRole('button', { name: 'Import file' }));
+    const dialog = await screen.findByRole('dialog');
+    const text = readFileSync(
+      join(process.cwd(), 'src/domain/parsers/__fixtures__/watts-no-ftp.erg'),
+      'utf8',
+    );
+    fireEvent.change(within(dialog).getByTestId('import-input'), {
+      target: { files: [new File([text], 'w.erg')] },
+    });
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      'This file is in watts and has no FTP',
+    );
+    fireEvent.change(within(dialog).getByTestId('import-ftp'), { target: { value: '250' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Retry' }));
+    expect(await within(dialog).findByTestId('import-result')).toBeInTheDocument();
+  });
+
+  it('translates parser warnings into generic messages', async () => {
+    renderTab();
+    fireEvent.click(await screen.findByRole('button', { name: 'Import file' }));
+    const dialog = await screen.findByRole('dialog');
+    const text = readFileSync(
+      join(process.cwd(), 'src/domain/parsers/__fixtures__/messy.zwo'),
+      'utf8',
+    );
+    fireEvent.change(within(dialog).getByTestId('import-input'), {
+      target: { files: [new File([text], 'messy.zwo')] },
+    });
+    const list = await within(dialog).findByTestId('import-warnings');
+    expect(list).toHaveTextContent('Skipped an unsupported element <Mystery>.');
+    expect(list).not.toHaveTextContent('zero-length block dropped');
+  });
+
   it('every card has a Duplicate button that saves a copy and opens it', async () => {
     renderTab();
     await screen.findAllByTestId('workout-card');

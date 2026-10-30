@@ -72,7 +72,6 @@ function CommitField({
           onKeyDown={(e) => {
             if (e.key === 'Enter') commit();
             if (e.key === 'Escape') setDraft(value);
-            e.stopPropagation();
           }}
         />
         {suffix && <span className={styles.suffix}>{suffix}</span>}
@@ -172,11 +171,21 @@ export function Inspector({
   onTrackFocused,
 }: InspectorProps) {
   const t = useT();
+  // Unpinned track fields survive switching between blocks.
+  const [drafts, setDrafts] = useState<Record<string, TrackDraft>>({});
+  const setDraft = (blockId: string, d: TrackDraft | undefined): void =>
+    setDrafts((prev) => {
+      const { [blockId]: _old, ...rest } = prev;
+      void _old;
+      return d ? { ...rest, [blockId]: d } : rest;
+    });
   const block = findBlock(workout, selectedId);
+  const playlist = <FallbackPlaylist workout={workout} dispatch={dispatch} readOnly={readOnly} />;
   if (!block) {
     return (
       <aside className={styles.panel} data-testid="inspector">
         <p className={styles.empty}>{t('editor.inspector.empty')}</p>
+        {playlist}
       </aside>
     );
   }
@@ -198,9 +207,12 @@ export function Inspector({
             dispatch={dispatch}
             focusTrack={focusTrack}
             onTrackFocused={onTrackFocused}
+            draft={drafts[block.id]}
+            onDraft={(d) => setDraft(block.id, d)}
           />
         )}
       </fieldset>
+      {playlist}
     </aside>
   );
 }
@@ -296,6 +308,8 @@ function LeafInspector({
   dispatch,
   focusTrack,
   onTrackFocused,
+  draft,
+  onDraft,
 }: {
   leaf: Leaf;
   workout: Workout;
@@ -303,6 +317,8 @@ function LeafInspector({
   dispatch: Dispatch<EditorAction>;
   focusTrack: boolean;
   onTrackFocused: () => void;
+  draft: TrackDraft | undefined;
+  onDraft: (d: TrackDraft | undefined) => void;
 }) {
   const t = useT();
   const id = leaf.id;
@@ -400,11 +416,24 @@ function LeafInspector({
         dispatch={dispatch}
         focusRequested={focusTrack}
         onFocused={onTrackFocused}
+        draft={draft}
+        onDraft={onDraft}
       />
 
       {hint && <MusicHint text={hint} />}
     </>
   );
+}
+
+export interface TrackDraft {
+  url: string;
+  start: string;
+}
+
+function trackUrl(track: { provider: 'spotify' | 'youtube'; id: string }): string {
+  return track.provider === 'spotify'
+    ? `spotify:track:${track.id}`
+    : `https://youtu.be/${track.id}`;
 }
 
 function TrackField({
@@ -413,12 +442,16 @@ function TrackField({
   dispatch,
   focusRequested,
   onFocused,
+  draft,
+  onDraft,
 }: {
   blockId: string;
   cue: Workout['musicCues'][number]['track'] | undefined;
   dispatch: Dispatch<EditorAction>;
   focusRequested: boolean;
   onFocused: () => void;
+  draft: TrackDraft | undefined;
+  onDraft: (d: TrackDraft | undefined) => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -428,14 +461,8 @@ function TrackField({
   }, [focusRequested, onFocused]);
   const t = useT();
   const urlId = useId();
-  const [url, setUrl] = useState(
-    cue
-      ? cue.provider === 'spotify'
-        ? `spotify:track:${cue.id}`
-        : `https://youtu.be/${cue.id}`
-      : '',
-  );
-  const [start, setStart] = useState(formatClock(cue?.startAtSec ?? 0));
+  const url = draft?.url ?? (cue ? trackUrl(cue) : '');
+  const start = draft?.start ?? formatClock(cue?.startAtSec ?? 0);
   const [touched, setTouched] = useState(false);
   const parsed = parseTrackUrl(url);
   const startSec = parseClock(start);
@@ -444,9 +471,20 @@ function TrackField({
   const providerName = (p: 'spotify' | 'youtube'): string =>
     p === 'spotify' ? 'Spotify' : 'YouTube';
 
+  const onUrl = (value: string): void => {
+    const next = parseTrackUrl(value);
+    // A link that carries a start time (YouTube ?t=) fills the start field while it is untouched.
+    const fill =
+      next?.startAtSec !== undefined && (parseClock(start) ?? 0) === 0
+        ? formatClock(next.startAtSec)
+        : start;
+    onDraft({ url: value, start: fill });
+  };
+
   const pin = (): void => {
     setTouched(true);
     if (!parsed || startSec === undefined) return;
+    const same = cue?.provider === parsed.provider && cue.id === parsed.id;
     dispatch({
       type: 'setCue',
       blockId,
@@ -454,10 +492,12 @@ function TrackField({
       track: {
         provider: parsed.provider,
         id: parsed.id,
-        title: cue?.title ?? t('editor.inspector.track'),
+        // The title belongs to the track: a different id starts without one.
+        title: same ? cue.title : '',
         startAtSec: startSec,
       },
     });
+    onDraft(undefined);
   };
 
   return (
@@ -481,10 +521,9 @@ function TrackField({
         placeholder={t('editor.inspector.trackUrl')}
         value={url}
         aria-invalid={urlError ? true : undefined}
-        onChange={(e) => setUrl(e.target.value)}
+        onChange={(e) => onUrl(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') pin();
-          e.stopPropagation();
         }}
       />
       {urlError && (
@@ -499,10 +538,9 @@ function TrackField({
             data-testid="track-start"
             value={start}
             aria-invalid={startError ? true : undefined}
-            onChange={(e) => setStart(e.target.value)}
+            onChange={(e) => onDraft({ url, start: e.target.value })}
             onKeyDown={(e) => {
               if (e.key === 'Enter') pin();
-              e.stopPropagation();
             }}
           />
         </label>
@@ -515,11 +553,119 @@ function TrackField({
       <div className={styles.row}>
         <Button onClick={pin}>{t('editor.inspector.trackAdd')}</Button>
         {cue && (
-          <Button onClick={() => dispatch({ type: 'clearCue', blockId, rep: 1 })}>
+          <Button
+            onClick={() => {
+              dispatch({ type: 'clearCue', blockId, rep: 1 });
+              onDraft(undefined);
+            }}
+          >
             {t('editor.inspector.trackClear')}
           </Button>
         )}
       </div>
     </div>
+  );
+}
+
+function FallbackPlaylist({
+  workout,
+  dispatch,
+  readOnly,
+}: {
+  workout: Workout;
+  dispatch: Dispatch<EditorAction>;
+  readOnly: boolean;
+}) {
+  const t = useT();
+  const urlId = useId();
+  const [url, setUrl] = useState('');
+  const [touched, setTouched] = useState(false);
+  const list = workout.fallbackPlaylist;
+  const parsed = parseTrackUrl(url);
+  const set = (fallbackPlaylist: Workout['fallbackPlaylist']): void =>
+    dispatch({ type: 'updateMeta', patch: { fallbackPlaylist } });
+  const add = (): void => {
+    setTouched(true);
+    if (!parsed) return;
+    set([
+      ...list,
+      { provider: parsed.provider, id: parsed.id, title: '', startAtSec: parsed.startAtSec ?? 0 },
+    ]);
+    setUrl('');
+    setTouched(false);
+  };
+  const move = (i: number, to: number): void => {
+    const next = [...list];
+    const [item] = next.splice(i, 1);
+    if (!item) return;
+    next.splice(to, 0, item);
+    set(next);
+  };
+  return (
+    <section className={styles.playlist} data-testid="fallback-playlist">
+      <fieldset disabled={readOnly} className={styles.set}>
+        <h3 className={styles.subtitle}>{t('editor.fallback.title')}</h3>
+        <small className={styles.caption}>{t('editor.fallback.hint')}</small>
+        {list.length === 0 ? (
+          <small className={styles.caption}>{t('editor.fallback.empty')}</small>
+        ) : (
+          <ol className={styles.tracks}>
+            {list.map((tr, i) => (
+              <li key={`${tr.provider}:${tr.id}:${i}`} data-testid="fallback-track">
+                <span className={styles.trackName}>
+                  {tr.title || `${tr.provider === 'spotify' ? 'Spotify' : 'YouTube'} · ${tr.id}`}
+                </span>
+                <button
+                  type="button"
+                  aria-label={`${t('editor.fallback.up')} ${i + 1}`}
+                  disabled={i === 0}
+                  onClick={() => move(i, i - 1)}
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  aria-label={`${t('editor.fallback.down')} ${i + 1}`}
+                  disabled={i === list.length - 1}
+                  onClick={() => move(i, i + 1)}
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  aria-label={`${t('editor.fallback.remove')} ${i + 1}`}
+                  onClick={() => set(list.filter((_, j) => j !== i))}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
+        <label className={styles.groupLabel} htmlFor={urlId}>
+          {t('editor.fallback.track')}
+        </label>
+        <input
+          id={urlId}
+          data-testid="fallback-url"
+          className={styles.wide}
+          placeholder={t('editor.fallback.url')}
+          value={url}
+          aria-invalid={touched && !parsed ? true : undefined}
+          onChange={(e) => setUrl(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') add();
+          }}
+        />
+        {touched && !parsed && (
+          <small role="alert" className={styles.error}>
+            {t('editor.fallback.error')}
+          </small>
+        )}
+        <div className={styles.row}>
+          <Button onClick={add}>{t('editor.fallback.add')}</Button>
+        </div>
+      </fieldset>
+    </section>
   );
 }

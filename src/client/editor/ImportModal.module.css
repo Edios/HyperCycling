@@ -49,3 +49,30 @@
   gap: 0.75rem;
   margin-top: 1.25rem;
 }
+
+.ftp {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.ftp label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  color: var(--mut);
+  font-size: 0.9375rem;
+}
+
+.ftp input {
+  height: 2.75rem;
+  width: 9rem;
+  box-sizing: border-box;
+  padding: 0 0.75rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}

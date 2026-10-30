@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useRef,
   useState,
   type ReactNode,
@@ -52,6 +53,9 @@ export function Timeline({ workout, selectedId, readOnly, table, dispatch }: Tim
   const lane = useRef<HTMLDivElement>(null);
   const [preview, setPreview] = useState<Preview | undefined>();
   const { setNodeRef } = useDroppable({ id: TIMELINE_DROP_ID });
+  const stopDrag = useRef<(() => void) | undefined>(undefined);
+  // A drag in progress must not outlive the timeline.
+  useEffect(() => () => stopDrag.current?.(), []);
 
   const totalSec = workout.blocks.reduce((s, b) => s + blockTotalSec(b), 0);
 
@@ -66,7 +70,13 @@ export function Timeline({ workout, selectedId, readOnly, table, dispatch }: Tim
     const levelPx = laneH / MAX_EFFORT;
     const startX = e.clientX;
     const startY = e.clientY;
-    const which: 'from' | 'to' = e.shiftKey && leaf.kind === 'ramp' ? 'from' : 'to';
+    // A ramp's top handle edits its higher end; Shift edits the other one.
+    const higher: 'from' | 'to' =
+      leaf.kind === 'ramp' && intensityEffort(leaf.from, table) > intensityEffort(leaf.to, table)
+        ? 'from'
+        : 'to';
+    const which: 'from' | 'to' =
+      leaf.kind === 'ramp' && e.shiftKey ? (higher === 'to' ? 'from' : 'to') : higher;
     const startEffort =
       leaf.kind === 'steady'
         ? intensityEffort(leaf.intensity, table)
@@ -85,11 +95,18 @@ export function Timeline({ workout, selectedId, readOnly, table, dispatch }: Tim
         effort: clampEffort(startEffort - (ev.clientY - startY) / levelPx),
       };
     };
-    const onMove = (ev: PointerEvent): void => setPreview(compute(ev));
-    const onUp = (ev: PointerEvent): void => {
+    const detach = (): void => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onCancel);
+      window.removeEventListener('keydown', onKey, true);
+      stopDrag.current = undefined;
+    };
+    function onMove(ev: PointerEvent): void {
+      setPreview(compute(ev));
+    }
+    function onUp(ev: PointerEvent): void {
+      detach();
       const p = compute(ev);
       setPreview(undefined);
       if (p.durationSec !== undefined && p.durationSec !== leaf.durationSec) {
@@ -102,16 +119,23 @@ export function Timeline({ workout, selectedId, readOnly, table, dispatch }: Tim
           ...(leaf.kind === 'ramp' ? { which } : {}),
         });
       }
-    };
-    const onCancel = (): void => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onCancel);
+    }
+    function onCancel(): void {
+      detach();
       setPreview(undefined);
-    };
+    }
+    function onKey(ev: KeyboardEvent): void {
+      if (ev.key === 'Escape') {
+        ev.stopPropagation();
+        onCancel();
+      }
+    }
+    stopDrag.current?.();
+    stopDrag.current = detach;
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onCancel);
+    window.addEventListener('keydown', onKey, true);
   }
 
   function renderBar(source: Leaf, key: string, showHandles: boolean) {
@@ -151,20 +175,13 @@ export function Timeline({ workout, selectedId, readOnly, table, dispatch }: Tim
         {selected && showHandles && !readOnly && (
           <>
             <span
-              role="slider"
-              aria-label={t('editor.resizeHandle')}
-              aria-valuenow={leaf.durationSec}
-              aria-valuemin={5}
+              aria-hidden="true"
               data-handle="duration"
               className={styles.hRight}
               onPointerDown={(e) => startDrag(e, 'resize', source)}
             />
             <span
-              role="slider"
-              aria-label={t('editor.effortHandle')}
-              aria-valuenow={top}
-              aria-valuemin={1}
-              aria-valuemax={MAX_EFFORT}
+              aria-hidden="true"
               data-handle="effort"
               className={styles.hTop}
               onPointerDown={(e) => startDrag(e, 'effort', source)}

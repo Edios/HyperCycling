@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react';
 import { Link, useBlocker, useNavigate } from 'react-router-dom';
 import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { totalDurationSec, type Workout } from '../../domain/workout';
@@ -18,7 +18,8 @@ import {
   type NewBlockKind,
 } from './editor-state';
 import { Inspector } from './Inspector';
-import { isSaveable, shortcutToAction } from './model';
+import { MetaBar } from './MetaBar';
+import { hardMinutes, saveIssue, shortcutToAction } from './model';
 import { MusicLane } from './MusicLane';
 import { Palette, PALETTE_PREFIX } from './Palette';
 import { Timeline, TIMELINE_DROP_ID } from './Timeline';
@@ -30,21 +31,25 @@ export interface EditorProps {
   readOnly: boolean;
   /** Not stored yet: Save is available straight away and navigates to the stored id. */
   isNew: boolean;
+  /** An imported draft starts with unsaved changes; an untouched blank draft does not. */
+  startDirty?: boolean;
 }
 
-function initState(initial: Workout, isNew: boolean): EditorState {
+function initState(initial: Workout, startDirty: boolean): EditorState {
   const base = createEditorState(initial);
-  // A draft or imported workout starts unsaved: a different reference makes undo-to-start stay dirty.
-  return isNew ? { ...base, saved: { ...initial }, dirty: true } : base;
+  // A different reference makes undo-to-start stay dirty for an imported draft.
+  return startDirty ? { ...base, saved: { ...initial }, dirty: true } : base;
 }
 
-export function Editor({ initial, readOnly, isNew }: EditorProps) {
+export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorProps) {
   const t = useT();
   const [lang] = useLang();
   const navigate = useNavigate();
   const { settings } = useSettings();
   const table = settings.effortTable;
-  const [state, dispatch] = useReducer(editorReducer, undefined, () => initState(initial, isNew));
+  const [state, dispatch] = useReducer(editorReducer, undefined, () =>
+    initState(initial, startDirty),
+  );
   const { workout } = state;
   const [toast, setToast] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
@@ -59,11 +64,15 @@ export function Editor({ initial, readOnly, isNew }: EditorProps) {
 
   const stateRef = useRef(state);
   const dirtyRef = useRef(state.dirty && !readOnly);
-  useEffect(() => {
+  // Layout effect: the ref must be current as soon as a commit lands (Ctrl+S right after a blur).
+  useLayoutEffect(() => {
     stateRef.current = state;
     dirtyRef.current = state.dirty && !readOnly;
   });
-  const canSave = !readOnly && state.dirty && isSaveable(workout) && !saving;
+  const issue = saveIssue(workout);
+  const changed = state.dirty || isNew;
+  const canSave = !readOnly && changed && !issue && !saving;
+  const [hasActive, setHasActive] = useState(false);
 
   // Leaving with unsaved changes: in-app navigation via the router blocker, reload/close via beforeunload.
   const blocker = useBlocker(() => dirtyRef.current);
@@ -77,9 +86,10 @@ export function Editor({ initial, readOnly, isNew }: EditorProps) {
     return () => window.removeEventListener('beforeunload', onUnload);
   }, []);
 
-  const save = useCallback(async (): Promise<void> => {
+  const saveRef = useRef<() => Promise<boolean>>(() => Promise.resolve(false));
+  const save = useCallback(async (): Promise<boolean> => {
     const current = stateRef.current;
-    if (readOnly || !current.dirty || !isSaveable(current.workout)) return;
+    if (readOnly || !(current.dirty || isNew) || saveIssue(current.workout)) return false;
     setSaving(true);
     try {
       const repos = await getRepositories();
@@ -87,27 +97,36 @@ export function Editor({ initial, readOnly, isNew }: EditorProps) {
       dirtyRef.current = false;
       dispatch({ type: 'markSaved' });
       setToast(t('editor.saved'));
-      if (isNew)
+      if (isNew) {
         void navigate(`/editor/${encodeURIComponent(current.workout.id)}`, { replace: true });
+      }
+      return true;
     } catch (err) {
       console.warn('Saving the workout failed', err);
       setToast(t('editor.saveFailed'));
+      return false;
     } finally {
       setSaving(false);
     }
   }, [readOnly, isNew, navigate, t]);
 
+  useEffect(() => {
+    saveRef.current = save;
+  }, [save]);
+
   // Keyboard: arrows select, Delete removes, Ctrl+D/Z/Y, +/- and ↑/↓ edit. Ignored while typing.
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
+      // Ctrl+S works everywhere, also while typing: blur first so a half-edited field is applied.
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        (document.activeElement as HTMLElement | null)?.blur();
+        setTimeout(() => void saveRef.current(), 0);
+        return;
+      }
       const target = e.target as HTMLElement | null;
       if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
       if (document.querySelector('[role="dialog"]')) return;
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        void save();
-        return;
-      }
       const action = shortcutToAction(stateRef.current, e, table);
       if (!action) return;
       if (readOnly && action.type !== 'select') return;
@@ -116,7 +135,7 @@ export function Editor({ initial, readOnly, isNew }: EditorProps) {
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [readOnly, table, save]);
+  }, [readOnly, table]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -145,12 +164,28 @@ export function Editor({ initial, readOnly, isNew }: EditorProps) {
 
   const duplicate = async (): Promise<void> => {
     try {
+      // Unsaved edits are saved first, so the copy (and the original) never lose them.
+      if (!readOnly && stateRef.current.dirty && !(await save())) {
+        setToast(t('editor.saveFailed'));
+        return;
+      }
       const copy = await duplicateAndSave(workout, lang, t('editor.copySuffix'));
       void navigate(`/editor/${encodeURIComponent(copy.id)}`);
     } catch (err) {
       console.warn('Duplicating failed', err);
       setToast(t('editor.saveFailed'));
     }
+  };
+
+  const askDelete = async (): Promise<void> => {
+    try {
+      const repos = await getRepositories();
+      const active = await repos.activeSession.get();
+      setHasActive(active?.workoutId === workout.id);
+    } catch {
+      setHasActive(false);
+    }
+    setConfirmDelete(true);
   };
 
   const remove = async (): Promise<void> => {
@@ -204,6 +239,9 @@ export function Editor({ initial, readOnly, isNew }: EditorProps) {
           <div className={styles.total} aria-label={t('editor.total')} data-testid="editor-total">
             {formatClock(totalDurationSec(workout))}
           </div>
+          <div className={styles.load} data-testid="editor-load">
+            {t('editor.hardMinutes', { n: hardMinutes(workout, table) })}
+          </div>
           <div className={styles.sp} />
           <button
             type="button"
@@ -228,7 +266,7 @@ export function Editor({ initial, readOnly, isNew }: EditorProps) {
           {!isNew && !readOnly && (
             <>
               <Button onClick={() => void duplicate()}>{t('editor.duplicate')}</Button>
-              <Button onClick={() => setConfirmDelete(true)}>{t('editor.delete')}</Button>
+              <Button onClick={() => void askDelete()}>{t('editor.delete')}</Button>
             </>
           )}
           {readOnly ? (
@@ -242,9 +280,17 @@ export function Editor({ initial, readOnly, isNew }: EditorProps) {
           )}
         </header>
 
+        <MetaBar workout={workout} readOnly={readOnly} dispatch={dispatch} />
         {readOnly && (
           <p className={styles.banner} role="status">
             {t('editor.readOnly')}
+          </p>
+        )}
+        {!readOnly && changed && issue && (
+          <p className={styles.banner} role="status" data-testid="save-blocked">
+            {'empty' in issue
+              ? t('editor.saveBlockedEmpty')
+              : t('editor.saveBlockedInvalid', { issue: issue.issue })}
           </p>
         )}
         {errorKey && (
@@ -301,6 +347,11 @@ export function Editor({ initial, readOnly, isNew }: EditorProps) {
         {confirmDelete && (
           <Modal title={t('editor.deleteTitle')} onClose={() => setConfirmDelete(false)}>
             <p>{t('editor.deleteBody', { name: workout.name })}</p>
+            {hasActive && (
+              <p role="alert" data-testid="delete-active-warning">
+                {t('editor.deleteActive')}
+              </p>
+            )}
             <div className={styles.actions}>
               <Button onClick={() => setConfirmDelete(false)}>{t('editor.cancel')}</Button>
               <Button variant="primary" onClick={() => void remove()}>

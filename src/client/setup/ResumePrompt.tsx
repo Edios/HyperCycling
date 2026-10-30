@@ -57,20 +57,22 @@ export function ResumePrompt() {
         const active = await repos.activeSession.get();
         if (!active || !live) return;
         const now = new Date();
-        const workout =
+        const stored =
           builtinWorkouts.find((w) => w.id === active.workoutId) ??
           (await repos.workouts.get(active.workoutId));
+        // The session carries its own workout copy, so a deleted original must not discard it.
+        const workout = active.workout ?? stored;
         if (!workout || !isActiveSessionFresh(active, now.toISOString())) {
           await clearActive();
           return;
         }
         let ridden = active.workout ?? workout;
-        if (!active.workout && active.plan) {
+        if (!active.workout && stored && active.plan) {
           // Older records carry no workout: rebuild it from the plan's stored settings.
           const progress = await repos.planProgress.get(active.plan.planId);
           const ps = progress?.settings ?? DEFAULT_PLAN_SETTINGS;
           try {
-            ridden = scaleWorkout(workout, {
+            ridden = scaleWorkout(stored, {
               targetMinutes: ps.sessionMinutes,
               difficultyPct: ps.difficulty,
             });

@@ -3,6 +3,7 @@ import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
 import { workoutSchema } from '../../domain/workout';
 import { createEditorState, editorReducer, type EditorAction } from './editor-state';
 import {
+  hardMinutes,
   isSaveable,
   newWorkoutDraft,
   rpmOutsideUsual,
@@ -103,6 +104,38 @@ describe('shortcutToAction', () => {
       repeatId: rep.id,
       childId: child,
     });
+  });
+});
+
+describe('Alt+arrows reorder', () => {
+  it('moves the selected top-level block, not beyond the ends', () => {
+    let s = createEditorState(newWorkoutDraft('x'));
+    s = editorReducer(s, { type: 'select', id: s.workout.blocks[1]?.id });
+    expect(shortcutToAction(s, { key: 'ArrowRight', altKey: true }, T)).toEqual({
+      type: 'moveBlock',
+      from: 1,
+      to: 2,
+    });
+    expect(shortcutToAction(s, { key: 'ArrowLeft', altKey: true }, T)).toEqual({
+      type: 'moveBlock',
+      from: 1,
+      to: 0,
+    });
+    s = editorReducer(s, { type: 'select', id: s.workout.blocks[2]?.id });
+    expect(shortcutToAction(s, { key: 'ArrowRight', altKey: true }, T)).toBeUndefined();
+  });
+});
+
+describe('hardMinutes', () => {
+  it('counts time at or above 85 % FTP, prorating ramps', () => {
+    const w = newWorkoutDraft('x');
+    w.blocks = [
+      { kind: 'steady', id: 'a', durationSec: 600, intensity: { ftpPct: 90 } },
+      { kind: 'steady', id: 'b', durationSec: 600, intensity: { ftpPct: 70 } },
+      { kind: 'ramp', id: 'c', durationSec: 600, from: { ftpPct: 70 }, to: { ftpPct: 100 } },
+    ];
+    // 10 min steady + half of the ramp (85..100 of 70..100) = 10 + 5
+    expect(hardMinutes(w, T)).toBe(15);
   });
 });
 

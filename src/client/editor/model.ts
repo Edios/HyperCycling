@@ -1,4 +1,5 @@
 import { ftpPctToEffort, type EffortLevel, type EffortTable } from '../../domain/effort';
+import { flattenWorkout } from '../../domain/segments';
 import { newId } from '../../domain/ids';
 import {
   workoutSchema,
@@ -116,10 +117,24 @@ export function newWorkoutDraft(
 
 export interface KeyInfo {
   key: string;
+  code?: string;
   ctrlKey?: boolean;
   metaKey?: boolean;
   shiftKey?: boolean;
   altKey?: boolean;
+}
+
+/**
+ * +1 / -1 for the duration keys. The physical key (`code`) decides, so Shift (needed for "+" on
+ * many layouts) only selects the fine step; without a code the produced character is used.
+ */
+function stepDirection(e: KeyInfo): 1 | -1 | 0 {
+  if (e.code === 'Equal' || e.code === 'NumpadAdd') return 1;
+  if (e.code === 'Minus' || e.code === 'NumpadSubtract') return -1;
+  if (e.code) return 0;
+  if (e.key === '+' || e.key === '=') return 1;
+  if (e.key === '-' || e.key === '_') return -1;
+  return 0;
 }
 
 /**
@@ -141,7 +156,14 @@ export function shortcutToAction(
     if (k === 'd' && state.selectedId) return { type: 'duplicateBlock', id: state.selectedId };
     return undefined;
   }
-  if (e.altKey) return undefined;
+  if (e.altKey) {
+    if ((k === 'ArrowLeft' || k === 'ArrowRight') && state.selectedId !== undefined) {
+      const from = w.blocks.findIndex((b) => b.id === state.selectedId);
+      const to = from + (k === 'ArrowRight' ? 1 : -1);
+      if (from >= 0 && to >= 0 && to < w.blocks.length) return { type: 'moveBlock', from, to };
+    }
+    return undefined;
+  }
 
   const order = selectionOrder(w);
   if (k === 'ArrowLeft' || k === 'ArrowRight') {
@@ -161,8 +183,8 @@ export function shortcutToAction(
       ? { type: 'removeChild', repeatId: parent.id, childId: b.id }
       : { type: 'removeBlock', id: b.id };
   }
-  if (k === '+' || k === '=' || k === '-' || k === '_') {
-    const dir = k === '+' || k === '=' ? 1 : -1;
+  const dir = stepDirection(e);
+  if (dir !== 0) {
     if (b.kind === 'repeat') {
       return {
         type: 'updateBlock',
@@ -175,21 +197,64 @@ export function shortcutToAction(
   }
   if (k === 'ArrowUp' || k === 'ArrowDown') {
     if (b.kind === 'repeat') return undefined;
-    const dir = k === 'ArrowUp' ? 1 : -1;
+    const up = k === 'ArrowUp' ? 1 : -1;
     if (b.kind === 'steady') {
       return {
         type: 'setIntensity',
         id: b.id,
-        effort: clampEffort(intensityEffort(b.intensity, table) + dir),
+        effort: clampEffort(intensityEffort(b.intensity, table) + up),
       };
     }
     const which = e.shiftKey ? 'from' : 'to';
     return {
       type: 'setIntensity',
       id: b.id,
-      effort: clampEffort(intensityEffort(b[which], table) + dir),
+      effort: clampEffort(intensityEffort(b[which], table) + up),
       which,
     };
   }
   return undefined;
+}
+
+/** Minutes spent at or above `thresholdPct` % FTP (ramps count the part above the threshold). */
+export function hardMinutes(w: Workout, table: EffortTable, thresholdPct = 85): number {
+  let sec = 0;
+  for (const s of flattenWorkout(w, table)) {
+    const a = s.ftpPctStart;
+    const b = s.ftpPctEnd;
+    if (a === b) {
+      if (a >= thresholdPct) sec += s.durationSec;
+    } else {
+      const lo = Math.min(a, b);
+      const hi = Math.max(a, b);
+      if (hi >= thresholdPct)
+        sec += (s.durationSec * (hi - Math.max(lo, thresholdPct))) / (hi - lo);
+    }
+  }
+  return Math.round(sec / 60);
+}
+
+/** Tags a user can set on a workout (the `mine` tag is added automatically elsewhere). */
+export const EDITOR_TAGS = [
+  'hiit',
+  'test',
+  'music',
+  'climb',
+  'sprint',
+  'cadence',
+  'endurance',
+  'tempo',
+  'sweetspot',
+  'threshold',
+  'vo2',
+  'recovery',
+] as const;
+
+/** Why the workout cannot be saved, or undefined when it can. */
+export function saveIssue(w: Workout): { empty: true } | { issue: string } | undefined {
+  if (w.blocks.length === 0) return { empty: true };
+  const r = workoutSchema.safeParse(w);
+  if (r.success) return undefined;
+  const first = r.error.issues[0];
+  return { issue: first ? `${first.path.join('.')} ${first.message}`.trim() : 'invalid' };
 }

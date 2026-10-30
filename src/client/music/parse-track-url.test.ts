@@ -16,7 +16,6 @@ describe('parseTrackUrl', () => {
     ],
     ['spotify:track:4uLU6hMCjMI75M1A2tKUQC', 'spotify', '4uLU6hMCjMI75M1A2tKUQC'],
     ['https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'youtube', 'dQw4w9WgXcQ'],
-    ['https://youtube.com/watch?feature=share&v=dQw4w9WgXcQ&t=30', 'youtube', 'dQw4w9WgXcQ'],
     ['https://youtu.be/dQw4w9WgXcQ?si=x', 'youtube', 'dQw4w9WgXcQ'],
     ['https://www.youtube.com/shorts/dQw4w9WgXcQ', 'youtube', 'dQw4w9WgXcQ'],
     ['  https://music.youtube.com/watch?v=dQw4w9WgXcQ  ', 'youtube', 'dQw4w9WgXcQ'],
@@ -34,6 +33,23 @@ describe('parseTrackUrl', () => {
     'spotify:track:',
   ])('rejects %j', (url) => {
     expect(parseTrackUrl(url)).toBeUndefined();
+  });
+});
+
+describe('youtube start offsets', () => {
+  it.each([
+    ['https://youtube.com/watch?feature=share&v=dQw4w9WgXcQ&t=30', 30],
+    ['https://youtu.be/dQw4w9WgXcQ?t=1m30s', 90],
+    ['https://youtu.be/dQw4w9WgXcQ?t=45s', 45],
+    ['https://youtu.be/dQw4w9WgXcQ?t=1h2m3s', 3723],
+  ])('%s starts at %i s', (url, sec) => {
+    expect(parseTrackUrl(url)).toEqual({ provider: 'youtube', id: 'dQw4w9WgXcQ', startAtSec: sec });
+  });
+  it('ignores a malformed t', () => {
+    expect(parseTrackUrl('https://youtu.be/dQw4w9WgXcQ?t=abc')).toEqual({
+      provider: 'youtube',
+      id: 'dQw4w9WgXcQ',
+    });
   });
 });
 

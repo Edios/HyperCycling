@@ -58,7 +58,7 @@ test('editor: dragging the right edge changes the duration in 15 s steps', async
   const blocks = page.getByTestId('editor-block');
   await blocks.nth(1).click();
   await expect(blocks.nth(1)).toHaveAttribute('data-duration', '600');
-  const handle = page.getByRole('slider', { name: 'Change duration' });
+  const handle = page.locator('[data-handle="duration"]');
   const box = await handle.boundingBox();
   if (!box) throw new Error('handle not visible');
   const lane = await page.getByTestId('editor-timeline').boundingBox();
@@ -73,6 +73,32 @@ test('editor: dragging the right edge changes the duration in 15 s steps', async
   const after = Number(await blocks.nth(1).getAttribute('data-duration'));
   expect(after).toBeGreaterThan(600);
   expect(after % 15).toBe(0);
+});
+
+test('editor: Escape cancels a duration drag', async ({ page }) => {
+  await page.goto('./#/editor/new');
+  const blocks = page.getByTestId('editor-block');
+  await blocks.nth(1).click();
+  const box = await page.locator('[data-handle="duration"]').boundingBox();
+  if (!box) throw new Error('handle not visible');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 200, box.y + box.height / 2, { steps: 5 });
+  await page.keyboard.press('Escape');
+  await page.mouse.up();
+  await expect(blocks.nth(1)).toHaveAttribute('data-duration', '600');
+});
+
+test('editor: Alt+arrow reorders and Ctrl+S saves while typing', async ({ page }) => {
+  await page.goto('./#/editor/new');
+  const blocks = page.getByTestId('editor-block');
+  await blocks.nth(1).click();
+  const id = await blocks.nth(1).getAttribute('data-block-id');
+  await page.keyboard.press('Alt+ArrowRight');
+  await expect(blocks.nth(2)).toHaveAttribute('data-block-id', id ?? '');
+  await page.getByLabel('Workout name').fill(`E2E CtrlS ${Date.now()}`);
+  await page.keyboard.press('Control+s');
+  await expect(page).toHaveURL(/#\/editor\/(?!new)/);
 });
 
 test('editor: leaving with unsaved changes asks first', async ({ page }) => {

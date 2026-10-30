@@ -47,7 +47,7 @@ export function MusicLane({ workout, selectedId, table, readOnly, onPick }: Musi
         blockId: cue.blockId,
         left: (start / total) * 100,
         width: ((end - start) / total) * 100,
-        label: `♫ ${cue.track.title} · ${provider} · ${t('editor.pillFrom', { time: formatClock(cue.track.startAtSec) })}`,
+        label: `♫ ${cue.track.title ? `${cue.track.title} · ` : ''}${provider} · ${t('editor.pillFrom', { time: formatClock(cue.track.startAtSec) })}`,
         pinned: true,
       };
     });
