@@ -94,99 +94,181 @@
       "position": "seated"
     },
     {
-      "kind": "repeat",
-      "id": "prx-p",
-      "times": 2,
-      "blocks": [
-        {
-          "kind": "steady",
-          "id": "prx-i4",
-          "durationSec": 240,
-          "intensity": {
-            "ftpPct": 100
-          },
-          "rpm": 92,
-          "position": "seated",
-          "label": "@interval"
-        },
-        {
-          "kind": "steady",
-          "id": "prx-r4",
-          "durationSec": 120,
-          "intensity": {
-            "effort": 2
-          },
-          "rpm": 85,
-          "position": "seated",
-          "label": "@recovery"
-        },
-        {
-          "kind": "steady",
-          "id": "prx-i3",
-          "durationSec": 180,
-          "intensity": {
-            "ftpPct": 104
-          },
-          "rpm": 95,
-          "position": "seated",
-          "label": "@interval"
-        },
-        {
-          "kind": "steady",
-          "id": "prx-r3",
-          "durationSec": 120,
-          "intensity": {
-            "effort": 2
-          },
-          "rpm": 85,
-          "position": "seated",
-          "label": "@recovery"
-        },
-        {
-          "kind": "steady",
-          "id": "prx-i2",
-          "durationSec": 120,
-          "intensity": {
-            "ftpPct": 108
-          },
-          "rpm": 98,
-          "position": "seated",
-          "label": "@interval"
-        },
-        {
-          "kind": "steady",
-          "id": "prx-r2",
-          "durationSec": 90,
-          "intensity": {
-            "effort": 2
-          },
-          "rpm": 85,
-          "position": "seated",
-          "label": "@recovery"
-        },
-        {
-          "kind": "steady",
-          "id": "prx-i1",
-          "durationSec": 60,
-          "intensity": {
-            "ftpPct": 114
-          },
-          "rpm": 100,
-          "position": "seated",
-          "label": "@interval"
-        },
-        {
-          "kind": "steady",
-          "id": "prx-r1",
-          "durationSec": 240,
-          "intensity": {
-            "effort": 2
-          },
-          "rpm": 85,
-          "position": "seated",
-          "label": "@recovery"
-        }
-      ]
+      "kind": "steady",
+      "id": "prx-a4",
+      "durationSec": 240,
+      "intensity": {
+        "ftpPct": 100
+      },
+      "rpm": 92,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-ar4",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-a3",
+      "durationSec": 180,
+      "intensity": {
+        "ftpPct": 104
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-ar3",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-a2",
+      "durationSec": 120,
+      "intensity": {
+        "ftpPct": 108
+      },
+      "rpm": 98,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-ar2",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-a1",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 114
+      },
+      "rpm": 100,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-mid",
+      "durationSec": 240,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-b4",
+      "durationSec": 240,
+      "intensity": {
+        "ftpPct": 100
+      },
+      "rpm": 92,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-br4",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-b3",
+      "durationSec": 180,
+      "intensity": {
+        "ftpPct": 104
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-br3",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-b2",
+      "durationSec": 120,
+      "intensity": {
+        "ftpPct": 108
+      },
+      "rpm": 98,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-br2",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-b1",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 114
+      },
+      "rpm": 100,
+      "position": "seated",
+      "label": "@interval",
+      "cue": "@lastOne"
+    },
+    {
+      "kind": "steady",
+      "id": "prx-end",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
     },
     {
       "kind": "ramp",
@@ -207,10 +289,7 @@
   "fallbackPlaylist": [],
   "scaling": {
     "warmupBlockId": "prx-wu",
-    "cooldownBlockId": "prx-cd",
-    "flexRepeatId": "prx-p",
-    "minTimes": 2,
-    "maxTimes": 3
+    "cooldownBlockId": "prx-cd"
   },
   "schemaVersion": 1,
   "updatedAt": "2026-10-30T00:00:00.000Z"

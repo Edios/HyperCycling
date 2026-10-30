@@ -27,71 +27,11 @@
         "ftpPct": 40
       },
       "to": {
-        "ftpPct": 75
+        "ftpPct": 55
       },
-      "rpm": 90,
+      "rpm": 85,
       "position": "seated",
       "label": "@warmup"
-    },
-    {
-      "kind": "steady",
-      "id": "rsfx-wu1",
-      "durationSec": 30,
-      "intensity": {
-        "ftpPct": 95
-      },
-      "rpm": 95,
-      "position": "seated"
-    },
-    {
-      "kind": "steady",
-      "id": "rsfx-wu2",
-      "durationSec": 30,
-      "intensity": {
-        "effort": 2
-      },
-      "rpm": 85,
-      "position": "seated"
-    },
-    {
-      "kind": "steady",
-      "id": "rsfx-wu3",
-      "durationSec": 30,
-      "intensity": {
-        "ftpPct": 105
-      },
-      "rpm": 105,
-      "position": "seated"
-    },
-    {
-      "kind": "steady",
-      "id": "rsfx-wu4",
-      "durationSec": 30,
-      "intensity": {
-        "effort": 2
-      },
-      "rpm": 85,
-      "position": "seated"
-    },
-    {
-      "kind": "steady",
-      "id": "rsfx-wu5",
-      "durationSec": 30,
-      "intensity": {
-        "ftpPct": 115
-      },
-      "rpm": 110,
-      "position": "seated"
-    },
-    {
-      "kind": "steady",
-      "id": "rsfx-wu6",
-      "durationSec": 90,
-      "intensity": {
-        "effort": 2
-      },
-      "rpm": 85,
-      "position": "seated"
     },
     {
       "kind": "repeat",
@@ -127,7 +67,7 @@
       "id": "rsfx-cd",
       "durationSec": 240,
       "from": {
-        "ftpPct": 70
+        "ftpPct": 55
       },
       "to": {
         "ftpPct": 45

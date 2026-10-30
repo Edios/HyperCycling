@@ -511,6 +511,23 @@ describe('built-in workouts', () => {
     expect(sc?.maxTimes).toBe(8);
   });
 
+  it('recovery workouts never exceed 60 % FTP, long zone 2 rides never exceed 85 %', () => {
+    const maxPct = (w: Workout): number =>
+      Math.max(...flattenWorkout(w).map((x) => Math.max(x.ftpPctStart, x.ftpPctEnd)));
+    for (const w of builtinWorkouts.filter((x) => x.tags.includes('recovery'))) {
+      expect(maxPct(w), w.id).toBeLessThanOrEqual(60);
+    }
+    for (const id of ['zone2-60', 'zone2-cadence-60', 'zone2-75']) {
+      expect(maxPct(get(id)), id).toBeLessThanOrEqual(85);
+    }
+  });
+
+  it('FTP tests start with a 10 minute warm-up ramp', () => {
+    for (const id of ['ftp-test-20', 'ftp-test-2x8']) {
+      expect(flattenWorkout(get(id))[0]?.durationSec, id).toBe(600);
+    }
+  });
+
   it('ramp test climbs 6 % per minute from 50 % for 25 steps', () => {
     const t = get('ramp-test');
     expect(t.tags).toContain('test');

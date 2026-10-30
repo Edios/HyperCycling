@@ -22,7 +22,7 @@
     {
       "kind": "ramp",
       "id": "ft2x-wu",
-      "durationSec": 300,
+      "durationSec": 600,
       "from": {
         "ftpPct": 40
       },

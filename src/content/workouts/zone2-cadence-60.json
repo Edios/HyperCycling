@@ -27,71 +27,11 @@
         "ftpPct": 40
       },
       "to": {
-        "ftpPct": 75
+        "ftpPct": 65
       },
-      "rpm": 90,
+      "rpm": 88,
       "position": "seated",
       "label": "@warmup"
-    },
-    {
-      "kind": "steady",
-      "id": "zc6x-wu1",
-      "durationSec": 30,
-      "intensity": {
-        "ftpPct": 95
-      },
-      "rpm": 95,
-      "position": "seated"
-    },
-    {
-      "kind": "steady",
-      "id": "zc6x-wu2",
-      "durationSec": 30,
-      "intensity": {
-        "effort": 2
-      },
-      "rpm": 85,
-      "position": "seated"
-    },
-    {
-      "kind": "steady",
-      "id": "zc6x-wu3",
-      "durationSec": 30,
-      "intensity": {
-        "ftpPct": 105
-      },
-      "rpm": 105,
-      "position": "seated"
-    },
-    {
-      "kind": "steady",
-      "id": "zc6x-wu4",
-      "durationSec": 30,
-      "intensity": {
-        "effort": 2
-      },
-      "rpm": 85,
-      "position": "seated"
-    },
-    {
-      "kind": "steady",
-      "id": "zc6x-wu5",
-      "durationSec": 30,
-      "intensity": {
-        "ftpPct": 115
-      },
-      "rpm": 110,
-      "position": "seated"
-    },
-    {
-      "kind": "steady",
-      "id": "zc6x-wu6",
-      "durationSec": 90,
-      "intensity": {
-        "effort": 2
-      },
-      "rpm": 85,
-      "position": "seated"
     },
     {
       "kind": "repeat",

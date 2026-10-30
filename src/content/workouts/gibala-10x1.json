@@ -103,7 +103,7 @@
           "id": "g1x-on",
           "durationSec": 60,
           "intensity": {
-            "ftpPct": 110
+            "ftpPct": 120
           },
           "rpm": 100,
           "position": "seated",
