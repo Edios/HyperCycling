@@ -1,5 +1,5 @@
 .clock {
-  display: inline-block;
+  transform-origin: center bottom;
 }
 
 .pulse .clock {

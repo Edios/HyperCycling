@@ -5,11 +5,11 @@ import type { CSSProperties } from 'react';
  * still fits its tile with padding to spare (Barlow Condensed ExtraBold, tabular digits).
  * The CSS takes min(size cap in vh, this), so short values stay at the cap and long ones shrink.
  */
-const FIT_CQW: Record<number, number> = { 1: 80, 2: 60, 3: 44, 4: 34, 5: 28, 6: 24, 7: 21 };
+const FIT_CQW: Record<number, number> = { 1: 80, 2: 60, 3: 52, 4: 50, 5: 40, 6: 34, 7: 30 };
 
 export function fitCqw(chars: number): number {
   if (chars <= 1) return FIT_CQW[1] ?? 80;
-  return FIT_CQW[chars] ?? Math.max(8, Math.floor(150 / chars));
+  return FIT_CQW[chars] ?? Math.max(8, Math.floor(210 / chars));
 }
 
 export type FitStyle = CSSProperties & Record<'--fit', string>;

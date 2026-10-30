@@ -98,17 +98,17 @@ describe('BlockTimer', () => {
 describe('fit-to-tile sizing', () => {
   const fit = (el: HTMLElement) => el.style.getPropertyValue('--fit');
   it.each([
-    [189, '34'],
-    [600, '28'],
-    [3599, '28'],
-    [3600, '21'],
+    [189, '50'],
+    [600, '40'],
+    [3599, '40'],
+    [3600, '30'],
   ])('block timer %i s uses fit %s cqw', (sec, expected) => {
     render(<BlockTimer remainingSec={sec} durationSec={3600} index={0} total={1} pulse={false} />);
     expect(fit(screen.getByTestId('block-timer-value'))).toBe(expected);
   });
   it('shrinks as the character count grows', () => {
     const sizes = [2, 4, 5, 7].map((n) => Number(fitCqw(n)));
-    expect(sizes).toEqual([60, 34, 28, 21]);
+    expect(sizes).toEqual([60, 50, 40, 30]);
   });
   it('rpm value is sized by its digits', () => {
     render(<RpmValue rpm={90} isTarget={false} />);
@@ -116,7 +116,7 @@ describe('fit-to-tile sizing', () => {
   });
   it('effort value leaves room for the /10 scale', () => {
     render(<EffortValue effort={10} ftpPct={100} labelKey="hard" variant="tile" />);
-    expect(fit(screen.getByTestId('effort-value-number'))).toBe('44');
+    expect(fit(screen.getByTestId('effort-value-number'))).toBe('52');
   });
 });
 

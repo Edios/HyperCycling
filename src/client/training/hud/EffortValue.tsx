@@ -36,6 +36,7 @@ export function EffortValue({
   const text = showFtp
     ? `${label} · ${t('training.ftpApprox', { pct: Math.round(ftpPct) })}`
     : label;
+  // Only the tile variant is fitted to its width; the players overlay is sized by the cap alone.
   const digits = String(Math.round(effort));
   // The tile adds a small "/10" after the digits, worth about one more character of width.
   const fit = variant === 'tile' ? fitStyle(digits.length + 1) : undefined;

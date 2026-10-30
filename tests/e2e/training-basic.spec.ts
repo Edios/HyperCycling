@@ -120,20 +120,45 @@ for (const size of [
         await row.getByRole('button', { name: button, exact: true }).click();
         await expect(page.getByTestId('training-screen')).toBeVisible();
 
-        const value = page.getByTestId('block-timer-value');
-        await expect(value).toHaveText(text);
-        const tile = (await page.getByTestId('block-timer').boundingBox())!;
-        // The text node box, not the (tile-wide) element box.
-        const text_ = await value.evaluate((el) => {
-          const r = document.createRange();
-          r.selectNodeContents(el);
-          const b = r.getBoundingClientRect();
-          return { x: b.x, y: b.y, width: b.width, height: b.height };
-        });
-        expect(inside(text_, tile)).toBe(true);
-        // Padding to spare: at least 3% of the tile width on each side.
-        expect(text_.x - tile.x).toBeGreaterThan(tile.width * 0.03);
-        expect(tile.x + tile.width - (text_.x + text_.width)).toBeGreaterThan(tile.width * 0.03);
+        await expect(page.getByTestId('block-timer-value')).toHaveText(text);
+        // Each big number (the text, not its tile-wide box) stays inside its tile with padding to spare.
+        for (const [valueId, tileId] of [
+          ['block-timer-value', 'block-timer'],
+          ['effort-value-number', 'effort-value'],
+          ['rpm-value-number', 'rpm-value'],
+        ] as const) {
+          const tile = (await page.getByTestId(tileId).boundingBox())!;
+          const box = await page.getByTestId(valueId).evaluate((el) => {
+            const r = document.createRange();
+            r.selectNodeContents(el);
+            const b = r.getBoundingClientRect();
+            return { x: b.x, y: b.y, width: b.width, height: b.height };
+          });
+          expect(inside(box, tile), valueId).toBe(true);
+          expect(box.x - tile.x, valueId).toBeGreaterThan(tile.width * 0.03);
+          expect(tile.x + tile.width - (box.x + box.width), valueId).toBeGreaterThan(
+            tile.width * 0.03,
+          );
+        }
+        await expect(page.getByTestId('effort-value-number')).toContainText('10');
+
+        // Shared baseline: the big numbers in the row end on the same bottom edge.
+        const bottoms = await Promise.all(
+          ['effort-value-number', 'rpm-value-number', 'block-timer-value'].map(async (id) => {
+            // Layout box (offsetParent chain), unaffected by the flip/pulse transforms.
+            return page.getByTestId(id).evaluate((el) => {
+              let y = 0;
+              for (
+                let n: HTMLElement | null = el as HTMLElement;
+                n;
+                n = n.offsetParent as HTMLElement | null
+              )
+                y += n.offsetTop;
+              return y + (el as HTMLElement).offsetHeight;
+            });
+          }),
+        );
+        expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThan(2);
 
         // Layout: NEXT card centred, controls bar right below it, also centred.
         const next = (await page.getByTestId('next-block').boundingBox())!;
