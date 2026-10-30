@@ -1,0 +1,34 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field label {
+  font-size: 0.9375rem;
+  color: var(--mut);
+}
+
+.field input {
+  height: 2.875rem;
+  border-radius: 0.625rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 0 0.875rem;
+  font: inherit;
+  font-size: 1.0625rem;
+  color: var(--fg);
+}
+
+.field input:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 1px;
+}
+
+.hint {
+  color: var(--mut);
+}
+
+.error {
+  color: var(--z9);
+}
