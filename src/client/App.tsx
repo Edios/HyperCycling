@@ -1,6 +1,7 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { DevHome } from './screens/DevHome';
 import { PlaceholderPage } from './screens/PlaceholderPage';
+import { PlayersScreen } from './players/PlayersScreen';
 import { SetupPlaceholder } from './screens/SetupPlaceholder';
 import { SummaryPlaceholder } from './screens/SummaryPlaceholder';
 import { FreestyleTab } from './select/FreestyleTab';
@@ -37,7 +38,7 @@ export function App() {
         <Route path="/train" element={<TrainingScreen />} />
         <Route path="/summary" element={<SummaryPlaceholder />} />
         <Route path="/plans" element={<PlaceholderPage titleKey="placeholder.plans" />} />
-        <Route path="/players" element={<PlaceholderPage titleKey="nav.players" />} />
+        <Route path="/players" element={<PlayersScreen />} />
         <Route path="/settings" element={<PlaceholderPage titleKey="nav.settings" />} />
         {/* Developer shortcut (see DEV_ROUTE): rides any built-in workout with demo players. */}
         {DEV_ROUTE && <Route path="/dev" element={<DevHome />} />}
