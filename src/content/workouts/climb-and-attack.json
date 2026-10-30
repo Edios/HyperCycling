@@ -1,0 +1,398 @@
+{
+  "id": "climb-and-attack",
+  "name": "Climb and Attack",
+  "description": "Five songs: three with a climb and a growing sprint, one with chorus surges and one with surprise sprints.",
+  "localized": {
+    "en": {
+      "name": "Climb and Attack",
+      "description": "Five songs: three with a climb and a growing sprint, one with chorus surges and one with surprise sprints."
+    },
+    "pl": {
+      "name": "Podjazd i atak",
+      "description": "Pięć piosenek: trzy z podjazdem i coraz dłuższym sprintem, jedna z atakami w refrenach i jedna z niespodziewanymi sprintami."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "climb", "sprint"],
+  "source": {
+    "kind": "builtin",
+    "file": "climb-and-attack.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "caa-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Warm-up"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-1",
+      "durationSec": 240,
+      "intensity": {
+        "ftpPct": 70
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Settle in"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-2",
+      "durationSec": 200,
+      "intensity": {
+        "ftpPct": 85
+      },
+      "rpm": 70,
+      "position": "seated",
+      "label": "Climb 1"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-3",
+      "durationSec": 15,
+      "intensity": {
+        "ftpPct": 150
+      },
+      "rpm": 108,
+      "position": "seated",
+      "label": "Sprint 15 s",
+      "cue": "Sprint!"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-4",
+      "durationSec": 25,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 88,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-5",
+      "durationSec": 200,
+      "intensity": {
+        "ftpPct": 85
+      },
+      "rpm": 70,
+      "position": "seated",
+      "label": "Climb 2"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-6",
+      "durationSec": 20,
+      "intensity": {
+        "ftpPct": 150
+      },
+      "rpm": 108,
+      "position": "seated",
+      "label": "Sprint 20 s",
+      "cue": "Sprint!"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-7",
+      "durationSec": 20,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 88,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-8",
+      "durationSec": 200,
+      "intensity": {
+        "ftpPct": 85
+      },
+      "rpm": 70,
+      "position": "seated",
+      "label": "Climb 3"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-9",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 150
+      },
+      "rpm": 108,
+      "position": "seated",
+      "label": "Sprint 30 s",
+      "cue": "Sprint!"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-10",
+      "durationSec": 15,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 88,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-11",
+      "durationSec": 180,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 88,
+      "position": "seated",
+      "label": "Breather"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-12",
+      "durationSec": 45,
+      "intensity": {
+        "ftpPct": 80
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Verse"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-13",
+      "durationSec": 25,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 100,
+      "position": "seated",
+      "label": "Chorus surge",
+      "cue": "Chorus!"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-14",
+      "durationSec": 45,
+      "intensity": {
+        "ftpPct": 80
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-15",
+      "durationSec": 25,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 100,
+      "position": "seated",
+      "label": "Chorus surge"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-16",
+      "durationSec": 45,
+      "intensity": {
+        "ftpPct": 80
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-17",
+      "durationSec": 25,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 100,
+      "position": "seated",
+      "label": "Chorus surge"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-18",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 80
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-19",
+      "durationSec": 40,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Surprise song"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-20",
+      "durationSec": 10,
+      "intensity": {
+        "ftpPct": 150
+      },
+      "rpm": 108,
+      "position": "seated",
+      "cue": "Sprint!"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-21",
+      "durationSec": 50,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-22",
+      "durationSec": 15,
+      "intensity": {
+        "ftpPct": 150
+      },
+      "rpm": 108,
+      "position": "seated",
+      "cue": "Sprint!"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-23",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-24",
+      "durationSec": 20,
+      "intensity": {
+        "ftpPct": 150
+      },
+      "rpm": 108,
+      "position": "seated",
+      "cue": "Sprint!"
+    },
+    {
+      "kind": "steady",
+      "id": "caa-25",
+      "durationSec": 40,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "ramp",
+      "id": "caa-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "Cool-down"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "musicHints": {
+    "caa-1": "Easy mid-tempo song, 95-110 BPM, relaxed mood, about 4 min.",
+    "caa-2": "Steady climbing song, 85-100 BPM, about 3.5 min.",
+    "caa-5": "Song with a strong build, 90-105 BPM, about 3.5 min.",
+    "caa-8": "Epic, slow-burning song, 95-110 BPM, about 3.5 min.",
+    "caa-11": "Calm song, 70-90 BPM, about 3 min.",
+    "caa-12": "Pop or rock song with clear verses and loud choruses, 110-125 BPM, about 4 min.",
+    "caa-19": "Unpredictable song with sudden changes, 100-130 BPM, about 4 min. Sprint whenever it surprises you."
+  },
+  "scaling": {
+    "warmupBlockId": "caa-wu",
+    "cooldownBlockId": "caa-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

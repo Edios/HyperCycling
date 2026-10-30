@@ -1,0 +1,149 @@
+{
+  "id": "easy-ride-60",
+  "name": "Easy Zone 2 - 60",
+  "description": "An hour of calm Zone 2 riding to build your base.",
+  "localized": {
+    "en": {
+      "name": "Easy Zone 2 - 60",
+      "description": "An hour of calm Zone 2 riding to build your base."
+    },
+    "pl": {
+      "name": "Spokojna dwójka 60",
+      "description": "Godzina spokojnej jazdy w strefie 2 do budowania bazy."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["endurance"],
+  "source": {
+    "kind": "builtin",
+    "file": "easy-ride-60.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "er6-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Warm-up"
+    },
+    {
+      "kind": "steady",
+      "id": "er6-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er6-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er6-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er6-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er6-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "er6-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "er6-1",
+      "times": 6,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "er6-2",
+          "durationSec": 420,
+          "intensity": {
+            "ftpPct": 70
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "er6-3",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 72
+          },
+          "rpm": 95,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "er6-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "Cool-down"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "er6-wu",
+    "cooldownBlockId": "er6-cd",
+    "flexRepeatId": "er6-1",
+    "minTimes": 2,
+    "maxTimes": 8
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

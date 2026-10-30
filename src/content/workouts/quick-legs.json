@@ -1,0 +1,254 @@
+{
+  "id": "quick-legs",
+  "name": "Quick Legs",
+  "description": "Two series of three songs, each with a tempo climb and a sprint mid-song, ending with a recovery song.",
+  "localized": {
+    "en": {
+      "name": "Quick Legs",
+      "description": "Two series of three songs, each with a tempo climb and a sprint mid-song, ending with a recovery song."
+    },
+    "pl": {
+      "name": "Szybkie nogi",
+      "description": "Dwie serie trzech piosenek z podjazdem tempa i sprintem pośrodku, na koniec piosenka na uspokojenie."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "sprint", "tempo"],
+  "source": {
+    "kind": "builtin",
+    "file": "quick-legs.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "ql-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Warm-up"
+    },
+    {
+      "kind": "steady",
+      "id": "ql-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ql-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ql-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ql-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ql-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ql-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "ql-1",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "ramp",
+          "id": "ql-2",
+          "durationSec": 150,
+          "from": {
+            "ftpPct": 75
+          },
+          "to": {
+            "ftpPct": 92
+          },
+          "rpm": 95,
+          "position": "seated",
+          "label": "Song 1 climb"
+        },
+        {
+          "kind": "steady",
+          "id": "ql-3",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 135
+          },
+          "rpm": 106,
+          "position": "seated",
+          "label": "Sprint",
+          "cue": "Sprint!"
+        },
+        {
+          "kind": "steady",
+          "id": "ql-4",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 4
+          },
+          "rpm": 90,
+          "position": "seated"
+        },
+        {
+          "kind": "ramp",
+          "id": "ql-5",
+          "durationSec": 150,
+          "from": {
+            "ftpPct": 75
+          },
+          "to": {
+            "ftpPct": 92
+          },
+          "rpm": 95,
+          "position": "seated",
+          "label": "Song 2 climb"
+        },
+        {
+          "kind": "steady",
+          "id": "ql-6",
+          "durationSec": 25,
+          "intensity": {
+            "ftpPct": 140
+          },
+          "rpm": 106,
+          "position": "seated",
+          "label": "Sprint",
+          "cue": "Sprint!"
+        },
+        {
+          "kind": "steady",
+          "id": "ql-7",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 4
+          },
+          "rpm": 90,
+          "position": "seated"
+        },
+        {
+          "kind": "ramp",
+          "id": "ql-8",
+          "durationSec": 150,
+          "from": {
+            "ftpPct": 75
+          },
+          "to": {
+            "ftpPct": 92
+          },
+          "rpm": 95,
+          "position": "seated",
+          "label": "Song 3 climb"
+        },
+        {
+          "kind": "steady",
+          "id": "ql-9",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 145
+          },
+          "rpm": 108,
+          "position": "seated",
+          "label": "Sprint",
+          "cue": "Sprint!"
+        },
+        {
+          "kind": "steady",
+          "id": "ql-10",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 4
+          },
+          "rpm": 90,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ql-11",
+          "durationSec": 180,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated",
+          "label": "Recovery song"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "ql-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "Cool-down"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "musicHints": {
+    "ql-2": "Mid-tempo song, 100-115 BPM, steady building mood, about 3.5 min. Do the sprint at its biggest drop.",
+    "ql-5": "Driving song, 110-125 BPM, rising energy, about 3.5 min. Sprint at the middle of the track.",
+    "ql-8": "Anthem with a long build, 115-130 BPM, about 4 min. Longest sprint at the final chorus.",
+    "ql-11": "Chill song, 70-90 BPM, relaxed mood, about 3 min."
+  },
+  "scaling": {
+    "warmupBlockId": "ql-wu",
+    "cooldownBlockId": "ql-cd",
+    "flexRepeatId": "ql-1",
+    "minTimes": 2,
+    "maxTimes": 4
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

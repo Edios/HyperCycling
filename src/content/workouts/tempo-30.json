@@ -1,0 +1,149 @@
+{
+  "id": "tempo-30",
+  "name": "Tempo 30",
+  "description": "Two even tempo blocks for a short and solid session.",
+  "localized": {
+    "en": {
+      "name": "Tempo 30",
+      "description": "Two even tempo blocks for a short and solid session."
+    },
+    "pl": {
+      "name": "Tempo 30",
+      "description": "Dwa równe odcinki w tempie, krótka i mocna sesja."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["tempo"],
+  "source": {
+    "kind": "builtin",
+    "file": "tempo-30.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "t3-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Warm-up"
+    },
+    {
+      "kind": "steady",
+      "id": "t3-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t3-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t3-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t3-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t3-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t3-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "t3-1",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "t3-2",
+          "durationSec": 540,
+          "intensity": {
+            "ftpPct": 80
+          },
+          "rpm": 90,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t3-3",
+          "durationSec": 60,
+          "intensity": {
+            "effort": 3
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "t3-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "Cool-down"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "t3-wu",
+    "cooldownBlockId": "t3-cd",
+    "flexRepeatId": "t3-1",
+    "minTimes": 2,
+    "maxTimes": 4
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

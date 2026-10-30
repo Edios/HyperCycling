@@ -1,0 +1,150 @@
+{
+  "id": "hiit-15",
+  "name": "15 Minute HIIT",
+  "description": "A short session: four rounds of one minute hard and one minute easy.",
+  "localized": {
+    "en": {
+      "name": "15 Minute HIIT",
+      "description": "A short session: four rounds of one minute hard and one minute easy."
+    },
+    "pl": {
+      "name": "15 min HIIT",
+      "description": "Krótka sesja: cztery razy minuta mocno i minuta luzu."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["hiit"],
+  "source": {
+    "kind": "builtin",
+    "file": "hiit-15.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "h1-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Warm-up"
+    },
+    {
+      "kind": "steady",
+      "id": "h1-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "h1-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "h1-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "h1-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "h1-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "h1-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "h1-1",
+      "times": 4,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "h1-2",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "seated",
+          "cue": "Go hard!"
+        },
+        {
+          "kind": "steady",
+          "id": "h1-3",
+          "durationSec": 60,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "h1-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "Cool-down"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "h1-wu",
+    "cooldownBlockId": "h1-cd",
+    "flexRepeatId": "h1-1",
+    "minTimes": 2,
+    "maxTimes": 10
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

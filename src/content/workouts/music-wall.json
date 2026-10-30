@@ -1,0 +1,361 @@
+{
+  "id": "music-wall",
+  "name": "Wall of Music",
+  "description": "Four songs: a seated climb, a standing climb, a 20/20/20 song and a 30/30 song with more resistance.",
+  "localized": {
+    "en": {
+      "name": "Wall of Music",
+      "description": "Four songs: a seated climb, a standing climb, a 20/20/20 song and a 30/30 song with more resistance."
+    },
+    "pl": {
+      "name": "Ściana muzyczna",
+      "description": "Cztery piosenki: podjazd siedząc, podjazd stojąc, seria 20/20/20 i 30/30 z większym oporem."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "climb"],
+  "source": {
+    "kind": "builtin",
+    "file": "music-wall.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "mw-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Warm-up"
+    },
+    {
+      "kind": "steady",
+      "id": "mw-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mw-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mw-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mw-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mw-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mw-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "mw-1",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "mw-2",
+          "durationSec": 240,
+          "intensity": {
+            "ftpPct": 85
+          },
+          "rpm": 70,
+          "position": "seated",
+          "label": "Seated climb"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-3",
+          "durationSec": 240,
+          "intensity": {
+            "ftpPct": 90
+          },
+          "rpm": 65,
+          "position": "standing",
+          "label": "Standing climb",
+          "cue": "Stand up!"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-4",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 120
+          },
+          "rpm": 100,
+          "position": "seated",
+          "label": "20/20/20 hard"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-5",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 95
+          },
+          "rpm": 95,
+          "position": "seated",
+          "label": "20/20/20 medium"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-6",
+          "durationSec": 20,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-7",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 120
+          },
+          "rpm": 100,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-8",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 95
+          },
+          "rpm": 95,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-9",
+          "durationSec": 20,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-10",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 120
+          },
+          "rpm": 100,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-11",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 95
+          },
+          "rpm": 95,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-12",
+          "durationSec": 20,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-13",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 120
+          },
+          "rpm": 100,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-14",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 95
+          },
+          "rpm": 95,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-15",
+          "durationSec": 20,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-16",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 110
+          },
+          "rpm": 75,
+          "position": "seated",
+          "label": "30/30 hard"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-17",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-18",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 110
+          },
+          "rpm": 75,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-19",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-20",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 110
+          },
+          "rpm": 75,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-21",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-22",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 110
+          },
+          "rpm": 75,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "mw-23",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "mw-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "Cool-down"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "musicHints": {
+    "mw-2": "Slow, heavy groove, 70-85 BPM, about 4 min.",
+    "mw-3": "Big anthem with a long build, 80-100 BPM, about 4 min.",
+    "mw-4": "Punchy song, 120-130 BPM, about 4 min. Cycle hard, medium, easy every 20 seconds.",
+    "mw-16": "Driving rock or electronic song, 125-140 BPM, about 4 min. Add resistance on every hard 30 seconds."
+  },
+  "scaling": {
+    "warmupBlockId": "mw-wu",
+    "cooldownBlockId": "mw-cd",
+    "flexRepeatId": "mw-1",
+    "minTimes": 2,
+    "maxTimes": 3
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

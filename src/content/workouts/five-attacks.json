@@ -1,0 +1,164 @@
+{
+  "id": "five-attacks",
+  "name": "Five Attacks",
+  "description": "Five two-minute attacks with an equally long break.",
+  "localized": {
+    "en": {
+      "name": "Five Attacks",
+      "description": "Five two-minute attacks with an equally long break."
+    },
+    "pl": {
+      "name": "Pięć ataków",
+      "description": "Pięć dwuminutowych ataków z równie długą przerwą."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["vo2"],
+  "source": {
+    "kind": "builtin",
+    "file": "five-attacks.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "fa-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Warm-up"
+    },
+    {
+      "kind": "steady",
+      "id": "fa-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "fa-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "fa-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "fa-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "fa-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "fa-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "ramp",
+      "id": "fa-1",
+      "durationSec": 420,
+      "from": {
+        "ftpPct": 65
+      },
+      "to": {
+        "ftpPct": 80
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Build-up"
+    },
+    {
+      "kind": "repeat",
+      "id": "fa-2",
+      "times": 5,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "fa-3",
+          "durationSec": 120,
+          "intensity": {
+            "ftpPct": 110
+          },
+          "rpm": 100,
+          "position": "seated",
+          "cue": "Attack!"
+        },
+        {
+          "kind": "steady",
+          "id": "fa-4",
+          "durationSec": 120,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "fa-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "Cool-down"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "fa-wu",
+    "cooldownBlockId": "fa-cd",
+    "flexRepeatId": "fa-2",
+    "minTimes": 3,
+    "maxTimes": 8
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

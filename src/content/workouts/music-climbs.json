@@ -1,0 +1,166 @@
+{
+  "id": "music-climbs",
+  "name": "Climbs to Music",
+  "description": "Five three-minute climbs set to songs, each finishing standing up.",
+  "localized": {
+    "en": {
+      "name": "Climbs to Music",
+      "description": "Five three-minute climbs set to songs, each finishing standing up."
+    },
+    "pl": {
+      "name": "Podjazdy pod muzykę",
+      "description": "Pięć trzyminutowych podjazdów do piosenek, każdy kończy się na stojąco."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "climb"],
+  "source": {
+    "kind": "builtin",
+    "file": "music-climbs.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "mc-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Warm-up"
+    },
+    {
+      "kind": "steady",
+      "id": "mc-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mc-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mc-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mc-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mc-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "mc-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "mc-1",
+      "times": 5,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "mc-2",
+          "durationSec": 150,
+          "intensity": {
+            "ftpPct": 95
+          },
+          "rpm": 70,
+          "position": "seated",
+          "label": "Seated climb"
+        },
+        {
+          "kind": "steady",
+          "id": "mc-3",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 100
+          },
+          "rpm": 65,
+          "position": "standing",
+          "label": "Standing finish",
+          "cue": "Stand up!"
+        },
+        {
+          "kind": "steady",
+          "id": "mc-4",
+          "durationSec": 150,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 90,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "mc-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "Cool-down"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "musicHints": {
+    "mc-2": "Building song, 80-100 BPM, about 3 min. Ride the verse seated.",
+    "mc-3": "Stand for the final chorus."
+  },
+  "scaling": {
+    "warmupBlockId": "mc-wu",
+    "cooldownBlockId": "mc-cd",
+    "flexRepeatId": "mc-1",
+    "minTimes": 2,
+    "maxTimes": 6
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

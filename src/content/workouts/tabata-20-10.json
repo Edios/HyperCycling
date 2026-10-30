@@ -1,0 +1,299 @@
+{
+  "id": "tabata-20-10",
+  "name": "Tabata 20/10",
+  "description": "Two sets of eight rounds of 20 seconds hard and 10 seconds easy.",
+  "localized": {
+    "en": {
+      "name": "Tabata 20/10",
+      "description": "Two sets of eight rounds of 20 seconds hard and 10 seconds easy."
+    },
+    "pl": {
+      "name": "Tabata 20/10",
+      "description": "Dwie serie po osiem razy 20 sekund mocno i 10 sekund luzu."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["hiit"],
+  "source": {
+    "kind": "builtin",
+    "file": "tabata-20-10.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "t21-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Warm-up"
+    },
+    {
+      "kind": "steady",
+      "id": "t21-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t21-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t21-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t21-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t21-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t21-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "t21-1",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "t21-2",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 130
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-3",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-4",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 130
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-5",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-6",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 130
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-7",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-8",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 130
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-9",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-10",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 130
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-11",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-12",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 130
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-13",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-14",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 130
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-15",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-16",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 130
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-17",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t21-18",
+          "durationSec": 120,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "t21-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "Cool-down"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "t21-wu",
+    "cooldownBlockId": "t21-cd",
+    "flexRepeatId": "t21-1",
+    "minTimes": 2,
+    "maxTimes": 3
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}
