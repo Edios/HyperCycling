@@ -69,6 +69,10 @@ export const pl: Messages = {
     backgroundBasic: 'Basic',
     backgroundHyperride: 'Hyperride',
     backgroundYoutube: 'Film z YouTube',
+    youtubeUrl: 'Link do YouTube',
+    youtubeHint: 'Link watch, youtu.be, Shorts lub embed. Czas startu (t=1m30s) jest uwzględniany.',
+    youtubeInvalid: 'To nie wygląda na link do filmu z YouTube.',
+    youtubeRecent: 'Ostatnie linki',
     soon: 'wkrótce',
     layout: 'Układ ekranu',
     layoutSolo: 'Solo',
@@ -267,6 +271,13 @@ export const pl: Messages = {
     cancel: 'Anuluj',
   },
   placeholder: { body: 'Ten ekran pojawi się w kolejnej aktualizacji.', plans: 'Plany' },
+  youtube: {
+    embedBlocked: 'Tego filmu nie można osadzić. Używam tła Basic.',
+    unavailable: 'Nie można odtworzyć filmu. Używam tła Basic.',
+  },
+  hyperride: {
+    unavailable: 'Ten komputer nie obsługuje WebGL. Używam tła Basic.',
+  },
   dev: {
     title: 'Treningi',
     ride: 'Jedź',

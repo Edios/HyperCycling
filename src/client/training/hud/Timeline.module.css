@@ -3,6 +3,19 @@
   font-family: var(--font-body);
 }
 
+.compact {
+  padding: 0;
+}
+
+.compact .track {
+  height: 8vh;
+}
+
+.compact .meta {
+  font-size: 1.8vh;
+  opacity: 0.7;
+}
+
 .track {
   position: relative;
   height: 14vh;

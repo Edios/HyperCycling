@@ -1,0 +1,529 @@
+/*
+ * Hyperride overlay HUDs (approved prototype: hyperride-prototype.html, HUD A-D).
+ * Immersive = D, Column = A, Cockpit = B, Tunnel time = C. --zone comes from the training root,
+ * --sx / --sy are the inertia offsets set per frame (0 when motion is reduced).
+ */
+.root {
+  position: absolute;
+  inset: 0;
+  font-family: var(--font-display);
+  color: #fff;
+}
+
+/* Edge light from the zone color plus a vignette (not on Column). */
+.edge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--zone) 22%, transparent) 0%,
+      transparent 22%,
+      transparent 78%,
+      color-mix(in srgb, var(--zone) 22%, transparent) 100%
+    ),
+    radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+.root[data-layout='column'] .edge {
+  display: none;
+}
+
+.panel {
+  display: contents;
+}
+
+.m,
+.next {
+  position: fixed;
+  text-shadow: 0 0 2vh rgba(0, 0, 0, 0.9);
+}
+
+.l {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 2.4vh;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--zone) 55%, #fff);
+  border-bottom: 2px solid var(--zone);
+  padding-bottom: 0.4vh;
+  margin-bottom: 0.8vh;
+}
+
+.v {
+  font-weight: 800;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  text-shadow:
+    0 0 1px rgba(0, 0, 0, 0.6),
+    0 0 3.5vh var(--zone),
+    0 0 9vh color-mix(in srgb, var(--zone) 45%, transparent);
+}
+
+.eff .v {
+  color: var(--zone);
+  text-shadow: 0 0 4vh var(--zone);
+  font-size: 24vh;
+}
+
+.rpm .v {
+  font-size: 16vh;
+}
+
+.time .v {
+  font-size: 20vh;
+}
+
+.s {
+  font-size: 2.2vh;
+  font-weight: 600;
+  color: #c7ccd6;
+}
+
+.next {
+  font-weight: 600;
+  font-size: 2.4vh;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--zone) 55%, #fff);
+}
+
+.next b {
+  display: block;
+  font-size: 6vh;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: #fff;
+  text-shadow: 0 0 3vh var(--nextzone, #fff);
+}
+
+.next em {
+  display: block;
+  font-style: normal;
+  font-size: 2.4vh;
+  font-weight: 600;
+  color: #c7ccd6;
+  text-shadow: none;
+}
+
+.tbar {
+  height: 0.9vh;
+  width: 28vw;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 1vh;
+  margin-top: 1.2vh;
+  overflow: hidden;
+}
+
+.tbar i {
+  display: block;
+  height: 100%;
+  background: var(--zone);
+  box-shadow: 0 0 2vh var(--zone);
+  border-radius: 1vh;
+}
+
+.pulse .v {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 3vh 4vw 1.5vh;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+}
+
+.controls {
+  position: fixed;
+  left: 4vw;
+  bottom: 20vh;
+  z-index: 2;
+}
+
+/* Coach cues live in the free centre; each layout says where that is. */
+.free {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  left: 30vw;
+  right: 30vw;
+  top: 34vh;
+  bottom: 28vh;
+}
+
+/* ---- players ---- */
+.players {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6vh;
+  text-shadow: 0 0 2vh rgba(0, 0, 0, 0.9);
+}
+
+.pHead {
+  align-self: flex-start;
+  font-size: 2.2vh;
+  letter-spacing: 0.3em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--zone) 55%, #fff);
+  border-bottom: 2px solid var(--zone);
+  padding-bottom: 0.4vh;
+}
+
+.pRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2vw;
+}
+
+.pName {
+  font-size: 3.4vh;
+  font-weight: 600;
+  color: #e8ebf1;
+}
+
+.pWatts {
+  font-size: 7.5vh;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 3vh var(--zone);
+}
+
+.pWatts small {
+  font-size: 2.4vh;
+  color: #c7ccd6;
+  margin-left: 0.4vw;
+  text-shadow: none;
+}
+
+/* ================= Immersive (D) ================= */
+.root[data-layout='immersive'] .time,
+.root[data-layout='immersive'] .next {
+  transform: perspective(900px) translate(var(--sx, 0px), var(--sy, 0px)) rotateY(16deg);
+  transform-origin: left center;
+  left: 4vw;
+}
+
+.root[data-layout='immersive'] .eff,
+.root[data-layout='immersive'] .rpm {
+  transform: perspective(900px) translate(var(--sx, 0px), var(--sy, 0px)) rotateY(-16deg);
+  transform-origin: right center;
+  right: 4vw;
+  text-align: right;
+}
+
+.root[data-layout='immersive'] .time {
+  top: 6vh;
+  text-align: left;
+}
+
+.root[data-layout='immersive'] .next {
+  top: 42vh;
+  text-align: left;
+}
+
+.root[data-layout='immersive'] .eff {
+  top: 6vh;
+}
+
+.root[data-layout='immersive'] .rpm {
+  top: 46vh;
+}
+
+/* Immersive with players: players left, all training info on the right. */
+.root[data-layout='immersive'][data-players='true'] .players {
+  left: 4vw;
+  top: 5vh;
+  width: 24vw;
+  transform: perspective(900px) translate(var(--sx, 0px), var(--sy, 0px)) rotateY(16deg);
+  transform-origin: left center;
+}
+
+.root[data-layout='immersive'][data-players='true'] .time {
+  left: auto;
+  right: 4vw;
+  top: 4vh;
+  text-align: right;
+  transform: perspective(900px) translate(var(--sx, 0px), var(--sy, 0px)) rotateY(-16deg);
+  transform-origin: right center;
+}
+
+.root[data-layout='immersive'][data-players='true'] .time .v {
+  font-size: 14vh;
+}
+
+.root[data-layout='immersive'][data-players='true'] .tbar {
+  width: 22vw;
+  margin-left: auto;
+}
+
+.root[data-layout='immersive'][data-players='true'] .eff {
+  right: calc(4vw + 30vh);
+  top: 34vh;
+}
+
+.root[data-layout='immersive'][data-players='true'] .rpm {
+  right: 4vw;
+  top: 34vh;
+}
+
+.root[data-layout='immersive'][data-players='true'] .eff .v,
+.root[data-layout='immersive'][data-players='true'] .rpm .v {
+  font-size: 16vh;
+}
+
+.root[data-layout='immersive'][data-players='true'] .next {
+  left: auto;
+  right: 4vw;
+  top: 65vh;
+  text-align: right;
+  transform: perspective(900px) translate(var(--sx, 0px), var(--sy, 0px)) rotateY(-16deg);
+  transform-origin: right center;
+}
+
+.root[data-layout='immersive'][data-players='true'] .next b {
+  font-size: 4.6vh;
+}
+
+.root[data-layout='immersive'][data-players='true'] .controls {
+  bottom: 20vh;
+}
+
+.root[data-layout='immersive'][data-players='true'] .free {
+  left: 30vw;
+  right: 44vw;
+}
+
+/* ================= Column (A) ================= */
+.root[data-layout='column'] .panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 1vh;
+  position: fixed;
+  right: 2vh;
+  top: 2vh;
+  bottom: 15vh;
+  width: 22vw;
+  box-sizing: border-box;
+  padding: 2vh 1.5vw;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 10, 16, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  text-align: center;
+}
+
+.root[data-layout='column'] .m,
+.root[data-layout='column'] .next {
+  position: static;
+  min-width: 0;
+}
+
+.root[data-layout='column'] .l {
+  font-size: 2vh;
+}
+
+.root[data-layout='column'] .v {
+  font-size: 11vh;
+}
+
+.root[data-layout='column'] .eff .v {
+  font-size: 14vh;
+}
+
+.root[data-layout='column'] .s {
+  font-size: 1.9vh;
+}
+
+.root[data-layout='column'] .next {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 2vh;
+  font-size: 2vh;
+}
+
+.root[data-layout='column'] .next b {
+  font-size: 4.2vh;
+}
+
+.root[data-layout='column'] .next em {
+  font-size: 2vh;
+}
+
+.root[data-layout='column'] .tbar {
+  width: 100%;
+}
+
+.root[data-layout='column'] .free {
+  left: 4vw;
+  right: 26vw;
+}
+
+.root[data-layout='column'] .players {
+  left: 2vh;
+  top: 2vh;
+  bottom: 15vh;
+  width: 22vw;
+  box-sizing: border-box;
+  padding: 2.5vh 1.5vw;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 10, 16, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.root[data-layout='column'] .pWatts {
+  font-size: 6.5vh;
+}
+
+.root[data-layout='column'] .controls {
+  left: 26vw;
+}
+
+.root[data-layout='column'][data-players='false'] .controls {
+  left: 4vw;
+}
+
+.root[data-layout='column'][data-players='true'] .free {
+  left: 28vw;
+}
+
+/* ================= Cockpit (B) ================= */
+.root[data-layout='cockpit'] .eff {
+  left: 4vw;
+  top: 50%;
+  transform: perspective(900px) translate(var(--sx, 0px), calc(-60% + var(--sy, 0px)))
+    rotateY(16deg);
+  transform-origin: left center;
+}
+
+.root[data-layout='cockpit'] .rpm {
+  right: 4vw;
+  top: 50%;
+  text-align: right;
+  transform: perspective(900px) translate(var(--sx, 0px), calc(-60% + var(--sy, 0px)))
+    rotateY(-16deg);
+  transform-origin: right center;
+}
+
+.root[data-layout='cockpit'] .rpm .v {
+  font-size: 24vh;
+}
+
+.root[data-layout='cockpit'] .time,
+.root[data-layout='cockpit'] .next {
+  left: 50%;
+  text-align: center;
+  transform: translate(calc(-50% + var(--sx, 0px)), var(--sy, 0px));
+}
+
+.root[data-layout='cockpit'] .time {
+  top: 2vh;
+}
+
+.root[data-layout='cockpit'] .time .v {
+  font-size: 15vh;
+}
+
+.root[data-layout='cockpit'] .tbar {
+  width: 22vw;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.root[data-layout='cockpit'] .next {
+  top: 27vh;
+  font-size: 2.2vh;
+}
+
+.root[data-layout='cockpit'] .next b {
+  font-size: 4.4vh;
+}
+
+.root[data-layout='cockpit'] .free {
+  left: 32vw;
+  right: 32vw;
+  top: 42vh;
+  bottom: 30vh;
+}
+
+/* ================= Tunnel time (C) ================= */
+.root[data-layout='tunnel'] .time {
+  left: 50%;
+  top: 50%;
+  text-align: center;
+  transform: translate(calc(-50% + var(--sx, 0px)), calc(-55% + var(--sy, 0px)));
+}
+
+.root[data-layout='tunnel'] .time .v {
+  font-size: 24vh;
+  opacity: 0.88;
+}
+
+.root[data-layout='tunnel'] .time .l {
+  display: none;
+}
+
+.root[data-layout='tunnel'] .tbar {
+  width: 16vw;
+  margin: 0 auto;
+}
+
+.root[data-layout='tunnel'] .eff {
+  left: 5vw;
+  top: 4vh;
+  transform: perspective(900px) translate(var(--sx, 0px), var(--sy, 0px)) rotateY(16deg);
+  transform-origin: left center;
+}
+
+.root[data-layout='tunnel'] .rpm {
+  right: 5vw;
+  top: 4vh;
+  text-align: right;
+  transform: perspective(900px) translate(var(--sx, 0px), var(--sy, 0px)) rotateY(-16deg);
+  transform-origin: right center;
+}
+
+.root[data-layout='tunnel'] .rpm .v {
+  font-size: 18vh;
+}
+
+.root[data-layout='tunnel'] .next {
+  left: 50%;
+  top: 3vh;
+  text-align: center;
+  font-size: 2.2vh;
+  transform: translate(calc(-50% + var(--sx, 0px)), var(--sy, 0px));
+}
+
+.root[data-layout='tunnel'] .next b {
+  font-size: 4.4vh;
+}
+
+.root[data-layout='tunnel'] .free {
+  left: 30vw;
+  right: 30vw;
+  top: 16vh;
+  bottom: auto;
+  height: 14vh;
+}
