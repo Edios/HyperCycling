@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
 import { AppBar } from '../ui/AppBar';
 import { DataSection } from './DataSection';
@@ -82,10 +83,10 @@ const SECTIONS: readonly {
 ];
 
 /** The section nearest the top of the viewport, for the nav highlight. */
-function useActiveSection(): [string, (id: string) => void] {
+function useActiveSection(ready: boolean): [string, (id: string) => void] {
   const [active, setActive] = useState(SECTIONS[0]?.id ?? 'general');
   useEffect(() => {
-    if (typeof IntersectionObserver === 'undefined') return undefined;
+    if (!ready || typeof IntersectionObserver === 'undefined') return undefined;
     const visible = new Set<string>();
     const observer = new IntersectionObserver(
       (entries) => {
@@ -104,14 +105,15 @@ function useActiveSection(): [string, (id: string) => void] {
       if (el) observer.observe(el);
     }
     return () => observer.disconnect();
-  }, []);
+  }, [ready]);
   return [active, setActive];
 }
 
 /** Route /settings: a section list beside (or above) the sections; every control saves at once. */
 export function SettingsScreen() {
   const t = useT();
-  const [active, setActive] = useActiveSection();
+  const { loaded } = useSettings();
+  const [active, setActive] = useActiveSection(loaded);
   const goTo = (id: string): void => {
     setActive(id);
     document.getElementById(`settings-section-${id}`)?.scrollIntoView?.({ block: 'start' });
@@ -140,11 +142,17 @@ export function SettingsScreen() {
           </nav>
           <SaveProvider>
             <div className={styles.sections}>
-              {SECTIONS.map((s) => (
-                <SettingsSection key={s.id} id={s.id} titleKey={s.titleKey}>
-                  {s.body}
-                </SettingsSection>
-              ))}
+              {!loaded && (
+                <p role="status" className={styles.note}>
+                  {t('common.loading')}
+                </p>
+              )}
+              {loaded &&
+                SECTIONS.map((s) => (
+                  <SettingsSection key={s.id} id={s.id} titleKey={s.titleKey}>
+                    {s.body}
+                  </SettingsSection>
+                ))}
             </div>
           </SaveProvider>
         </div>

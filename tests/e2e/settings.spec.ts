@@ -69,19 +69,19 @@ test('settings: zones reject a non-increasing table and keep valid edits after a
   page,
 }) => {
   await page.goto('./#/settings');
-  const level5 = page.getByLabel('% FTP for level 5');
+  const level5 = page.getByLabel('% FTP for level 5', { exact: true });
   await level5.fill('60');
   await expect(page.getByText('Must be higher than the level below.')).toBeVisible();
 
-  await page.getByLabel('% FTP for level 1').fill('40');
+  await page.getByLabel('% FTP for level 1', { exact: true }).fill('40');
   await level5.fill('78');
   await expect(page.getByText('Must be higher than the level below.')).toHaveCount(0);
   await page.reload();
-  await expect(page.getByLabel('% FTP for level 1')).toHaveValue('40');
+  await expect(page.getByLabel('% FTP for level 1', { exact: true })).toHaveValue('40');
 
   await page.getByRole('button', { name: 'Restore defaults' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Restore', exact: true }).click();
-  await expect(page.getByLabel('% FTP for level 1')).toHaveValue('45');
+  await expect(page.getByLabel('% FTP for level 1', { exact: true })).toHaveValue('45');
 });
 
 test('settings: the default background is preselected on the setup screen', async ({ page }) => {
@@ -94,7 +94,8 @@ test('settings: the default background is preselected on the setup screen', asyn
   ).toBeChecked();
   await page.reload();
   await page.goto('./#/setup/ramp-test');
-  await expect(page.getByRole('radio', { name: 'Hyperride', checked: true })).toBeVisible();
+  // Hyperride offers the overlay layouts, Basic would show Solo / With players.
+  await expect(page.getByRole('radio', { name: 'Immersive', checked: true })).toBeVisible();
 
   // Put Basic back for the other tests.
   await page.goto('./#/settings');
