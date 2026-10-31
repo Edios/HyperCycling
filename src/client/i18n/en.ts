@@ -333,6 +333,7 @@ export const en = {
       themeHint: 'Colours of the Basic background during a workout.',
       dark: 'Dark',
       light: 'Light',
+      help: 'Help and guides',
     },
     equipment: {
       title: 'Equipment & FTP',

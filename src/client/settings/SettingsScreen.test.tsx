@@ -111,6 +111,13 @@ describe('Settings screen structure', () => {
 });
 
 describe('General', () => {
+  it('links to the help pages next to the app', async () => {
+    renderScreen();
+    const general = await section('general');
+    const link = within(general).getByRole('link', { name: 'Help and guides' });
+    expect(link).toHaveAttribute('href', `${import.meta.env.BASE_URL}docs/`);
+  });
+
   it('switches the language at once, saves it and sets <html lang>', async () => {
     renderScreen();
     const general = await section('general');
