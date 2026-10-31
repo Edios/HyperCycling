@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { TrackRef } from '../../../domain/workout';
-import type { MusicProvider } from '../types';
+import type { MusicProvider, TrackInfo } from '../types';
 import { createSpotifyClient, type SpotifyClient, type SpotifyStore } from './client';
 import { SpotifyError } from './errors';
 
@@ -19,6 +19,8 @@ export interface SpotifyProvider extends MusicProvider {
   listDevices(): Promise<SpotifyDevice[]>;
   /** Track search for the editor; results are ready-to-use track references. */
   search(query: string): Promise<TrackRef[]>;
+  /** Name and artists of a track (GET /v1/tracks/{id}). */
+  describeTrack(track: TrackRef): Promise<TrackInfo>;
   /** Drops the stored tokens (client id and device choice stay). */
   disconnect(): Promise<void>;
 }
@@ -53,6 +55,11 @@ const searchSchema = z.object({
       }),
     ),
   }),
+});
+
+const trackSchema = z.object({
+  name: z.string(),
+  artists: z.array(z.object({ name: z.string() })),
 });
 
 const playerSchema = z.object({
@@ -225,6 +232,14 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
         durationSec: Math.round(t.duration_ms / 1000),
         startAtSec: 0,
       }));
+    },
+
+    async describeTrack(track) {
+      const body = await client.request('GET', `/v1/tracks/${encodeURIComponent(track.id)}`);
+      const parsed = trackSchema.safeParse(body);
+      if (!parsed.success) throw new SpotifyError('http');
+      const artist = parsed.data.artists.map((a) => a.name).join(', ');
+      return { title: parsed.data.name, ...(artist ? { artist } : {}) };
     },
 
     async disconnect() {

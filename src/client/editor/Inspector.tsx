@@ -3,6 +3,7 @@ import { effortRow, effortToFtpPct, type EffortLevel, type EffortTable } from '.
 import type { Block, Intensity, Position, TrackRef, Workout } from '../../domain/workout';
 import { parseClock, parseTrackUrl } from '../music/parse-track-url';
 import { useT } from '../i18n';
+import { lookupSpotifyTrack } from '../music/spotify/track-info';
 import { applyYoutubeCheck, checkYoutubeEmbeddable } from '../music/youtube-check';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Segmented';
@@ -496,6 +497,23 @@ function TrackField({
   const place = (track: TrackRef): void => {
     dispatch({ type: 'setCue', blockId, rep: 1, track });
     onDraft(undefined);
+    if (track.provider === 'spotify') {
+      // A pasted link carries no name: look it up, and fill it in only while the cue is still
+      // this track and still untitled (the user may have changed it meanwhile).
+      if (track.title) return;
+      void lookupSpotifyTrack(track.id).then((info) => {
+        if (!info) return;
+        const now = getCue();
+        if (!now || now.provider !== 'spotify' || now.id !== track.id || now.title) return;
+        dispatch({
+          type: 'setCue',
+          blockId,
+          rep: 1,
+          track: { ...now, title: info.title, ...(info.artist ? { artist: info.artist } : {}) },
+        });
+      });
+      return;
+    }
     if (track.provider !== 'youtube') return;
     // Ask YouTube whether the video can be embedded, and fill in its title. The pin stays either
     // way (the IFrame player reports the truth at playback); a blocked video only gets a mark.
@@ -634,6 +652,25 @@ function FallbackPlaylist({
     set([...list, added]);
     setUrl('');
     setTouched(false);
+    if (parsed.provider === 'spotify') {
+      void lookupSpotifyTrack(parsed.id).then((info) => {
+        if (!info) return;
+        // The list may have changed meanwhile: patch the first matching entry that is still bare.
+        const latest = listRef.current;
+        const at = latest.findIndex(
+          (x) => x.provider === 'spotify' && x.id === added.id && !x.title,
+        );
+        const found = latest[at];
+        if (!found) return;
+        const named: TrackRef = {
+          ...found,
+          title: info.title,
+          ...(info.artist ? { artist: info.artist } : {}),
+        };
+        set(latest.map((x, i) => (i === at ? named : x)));
+      });
+      return;
+    }
     if (parsed.provider !== 'youtube') return;
     void checkYoutubeEmbeddable(parsed.id).then((check) => {
       // The list may have changed meanwhile: patch the first matching entry that is still bare.

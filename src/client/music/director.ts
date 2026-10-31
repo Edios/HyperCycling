@@ -2,7 +2,7 @@ import { musicAt, type ScheduledTrack } from '../../domain/music-schedule';
 import type { EngineEvent, EngineState } from '../../domain/session-engine';
 import type { Segment } from '../../domain/segments';
 import type { MusicCue, TrackRef } from '../../domain/workout';
-import type { MusicProvider } from './types';
+import type { MusicProvider, TrackInfo } from './types';
 
 export const FADE_OUT_MS = 1500;
 export const RETRY_DELAY_MS = 3000;
@@ -216,9 +216,40 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       void quietly('pause', () => provider.pause());
       return false;
     }
-    current = { key: desired.key, track: desired.track, provider, halted: false };
+    const playing: Playing = { key: desired.key, track: desired.track, provider, halted: false };
+    current = playing;
     announce(desired.track);
+    if (!desired.track.title) void resolveTitle(playing);
     return true;
+  }
+
+  /**
+   * A track saved without a title gets its name from the provider, in the background: playback
+   * never waits for it, a failure is only logged, and a name that arrives after the track
+   * changed is dropped.
+   */
+  async function resolveTitle(playing: Playing): Promise<void> {
+    const describe = playing.provider.describeTrack?.bind(playing.provider);
+    if (!describe) return;
+    let info: TrackInfo | undefined;
+    try {
+      await bounded(
+        async () => {
+          info = await describe(playing.track);
+        },
+        CONTROL_TIMEOUT_MS,
+        'describe',
+      );
+    } catch (err) {
+      console.warn('Music track name lookup failed', err);
+      return;
+    }
+    if (disposed || current !== playing || !info?.title) return;
+    announce({
+      ...playing.track,
+      title: info.title,
+      ...(info.artist && !playing.track.artist ? { artist: info.artist } : {}),
+    });
   }
 
   function announce(track: TrackRef | null): void {
