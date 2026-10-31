@@ -189,6 +189,10 @@ test('pause, switch background in quick settings, resume: the time carries on', 
   await expect(page.getByRole('radio', { name: 'Hyperride' })).toBeChecked();
   await expect(status(page)).toHaveAttribute('data-status', 'paused');
   await expect(page.getByTestId('block-timer')).toHaveText(frozen);
+  // Back to Basic: the software WebGL renderer of headless Chrome would slow the clock-driven run.
+  await page.getByRole('radio', { name: 'Basic' }).check({ force: true });
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-background', 'basic');
+  await expect(page.getByTestId('block-timer')).toHaveText(frozen);
 
   await page.keyboard.press('Escape'); // closes the panel first
   await expect(page.getByTestId('quick-settings')).toBeHidden();
@@ -204,6 +208,7 @@ test('Menu: leave without saving goes home and forgets the ride', async ({ page 
   await openTraining(page, 'Ride');
   await page.keyboard.press('Space');
   await page.clock.runFor(5000);
+  await page.mouse.move(600, 300); // the controls fade out while idle
   await page.getByRole('button', { name: 'Menu' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Leave without saving' }).click();
   await expect(page.getByTestId('training-screen')).toBeHidden();

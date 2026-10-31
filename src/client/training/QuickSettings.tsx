@@ -65,6 +65,9 @@ export function QuickSettings(p: QuickSettingsProps) {
           <span aria-hidden="true">✕</span>
         </button>
       </header>
+      <span className={styles.label} aria-hidden="true">
+        {t('training.quickBackground')}
+      </span>
       <Segmented
         label={t('training.quickBackground')}
         value={p.background}
@@ -78,6 +81,9 @@ export function QuickSettings(p: QuickSettingsProps) {
         }))}
         onChange={p.onBackground}
       />
+      <span className={styles.label} aria-hidden="true">
+        {t('training.quickLayout')}
+      </span>
       <Segmented
         label={t('training.quickLayout')}
         value={p.hud}
