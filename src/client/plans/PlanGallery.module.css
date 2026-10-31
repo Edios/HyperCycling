@@ -105,3 +105,31 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+@media (max-width: 1000px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .head {
+    flex-wrap: wrap;
+  }
+
+  .head h1 {
+    font-size: 2.25rem;
+  }
+
+  .chips {
+    flex-wrap: wrap;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

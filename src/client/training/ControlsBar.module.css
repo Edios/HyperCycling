@@ -38,3 +38,24 @@
   height: 8vh;
   font-size: 3.2vh;
 }
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2vw;
+    max-width: 96vw;
+  }
+
+  .bar button {
+    width: 12vw;
+    height: 12vw;
+    font-size: 5vw;
+  }
+
+  .bar .main {
+    width: 15vw;
+    height: 15vw;
+    font-size: 6vw;
+  }
+}

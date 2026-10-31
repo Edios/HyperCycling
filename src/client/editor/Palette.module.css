@@ -54,3 +54,21 @@
   font-size: 0.875rem;
   line-height: 1.5;
 }
+
+@media (max-width: 760px) {
+  .palette {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    height: auto;
+    padding: 0.75rem 1rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .title,
+  .hint {
+    flex-basis: 100%;
+    margin: 0;
+  }
+}

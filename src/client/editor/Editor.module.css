@@ -18,6 +18,17 @@
   border-bottom: 1px solid var(--line);
   min-height: 4.5rem;
   box-sizing: border-box;
+  flex-wrap: wrap;
+}
+
+/* Everything keeps its size; the name field gives way and the row wraps before anything is clipped. */
+.bar > * {
+  flex-shrink: 0;
+}
+
+/* The primary action stays at the right edge, also when the row wraps. */
+.bar > :last-child {
+  margin-left: auto;
 }
 
 .back {
@@ -32,8 +43,10 @@
 }
 
 .name {
+  flex: 1 1 12rem;
   width: 26rem;
-  max-width: 34vw;
+  min-width: 9rem;
+  max-width: 26rem;
   height: 3rem;
   box-sizing: border-box;
   padding: 0 1rem;
@@ -162,4 +175,43 @@
 
 .timelineFoot .hint {
   margin: 0;
+}
+
+@media (max-width: 760px) {
+  .screen {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .bar {
+    padding: 0.5rem 1rem;
+    gap: 0.5rem 0.875rem;
+  }
+
+  .name {
+    flex-basis: 100%;
+    max-width: none;
+    order: -1;
+  }
+
+  .sp {
+    display: none;
+  }
+
+  .banner,
+  .alert {
+    padding-inline: 1rem;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .center {
+    padding: 1rem;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
 }

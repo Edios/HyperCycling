@@ -13,7 +13,7 @@
 }
 
 [data-theme='light'] .number {
-  color: color-mix(in srgb, var(--c) 65%, #000);
+  color: color-mix(in srgb, var(--c) 52%, #000);
   text-shadow: none;
 }
 

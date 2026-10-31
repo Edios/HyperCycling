@@ -527,3 +527,136 @@
   bottom: auto;
   height: 14vh;
 }
+
+/*
+ * Phone portrait: every overlay layout collapses into one stacked arrangement (time and effort on
+ * top, next block and cadence below, then coach cue, players and controls). The repeated
+ * [data-layout] only raises specificity above the per-layout and with-players rules.
+ */
+@media (max-width: 760px) and (orientation: portrait) {
+  .root[data-layout][data-layout][data-layout] .time,
+  .root[data-layout][data-layout][data-layout] .eff,
+  .root[data-layout][data-layout][data-layout] .rpm,
+  .root[data-layout][data-layout][data-layout] .next {
+    position: fixed;
+    min-width: 0;
+    transform: translate(var(--sx, 0px), var(--sy, 0px));
+  }
+
+  .root[data-layout][data-layout][data-layout] .time,
+  .root[data-layout][data-layout][data-layout] .next {
+    left: 4vw;
+    right: auto;
+    text-align: left;
+  }
+
+  .root[data-layout][data-layout][data-layout] .eff,
+  .root[data-layout][data-layout][data-layout] .rpm {
+    left: auto;
+    right: 4vw;
+    text-align: right;
+  }
+
+  .root[data-layout][data-layout][data-layout] .time {
+    top: 4vh;
+  }
+
+  .root[data-layout][data-layout][data-layout] .eff {
+    top: 4vh;
+  }
+
+  .root[data-layout][data-layout][data-layout] .next {
+    top: 24vh;
+    max-width: 52vw;
+    font-size: 3.2vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .rpm {
+    top: 24vh;
+  }
+
+  .root[data-layout][data-layout][data-layout] .l {
+    font-size: 3.4vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .s,
+  .root[data-layout][data-layout][data-layout] .next em {
+    font-size: 3.4vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .time .v,
+  .root[data-layout][data-layout][data-layout] .eff .v {
+    font-size: 21vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .rpm .v {
+    font-size: 15vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .next b {
+    font-size: 6vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .tbar {
+    width: 38vw;
+    margin: 1vw 0 0;
+    height: 1vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .time .l {
+    display: inline-block;
+  }
+
+  .root[data-layout][data-layout][data-layout] .free {
+    left: 6vw;
+    right: 6vw;
+    top: 38vh;
+    bottom: auto;
+    height: 9vh;
+  }
+
+  .root[data-layout][data-layout][data-layout] .panel {
+    display: contents;
+  }
+
+  .root[data-layout][data-layout][data-layout] .players {
+    left: 4vw;
+    right: 4vw;
+    top: 41vh;
+    bottom: auto;
+    width: auto;
+    max-height: 22vh;
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transform: none;
+    gap: 1vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .pHead {
+    font-size: 3.4vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .pName {
+    font-size: 5.2vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .pWatts {
+    font-size: 8vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .pWatts small {
+    font-size: 3.4vw;
+  }
+
+  .root[data-layout][data-layout][data-layout] .controls {
+    left: 2vw;
+    right: 2vw;
+    bottom: 19vh;
+    display: flex;
+    justify-content: center;
+  }
+}

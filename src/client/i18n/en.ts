@@ -454,6 +454,7 @@ export const en = {
       restoreBody: 'Your zone values will be replaced by the defaults.',
       restoreYes: 'Restore',
       cancel: 'Cancel',
+      saved: 'Saved',
     },
     data: {
       title: 'Data',

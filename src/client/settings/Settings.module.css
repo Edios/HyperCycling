@@ -534,6 +534,33 @@
   display: block;
   margin-top: 0.25rem;
   color: var(--z9);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.zonesFoot {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.zonesSaved {
+  color: var(--z5);
+  font-weight: 600;
+}
+
+[data-theme='light'] .zonesSaved {
+  color: color-mix(in srgb, var(--z5) 60%, #000);
+}
+
+/* Themed link colour (the browser default blue is unreadable on the dark background). */
+.section a {
+  color: var(--act);
+  text-underline-offset: 0.2em;
+}
+
+.section a:hover {
+  color: var(--fg);
 }
 
 .swatchTrack {
@@ -591,4 +618,37 @@
   flex-direction: column;
   gap: 0.375rem;
   line-height: 1.45;
+}
+
+/* Phone: the zones table must fit without sideways scroll. */
+@media (max-width: 760px) {
+  .zones td,
+  .zones th {
+    padding-right: 0.375rem;
+  }
+
+  .zoneLevel {
+    width: 2rem;
+  }
+
+  .zoneInput {
+    width: 4.5rem;
+  }
+
+  .swatchTrack {
+    min-width: 2.5rem;
+  }
+
+  /* Redirect URIs: label on its own line, the long address wraps inside the row. */
+  .uri {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .uriLabel {
+    grid-column: 1 / -1;
+  }
+
+  .uri code {
+    overflow-wrap: anywhere;
+  }
 }

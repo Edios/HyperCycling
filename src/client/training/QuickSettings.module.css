@@ -1,7 +1,10 @@
 .panel {
   position: fixed;
   right: 2.5vh;
-  bottom: 14vh;
+  /* Bottom corner: the tiles, NEXT strip and controls above stay visible. */
+  bottom: 2.5vh;
+  max-height: 56vh;
+  overflow-y: auto;
   z-index: 15;
   width: min(22rem, 90vw);
   display: flex;
@@ -73,4 +76,15 @@
   margin: 0.5rem 0 0;
   font-size: 0.8125rem;
   color: var(--mut);
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .panel {
+    left: 3vw;
+    right: 3vw;
+    bottom: 2vh;
+    width: auto;
+    max-height: 52vh;
+    padding: 4vw;
+  }
 }

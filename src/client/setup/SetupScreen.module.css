@@ -289,3 +289,37 @@
 .editLink:hover {
   color: var(--fg);
 }
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    padding: 1rem;
+  }
+
+  .summary {
+    padding: 1.25rem;
+  }
+
+  .summary h1 {
+    font-size: 2.5rem;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .toggles {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .addForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .startRow {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
