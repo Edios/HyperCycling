@@ -8,8 +8,7 @@ import { BASE_VFOV_DEG, baseVerticalFov, dashOffset, gateDepth, hash01 } from '.
  * Zone-coloured bars run along both road edges; each bar takes the colour of the block that will
  * be active when the rider reaches it, so the next block's colour travels toward the rider, and a
  * gate frame marks where the next block begins. The sky (gradient, sun, mountains, skyline) is
- * drawn once per size into a CanvasTexture; the handlebar and front wheel are a screen-space
- * overlay anchored bottom-centre. No post-processing: `high` adds a soft additive glow under the
+ * drawn once per size into a CanvasTexture. There is no bike in view: only the road. No post-processing: `high` adds a soft additive glow under the
  * edge bars and a full pixel ratio, `low` halves the road segments, bars and props.
  *
  * World units: the camera sits CAM_HEIGHT above the road; one camera height ≈ the mockup's unit.
@@ -43,7 +42,7 @@ const GATE_RADIUS = ROAD_HALF * 1.05;
 const GATE_CENTER_Y = GATE_RADIUS * 0.82;
 const GATE_TUBE = 0.16;
 
-/** Widest backdrop / cockpit texture in pixels. */
+/** Widest backdrop texture in pixels. */
 const MAX_TEXTURE_WIDTH = 2560;
 const RIBBON_SEGMENTS_HIGH = 140;
 const RIBBON_SEGMENTS_LOW = 70;
@@ -78,10 +77,6 @@ interface Scene3D {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   cam: THREE.PerspectiveCamera;
-  overlayScene: THREE.Scene;
-  overlayCam: THREE.OrthographicCamera;
-  overlayQuad: THREE.Mesh;
-  overlayMat: THREE.MeshBasicMaterial;
   ground: THREE.Mesh;
   ribbons: Ribbon[];
   /** Depths of the ribbon cross-sections (denser near the camera). */
@@ -103,7 +98,6 @@ interface Scene3D {
   disposables: Disposable[];
   /** Re-created on every resize. */
   backdrop?: THREE.CanvasTexture;
-  overlay?: THREE.CanvasTexture;
   unwatchDpr(): void;
 }
 
@@ -119,7 +113,7 @@ const horizonFraction = (w: number, h: number): number =>
   isPortrait(w, h) ? HORIZON_PORTRAIT : HORIZON_LANDSCAPE;
 
 // ---------------------------------------------------------------------------------------------
-// 2D drawing (backdrop + cockpit overlay), adapted from the mockup's canvas code
+// 2D backdrop drawing, adapted from the mockup's canvas code
 // ---------------------------------------------------------------------------------------------
 
 function make2d(w: number, h: number): CanvasRenderingContext2D | null {
@@ -222,99 +216,6 @@ function drawBackdrop(g: CanvasRenderingContext2D, high: boolean): void {
   g.fillRect(0, hy + 2, W, H - hy - 2);
 }
 
-/** Bottom shade, front wheel, stem and drop handlebar, vignette. Transparent elsewhere. */
-function drawCockpit(g: CanvasRenderingContext2D): void {
-  const W = g.canvas.width;
-  const H = g.canvas.height;
-  const P = isPortrait(W, H);
-  const cx = W / 2;
-  g.clearRect(0, 0, W, H);
-
-  // warm haze on the ground just below the horizon (perspective squeezes the fog into a line)
-  const hy = H * horizonFraction(W, H);
-  const hz = g.createLinearGradient(0, hy - 2, 0, hy + (H - hy) * 0.24);
-  hz.addColorStop(0, 'rgba(255,150,100,0.34)');
-  hz.addColorStop(1, 'rgba(255,150,100,0)');
-  g.fillStyle = hz;
-  g.fillRect(0, hy - 2, W, (H - hy) * 0.24 + 2);
-
-  const shade = g.createLinearGradient(0, H * 0.72, 0, H);
-  shade.addColorStop(0, 'rgba(5,6,12,0)');
-  shade.addColorStop(1, 'rgba(5,6,12,0.72)');
-  g.fillStyle = shade;
-  g.fillRect(0, H * 0.72, W, H * 0.28);
-
-  const U = P ? W : Math.min(W * 0.62, H * 1.15);
-  const bw = U * 0.34;
-  const ink = '#04050a';
-  const rim = 'rgba(255,170,120,0.45)';
-  const line = Math.max(1, U / 700);
-
-  // front wheel seen from above: a tyre tapering toward the road
-  const wy = H * (P ? 0.69 : 0.66);
-  const tw1 = U * 0.022;
-  const tw2 = U * 0.04;
-  g.fillStyle = ink;
-  g.strokeStyle = rim;
-  g.lineWidth = line * 1.5;
-  g.beginPath();
-  g.moveTo(cx - tw1, wy);
-  g.quadraticCurveTo(cx, wy - tw1 * 1.6, cx + tw1, wy);
-  g.lineTo(cx + tw2, H + 4);
-  g.lineTo(cx - tw2, H + 4);
-  g.closePath();
-  g.fill();
-  g.stroke();
-  g.fillRect(cx - U * 0.012, H * 0.84, U * 0.024, H * 0.2);
-
-  // drop handlebar
-  const by = H * 0.885;
-  g.lineCap = 'round';
-  g.lineJoin = 'round';
-  g.strokeStyle = ink;
-  g.lineWidth = U * 0.026;
-  g.beginPath();
-  g.moveTo(cx - bw, H * 0.985);
-  g.bezierCurveTo(
-    cx - bw * 1.08,
-    by + H * 0.03,
-    cx - bw * 0.9,
-    by - H * 0.005,
-    cx - bw * 0.5,
-    by - H * 0.008,
-  );
-  g.lineTo(cx + bw * 0.5, by - H * 0.008);
-  g.bezierCurveTo(cx + bw * 0.9, by - H * 0.005, cx + bw * 1.08, by + H * 0.03, cx + bw, H * 0.985);
-  g.stroke();
-  g.strokeStyle = rim;
-  g.lineWidth = line * 1.6;
-  g.beginPath();
-  g.moveTo(cx - bw * 0.5, by - H * 0.008 - U * 0.013);
-  g.lineTo(cx + bw * 0.5, by - H * 0.008 - U * 0.013);
-  g.stroke();
-  g.fillStyle = ink;
-  g.beginPath();
-  g.ellipse(cx - bw * 0.92, by + H * 0.012, U * 0.03, H * 0.035, -0.12, 0, Math.PI * 2);
-  g.fill();
-  g.beginPath();
-  g.ellipse(cx + bw * 0.92, by + H * 0.012, U * 0.03, H * 0.035, 0.12, 0, Math.PI * 2);
-  g.fill();
-  g.fillRect(cx - U * 0.03, by - H * 0.03, U * 0.06, H * 0.04);
-
-  const vig = g.createRadialGradient(
-    cx,
-    H * 0.5,
-    Math.min(W, H) * 0.45,
-    cx,
-    H * 0.5,
-    Math.max(W, H) * 0.8,
-  );
-  vig.addColorStop(0, 'rgba(0,0,0,0)');
-  vig.addColorStop(1, 'rgba(0,0,0,0.5)');
-  g.fillStyle = vig;
-  g.fillRect(0, 0, W, H);
-}
-
 /** 1-D texture: vertical alpha ramp (gate fill) or horizontal soft falloff (bar glow). */
 function rampTexture(kind: 'vertical' | 'soft'): THREE.CanvasTexture | null {
   const g = make2d(kind === 'soft' ? 64 : 4, kind === 'soft' ? 4 : 64);
@@ -375,10 +276,9 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
     const shiftY = height * (0.5 - horizonFraction(width, height));
     cam.setViewOffset(width, height, width * viewOffsetX, shiftY, width, height);
     appliedFov = fov;
-    s.overlayQuad.position.x = -2 * viewOffsetX;
   }
 
-  /** Redraws the size-dependent backdrop and cockpit textures. */
+  /** Redraws the size-dependent backdrop texture. */
   function paint(): void {
     if (!s) return;
     // a 4K canvas at ratio 2 does not need two 8K textures for a soft sky and a silhouette
@@ -386,19 +286,12 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
     const w = width * ratio;
     const h = height * ratio;
     const bg = make2d(w, h);
-    const fg = make2d(w, h);
-    if (!bg || !fg) return;
+    if (!bg) return;
     drawBackdrop(bg, s.high);
-    drawCockpit(fg);
     s.backdrop?.dispose();
-    s.overlay?.dispose();
     s.backdrop = new THREE.CanvasTexture(bg.canvas);
     s.backdrop.colorSpace = THREE.SRGBColorSpace;
-    s.overlay = new THREE.CanvasTexture(fg.canvas);
-    s.overlay.colorSpace = THREE.SRGBColorSpace;
     s.scene.background = s.backdrop;
-    s.overlayMat.map = s.overlay;
-    s.overlayMat.needsUpdate = true;
   }
 
   function makeRibbon(
@@ -583,28 +476,11 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
     gate.renderOrder = 11;
     scene.add(gate);
 
-    // cockpit overlay: a full-screen quad in its own scene, drawn after the world
-    const overlayScene = new THREE.Scene();
-    const overlayCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-    const overlayGeo = new THREE.PlaneGeometry(2, 2);
-    created.push(overlayGeo);
-    const overlayMat = new THREE.MeshBasicMaterial({
-      transparent: true,
-      depthTest: false,
-      depthWrite: false,
-    });
-    created.push(overlayMat);
-    const overlayQuad = new THREE.Mesh(overlayGeo, overlayMat);
-    overlayScene.add(overlayQuad);
 
     const out: Scene3D = {
       renderer,
       scene,
       cam,
-      overlayScene,
-      overlayCam,
-      overlayQuad,
-      overlayMat,
       ground,
       ribbons,
       ribbonDepths,
@@ -773,7 +649,6 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
     const { renderer } = s;
     renderer.clear();
     renderer.render(s.scene, cam);
-    renderer.render(s.overlayScene, s.overlayCam);
   }
 
   return {
@@ -796,7 +671,6 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
         paint();
       } catch (err) {
         s?.backdrop?.dispose();
-        s?.overlay?.dispose();
         s = undefined;
         for (const c of created) c.dispose();
         renderer.dispose();
@@ -832,9 +706,7 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
       cur.unwatchDpr();
       cur.scene.background = null;
       cur.scene.clear();
-      cur.overlayScene.clear();
       cur.backdrop?.dispose();
-      cur.overlay?.dispose();
       for (const d of cur.disposables) d.dispose();
       cur.renderer.dispose();
       cur.renderer.forceContextLoss();
