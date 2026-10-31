@@ -277,3 +277,15 @@
   outline: 2px solid var(--act);
   outline-offset: 2px;
 }
+
+.editLink {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: var(--mut);
+  font-size: 1rem;
+  text-decoration: underline;
+}
+
+.editLink:hover {
+  color: var(--fg);
+}
