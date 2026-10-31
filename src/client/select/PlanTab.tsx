@@ -51,9 +51,20 @@ function EmptyState({ kind }: { kind: 'none' | 'complete' }) {
     <div className={styles.empty} data-testid={kind === 'none' ? 'plan-empty' : 'plan-complete'}>
       <h1>{kind === 'none' ? t('plan.noPlanTitle') : t('plan.complete')}</h1>
       <p>{kind === 'none' ? t('plan.noPlanBody') : t('plan.completeBody')}</p>
-      <Link to="/plans" className={styles.cta}>
-        {t('plan.choose')}
-      </Link>
+      {kind === 'none' ? (
+        <div className={styles.ctas}>
+          <Link to="/plans/wizard" className={styles.cta}>
+            {t('plan.build')}
+          </Link>
+          <Link to="/plans" className={styles.ctaSecondary}>
+            {t('plan.browse')}
+          </Link>
+        </div>
+      ) : (
+        <Link to="/plans" className={styles.cta}>
+          {t('plan.choose')}
+        </Link>
+      )}
     </div>
   );
 }

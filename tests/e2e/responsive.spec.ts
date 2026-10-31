@@ -10,6 +10,7 @@ const SIZES = [
 const ROUTES = [
   '#/',
   '#/plans',
+  '#/plans/wizard',
   '#/freestyle',
   '#/players',
   '#/settings',

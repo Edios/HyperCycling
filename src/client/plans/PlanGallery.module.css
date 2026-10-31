@@ -133,3 +133,24 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.wizardLink {
+  display: inline-flex;
+  align-items: center;
+  height: 2.5rem;
+  padding: 0 1.125rem;
+  margin-right: auto;
+  margin-left: 1rem;
+  border-radius: 0.625rem;
+  background: var(--act);
+  color: #04101f;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1875rem;
+  text-decoration: none;
+}
+
+.wizardLink:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}

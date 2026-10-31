@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { localizedText } from '../data/localized';
 import { builtinPlans } from '../data/builtin';
 import { useSettings } from '../data/useSettings';
@@ -33,6 +33,9 @@ export function PlanGallery() {
     <div className={styles.page}>
       <div className={styles.head}>
         <h1>{t('plans.title')}</h1>
+        <Link to="/plans/wizard" className={styles.wizardLink}>
+          {t('plans.wizardBtn')}
+        </Link>
         <div role="group" aria-label={t('plans.filterLabel')} className={styles.chips}>
           {FILTERS.map((f) => (
             <Chip key={f} on={f === filter} onClick={() => setFilter(f)}>

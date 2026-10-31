@@ -89,8 +89,9 @@ beforeEach(() => {
 describe('PlanTab', () => {
   it('without an active plan offers to choose one', async () => {
     renderTab();
-    const link = await screen.findByRole('link', { name: 'Choose a plan' });
-    expect(link).toHaveAttribute('href', '/plans');
+    const build = await screen.findByRole('link', { name: 'Build my plan' });
+    expect(build).toHaveAttribute('href', '/plans/wizard');
+    expect(screen.getByRole('link', { name: 'Browse plans' })).toHaveAttribute('href', '/plans');
     expect(screen.queryByRole('button', { name: 'Ride' })).not.toBeInTheDocument();
   });
 

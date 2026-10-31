@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   DEFAULT_PLAN_SETTINGS,
   type Plan,
@@ -7,6 +7,7 @@ import {
   type PlanProgress,
   type PlanSlot,
   type PlanSettings,
+  planSettingsSchema,
 } from '../../domain/plan';
 import type { Player } from '../../domain/player';
 import { scaleForPlan } from '../../domain/scale';
@@ -97,9 +98,15 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
   const { workouts } = useLibrary();
   const isActive = settings.activePlanId === plan.id;
   const stored = data.progress?.settings;
+  // The wizard's Customize hands over its recommendation as the starting point.
+  const location = useLocation();
+  const handed = planSettingsSchema.safeParse(
+    (location.state as { settings?: unknown } | null)?.settings,
+  );
+  const initial = handed.success ? handed.data : (stored ?? DEFAULT_PLAN_SETTINGS);
 
-  const [cfg, setCfg] = useState<PlanSettings>(stored ?? DEFAULT_PLAN_SETTINGS);
-  const [pickWeek, setPickWeek] = useState((stored?.startWeek ?? 1) > 1);
+  const [cfg, setCfg] = useState<PlanSettings>(initial);
+  const [pickWeek, setPickWeek] = useState(initial.startWeek > 1);
   const [ftpText, setFtpText] = useState(data.me ? String(data.me.ftp) : '');
   const [confirming, setConfirming] = useState<false | 'choose' | 'reset'>(false);
   const [error, setError] = useState<string | undefined>();

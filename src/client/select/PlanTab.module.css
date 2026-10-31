@@ -331,3 +331,30 @@
     margin: 2rem auto;
   }
 }
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  height: 3rem;
+  padding: 0 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--s2);
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3125rem;
+  text-decoration: none;
+}
+
+.ctaSecondary:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+}
