@@ -158,6 +158,35 @@ describe('SummaryScreen', () => {
     expect(await screen.findByTestId('where')).toHaveTextContent('/');
   });
 
+  it('labels the big time', async () => {
+    useLastResult.getState().set(result({ plan: planRef }));
+    renderSummary();
+    expect(await screen.findByTestId('summary-ridden-label')).toHaveTextContent('Time ridden');
+  });
+
+  describe('reload and short rides', () => {
+    it('a restored result shows the summary but writes and counts nothing again', async () => {
+      useLastResult.getState().set(result({ plan: planRef }));
+      // Simulates the page after F5: the result comes back from session storage.
+      useLastResult.setState({ result: { ...result({ plan: planRef }), restored: true } });
+      renderSummary();
+      await screen.findByTestId('summary-name');
+      await new Promise((r) => setTimeout(r, 30));
+      expect(db.logs).toHaveLength(0);
+      expect(db.progressPuts).toHaveLength(0);
+      noToggle();
+    });
+
+    it('a plan ride shorter than 2 minutes is not credited and says why', async () => {
+      useLastResult.getState().set(result({ plan: planRef, riddenSec: 90, completed: false }));
+      renderSummary();
+      expect(await screen.findByTestId('count-short')).toHaveTextContent('2 minutes');
+      noToggle();
+      await waitFor(() => expect(db.logs).toHaveLength(1));
+      expect(db.progressPuts).toHaveLength(0);
+    });
+  });
+
   describe('count toward plan', () => {
     it('plan session at 100 % defaults on and shows plan, week and slot', async () => {
       useLastResult.getState().set(result({ plan: planRef }));
@@ -196,7 +225,7 @@ describe('SummaryScreen', () => {
     it('freestyle outside the plan below 80 % defaults off', async () => {
       useLastResult
         .getState()
-        .set(result({ workout: freestyleWorkout, riddenSec: 10, completed: false }));
+        .set(result({ workout: freestyleWorkout, riddenSec: 130, completed: false }));
       renderSummary();
       expect(await toggle()).not.toBeChecked();
     });
@@ -280,7 +309,7 @@ describe('SummaryScreen', () => {
     });
 
     it('below 80 % only the log is written', async () => {
-      useLastResult.getState().set(result({ plan: planRef, riddenSec: 10, completed: false }));
+      useLastResult.getState().set(result({ plan: planRef, riddenSec: 130, completed: false }));
       renderSummary();
       await toggle();
       await waitFor(() => expect(db.logs).toHaveLength(1));
@@ -536,6 +565,39 @@ describe('SummaryScreen', () => {
       expect(screen.getByTestId('ftp-proposal')).toHaveTextContent('250 W');
     });
 
+    it('shows the formula with the numbers, live', async () => {
+      useLastResult.getState().set(result({ workout: ramp }));
+      renderSummary();
+      fireEvent.change(await best(), { target: { value: '700' } });
+      expect(screen.getByTestId('ftp-proposal')).toHaveTextContent('FTP = 700 × 0.75 = 525 W');
+    });
+
+    it('2 x 8 formula shows the mean of both efforts', async () => {
+      useLastResult.getState().set(result({ workout: twoByEight }));
+      renderSummary();
+      fireEvent.change(await screen.findByLabelText('Effort 1 average power (W)'), {
+        target: { value: '300' },
+      });
+      fireEvent.change(screen.getByLabelText('Effort 2 average power (W)'), {
+        target: { value: '280' },
+      });
+      expect(screen.getByTestId('ftp-proposal')).toHaveTextContent(
+        'FTP = (300 + 280) / 2 × 0.9 = 261 W',
+      );
+    });
+
+    it('warns at once, as an error, when the result is outside 50-600', async () => {
+      useLastResult.getState().set(result({ workout: ramp }));
+      renderSummary();
+      fireEvent.change(await best(), { target: { value: '20' } });
+      const warn = screen.getByTestId('ftp-range-warning');
+      expect(warn).toHaveAttribute('role', 'alert');
+      expect(warn).toHaveTextContent('15 W');
+      expect(warn).toHaveTextContent('50 to 600');
+      fireEvent.change(await best(), { target: { value: '400' } });
+      expect(screen.queryByTestId('ftp-range-warning')).toBeNull();
+    });
+
     it('shows no proposal for a non-integer reading', async () => {
       useLastResult.getState().set(result({ workout: ramp }));
       renderSummary();
@@ -561,7 +623,8 @@ describe('SummaryScreen', () => {
       renderSummary();
       fireEvent.change(await best(), { target: { value: '1000' } });
       fireEvent.click(screen.getByRole('button', { name: 'Save FTP' }));
-      expect(await screen.findByRole('alert')).toHaveTextContent('50 to 600');
+      expect((await screen.findAllByRole('alert')).length).toBe(2);
+      expect(screen.getAllByRole('alert')[0]).toHaveTextContent('50 to 600');
       expect(db.playerPuts).toHaveLength(0);
     });
 

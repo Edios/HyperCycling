@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Player } from '../../domain/player';
@@ -206,13 +206,8 @@ describe('quick settings', () => {
     expect(useSessionStore.getState().state).toEqual(before);
     expect(useSessionStore.getState().state.workoutElapsedSec).toBeGreaterThan(9);
     expect(useSessionStore.getState().runtime?.config.background).toBe('hyperride');
-    await waitFor(() =>
-      expect(puts.at(-1)?.lastSession).toMatchObject({
-        background: 'hyperride',
-        hud: 'immersive',
-        music: true,
-      }),
-    );
+    expect(useSessionStore.getState().runtime?.config.hud).toBe('immersive');
+    expect(puts).toEqual([]); // this ride only: the saved defaults stay
     // Resuming carries on from the same second.
     key('Space');
     advance(1000);
@@ -236,7 +231,7 @@ describe('quick settings', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Hyperride' }));
     expect(layouts()).toEqual(['Immersive', 'Column']);
     fireEvent.click(screen.getByRole('radio', { name: 'Column' }));
-    await waitFor(() => expect(puts.at(-1)?.lastSession?.hud).toBe('column'));
+    expect(useSessionStore.getState().runtime?.config.hud).toBe('column');
   });
 
   it('YouTube needs a link: disabled without one, available from the recent links', async () => {
@@ -258,25 +253,25 @@ describe('quick settings', () => {
     );
   });
 
-  it('beeps and cues are saved to the settings', async () => {
+  it('beeps and cues apply to this ride only and never touch the saved defaults', async () => {
     load();
     await renderScreen();
     fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
     fireEvent.click(screen.getByRole('switch', { name: 'Beeps' }));
-    await waitFor(() => expect(puts.at(-1)?.sounds).toBe(!DEFAULT_SETTINGS.sounds));
+    expect(screen.getByRole('switch', { name: 'Beeps' })).not.toBeChecked();
     fireEvent.click(screen.getByRole('switch', { name: 'On-screen cues' }));
-    await waitFor(() => expect(puts.at(-1)?.coach).toBe(!DEFAULT_SETTINGS.coach));
+    expect(useSessionStore.getState().runtime?.options).toEqual({
+      sounds: !DEFAULT_SETTINGS.sounds,
+      coach: !DEFAULT_SETTINGS.coach,
+    });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(puts).toEqual([]);
   });
 
-  it('shows an error toast when a quick setting cannot be saved, and the ride goes on', async () => {
+  it('shows why YouTube is unavailable as visible text', async () => {
     load();
     await renderScreen();
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    failPuts.value = true;
     fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
-    fireEvent.click(screen.getByRole('switch', { name: 'Beeps' }));
-    expect(await screen.findByText('Could not save the setting. Try again.')).toBeInTheDocument();
-    expect(useSessionStore.getState().runtime).toBeDefined();
-    expect(screen.getByTestId('quick-settings')).toBeInTheDocument();
+    expect(screen.getByTestId('quick-youtube-hint')).toHaveTextContent(/YouTube link/);
   });
 });

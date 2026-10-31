@@ -54,7 +54,7 @@ import { SetupScreen } from './SetupScreen';
 const scalable = builtinWorkouts.find((w) => w.scaling && w.musicCues.length === 0)!;
 const withCues = builtinWorkouts.find((w) => w.musicCues.length > 0);
 
-const mirek: Player = { id: 'p1', name: 'Mirek', ftp: 270, isMe: true };
+const mirek: Player = { id: 'p1', name: 'Mirek', ftp: 270 };
 const ania: Player = { id: 'p2', name: 'Ania', ftp: 190 };
 
 function Where() {
@@ -135,16 +135,49 @@ describe('SetupScreen', () => {
     expect(runtime.plan).toEqual({ planId: 'plan-x', week: 2, slot: 'freestyle' });
     expect(runtime.segments.length).toBeGreaterThan(0);
 
-    await waitFor(() => expect(saved.length).toBeGreaterThan(0));
-    const last = saved[saved.length - 1]!;
-    expect(last.sounds).toBe(false);
-    expect(last.coach).toBe(true);
-    expect(last.lastSession).toEqual({
-      background: 'basic',
-      hud: 'players',
-      playerIds: ['p1'],
-      music: false,
-    });
+    // R19: the choices belong to this ride; the saved defaults are not touched.
+    expect(runtime.options).toMatchObject({ sounds: false, coach: true });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(saved).toEqual([]);
+  });
+
+  it('preselects the me rider, or the only rider', async () => {
+    db.players = [mirek, ania];
+    db.players = [{ ...mirek, isMe: true }, ania];
+    const first = renderSetup(`/setup/${scalable.id}`);
+    expect(await screen.findByRole('button', { name: /Mirek/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /Ania/ })).toHaveAttribute('aria-pressed', 'false');
+    first.unmount();
+    resetSettingsForTests();
+    db.players = [ania];
+    renderSetup(`/setup/${scalable.id}`);
+    expect(await screen.findByRole('button', { name: /Ania/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('says why With players is unavailable and where players show on Hyperride', async () => {
+    renderSetup(`/setup/${scalable.id}`);
+    expect(await screen.findByTestId('layout-hint')).toHaveTextContent(/Select a rider/);
+    fireEvent.click(screen.getByRole('button', { name: /Hyperride/ }));
+    expect(screen.getByTestId('layout-hint')).toHaveTextContent(/Immersive and Column/);
+    fireEvent.click(screen.getByRole('button', { name: /Mirek/ }));
+    expect(screen.getByTestId('layout-hint')).toHaveTextContent(/Cockpit and Time in the tunnel/);
+  });
+
+  it('shows the reason under a disabled Music toggle', async () => {
+    renderSetup(`/setup/${scalable.id}`);
+    await screen.findByRole('heading', { level: 1 });
+    expect(screen.getByTestId('music-hint')).toHaveTextContent(/no pinned tracks/i);
+  });
+
+  it('says the choices are for this ride only', async () => {
+    renderSetup(`/setup/${scalable.id}`);
+    expect(await screen.findByText(/this ride only/i)).toBeInTheDocument();
   });
 
   it('a freestyle start without plan or players is solo and unscaled', async () => {
@@ -207,7 +240,9 @@ describe('SetupScreen', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Road' }));
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     await screen.findByTestId('where');
-    await waitFor(() => expect(saved.at(-1)?.hyperrideWorld).toBe('road'));
+    expect(useSessionStore.getState().runtime!.options?.world).toBe('road');
+    await new Promise((r) => setTimeout(r, 20));
+    expect(saved).toEqual([]);
   });
 
   it('Hyperride offers the overlay layouts (Immersive by default); players disable two', async () => {

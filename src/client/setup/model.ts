@@ -74,6 +74,28 @@ export function layoutOptions(background: Background, hasPlayers: boolean): Layo
   ];
 }
 
+/**
+ * Who is ticked when Setup opens: the saved riders that still exist, else the rider flagged as
+ * me, else the only rider (so the HUD is not left without watts by accident).
+ */
+export function initialSelection(
+  players: readonly Player[],
+  savedIds: readonly string[] | undefined,
+): string[] {
+  const kept = (savedIds ?? []).filter((id) => players.some((p) => p.id === id));
+  if (kept.length > 0) return kept;
+  const me = players.find((p) => p.isMe);
+  if (me) return [me.id];
+  const only = players.length === 1 ? players[0] : undefined;
+  return only ? [only.id] : [];
+}
+
+/** Visible reason for the layouts that are greyed out (never only a tooltip). */
+export function layoutHintKey(background: Background, hasPlayers: boolean): MessageKey | undefined {
+  if (background === 'basic') return hasPlayers ? undefined : 'setup.layoutHint.basicNoPlayers';
+  return hasPlayers ? 'setup.layoutHint.overlayPlayers' : 'setup.layoutHint.overlay';
+}
+
 /** The layout that is actually in effect for the current choices. */
 export function effectiveHud(
   background: Background,

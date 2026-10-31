@@ -63,7 +63,7 @@ export function TrainingScreen() {
 function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const t = useT();
   const navigate = useNavigate();
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
   const state = useSessionStore((s) => s.state);
   const muted = useSessionStore((s) => s.muted);
   const reducedMotion = useReducedMotion() || settings.effectsIntensity === 0;
@@ -115,7 +115,11 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     [t],
   );
   const [nowPlaying, setNowPlaying] = useState<TrackRef | null>(null);
-  const musicAudible = settings.sounds && !muted;
+  // Beeps, cues and world are per ride (Setup / quick settings); Settings only supplies defaults.
+  const soundsOn = runtime.options?.sounds ?? settings.sounds;
+  const coachOn = runtime.options?.coach ?? settings.coach;
+  const worldId = runtime.options?.world ?? settings.hyperrideWorld;
+  const musicAudible = soundsOn && !muted;
   useMusicDirector(runtime, onMusicWarning, {
     volume: musicAudible ? 1 : 0,
     onPlaying: setNowPlaying,
@@ -153,8 +157,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const sound = useMemo<Sound>(() => createSound(), []);
   useEffect(() => () => sound.dispose(), [sound]);
   useEffect(() => {
-    sound.setEnabled(settings.sounds && !muted);
-  }, [sound, settings.sounds, muted]);
+    sound.setEnabled(soundsOn && !muted);
+  }, [sound, soundsOn, muted]);
 
   const view = useMemo(
     () => buildTrainingView(runtime.segments, state, settings.effortTable),
@@ -198,7 +202,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         if (!e.skipped) sound.segment();
         setFlash((n) => n + 1);
         const next = segments[e.to];
-        if (settings.coach && next) {
+        if (coachOn && next) {
           const c = cueForTransition(segments[e.from], next, {
             numericCadence: settings.equipment.showsCadence,
           });
@@ -209,7 +213,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         leave(true);
       }
     });
-  }, [runtime, sound, settings.coach, settings.equipment.showsCadence, leave]);
+  }, [runtime, sound, coachOn, settings.equipment.showsCadence, leave]);
 
   const toggle = useCallback(() => {
     sound.unlock();
@@ -287,28 +291,12 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const background = runtime.config.background;
   const youtubeUrl = youtubeUrlFor(sessionYoutubeUrl, settings.recentYoutubeUrls);
 
-  /** Applies a live background / layout choice: the session config and the saved defaults follow. */
-  const [saveFailures, setSaveFailures] = useState(0);
-  const warnSave = useCallback((err: unknown): void => {
-    console.warn('Saving the quick settings failed', err);
-    setSaveFailures((n) => n + 1);
-  }, []);
-
+  /** Applies a live background / layout choice to this ride only; saved defaults stay untouched. */
   const applyChoice = useCallback(
     (bg: SessionConfig['background'], hud: SessionConfig['hud'], url: string | undefined) => {
-      const config = withLiveChoice(runtime.config, bg, hud, url);
-      useSessionStore.getState().setConfig(config);
-      // Leaving YouTube must not forget the link that setup offers as its default.
-      const kept = config.youtubeUrl ?? settingsRef.current.lastSession?.youtubeUrl;
-      void updateSettings({
-        lastSession: {
-          ...config,
-          ...(kept ? { youtubeUrl: kept } : {}),
-          music: settingsRef.current.lastSession?.music ?? config.music,
-        },
-      }).catch(warnSave);
+      useSessionStore.getState().setConfig(withLiveChoice(runtime.config, bg, hud, url));
     },
-    [runtime.config, updateSettings, warnSave],
+    [runtime.config],
   );
 
   const changeBackground = (bg: SessionConfig['background']): void => {
@@ -417,7 +405,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           <HyperrideCanvas
             getFrameInput={getFrameInput}
             quality={settings.hyperrideQuality}
-            world={resolveWorld(settings.hyperrideWorld)}
+            world={resolveWorld(worldId)}
             viewOffsetX={overlayHud === 'column' && !playersOn ? COLUMN_VIEW_OFFSET : 0}
             {...(motionOn ? { onSway } : {})}
             onUnavailable={() => setHyperrideFailed(true)}
@@ -460,13 +448,6 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
               youtubeFailure === 'embed-blocked' ? 'youtube.embedBlocked' : 'youtube.unavailable',
             )}
             onClose={() => setYoutubeToastDismissed(true)}
-          />
-        )}
-        {saveFailures > 0 && (
-          <Toast
-            key={saveFailures}
-            message={t('settings.saveFailed')}
-            onClose={() => setSaveFailures(0)}
           />
         )}
         {musicWarning && (
@@ -513,14 +494,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           youtubeAvailable={youtubeUrl !== undefined}
           hud={activeHud(background, playersOn, overlayHud)}
           hudChoices={hudChoices(background, hasPlayers, playersOn)}
-          world={settings.hyperrideWorld}
-          onWorld={(w) => void updateSettings({ hyperrideWorld: w }).catch(warnSave)}
-          sounds={settings.sounds}
-          coach={settings.coach}
+          world={worldId}
+          onWorld={(w) => useSessionStore.getState().setOptions({ world: w })}
+          sounds={soundsOn}
+          coach={coachOn}
           onBackground={changeBackground}
           onHud={changeHud}
-          onSounds={(on) => void updateSettings({ sounds: on }).catch(warnSave)}
-          onCoach={(on) => void updateSettings({ coach: on }).catch(warnSave)}
+          onSounds={(on) => useSessionStore.getState().setOptions({ sounds: on })}
+          onCoach={(on) => useSessionStore.getState().setOptions({ coach: on })}
           onClose={() => setQuickOpen(false)}
         />
       )}

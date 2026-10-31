@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getRepositories } from '../data/repositories';
 import {
+  checkImportFile,
   exportFileName,
   exportToFile,
   importFromFile,
@@ -12,6 +13,7 @@ import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
+import { Toast } from '../ui/Toast';
 import { useSave } from './save';
 import styles from './Settings.module.css';
 
@@ -65,6 +67,7 @@ export function DataSection({
   const [pending, setPending] = useState<File | undefined>();
   const [result, setResult] = useState<ImportResult | undefined>();
   const [cleared, setCleared] = useState(false);
+  const [exported, setExported] = useState(false);
 
   useEffect(() => {
     if (!result?.ok) return undefined;
@@ -77,6 +80,7 @@ export function DataSection({
     try {
       const blob = await exportToFile(await getRepositories());
       await download(blob, exportFileName(new Date()));
+      setExported(true);
     } catch (err) {
       console.warn('Export failed', err);
       setExportError(true);
@@ -97,7 +101,14 @@ export function DataSection({
   };
 
   const clearYoutube = async (): Promise<void> => {
-    const ok = await save({ recentYoutubeUrls: [] });
+    // The link that Setup prefills lives in the last session; forget it together with the list.
+    const last = settings.lastSession;
+    const rest = last ? { ...last } : undefined;
+    if (rest) delete rest.youtubeUrl;
+    const ok = await save({
+      recentYoutubeUrls: [],
+      ...(last?.youtubeUrl !== undefined && rest ? { lastSession: rest } : {}),
+    });
     setCleared(ok);
   };
 
@@ -133,7 +144,11 @@ export function DataSection({
               e.target.value = '';
               if (file) {
                 setResult(undefined);
-                setPending(file);
+                // Check first: an unusable file never reaches the "replace everything?" question.
+                void checkImportFile(file).then((checked) => {
+                  if (checked.ok) setPending(file);
+                  else setResult(checked);
+                });
               }
             }}
           />
@@ -145,10 +160,17 @@ export function DataSection({
               {t('settings.data.importOk')}
             </p>
           ) : (
-            <p role="alert" className={styles.error} data-testid="import-result">
-              {t('settings.data.importFailed')}{' '}
-              {t(REASON_KEY[result.reason], { details: result.details ?? '' })}
-            </p>
+            <div role="alert" className={styles.error} data-testid="import-result">
+              <p>
+                {t('settings.data.importFailed')} {t(REASON_KEY[result.reason])}
+              </p>
+              {result.details && (
+                <details data-testid="import-details">
+                  <summary>{t('settings.data.details')}</summary>
+                  <code>{result.details}</code>
+                </details>
+              )}
+            </div>
           ))}
       </div>
 
@@ -179,11 +201,15 @@ export function DataSection({
         </span>
       </div>
 
+      {exported && <Toast message={t('settings.data.exported')} onClose={() => setExported(false)} />}
+
       {pending && (
         <Modal title={t('settings.data.importConfirmTitle')} onClose={() => setPending(undefined)}>
           <p>{t('settings.data.importConfirmBody', { file: pending.name })}</p>
           <div className={styles.dialogActions}>
-            <Button onClick={() => setPending(undefined)}>{t('settings.data.cancel')}</Button>
+            <Button data-autofocus onClick={() => setPending(undefined)}>
+              {t('settings.data.cancel')}
+            </Button>
             <Button variant="primary" onClick={() => void doImport(pending)}>
               {t('settings.data.importConfirmYes')}
             </Button>

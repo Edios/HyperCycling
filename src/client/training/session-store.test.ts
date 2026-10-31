@@ -68,6 +68,20 @@ afterEach(() => {
   configureSessionSideEffects(null);
 });
 
+describe('session-only options', () => {
+  it('setOptions merges into the runtime', () => {
+    useSessionStore.getState().load(makeRuntime());
+    useSessionStore.getState().setOptions({ sounds: false });
+    useSessionStore.getState().setOptions({ coach: false });
+    expect(useSessionStore.getState().runtime?.options).toEqual({ sounds: false, coach: false });
+  });
+
+  it('setOptions without a runtime does nothing', () => {
+    useSessionStore.getState().setOptions({ sounds: false });
+    expect(useSessionStore.getState().runtime).toBeUndefined();
+  });
+});
+
 describe('session store', () => {
   it('starts idle without runtime', () => {
     const s = useSessionStore.getState();

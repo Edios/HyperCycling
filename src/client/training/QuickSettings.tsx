@@ -84,6 +84,11 @@ export function QuickSettings(p: QuickSettingsProps) {
         }))}
         onChange={p.onBackground}
       />
+      {!p.youtubeAvailable && p.background !== 'youtube' && (
+        <p className={styles.hint} data-testid="quick-youtube-hint">
+          {t('training.quickYoutubeNone')}
+        </p>
+      )}
       <span className={styles.label} aria-hidden="true">
         {t('training.quickLayout')}
       </span>
@@ -108,6 +113,7 @@ export function QuickSettings(p: QuickSettingsProps) {
       )}
       <Toggle label={t('training.quickSounds')} checked={p.sounds} onChange={p.onSounds} />
       <Toggle label={t('training.quickCoach')} checked={p.coach} onChange={p.onCoach} />
+      <p className={styles.hint}>{t('training.quickRideOnly')}</p>
     </section>
   );
 }
