@@ -89,6 +89,19 @@ describe('PlayersScreen', () => {
     expect(screen.queryByText('Add your first player')).not.toBeInTheDocument();
   });
 
+  it('a double submit in the same tick stores the player once', async () => {
+    renderScreen();
+    await screen.findByText('Add your first player');
+    const form = screen.getByTestId('add-player-form');
+    setValue(within(form).getByLabelText('Name'), 'Basia');
+    setValue(within(form).getByLabelText('FTP (W)'), '210');
+    const el = form.querySelector('form')!;
+    fireEvent.submit(el);
+    fireEvent.submit(el);
+    await screen.findByText('Basia');
+    expect(db.players).toHaveLength(1);
+  });
+
   it('validates name and FTP with translated messages', async () => {
     renderScreen();
     await screen.findByText('Add your first player');
