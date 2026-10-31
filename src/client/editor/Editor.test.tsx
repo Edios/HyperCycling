@@ -40,6 +40,7 @@ vi.mock('../music/youtube-check', async (importOriginal) => ({
 }));
 
 import { builtinWorkouts } from '../data/builtin';
+import { setLang } from '../i18n';
 import { EditorScreen } from './EditorScreen';
 
 function renderAt(path: string, state?: unknown) {
@@ -640,5 +641,47 @@ describe('review round 1', () => {
     await screen.findByTestId('editor-screen');
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(await screen.findByTestId('delete-active-warning')).toBeInTheDocument();
+  });
+});
+
+describe('QA group B', () => {
+  it('M4: a visible Delete block button removes the selected block', async () => {
+    repo.store.set('user-1', userWorkout());
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    expect(screen.queryByRole('button', { name: 'Delete block' })).not.toBeInTheDocument();
+    fireEvent.click(block(0));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete block' }));
+    expect(blocks()).toHaveLength(1);
+  });
+
+  it('M4: Delete block is not offered for read-only built-ins', async () => {
+    renderAt(`/editor/${encodeURIComponent((builtinWorkouts[0] as Workout).id)}`);
+    await screen.findByTestId('editor-screen');
+    fireEvent.click(block(0));
+    expect(screen.queryByRole('button', { name: 'Delete block' })).not.toBeInTheDocument();
+  });
+
+  it('M1: built-ins show the localized name and description', async () => {
+    setLang('pl');
+    try {
+      renderAt('/editor/music-wall');
+      await screen.findByTestId('editor-screen');
+      expect(screen.getByLabelText('Nazwa treningu')).toHaveValue('Ściana muzyczna');
+      expect(screen.getByLabelText('Opis')).toHaveValue(
+        'Cztery piosenki: podjazd siedząc, podjazd stojąc, seria 20/20/20 i 30/30 z większym oporem.',
+      );
+    } finally {
+      setLang('en');
+    }
+  });
+
+  it('M2: the backup list is labelled as single tracks with a hint', async () => {
+    repo.store.set('user-1', userWorkout());
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    const box = screen.getByTestId('fallback-playlist');
+    expect(within(box).getByText('Backup tracks')).toBeInTheDocument();
+    expect(within(box).getByText(/single tracks/i)).toBeInTheDocument();
   });
 });

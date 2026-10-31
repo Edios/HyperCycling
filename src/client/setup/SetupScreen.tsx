@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
 import type { HyperrideWorldId } from '../../domain/settings';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
@@ -213,6 +213,15 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
             </span>
           )}
           <h1>{text.name}</h1>
+          {workout.source.kind === 'user' && (
+            <Link
+              to={`/editor/${encodeURIComponent(workout.id)}`}
+              className={styles.editLink}
+              data-testid="setup-edit"
+            >
+              {t('editor.edit')}
+            </Link>
+          )}
           <div className={styles.chart}>
             <ProfileChart segments={segments} height="6.875rem" thick />
           </div>

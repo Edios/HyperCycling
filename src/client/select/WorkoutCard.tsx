@@ -49,6 +49,16 @@ export const WorkoutCard = memo(function WorkoutCard({ workout }: { workout: Wor
         <h3 className={styles.name}>{name}</h3>
         <ProfileChart segments={segments} height="3.75rem" />
       </Link>
+      {workout.source.kind === 'user' && (
+        <Link
+          to={`/editor/${encodeURIComponent(workout.id)}`}
+          className={`${styles.dup} ${styles.edit}`}
+          aria-label={`${t('editor.edit')}: ${name}`}
+          title={t('editor.edit')}
+        >
+          ✎
+        </Link>
+      )}
       <button
         type="button"
         className={styles.dup}

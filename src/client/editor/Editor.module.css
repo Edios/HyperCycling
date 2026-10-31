@@ -151,3 +151,15 @@
   font-size: 0.9375rem;
   white-space: nowrap;
 }
+
+.timelineFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.timelineFoot .hint {
+  margin: 0;
+}

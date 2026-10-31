@@ -578,9 +578,9 @@ export const pl: Messages = {
     deleteActive:
       'Ten trening jest w przerwanej sesji, która czeka na wznowienie. Usunięcie treningu nie usunie tej sesji.',
     fallback: {
-      title: 'Playlista zapasowa',
-      hint: 'Gra, gdy blok nie ma własnego utworu.',
-      url: 'Link Spotify lub YouTube',
+      title: 'Utwory zapasowe',
+      hint: 'Grają, gdy blok nie ma własnego utworu. Na razie tylko pojedyncze utwory, playlisty nie są obsługiwane.',
+      url: 'Link do utworu Spotify lub YouTube',
       add: 'Dodaj',
       remove: 'Usuń utwór',
       up: 'W górę',
@@ -600,6 +600,8 @@ export const pl: Messages = {
     saved: 'Zapisano',
     saveFailed: 'Nie udało się zapisać. Spróbuj ponownie.',
     duplicate: 'Duplikuj',
+    edit: 'Edytuj',
+    deleteBlock: 'Usuń blok',
     duplicateToEdit: 'Duplikuj, żeby edytować',
     readOnly: 'Wbudowane treningi są tylko do odczytu. Zduplikuj, żeby zrobić własną kopię.',
     copySuffix: ' (kopia)',

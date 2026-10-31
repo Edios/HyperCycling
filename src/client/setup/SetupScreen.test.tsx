@@ -13,6 +13,7 @@ interface Db {
   progress: PlanProgress[];
   puts: Player[];
   failPut?: boolean;
+  workouts?: import('../../domain/workout').Workout[];
 }
 const db: Db = { players: [], progress: [], puts: [] };
 const saved: Settings[] = [];
@@ -20,7 +21,7 @@ const saved: Settings[] = [];
 vi.mock('../data/repositories', () => ({
   getRepositories: () =>
     Promise.resolve({
-      workouts: { list: () => Promise.resolve([]) },
+      workouts: { list: () => Promise.resolve(db.workouts ?? []) },
       activeSession: { clear: () => Promise.resolve() },
       settings: {
         get: () => Promise.resolve(db.settings),
@@ -88,6 +89,7 @@ beforeEach(() => {
   db.progress = [];
   db.puts = [];
   db.failPut = false;
+  db.workouts = undefined;
   saved.length = 0;
   resetSettingsForTests();
   useSessionStore.setState({ runtime: undefined });
@@ -317,5 +319,20 @@ describe('SetupScreen', () => {
   it('an unknown workout goes back home', async () => {
     renderSetup('/setup/nope');
     expect(await screen.findByTestId('where')).toHaveTextContent('/');
+  });
+});
+
+describe('SetupScreen edit link (H3)', () => {
+  it('own workouts offer Edit; built-ins do not', async () => {
+    db.workouts = [{ ...scalable, id: 'mine-1', name: 'Mine', source: { kind: 'user' } }];
+    renderSetup('/setup/mine-1');
+    const edit = await screen.findByRole('link', { name: 'Edit' });
+    expect(edit).toHaveAttribute('href', '/editor/mine-1');
+  });
+
+  it('a built-in has no Edit link', async () => {
+    renderSetup(`/setup/${scalable.id}`);
+    await screen.findByRole('heading', { level: 1 });
+    expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument();
   });
 });

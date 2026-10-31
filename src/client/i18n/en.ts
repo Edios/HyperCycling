@@ -576,9 +576,9 @@ export const en = {
     deleteActive:
       'This workout is in an interrupted session that is waiting to be resumed. Deleting it will not remove that session.',
     fallback: {
-      title: 'Fallback playlist',
-      hint: 'Plays when a block has no track of its own.',
-      url: 'Spotify or YouTube link',
+      title: 'Backup tracks',
+      hint: 'Plays when a block has no track of its own. Single tracks only for now; playlists are not supported yet.',
+      url: 'Spotify or YouTube track link',
       add: 'Add',
       remove: 'Remove track',
       up: 'Move up',
@@ -598,6 +598,8 @@ export const en = {
     saved: 'Saved',
     saveFailed: 'Saving failed. Try again.',
     duplicate: 'Duplicate',
+    edit: 'Edit',
+    deleteBlock: 'Delete block',
     duplicateToEdit: 'Duplicate to edit',
     readOnly: 'Built-in workouts are read-only. Duplicate it to make your own copy.',
     copySuffix: ' (copy)',

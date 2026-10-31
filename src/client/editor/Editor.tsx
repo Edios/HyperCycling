@@ -4,6 +4,7 @@ import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } f
 import { totalDurationSec, type Workout } from '../../domain/workout';
 import { getRepositories } from '../data/repositories';
 import { useSettings } from '../data/useSettings';
+import { localizedText } from '../data/localized';
 import { useLang, useT, type MessageKey } from '../i18n';
 import { formatClock } from '../training/format';
 import { Button } from '../ui/Button';
@@ -19,7 +20,7 @@ import {
 } from './editor-state';
 import { Inspector } from './Inspector';
 import { MetaBar } from './MetaBar';
-import { hardMinutes, saveIssue, shortcutToAction } from './model';
+import { findBlock, hardMinutes, saveIssue, shortcutToAction } from './model';
 import { MusicLane } from './MusicLane';
 import { Palette, PALETTE_PREFIX } from './Palette';
 import { Timeline, TIMELINE_DROP_ID } from './Timeline';
@@ -55,11 +56,13 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [focusTrack, setFocusTrack] = useState(false);
-  const [nameDraft, setNameDraft] = useState(workout.name);
-  const [nameSeen, setNameSeen] = useState(workout.name);
-  if (nameSeen !== workout.name) {
-    setNameSeen(workout.name);
-    setNameDraft(workout.name);
+  // Built-ins are shown in the UI language, like the tiles; own workouts show their stored text.
+  const shown = readOnly ? localizedText(workout, lang) : workout;
+  const [nameDraft, setNameDraft] = useState(shown.name);
+  const [nameSeen, setNameSeen] = useState(shown.name);
+  if (nameSeen !== shown.name) {
+    setNameSeen(shown.name);
+    setNameDraft(shown.name);
   }
 
   const stateRef = useRef(state);
@@ -201,6 +204,12 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
     }
   };
 
+  const selectedBlock = findBlock(workout, state.selectedId);
+  const deleteSelected = (): void => {
+    if (!selectedBlock) return;
+    const action = shortcutToAction(state, new KeyboardEvent('keydown', { key: 'Delete' }), table);
+    if (action) dispatch(action);
+  };
   const errorKey = state.errors[0];
   const onTrackFocused = useCallback(() => setFocusTrack(false), []);
 
@@ -226,7 +235,7 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
                 dispatch({ type: 'updateMeta', patch: { name: e.target.value } });
               }
             }}
-            onBlur={() => setNameDraft(workout.name)}
+            onBlur={() => setNameDraft(shown.name)}
           />
           <div className={styles.category}>
             <Segmented
@@ -286,7 +295,7 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
           )}
         </header>
 
-        <MetaBar workout={workout} readOnly={readOnly} dispatch={dispatch} />
+        <MetaBar workout={workout} description={shown.description} readOnly={readOnly} dispatch={dispatch} />
         {readOnly && (
           <p className={styles.banner} role="status">
             {t('editor.readOnly')}
@@ -326,7 +335,12 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
               table={table}
               dispatch={dispatch}
             />
-            <p className={styles.hint}>{t('editor.timelineHint')}</p>
+            <div className={styles.timelineFoot}>
+              <p className={styles.hint}>{t('editor.timelineHint')}</p>
+              {!readOnly && selectedBlock && (
+                <Button onClick={deleteSelected}>{t('editor.deleteBlock')}</Button>
+              )}
+            </div>
           </main>
           <Inspector
             workout={workout}
