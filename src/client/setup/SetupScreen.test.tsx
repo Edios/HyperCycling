@@ -196,6 +196,18 @@ describe('SetupScreen', () => {
     expect(screen.getByRole('button', { name: /Basic/ })).toBeEnabled();
   });
 
+  it('offers the world only for Hyperride and saves the choice on start', async () => {
+    renderSetup(`/setup/${scalable.id}`);
+    await screen.findByRole('button', { name: /Hyperride/ });
+    expect(screen.queryByRole('radio', { name: 'Road' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Hyperride/ }));
+    expect(screen.getByRole('radio', { name: 'Neon tunnel' })).toBeChecked();
+    fireEvent.click(screen.getByRole('radio', { name: 'Road' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    await screen.findByTestId('where');
+    await waitFor(() => expect(saved.at(-1)?.hyperrideWorld).toBe('road'));
+  });
+
   it('Hyperride offers the overlay layouts (Immersive by default); players disable two', async () => {
     renderSetup(`/setup/${scalable.id}`);
     fireEvent.click(await screen.findByRole('button', { name: /Hyperride/ }));

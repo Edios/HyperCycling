@@ -48,6 +48,7 @@ export const pl: Messages = {
     quickClose: 'Zamknij',
     quickBackground: 'Tło',
     quickLayout: 'Układ ekranu',
+    quickWorld: 'Świat',
     quickSounds: 'Sygnały dźwiękowe',
     quickCoach: 'Podpowiedzi na ekranie',
     quickYoutubeNone: 'Dodaj link YouTube na ekranie przygotowania, aby użyć tego tła.',
@@ -80,6 +81,7 @@ export const pl: Messages = {
     musicSome: 'Muzyka: przypięte utwory ({n}).',
     missing: 'Tego treningu nie ma w bibliotece.',
     background: 'Tło',
+    world: 'Świat',
     backgroundBasic: 'Basic',
     backgroundHyperride: 'Hyperride',
     backgroundYoutube: 'Film z YouTube',
@@ -415,6 +417,7 @@ export const pl: Messages = {
       coach: 'Komunikaty trenera',
       effects: 'Intensywność efektów',
       effectsValue: '{pct}%',
+      hyperrideWorld: 'Świat Hyperride',
       quality: 'Jakość Hyperride',
       qualityHigh: 'Wysoka',
       qualityLow: 'Niska',
@@ -531,6 +534,10 @@ export const pl: Messages = {
   },
   hyperride: {
     unavailable: 'Ten komputer nie obsługuje WebGL. Używam tła Basic.',
+  },
+  world: {
+    neonTunnel: 'Neonowy tunel',
+    road: 'Droga',
   },
   dev: {
     title: 'Treningi',

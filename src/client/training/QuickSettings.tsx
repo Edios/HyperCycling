@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
-import type { SessionConfig } from '../../domain/settings';
+import type { HyperrideWorldId, SessionConfig } from '../../domain/settings';
 import { useT, type MessageKey } from '../i18n';
+import { WORLD_CHOICES } from '../hyperride/world-options';
 import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
 import styles from './QuickSettings.module.css';
@@ -29,10 +30,12 @@ export interface QuickSettingsProps {
   youtubeAvailable: boolean;
   hud: Hud;
   hudChoices: readonly Hud[];
+  world: HyperrideWorldId;
   sounds: boolean;
   coach: boolean;
   onBackground(b: Background): void;
   onHud(h: Hud): void;
+  onWorld(w: HyperrideWorldId): void;
   onSounds(on: boolean): void;
   onCoach(on: boolean): void;
   onClose(): void;
@@ -90,6 +93,19 @@ export function QuickSettings(p: QuickSettingsProps) {
         options={p.hudChoices.map((h) => ({ value: h, label: t(HUD_KEY[h]) }))}
         onChange={p.onHud}
       />
+      {p.background === 'hyperride' && (
+        <>
+          <span className={styles.label} aria-hidden="true">
+            {t('training.quickWorld')}
+          </span>
+          <Segmented
+            label={t('training.quickWorld')}
+            value={p.world}
+            options={WORLD_CHOICES.map((w) => ({ value: w.value, label: t(w.labelKey) }))}
+            onChange={p.onWorld}
+          />
+        </>
+      )}
       <Toggle label={t('training.quickSounds')} checked={p.sounds} onChange={p.onSounds} />
       <Toggle label={t('training.quickCoach')} checked={p.coach} onChange={p.onCoach} />
     </section>

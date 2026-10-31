@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { SessionConfig } from '../../domain/settings';
 import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
+import { WORLD_CHOICES } from '../hyperride/world-options';
 import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
 import { effectiveHud, layoutOptions, type Background } from '../setup/model';
@@ -94,6 +95,16 @@ export function TrainingSection() {
           onChange={(hyperrideQuality) => void save({ hyperrideQuality })}
         />
         <span className={styles.note}>{t('settings.training.qualityHint')}</span>
+      </div>
+
+      <div className={styles.field}>
+        <span className={styles.fieldLabel}>{t('settings.training.hyperrideWorld')}</span>
+        <Segmented
+          label={t('settings.training.hyperrideWorld')}
+          value={settings.hyperrideWorld}
+          options={WORLD_CHOICES.map((w) => ({ value: w.value, label: t(w.labelKey) }))}
+          onChange={(hyperrideWorld) => void save({ hyperrideWorld })}
+        />
       </div>
 
       <div className={styles.defaults}>

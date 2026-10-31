@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
+import { resolveWorld } from '../hyperride/world-options';
 import type { FrameInput } from '../hyperride/world';
 import { useMusicDirector } from '../music/useMusicDirector';
 import { Toast, ToastStack } from '../ui/Toast';
@@ -416,6 +417,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           <HyperrideCanvas
             getFrameInput={getFrameInput}
             quality={settings.hyperrideQuality}
+            world={resolveWorld(settings.hyperrideWorld)}
             viewOffsetX={overlayHud === 'column' && !playersOn ? COLUMN_VIEW_OFFSET : 0}
             {...(motionOn ? { onSway } : {})}
             onUnavailable={() => setHyperrideFailed(true)}
@@ -511,6 +513,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           youtubeAvailable={youtubeUrl !== undefined}
           hud={activeHud(background, playersOn, overlayHud)}
           hudChoices={hudChoices(background, hasPlayers, playersOn)}
+          world={settings.hyperrideWorld}
+          onWorld={(w) => void updateSettings({ hyperrideWorld: w }).catch(warnSave)}
           sounds={settings.sounds}
           coach={settings.coach}
           onBackground={changeBackground}
