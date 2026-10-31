@@ -198,6 +198,17 @@
       "cue": "@lastOne"
     },
     {
+      "kind": "steady",
+      "id": "ssx-r5",
+      "durationSec": 180,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
       "kind": "ramp",
       "id": "ssx-cd",
       "durationSec": 240,

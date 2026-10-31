@@ -539,4 +539,14 @@ describe('built-in workouts', () => {
     expect(segs[12]?.ftpPctStart).toBe(122);
     expect(segs[12]?.cue).toBe('@goUntilFail');
   });
+  it('sprint-steps: each of the five sprints (the last one included) is followed by 3 min easy', () => {
+    const blocks = get('sprint-steps').blocks;
+    const sprints = blocks.flatMap((b, i) => (b.id.startsWith('ssx-s') ? [i] : []));
+    expect(sprints).toHaveLength(5);
+    for (const i of sprints) {
+      const next = blocks[i + 1];
+      expect(next?.kind, `after ${blocks[i]?.id}`).toBe('steady');
+      expect(next?.durationSec, `after ${blocks[i]?.id}`).toBe(180);
+    }
+  });
 });
