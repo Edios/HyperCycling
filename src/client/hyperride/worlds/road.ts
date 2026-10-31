@@ -38,8 +38,10 @@ const BAR_PERIOD = 4;
 const BAR_FILL = 0.88;
 const BAR_DIM = 0.55;
 const TREE_PERIOD = 8;
-const GATE_HEIGHT = ROAD_HALF * 0.78;
-const GATE_POST = 0.3;
+/** Round gate: a ring slightly wider than the road, its lowest part sunk into the road. */
+const GATE_RADIUS = ROAD_HALF * 1.05;
+const GATE_CENTER_Y = GATE_RADIUS * 0.82;
+const GATE_TUBE = 0.16;
 
 /** Widest backdrop / cockpit texture in pixels. */
 const MAX_TEXTURE_WIDTH = 2560;
@@ -544,7 +546,7 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
     trees.renderOrder = 10;
     scene.add(trees);
 
-    // gate: two posts, a lintel, a stripe across the road and a translucent fill
+    // gate: a ring over the road, a stripe across the road and a translucent round fill
     const gate = new THREE.Group();
     const gateSolid = new THREE.MeshBasicMaterial({
       color: 0xffffff,
@@ -552,20 +554,11 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
       fog: false,
     });
     created.push(gateSolid);
-    const box = new THREE.BoxGeometry(1, 1, 1);
-    created.push(box);
-    const post = (x: number): void => {
-      const m = new THREE.Mesh(box, gateSolid);
-      m.scale.set(GATE_POST, GATE_HEIGHT, GATE_POST);
-      m.position.set(x, GATE_HEIGHT / 2, 0);
-      gate.add(m);
-    };
-    post(-ROAD_HALF);
-    post(ROAD_HALF);
-    const lintel = new THREE.Mesh(box, gateSolid);
-    lintel.scale.set(ROAD_HALF * 2 + GATE_POST, GATE_POST, GATE_POST);
-    lintel.position.set(0, GATE_HEIGHT, 0);
-    gate.add(lintel);
+    const ringGeo = new THREE.TorusGeometry(GATE_RADIUS, GATE_TUBE, 8, high ? 72 : 40);
+    created.push(ringGeo);
+    const ring = new THREE.Mesh(ringGeo, gateSolid);
+    ring.position.set(0, GATE_CENTER_Y, 0);
+    gate.add(ring);
     const stripe = new THREE.Mesh(quad, gateSolid);
     stripe.scale.set(ROAD_HALF * 2, 1, 0.9);
     stripe.position.set(0, 0.02, -0.45);
@@ -581,10 +574,10 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
       fog: false,
     });
     created.push(gateFill);
-    const fillGeo = new THREE.PlaneGeometry(ROAD_HALF * 2, GATE_HEIGHT);
+    const fillGeo = new THREE.CircleGeometry(GATE_RADIUS, high ? 72 : 40);
     created.push(fillGeo);
     const fill = new THREE.Mesh(fillGeo, gateFill);
-    fill.position.set(0, GATE_HEIGHT / 2, 0);
+    fill.position.set(0, GATE_CENTER_Y, 0);
     gate.add(fill);
     gate.visible = false;
     gate.renderOrder = 11;
