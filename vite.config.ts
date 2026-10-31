@@ -1,6 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
-import { PAGE_CSP } from './src/shared/csp';
+import { injectCspMeta } from './src/shared/cspMeta';
 
 /**
  * Embeds the Content-Security-Policy as a `<meta>` tag in production builds (GitHub Pages cannot
@@ -11,14 +11,7 @@ function cspMeta(): Plugin {
   return {
     name: 'spinning-tutor:csp-meta',
     apply: 'build',
-    // Right after the charset meta (which must stay within the first 1024 bytes) and before any
-    // script or stylesheet tag, because a meta CSP only governs what is parsed after it.
-    transformIndexHtml: (html) =>
-      html.replace(
-        /<meta charset="UTF-8"\s*\/?>/i,
-        (charset) =>
-          `${charset}\n    <meta http-equiv="Content-Security-Policy" content="${PAGE_CSP}" />`,
-      ),
+    transformIndexHtml: injectCspMeta,
   };
 }
 
@@ -29,6 +22,8 @@ export default defineConfig({
   plugins: [react(), cspMeta()],
   server: {
     host: '127.0.0.1',
+    // The API only trusts the dev origin on 5173; silently moving to another port would break it.
+    strictPort: true,
     // changeOrigin makes the API server see its own Host (it only accepts loopback + its port).
     proxy: { '/api': { target: 'http://127.0.0.1:5175', changeOrigin: true } },
   },

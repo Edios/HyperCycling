@@ -1,4 +1,7 @@
 import type { FastifyInstance } from 'fastify';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS } from '../domain/settings';
 import { SERVER_CSP } from '../shared/csp';
@@ -86,8 +89,8 @@ describe('CSRF on state-changing requests', () => {
       headers: { host: HOST, 'content-type': 'text/plain', origin: EVIL },
       payload: JSON.stringify(bundle()),
     });
-    // either guard may answer first; both stop the attack
-    expect([403, 415]).toContain(res.statusCode);
+    // the Origin guard runs before the Content-Type guard
+    expect(res.statusCode).toBe(403);
     expect(await listPlayers()).toEqual([player]);
   });
 
@@ -286,5 +289,46 @@ describe('information disclosure', () => {
       headers: { host: 'x.example' },
     });
     expect(rebinding.statusCode).toBe(421);
+  });
+});
+
+describe('static files and the dev origin', () => {
+  let dir: string;
+  let staticApp: FastifyInstance;
+  beforeEach(async () => {
+    dir = mkdtempSync(path.join(tmpdir(), 'st-static-'));
+    writeFileSync(path.join(dir, 'index.html'), '<html></html>');
+    staticApp = await buildServer({ dbPath: ':memory:', port: PORT, staticDir: dir });
+  });
+  afterEach(async () => {
+    await staticApp.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('serves index.html with the CSP to the right Host, 421 to a foreign one', async () => {
+    const ok = await staticApp.inject({
+      method: 'GET',
+      url: '/index.html',
+      headers: { host: HOST },
+    });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.headers['content-security-policy']).toBe(SERVER_CSP);
+    const bad = await staticApp.inject({
+      method: 'GET',
+      url: '/index.html',
+      headers: { host: `attacker.example:${PORT}` },
+    });
+    expect(bad.statusCode).toBe(421);
+    expect(bad.body).not.toContain('<html>');
+  });
+
+  it('does not trust the Vite dev origin when it serves the build itself', async () => {
+    const res = await staticApp.inject({
+      method: 'PUT',
+      url: '/api/players/p1',
+      headers: { host: HOST, origin: 'http://127.0.0.1:5173' },
+      payload: player,
+    });
+    expect(res.statusCode).toBe(403);
   });
 });

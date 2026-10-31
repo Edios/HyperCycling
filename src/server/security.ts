@@ -8,6 +8,8 @@ export interface SecurityOptions {
   extraAllowedHosts?: readonly string[];
   /** Extra accepted `Origin` values for state-changing requests. */
   extraAllowedOrigins?: readonly string[];
+  /** Also accept the Vite dev server's origin (only when the server does not serve the build). */
+  trustDevClient?: boolean;
 }
 
 /** Port of the Vite dev server, which proxies `/api` to us in development. */
@@ -33,7 +35,7 @@ export function registerSecurity(app: FastifyInstance, opts: SecurityOptions): v
   const origins = new Set<string>([
     ...LOOPBACK_NAMES.flatMap((n) => [
       `http://${n}:${opts.port}`,
-      `http://${n}:${DEV_CLIENT_PORT}`,
+      ...(opts.trustDevClient ? [`http://${n}:${DEV_CLIENT_PORT}`] : []),
     ]),
     ...(opts.extraAllowedOrigins ?? []).map((o) => o.toLowerCase()),
   ]);

@@ -41,6 +41,8 @@ export async function buildServer(opts: BuildServerOptions): Promise<FastifyInst
   // Registered first so the Host/CSRF guards run before any route or the static handler.
   registerSecurity(app, {
     port: opts.port ?? serverConfig.port,
+    // the Vite dev server (proxying /api) is only in play when we do not serve the build ourselves
+    trustDevClient: !opts.staticDir,
     ...(opts.extraAllowedHosts ? { extraAllowedHosts: opts.extraAllowedHosts } : {}),
     ...(opts.extraAllowedOrigins ? { extraAllowedOrigins: opts.extraAllowedOrigins } : {}),
   });

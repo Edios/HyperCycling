@@ -8,10 +8,10 @@
  *  - www.youtube.com in connect-src: the oEmbed availability check.
  *  - api.spotify.com / accounts.spotify.com in connect-src: Web API calls and the PKCE token
  *    exchange. (The authorize step is a top-level navigation, which CSP does not govern.)
- *  - i.ytimg.com / i.scdn.co in img-src: thumbnails and cover art.
+ *  - open.spotify.com in connect-src: the oEmbed track-title lookup (works without a login).
  * Styles are external files only: React's `style` props go through CSSOM, which CSP allows.
  */
-const directives: Record<string, string[]> = {
+export const CSP_DIRECTIVES: Record<string, string[]> = {
   'default-src': ["'self'"],
   'script-src': ["'self'", 'https://www.youtube.com', 'https://s.ytimg.com'],
   'frame-src': ['https://www.youtube.com', 'https://www.youtube-nocookie.com'],
@@ -20,8 +20,9 @@ const directives: Record<string, string[]> = {
     'https://api.spotify.com',
     'https://accounts.spotify.com',
     'https://www.youtube.com',
+    'https://open.spotify.com',
   ],
-  'img-src': ["'self'", 'data:', 'https://i.ytimg.com', 'https://i.scdn.co'],
+  'img-src': ["'self'", 'data:'],
   'style-src': ["'self'"],
   'font-src': ["'self'"],
   'object-src': ["'none'"],
@@ -30,7 +31,7 @@ const directives: Record<string, string[]> = {
 };
 
 const serialize = (extra: Record<string, string[]> = {}): string =>
-  Object.entries({ ...directives, ...extra })
+  Object.entries({ ...CSP_DIRECTIVES, ...extra })
     .map(([name, values]) => `${name} ${values.join(' ')}`)
     .join('; ');
 
