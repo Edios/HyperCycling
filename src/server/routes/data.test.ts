@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { buildServer } from '../app';
+import { buildTestServer as buildServer } from '../test-support';
 import { serverConfig } from '../config';
 import { warmUpServer } from '../test-warmup';
 

@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { z } from 'zod';
-import { parseExportBundle } from '../../domain/export-bundle';
+import { parseExportBundleObject, stripSecrets } from '../../domain/export-bundle';
 import type { CollectionRepo, Repositories, SingletonRepo } from '../../domain/repositories';
 import { backupDb } from '../backup';
 import { schemas } from '../../storage/validation';
@@ -63,10 +63,12 @@ export function registerDataRoutes(
     });
   }
 
-  app.get('/api/export', async () => repos.exportAll());
+  // Tokens must never leave in a file the user may share; /api/settings keeps them for the client.
+  app.get('/api/export', async () => stripSecrets(await repos.exportAll()));
 
   app.post('/api/import', { bodyLimit: IMPORT_BODY_LIMIT }, async (req, reply) => {
-    const parsed = parseExportBundle(req.body);
+    // Objects only: the body was parsed as application/json, never re-parse a string here.
+    const parsed = parseExportBundleObject(req.body);
     if (!parsed.ok) return fail(reply, 400, parsed.reason, parsed.details);
     if (options.backup) {
       try {

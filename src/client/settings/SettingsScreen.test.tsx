@@ -453,9 +453,7 @@ describe('Data', () => {
   it('shows where the data lives', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(() =>
-        Promise.resolve({ json: () => Promise.resolve({ ok: true, dbPath: 'C:/data/x.db' }) }),
-      ),
+      vi.fn(() => Promise.resolve({ json: () => Promise.resolve({ dbPath: 'C:/data/x.db' }) })),
     );
     try {
       renderScreen();
