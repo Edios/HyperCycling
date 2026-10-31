@@ -136,3 +136,101 @@
     font-size: 5.5vw;
   }
 }
+
+/*
+ * Overlay-style layouts (Hyperride, YouTube, and the corner layouts on Basic): the start prompt
+ * sits in the free centre band, between the HUD tiles above and the controls bar (bottom 20vh,
+ * i.e. from 72vh down). It is also stacked above the controls so a clash can never hide Start.
+ */
+.promptOverlay {
+  top: 40vh;
+  z-index: 3;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  /* The controls wrap into two rows (about 68vh-81vh); the prompt gets slimmer to fit above. */
+  .promptOverlay {
+    top: 53vh;
+  }
+
+  .promptOverlay .prompt {
+    gap: 1vh;
+    padding: 1.6vh 5vw;
+  }
+
+  .promptOverlay .startButton {
+    padding: 0.9vh 9vw;
+    font-size: 9vw;
+  }
+}
+
+/* Corner layouts on the plain background: a quiet glow of the effort colour, no tunnel. */
+.zoneBackdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    color-mix(in srgb, var(--zone) 30%, #06080c) 0%,
+    #06080c 75%
+  );
+  transition: background 0.4s;
+}
+
+/* Focus: the HUD layer comes and goes; with reduced motion it switches instantly. */
+.focusLayer {
+  transition:
+    opacity 0.45s ease,
+    visibility 0s linear 0s;
+}
+
+.focusHidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.45s ease,
+    visibility 0s linear 0.45s;
+}
+
+.instant,
+.instant.focusHidden {
+  transition: none;
+}
+
+/*
+ * Basic tiles (Classic): the centre is taken by tiles and the controls bar (which ends at about
+ * 72vh without riders), so the prompt is a slim row below them, over the timeline, never over
+ * the controls.
+ */
+.promptClassic {
+  top: 74vh;
+  z-index: 3;
+}
+
+.promptClassic .prompt {
+  flex-direction: row;
+  gap: 3vh;
+  padding: 1.4vh 3vh;
+}
+
+.promptClassic .startButton {
+  padding: 0.9vh 4vh;
+  font-size: 4.6vh;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .promptClassic {
+    top: 79vh;
+  }
+
+  .promptClassic .prompt {
+    flex-direction: column;
+    gap: 0.8vh;
+    padding: 1.2vh 5vw;
+  }
+
+  .promptClassic .startButton {
+    padding: 0.7vh 9vw;
+    font-size: 8vw;
+  }
+}

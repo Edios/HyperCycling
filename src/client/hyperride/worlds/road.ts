@@ -100,7 +100,23 @@ interface Scene3D {
   disposables: Disposable[];
   /** Re-created on every resize. */
   backdrop?: THREE.CanvasTexture;
+  /** Live city lights over the backdrop; absent with reduced motion. Re-created on resize. */
+  lights?: LightsLayer;
   unwatchDpr(): void;
+}
+
+/** The small screen-space layer that carries the live lights (own scene and camera). */
+interface LightsLayer {
+  plan: LightsPlan;
+  g: CanvasRenderingContext2D;
+  tex: THREE.CanvasTexture;
+  geo: THREE.PlaneGeometry;
+  mat: THREE.MeshBasicMaterial;
+  scene: THREE.Scene;
+  cam: THREE.OrthographicCamera;
+  /** Animation clock in seconds, and when the layer was last repainted. */
+  t: number;
+  painted: number;
 }
 
 const isPortrait = (w: number, h: number): boolean => h > w;
@@ -116,6 +132,218 @@ function make2d(w: number, h: number): CanvasRenderingContext2D | null {
   c.width = Math.max(1, Math.round(w));
   c.height = Math.max(1, Math.round(h));
   return c.getContext('2d');
+}
+
+const CITY_COLOR = '#1c1238';
+const WINDOW_COLOR = '#ffc77a';
+
+/** Mountain ridge height at x; shared by the backdrop and by the clipping of the live lights. */
+function ridgeY(x: number, W: number, base: number, amp: number, seed: number, freq: number) {
+  const t = (x / W) * freq;
+  return (
+    base -
+    amp *
+      (0.55 * Math.abs(Math.sin(t * 1.7 + seed)) +
+        0.3 * Math.abs(Math.sin(t * 3.9 + seed * 2)) +
+        0.15 * Math.sin(t * 9 + seed * 3))
+  );
+}
+
+/** The ridge in front of the city (it hides the lower part of the skyline). */
+function frontRidge(W: number, H: number) {
+  const P = isPortrait(W, H);
+  const hy = Math.round(H * horizonFraction(W, H));
+  return { base: hy + H * 0.002, amp: H * 0.07, seed: 4.1, freq: P ? 7 : 9 };
+}
+
+interface CityWindow {
+  x: number;
+  y: number;
+  lit: boolean;
+  /** Hash used to pick the few windows that switch on and off. */
+  key: number;
+}
+
+interface Building {
+  x: number;
+  w: number;
+  h: number;
+  windows: CityWindow[];
+}
+
+interface City {
+  buildings: Building[];
+  /** Foot line of the buildings. */
+  base: number;
+  /** Window width. */
+  win: number;
+  x0: number;
+  x1: number;
+}
+
+/** The skyline: a band of blocks, taller in the middle, each with a pattern of lit windows. */
+function cityLayout(W: number, H: number): City {
+  const P = isPortrait(W, H);
+  const hy = Math.round(H * horizonFraction(W, H));
+  const cityX = W * (P ? 0.06 : 0.56);
+  const cityW = W * (P ? 0.5 : 0.36);
+  const base = hy - H * 0.01;
+  const win = Math.max(2, H * 0.0032);
+  const buildings: Building[] = [];
+  let x = cityX;
+  let k = 0;
+  while (x < cityX + cityW) {
+    const bw = W * (0.012 + hash01(k + 50) * 0.018);
+    const centre = 1 - Math.abs((x - cityX - cityW / 2) / cityW) * 0.9;
+    const bh = H * (0.015 + hash01(k + 70) * 0.07 * centre);
+    const windows: CityWindow[] = [];
+    for (let j = 0; j < bh / (H * 0.012); j++) {
+      windows.push({
+        x: x + bw * 0.25 + hash01(k + j) * bw * 0.4,
+        y: base - bh + j * H * 0.012 + 3,
+        lit: hash01(k * 31 + j) > 0.62,
+        key: hash01(k * 17 + j * 7 + 3),
+      });
+    }
+    buildings.push({ x, w: bw, h: bh, windows });
+    x += bw + W * 0.002;
+    k++;
+  }
+  return { buildings, base, win, x0: cityX, x1: x };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Live city lights: a small transparent layer over the static backdrop. Only this small texture
+// is repainted (a few times per second); the full backdrop never is.
+// ---------------------------------------------------------------------------------------------
+
+const AIRCRAFT_COLOR = '255,59,59';
+/** Windows that switch on or off, at most (high quality). */
+const MAX_LIVE_WINDOWS = 28;
+const LIGHTS_FPS_HIGH = 8;
+const LIGHTS_FPS_LOW = 4;
+
+interface LiveWindow {
+  x: number;
+  y: number;
+  lit: boolean;
+  period: number;
+  phase: number;
+}
+
+export interface LightsPlan {
+  /** Layer rectangle in backdrop pixels. */
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  win: number;
+  windows: LiveWindow[];
+  /** Aircraft warning light on the tallest tower, in layer pixels. */
+  tower: { x: number; y: number };
+  /** Layer-space polygon that the ridge in front of the city covers. */
+  ridge: { x: number; y: number }[];
+}
+
+export function planLights(W: number, H: number, high: boolean): LightsPlan {
+  const city = cityLayout(W, H);
+  let tallest = city.buildings[0];
+  for (const b of city.buildings) if (!tallest || b.h > tallest.h) tallest = b;
+  const top = city.base - (tallest?.h ?? 0);
+  const pad = city.win * 8;
+  const x = Math.floor(city.x0);
+  const y = Math.floor(top - pad);
+  const w = Math.ceil(city.x1 - city.x0) + 1;
+  const h = Math.ceil(city.base - y) + 1;
+  const windows: LiveWindow[] = [];
+  if (high) {
+    for (const b of city.buildings) {
+      for (const win of b.windows) {
+        if (win.key <= 0.84 || windows.length >= MAX_LIVE_WINDOWS) continue;
+        const period = 14 + hash01(win.key * 1000) * 18;
+        windows.push({
+          x: win.x - x,
+          y: win.y - y,
+          lit: win.lit,
+          period,
+          phase: hash01(win.key * 3000 + 1) * period,
+        });
+      }
+    }
+  }
+  const fr = frontRidge(W, H);
+  const step = Math.max(2, W / 400);
+  const ridge: { x: number; y: number }[] = [];
+  for (let px = x; px <= x + w + step; px += step) {
+    ridge.push({ x: px - x, y: ridgeY(px, W, fr.base, fr.amp, fr.seed, fr.freq) - y });
+  }
+  return {
+    x,
+    y,
+    w,
+    h,
+    win: city.win,
+    windows,
+    tower: {
+      x: (tallest ? tallest.x + tallest.w / 2 : city.x0) - x,
+      y: top - city.win * 3.5 - y,
+    },
+    ridge,
+  };
+}
+
+const smooth01 = (v: number): number => {
+  const c = Math.min(1, Math.max(0, v));
+  return c * c * (3 - 2 * c);
+};
+
+/** Paints the lights for time `t` (seconds). The layer starts transparent every time. */
+function drawLights(g: CanvasRenderingContext2D, plan: LightsPlan, t: number): void {
+  g.clearRect(0, 0, plan.w, plan.h);
+  g.globalCompositeOperation = 'source-over';
+  for (const w of plan.windows) {
+    // slow on/off: mostly settled on one state, with a fade of a few seconds between them
+    const s = 0.5 + 0.5 * Math.sin((2 * Math.PI * (t + w.phase)) / w.period);
+    const on = smooth01((s - 0.35) / 0.3);
+    if (w.lit) {
+      // a lit window of the backdrop going dark: paint the wall colour over it
+      g.globalAlpha = 1 - on;
+      g.fillStyle = CITY_COLOR;
+      g.fillRect(w.x - 0.5, w.y - 0.5, plan.win + 1, plan.win * 1.2 + 1);
+    } else {
+      g.globalAlpha = on;
+      g.fillStyle = WINDOW_COLOR;
+      g.fillRect(w.x, w.y, plan.win, plan.win * 1.2);
+    }
+  }
+  g.globalAlpha = 1;
+
+  // aircraft warning light: a short red blink every ~1.6 s, with a soft fade in and out
+  const ph = t % 1.6;
+  const blink = smooth01(ph / 0.08) * (1 - smooth01((ph - 0.32) / 0.08));
+  const { x, y } = plan.tower;
+  g.fillStyle = CITY_COLOR; // the mast
+  g.fillRect(x - 0.5, y, Math.max(1, plan.win * 0.4), plan.win * 3.5);
+  const r = plan.win * 7;
+  const glow = g.createRadialGradient(x, y, 0, x, y, r);
+  glow.addColorStop(0, `rgba(${AIRCRAFT_COLOR},${(1 * blink).toFixed(3)})`);
+  glow.addColorStop(0.3, `rgba(${AIRCRAFT_COLOR},${(0.5 * blink).toFixed(3)})`);
+  glow.addColorStop(1, `rgba(${AIRCRAFT_COLOR},0)`);
+  g.fillStyle = glow;
+  g.fillRect(x - r, y - r, r * 2, r * 2);
+  g.fillStyle = `rgba(255,${120 + Math.round(100 * blink)},${120 + Math.round(100 * blink)},${(0.25 + 0.75 * blink).toFixed(3)})`;
+  g.fillRect(x - plan.win * 0.6, y - plan.win * 0.6, plan.win * 1.2, plan.win * 1.2);
+
+  // the ridge in front of the city hides what is below it
+  g.globalCompositeOperation = 'destination-out';
+  g.fillStyle = '#000';
+  g.beginPath();
+  g.moveTo(0, plan.h + 2);
+  for (const p of plan.ridge) g.lineTo(p.x, p.y);
+  g.lineTo(plan.w + 2, plan.h + 2);
+  g.closePath();
+  g.fill();
+  g.globalCompositeOperation = 'source-over';
 }
 
 /** Sky gradient, stars, sun, two mountain ridges and a city skyline; ground below in fog colour. */
@@ -161,16 +389,7 @@ function drawBackdrop(g: CanvasRenderingContext2D, high: boolean): void {
     g.beginPath();
     g.moveTo(0, hy + 2);
     const step = Math.max(2, W / 400);
-    for (let x = 0; x <= W + step; x += step) {
-      const t = (x / W) * freq;
-      const y =
-        base -
-        amp *
-          (0.55 * Math.abs(Math.sin(t * 1.7 + seed)) +
-            0.3 * Math.abs(Math.sin(t * 3.9 + seed * 2)) +
-            0.15 * Math.sin(t * 9 + seed * 3));
-      g.lineTo(x, y);
-    }
+    for (let x = 0; x <= W + step; x += step) g.lineTo(x, ridgeY(x, W, base, amp, seed, freq));
     g.lineTo(W, hy + 2);
     g.closePath();
     g.fill();
@@ -178,33 +397,17 @@ function drawBackdrop(g: CanvasRenderingContext2D, high: boolean): void {
   ridge(hy - H * 0.015, H * 0.15, 1.3, '#4a2a6a', P ? 5 : 6);
 
   // skyline: a band of blocks, taller in the middle, with a few lit windows
-  const cityX = W * (P ? 0.06 : 0.56);
-  const cityW = W * (P ? 0.5 : 0.36);
-  const base = hy - H * 0.01;
-  const win = Math.max(2, H * 0.0032);
-  let x = cityX;
-  let k = 0;
-  while (x < cityX + cityW) {
-    const bw = W * (0.012 + hash01(k + 50) * 0.018);
-    const centre = 1 - Math.abs((x - cityX - cityW / 2) / cityW) * 0.9;
-    const bh = H * (0.015 + hash01(k + 70) * 0.07 * centre);
-    g.fillStyle = '#1c1238';
-    g.fillRect(x, base - bh, bw, bh + H * 0.012);
-    g.fillStyle = '#ffc77a';
-    for (let j = 0; j < bh / (H * 0.012); j++) {
-      if (hash01(k * 31 + j) > 0.62) {
-        g.fillRect(
-          x + bw * 0.25 + hash01(k + j) * bw * 0.4,
-          base - bh + j * H * 0.012 + 3,
-          win,
-          win * 1.2,
-        );
-      }
+  const city = cityLayout(W, H);
+  for (const b of city.buildings) {
+    g.fillStyle = CITY_COLOR;
+    g.fillRect(b.x, city.base - b.h, b.w, b.h + H * 0.012);
+    g.fillStyle = WINDOW_COLOR;
+    for (const w of b.windows) {
+      if (w.lit) g.fillRect(w.x, w.y, city.win, city.win * 1.2);
     }
-    x += bw + W * 0.002;
-    k++;
   }
-  ridge(hy + H * 0.002, H * 0.07, 4.1, '#160e2e', P ? 7 : 9);
+  const fr = frontRidge(W, H);
+  ridge(fr.base, fr.amp, fr.seed, '#160e2e', fr.freq);
 
   // below the horizon the 3D ground covers everything; match its far (fog) colour
   g.fillStyle = `#${FOG_COLOR.toString(16).padStart(6, '0')}`;
@@ -287,6 +490,43 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
     s.backdrop = new THREE.CanvasTexture(bg.canvas);
     s.backdrop.colorSpace = THREE.SRGBColorSpace;
     s.scene.background = s.backdrop;
+    disposeLights(s);
+    if (!reduced) s.lights = makeLights(bg.canvas.width, bg.canvas.height, ratio, s.high);
+  }
+
+  /** The live-lights layer for a backdrop of W x H pixels (ratio = backdrop px per CSS px). */
+  function makeLights(W: number, H: number, ratio: number, high: boolean): LightsLayer | undefined {
+    const plan = planLights(W, H, high);
+    const lg = make2d(plan.w, plan.h);
+    if (!lg) return undefined;
+    drawLights(lg, plan, 0);
+    const tex = new THREE.CanvasTexture(lg.canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const geo = new THREE.PlaneGeometry(plan.w / ratio, plan.h / ratio);
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+      fog: false,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    // screen space in CSS pixels, y up
+    mesh.position.set((plan.x + plan.w / 2) / ratio, height - (plan.y + plan.h / 2) / ratio, 0);
+    const scene = new THREE.Scene();
+    scene.add(mesh);
+    const cam = new THREE.OrthographicCamera(0, width, height, 0, -1, 1);
+    return { plan, g: lg, tex, geo, mat, scene, cam, t: 0, painted: 0 };
+  }
+
+  function disposeLights(sc: Scene3D): void {
+    const l = sc.lights;
+    if (!l) return;
+    l.tex.dispose();
+    l.geo.dispose();
+    l.mat.dispose();
+    l.scene.clear();
+    delete sc.lights;
   }
 
   function makeRibbon(
@@ -643,6 +883,19 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
     const { renderer } = s;
     renderer.clear();
     renderer.render(s.scene, cam);
+    const lights = s.lights;
+    if (lights) {
+      // a few repaints per second of one small texture; the large backdrop is never redrawn
+      lights.t += dt;
+      const every = 1 / (s.high ? LIGHTS_FPS_HIGH : LIGHTS_FPS_LOW);
+      if (lights.t - lights.painted >= every) {
+        lights.painted = lights.t;
+        drawLights(lights.g, lights.plan, lights.t);
+        lights.tex.needsUpdate = true;
+      }
+      renderer.clearDepth();
+      renderer.render(lights.scene, lights.cam);
+    }
   }
 
   return {
@@ -666,6 +919,7 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
       } catch (err) {
         s?.unwatchDpr();
         s?.backdrop?.dispose();
+        if (s) disposeLights(s);
         s = undefined;
         for (const c of created) c.dispose();
         renderer.dispose();
@@ -702,6 +956,7 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
       cur.scene.background = null;
       cur.scene.clear();
       cur.backdrop?.dispose();
+      disposeLights(cur);
       for (const d of cur.disposables) d.dispose();
       cur.renderer.dispose();
       cur.renderer.forceContextLoss();

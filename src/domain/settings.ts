@@ -16,7 +16,9 @@ export interface Equipment {
 export interface SessionConfig {
   background: 'basic' | 'hyperride' | 'youtube';
   youtubeUrl?: string;
-  hud: 'solo' | 'players' | 'immersive' | 'column' | 'cockpit' | 'tunnelTime';
+  hud: 'solo' | 'players' | 'immersive' | 'column' | 'cockpit' | 'tunnelTime' | 'focus';
+  /** Riders panel on or off; undefined = on whenever riders are selected (older saved sessions). */
+  showRiders?: boolean;
   playerIds: string[];
   music: boolean;
 }
@@ -58,7 +60,8 @@ export const equipmentSchema: z.ZodType<Equipment> = z.object({
 export const sessionConfigSchema: z.ZodType<SessionConfig> = z.object({
   background: z.enum(['basic', 'hyperride', 'youtube']),
   youtubeUrl: z.string().optional(),
-  hud: z.enum(['solo', 'players', 'immersive', 'column', 'cockpit', 'tunnelTime']),
+  hud: z.enum(['solo', 'players', 'immersive', 'column', 'cockpit', 'tunnelTime', 'focus']),
+  showRiders: z.boolean().optional(),
   playerIds: z.array(z.string()).max(10),
   music: z.boolean(),
 }) as unknown as z.ZodType<SessionConfig>; // optional-field inference caveat

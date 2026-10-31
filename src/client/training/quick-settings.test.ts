@@ -1,31 +1,56 @@
 import { describe, expect, it } from 'vitest';
 import type { SessionConfig } from '../../domain/settings';
-import { activeHud, hudChoices, withLiveChoice, youtubeUrlFor } from './quick-settings';
+import { withLiveChoice, youtubeUrlFor } from './quick-settings';
+import {
+  layoutChoices,
+  layoutKindOf,
+  nextLayout,
+  storedHud,
+  supportsRiders,
+} from './overlay-layouts';
 
 const base: SessionConfig = { background: 'basic', hud: 'solo', playerIds: ['p1'], music: true };
 
-describe('hudChoices', () => {
-  it('basic offers solo, plus players when riders are selected', () => {
-    expect(hudChoices('basic', false, false)).toEqual(['solo']);
-    expect(hudChoices('basic', true, false)).toEqual(['solo', 'players']);
-  });
-  it('overlay backgrounds offer the overlay layouts; riders on screen limit them', () => {
-    expect(hudChoices('hyperride', false, false)).toEqual([
-      'immersive',
-      'column',
-      'cockpit',
-      'tunnelTime',
-    ]);
-    expect(hudChoices('youtube', true, true)).toEqual(['immersive', 'column']);
-    expect(hudChoices('youtube', true, false)).toHaveLength(4);
+describe('layoutChoices', () => {
+  it('every background offers every corner / column / cockpit / minimal / focus layout', () => {
+    const overlays = ['immersive', 'column', 'cockpit', 'tunnelTime', 'focus'];
+    expect(layoutChoices('hyperride')).toEqual(overlays);
+    expect(layoutChoices('youtube')).toEqual(overlays);
+    expect(layoutChoices('basic')).toEqual(['classic', ...overlays]);
   });
 });
 
-describe('activeHud', () => {
-  it('maps the screen state to a stored layout', () => {
-    expect(activeHud('basic', true, 'column')).toBe('players');
-    expect(activeHud('basic', false, 'column')).toBe('solo');
-    expect(activeHud('hyperride', true, 'column')).toBe('column');
+describe('layoutKindOf / storedHud', () => {
+  it('maps stored ids to layouts; solo / players are Classic on Basic only', () => {
+    expect(layoutKindOf('solo', 'basic')).toBe('classic');
+    expect(layoutKindOf('players', 'basic')).toBe('classic');
+    expect(layoutKindOf('solo', 'hyperride')).toBe('immersive');
+    expect(layoutKindOf('focus', 'basic')).toBe('focus');
+    expect(layoutKindOf('cockpit', 'youtube')).toBe('cockpit');
+  });
+  it('stores Classic as solo / players and the others under their own id', () => {
+    expect(storedHud('classic', true)).toBe('players');
+    expect(storedHud('classic', false)).toBe('solo');
+    expect(storedHud('focus', true)).toBe('focus');
+  });
+  it('only Cockpit and Minimal have no room for riders', () => {
+    expect(supportsRiders('cockpit')).toBe(false);
+    expect(supportsRiders('tunnelTime')).toBe(false);
+    expect(supportsRiders('focus')).toBe(true);
+    expect(supportsRiders('classic')).toBe(true);
+  });
+});
+
+describe('nextLayout (the H shortcut)', () => {
+  it('cycles through every layout including Focus, then wraps', () => {
+    expect(nextLayout('immersive', 'hyperride')).toBe('column');
+    expect(nextLayout('tunnelTime', 'youtube')).toBe('focus');
+    expect(nextLayout('focus', 'hyperride')).toBe('immersive');
+  });
+  it('Classic is part of the cycle on Basic only', () => {
+    expect(nextLayout('focus', 'basic')).toBe('classic');
+    expect(nextLayout('classic', 'basic')).toBe('immersive');
+    expect(nextLayout('classic', 'hyperride')).toBe('immersive');
   });
 });
 

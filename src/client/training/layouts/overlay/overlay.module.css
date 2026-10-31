@@ -660,3 +660,10 @@
     justify-content: center;
   }
 }
+
+/* Before Start (phone): the riders list gives way to the start prompt below it. */
+@media (max-width: 760px) and (orientation: portrait) {
+  :global([data-status='idle']) .root[data-layout][data-layout][data-layout] .players {
+    max-height: 11vh;
+  }
+}

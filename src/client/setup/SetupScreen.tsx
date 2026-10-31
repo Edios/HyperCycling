@@ -27,19 +27,20 @@ import {
   applyPlanSettings,
   buildConfig,
   buildRuntime,
-  effectiveHud,
+  effectiveLayout,
   ENABLED_BACKGROUNDS,
   layoutOptions,
   initialSelection,
-  layoutHintKey,
   MAX_SESSION_PLAYERS,
   parsePlanRef,
   peakEffort,
   pickPlayers,
+  ridersAvailable,
+  ridersHintKey,
   totalSec,
   type Background,
-  type Hud,
 } from './model';
+import { layoutKindOf, type LayoutKind } from '../training/overlay-layouts';
 import styles from './SetupScreen.module.css';
 
 const BACKGROUNDS: readonly { value: Background; labelKey: MessageKey }[] = [
@@ -118,10 +119,12 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
 
   const [players, setPlayers] = useState(initialPlayers);
   const [background, setBackground] = useState<Background>(last?.background ?? 'basic');
-  const [chosenHud, setChosenHud] = useState<Hud | undefined>(
-    // The Settings default layout, also with a preselected rider; only the user's own change of
-    // the selection hands the choice back to "automatic" (players layout).
-    last?.hud === 'players' ? undefined : (last?.hud ?? 'solo'),
+  // The Settings default layout, also with a preselected rider.
+  const [chosenHud, setChosenHud] = useState<LayoutKind | undefined>(
+    last ? layoutKindOf(last.hud, last.background) : undefined,
+  );
+  const [showRiders, setShowRiders] = useState(
+    last?.showRiders ?? (last !== undefined && last.hud !== 'solo'),
   );
   const [selected, setSelected] = useState<string[]>(() =>
     initialSelection(initialPlayers, last?.playerIds),
@@ -146,15 +149,16 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const hasCues = cueCount > 0;
   const text = localizedText(workout, lang);
   const hasPlayers = selected.length > 0;
-  const hud = effectiveHud(background, chosenHud, hasPlayers);
-  const layoutHint = layoutHintKey(background, hasPlayers);
+  const layout = effectiveLayout(background, chosenHud);
+  const ridersOk = ridersAvailable(layout, hasPlayers);
+  const ridersHint = ridersHintKey(layout, hasPlayers);
 
   const togglePlayer = (id: string): void => {
     setSelected((cur) => {
       if (cur.includes(id)) return cur.filter((x) => x !== id);
       return cur.length >= MAX_SESSION_PLAYERS ? cur : [...cur, id];
     });
-    setChosenHud(undefined); // layout follows the selection again
+    setShowRiders(true); // picking someone means showing them
   };
 
   /** Throws when the rider could not be stored, so the form can say so and nobody gets selected. */
@@ -163,7 +167,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
     await repos.players.put(p);
     setPlayers((cur) => [...cur, p]);
     setSelected((cur) => (cur.length >= MAX_SESSION_PLAYERS ? cur : [...cur, p.id]));
-    setChosenHud(undefined);
+    setShowRiders(true);
     setAdding(false);
   };
 
@@ -177,6 +181,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
       {
         background,
         hud: chosenHud,
+        showRiders,
         playerIds: selected,
         music,
         ...(background === 'youtube' ? { youtubeUrl: youtubeTrimmed } : {}),
@@ -331,17 +336,24 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
             <h2 className={styles.label}>{t('setup.layout')}</h2>
             <Segmented
               label={t('setup.layout')}
-              value={hud}
-              options={layoutOptions(background, hasPlayers).map((o) => ({
+              value={layout}
+              options={layoutOptions(background).map((o) => ({
                 value: o.value,
                 label: t(o.labelKey),
-                disabled: o.disabled === true,
               }))}
               onChange={setChosenHud}
             />
-            {layoutHint && (
+            <div className={styles.ridersRow}>
+              <Toggle
+                label={t('setup.riders')}
+                checked={ridersOk && showRiders}
+                onChange={setShowRiders}
+                disabled={!ridersOk}
+              />
+            </div>
+            {ridersHint && (
               <p className={styles.note} data-testid="layout-hint">
-                {t(layoutHint)}
+                {t(ridersHint)}
               </p>
             )}
           </section>

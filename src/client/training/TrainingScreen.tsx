@@ -24,10 +24,17 @@ import { Immersive } from './layouts/overlay/Immersive';
 import { TunnelTime } from './layouts/overlay/TunnelTime';
 import {
   COLUMN_VIEW_OFFSET,
-  initialOverlayHud,
-  nextOverlayHud,
-  type OverlayHudId,
+  layoutChoices,
+  layoutKindOf,
+  nextLayout,
+  storedHud,
+  supportsRiders,
+  type LayoutKind,
 } from './overlay-layouts';
+import { ridersHintKey } from '../setup/model';
+import { FOCUS_INPUT_HOLD_MS, focusVisible } from './focus-visibility';
+import { FocusRest } from './layouts/FocusRest';
+import { monotonicNowMs, useLastInput } from './useLastInput';
 import type { SessionConfig } from '../../domain/settings';
 import {
   Navigate,
@@ -44,7 +51,7 @@ import { ControlsBar } from './ControlsBar';
 import { EndDialog } from './EndDialog';
 import { NowPlaying } from './NowPlaying';
 import { QuickSettings } from './QuickSettings';
-import { activeHud, hudChoices, withLiveChoice, youtubeUrlFor } from './quick-settings';
+import { withLiveChoice, youtubeUrlFor } from './quick-settings';
 import { CoachOverlay } from './hud/CoachOverlay';
 import { Countdown } from './hud/Countdown';
 import { EdgeFlash } from './hud/EdgeFlash';
@@ -102,6 +109,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const muted = useSessionStore((s) => s.muted);
   const reducedMotion = useReducedMotion() || settings.effectsIntensity === 0;
   const controlsIdle = useIdleHide(CONTROLS_HIDE_MS);
+  const lastInputMs = useLastInput(FOCUS_INPUT_HOLD_MS);
 
   const hasPlayers = runtime.players.length > 0;
   const wantsHyperride = runtime.config.background === 'hyperride';
@@ -124,11 +132,12 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const wantsOverlay = wantsHyperride || wantsYoutube;
   const overlay = hyperride || youtube !== null;
   const onYoutubeFail = useCallback((reason: YoutubeFailure) => setYoutubeFailure(reason), []);
-  const [overlayHud, setOverlayHud] = useState<OverlayHudId>(() =>
-    initialOverlayHud(runtime.config.hud),
+  const [kind, setKind] = useState<LayoutKind>(() =>
+    layoutKindOf(runtime.config.hud, runtime.config.background),
   );
+  // Saved Solo means "no riders panel"; every other stored layout shows riders when there are any.
   const [showPlayers, setShowPlayers] = useState(
-    wantsOverlay ? hasPlayers : runtime.config.hud === 'players' && hasPlayers,
+    hasPlayers && (runtime.config.showRiders ?? runtime.config.hud !== 'solo'),
   );
   // A track that cannot be played only shows a notice; the workout carries on.
   const [musicWarning, setMusicWarning] = useState<{ id: number; message: string } | null>(null);
@@ -306,17 +315,23 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     else void document.documentElement.requestFullscreen().catch(() => undefined);
   }, []);
 
+  const playersOn = showPlayers && hasPlayers && supportsRiders(kind);
+
   const togglePlayers = useCallback(() => {
     if (!hasPlayers) return;
-    // Cockpit and Tunnel time have no room for players: showing them switches to Immersive.
-    if (overlay && !showPlayers)
-      setOverlayHud((h) => (h === 'cockpit' || h === 'tunnelTime' ? 'immersive' : h));
-    setShowPlayers((v) => !v);
-  }, [hasPlayers, overlay, showPlayers]);
+    if (playersOn) {
+      setShowPlayers(false);
+      return;
+    }
+    // Cockpit and Minimal have no room for riders: showing them switches to the corner layout.
+    if (!supportsRiders(kind)) setKind('immersive');
+    setShowPlayers(true);
+  }, [hasPlayers, playersOn, kind]);
 
+  const background = runtime.config.background;
   const cycleLayout = useCallback(() => {
-    if (overlay) setOverlayHud((h) => nextOverlayHud(h, showPlayers && hasPlayers));
-  }, [overlay, showPlayers, hasPlayers]);
+    setKind((k) => nextLayout(k, background));
+  }, [background]);
 
   const getFrameInput = useCallback(
     (): FrameInput => ({
@@ -339,8 +354,6 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     rootRef.current?.style.removeProperty('--sy');
   }, [motionOn]);
 
-  const playersOn = showPlayers && hasPlayers;
-  const background = runtime.config.background;
   const youtubeUrl = youtubeUrlFor(sessionYoutubeUrl, settings.recentYoutubeUrls);
 
   /** Applies a live background / layout choice to this ride only; saved defaults stay untouched. */
@@ -360,19 +373,23 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     setUnavailableDismissed(false);
     setYoutubeFailure(undefined);
     setYoutubeToastDismissed(false);
-    let hud = activeHud(bg, playersOn, overlayHud);
-    if (bg !== 'basic' && !hudChoices(bg, hasPlayers, playersOn).includes(overlayHud)) {
-      hud = 'immersive';
-      setOverlayHud('immersive');
+    // Every layout works on every background; only the Basic tiles (Classic) stay on Basic.
+    let next = kind;
+    if (bg !== 'basic' && kind === 'classic') {
+      next = 'immersive';
+      setKind(next);
     }
     if (url) setSessionYoutubeUrl(url);
-    applyChoice(bg, hud, url);
+    applyChoice(bg, storedHud(next, playersOn), url);
   };
 
-  const changeHud = (hud: SessionConfig['hud']): void => {
-    if (hud === 'solo' || hud === 'players') setShowPlayers(hud === 'players');
-    else setOverlayHud(hud);
-    applyChoice(background, hud, background === 'youtube' ? youtubeUrl : undefined);
+  const changeLayout = (next: LayoutKind): void => {
+    setKind(next);
+    applyChoice(
+      background,
+      storedHud(next, playersOn && supportsRiders(next)),
+      background === 'youtube' ? youtubeUrl : undefined,
+    );
   };
 
   useEffect(() => {
@@ -421,13 +438,32 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const coach = (
     <CoachOverlay cue={cue.cue} cueKey={cue.key} color={view.color} reducedMotion={reducedMotion} />
   );
+  // A background that fell back to Basic always shows the plain tiles, as before.
+  const renderKind: LayoutKind = wantsOverlay && !overlay ? 'classic' : kind;
+  const tiled = renderKind === 'classic';
   const Layout = playersOn ? BasicPlayers : BasicSolo;
   const Overlay = {
     immersive: Immersive,
     column: Column,
     cockpit: Cockpit,
     tunnelTime: TunnelTime,
-  }[overlayHud];
+    focus: Immersive, // Focus shows the corner HUD; it only comes and goes
+    classic: Immersive,
+  }[renderKind];
+  const focusOn = renderKind === 'focus';
+  const lastSeg = runtime.segments[runtime.segments.length - 1];
+  const workoutTotalSec = lastSeg ? lastSeg.startSec + lastSeg.durationSec : 0;
+  const hudShown =
+    !focusOn ||
+    focusVisible({
+      status,
+      nowMs: monotonicNowMs(),
+      lastInputMs,
+      blockElapsedSec: view.durationSec - view.remainingSec,
+      blockRemainingSec: view.remainingSec,
+      workoutRemainingSec: workoutTotalSec - view.elapsedSec,
+      dialogOpen: confirmEnd || quickOpen,
+    });
   const layoutProps = {
     view,
     segments: runtime.segments,
@@ -440,12 +476,31 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     coach,
   };
   const rootStyle: CSSProperties & Record<'--zone', string> = { '--zone': view.color };
+  const hudLayer = tiled ? (
+    <div className={styles.layout}>
+      <Layout {...layoutProps} />
+    </div>
+  ) : (
+    <div
+      className={[
+        styles.layout,
+        styles.overlayLayer,
+        focusOn ? styles.focusLayer : '',
+        focusOn && !hudShown ? styles.focusHidden : '',
+        reducedMotion ? styles.instant : '',
+      ].join(' ')}
+      data-testid={focusOn ? 'focus-layer' : undefined}
+      data-hud-visible={focusOn ? hudShown : undefined}
+    >
+      <Overlay {...layoutProps} withPlayers={playersOn} />
+    </div>
+  );
 
   return (
     <div
       ref={rootRef}
       data-testid="training-screen"
-      data-theme={wantsOverlay ? 'dark' : settings.basicTheme}
+      data-theme={wantsOverlay || !tiled ? 'dark' : settings.basicTheme}
       data-status={status}
       data-background={hyperride ? 'hyperride' : youtube !== null ? 'youtube' : 'basic'}
       data-cursor-hidden={hideControls}
@@ -458,13 +513,11 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             getFrameInput={getFrameInput}
             quality={settings.hyperrideQuality}
             world={resolveWorld(worldId)}
-            viewOffsetX={overlayHud === 'column' && !playersOn ? COLUMN_VIEW_OFFSET : 0}
+            viewOffsetX={renderKind === 'column' && !playersOn ? COLUMN_VIEW_OFFSET : 0}
             {...(motionOn ? { onSway } : {})}
             onUnavailable={() => setHyperrideFailed(true)}
           />
-          <div className={`${styles.layout} ${styles.overlayLayer}`}>
-            <Overlay {...layoutProps} withPlayers={playersOn} />
-          </div>
+          {hudLayer}
         </>
       ) : youtube !== null ? (
         <>
@@ -475,16 +528,18 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             reducedMotion={reducedMotion}
             onFail={onYoutubeFail}
           />
-          <div className={`${styles.layout} ${styles.overlayLayer}`}>
-            <Overlay {...layoutProps} withPlayers={playersOn} />
-          </div>
+          {hudLayer}
+        </>
+      ) : tiled ? (
+        <>
+          <div className={styles.topbar} aria-hidden="true" />
+          {hudLayer}
         </>
       ) : (
         <>
-          <div className={styles.topbar} aria-hidden="true" />
-          <div className={styles.layout}>
-            <Layout {...layoutProps} />
-          </div>
+          <div className={styles.zoneBackdrop} aria-hidden="true" />
+          {focusOn && <FocusRest view={view} active={!hudShown} reducedMotion={reducedMotion} />}
+          {hudLayer}
         </>
       )}
       <ToastStack>
@@ -513,14 +568,16 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         )}
       </ToastStack>
       {runtime.config.music && nowPlaying && (
-        <NowPlaying track={nowPlaying} muted={!musicAudible} raised={overlay} />
+        <NowPlaying track={nowPlaying} muted={!musicAudible} raised={overlay || !tiled} />
       )}
       <EdgeFlash trigger={flash} color={view.color} reducedMotion={reducedMotion} />
       <div className={styles.center}>
         <Countdown n={countdownN} color={view.color} reducedMotion={reducedMotion} />
       </div>
       {status === 'idle' && (
-        <div className={styles.promptSlot}>
+        <div
+          className={`${styles.promptSlot} ${tiled ? styles.promptClassic : styles.promptOverlay}`}
+        >
           <div className={styles.prompt}>
             <button
               type="button"
@@ -547,14 +604,19 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         <QuickSettings
           background={background}
           youtubeAvailable={youtubeUrl !== undefined}
-          hud={activeHud(background, playersOn, overlayHud)}
-          hudChoices={hudChoices(background, hasPlayers, playersOn)}
+          layout={kind}
+          layoutChoices={layoutChoices(background)}
+          riders={playersOn}
+          ridersHint={ridersHintKey(kind, hasPlayers)}
+          onRiders={(on) => {
+            if (on !== playersOn) togglePlayers();
+          }}
           world={worldId}
           onWorld={(w) => useSessionStore.getState().setOptions({ world: w })}
           sounds={soundsOn}
           coach={coachOn}
           onBackground={changeBackground}
-          onHud={changeHud}
+          onLayout={changeLayout}
           onSounds={(on) => useSessionStore.getState().setOptions({ sounds: on })}
           onCoach={(on) => useSessionStore.getState().setOptions({ coach: on })}
           onClose={() => setQuickOpen(false)}

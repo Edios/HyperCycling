@@ -6,6 +6,7 @@ import { WORLD_CHOICES } from '../hyperride/world-options';
 import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
 import { effectiveHud, layoutOptions, type Background } from '../setup/model';
+import { layoutKindOf } from '../training/overlay-layouts';
 import { useSave } from './save';
 import styles from './Settings.module.css';
 
@@ -28,6 +29,8 @@ export function TrainingSection() {
   const { settings } = useSettings();
   const last = settings.lastSession ?? FALLBACK_SESSION;
   const hasPlayers = last.playerIds.length > 0;
+  // A saved Solo means "riders panel off"; any other saved layout shows riders when there are any.
+  const ridersWanted = last.showRiders ?? last.hud !== 'solo';
 
   // The slider moves smoothly on a local value; writes are queued so the last one always wins.
   const [draft, setDraft] = useState<number | undefined>();
@@ -41,7 +44,12 @@ export function TrainingSection() {
   };
 
   const setBackground = (background: Background): void => {
-    const hud = effectiveHud(background, last.hud, hasPlayers);
+    const hud = effectiveHud(
+      background,
+      layoutKindOf(last.hud, background),
+      hasPlayers,
+      ridersWanted,
+    );
     void save({ lastSession: { ...last, background, hud } });
   };
 
@@ -123,13 +131,19 @@ export function TrainingSection() {
           <span className={styles.fieldLabel}>{t('settings.training.hud')}</span>
           <Segmented
             label={t('settings.training.hud')}
-            value={effectiveHud(last.background, last.hud, hasPlayers)}
-            options={layoutOptions(last.background, hasPlayers).map((o) => ({
+            value={layoutKindOf(last.hud, last.background)}
+            options={layoutOptions(last.background).map((o) => ({
               value: o.value,
               label: t(o.labelKey),
-              disabled: o.disabled ?? false,
             }))}
-            onChange={(hud) => void save({ lastSession: { ...last, hud } })}
+            onChange={(kind) =>
+              void save({
+                lastSession: {
+                  ...last,
+                  hud: effectiveHud(last.background, kind, hasPlayers, ridersWanted),
+                },
+              })
+            }
           />
         </div>
         <div className={styles.field}>

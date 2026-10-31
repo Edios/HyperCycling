@@ -1,25 +1,46 @@
 import type { SessionConfig } from '../../domain/settings';
 
-export type OverlayHudId = 'immersive' | 'column' | 'cockpit' | 'tunnelTime';
+type Background = SessionConfig['background'];
+type Hud = SessionConfig['hud'];
 
-const ALL: readonly OverlayHudId[] = ['immersive', 'column', 'cockpit', 'tunnelTime'];
-/** Layouts that have room for the players column. */
-const WITH_PLAYERS: readonly OverlayHudId[] = ['immersive', 'column'];
+/** Overlay layouts (any background). Stored ids stay as they were; only the labels changed. */
+export type OverlayHudId = 'immersive' | 'column' | 'cockpit' | 'tunnelTime' | 'focus';
 
-/** Overlay layout for a stored config; anything that is not an overlay layout means Immersive. */
-export function initialOverlayHud(hud: SessionConfig['hud']): OverlayHudId {
-  return ALL.find((h) => h === hud) ?? 'immersive';
+/** 'classic' is the tiled Basic screen (stored as solo / players); it needs the plain background. */
+export type LayoutKind = 'classic' | OverlayHudId;
+
+const OVERLAYS: readonly OverlayHudId[] = ['immersive', 'column', 'cockpit', 'tunnelTime', 'focus'];
+
+/** Cockpit and Minimal have no room for the riders panel. */
+const WITHOUT_RIDERS: readonly LayoutKind[] = ['cockpit', 'tunnelTime'];
+
+export function supportsRiders(kind: LayoutKind): boolean {
+  return !WITHOUT_RIDERS.includes(kind);
 }
 
-export function allowedOverlayHuds(withPlayers: boolean): readonly OverlayHudId[] {
-  return withPlayers ? WITH_PLAYERS : ALL;
+/** The layout for a stored id on a background; Basic's own tiles exist only on Basic. */
+export function layoutKindOf(hud: Hud, background: Background): LayoutKind {
+  const overlay = OVERLAYS.find((h) => h === hud);
+  if (overlay) return overlay;
+  return background === 'basic' ? 'classic' : 'immersive';
 }
 
-/** The next allowed layout (H); a layout that is not allowed any more falls back to the first. */
-export function nextOverlayHud(current: OverlayHudId, withPlayers: boolean): OverlayHudId {
-  const list = allowedOverlayHuds(withPlayers);
+/** Layouts the rider may pick (and H cycles through) for a background. */
+export function layoutChoices(background: Background): readonly LayoutKind[] {
+  return background === 'basic' ? ['classic', ...OVERLAYS] : OVERLAYS;
+}
+
+/** The next layout (H); one that is not offered on this background falls back to the first. */
+export function nextLayout(current: LayoutKind, background: Background): LayoutKind {
+  const list = layoutChoices(background);
   const i = list.indexOf(current);
   return list[(i + 1) % list.length] ?? 'immersive';
+}
+
+/** The stored layout id for what is on screen. */
+export function storedHud(kind: LayoutKind, ridersShown: boolean): Hud {
+  if (kind === 'classic') return ridersShown ? 'players' : 'solo';
+  return kind;
 }
 
 /** Column without players pushes the tunnel to the side of the glass panel. */

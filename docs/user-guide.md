@@ -35,7 +35,7 @@ The Plan tab then shows your next session with **Ride**, a **Swap** button for a
 ![Setup screen](images/setup.png)
 
 - **Background**: _Basic_ (large numbers on a dark or light panel), _Hyperride_ (a 3D tunnel that you ride through, needs WebGL; Settings, Training has a Low quality mode) or _YouTube video_ (paste a watch, youtu.be, Shorts or embed link; a start time such as `t=1m30s` is respected; the last ten links are remembered). If a video cannot be embedded the app falls back to Basic.
-- **Screen layout**: Basic offers _Solo_ and _With players_. Hyperride and YouTube offer _Immersive_, _Column_, _Cockpit_ and _Time in the tunnel_; Cockpit and Time in the tunnel are for riding without players.
+- **Screen layout**: every layout works on every background. _Corners_ (numbers in the corners), _Column_ (a panel on the right), _Cockpit_, _Minimal_ (just the time in the middle) and _Focus_ (the screen stays clean while you ride and the numbers fade in when you move the mouse, touch the screen or press a key, and around each block change so you see what comes next; always shown during the count-in, pause, dialogs and the last 10 seconds). On the Basic background there is also _Classic_ (the tiled screen). **Show riders** adds the riders panel with each rider's target watts; it needs a selected rider, and Cockpit and Minimal have no room for it.
 - **Who rides today**: pick up to 10 riders, or add one on the spot. With players selected, the screen shows each rider's target watts, computed from their own FTP.
 - **Beeps**, **On-screen cues** and **Music** switches. Music is available when the workout has pinned tracks.
 
@@ -58,7 +58,7 @@ Press **Space** (or **Start**) to start: a 3-second countdown, then the workout.
 | Space              | start, pause, resume                            |
 | Left / Right arrow | previous / next block                           |
 | G                  | show or hide the players list                   |
-| H                  | next layout (Hyperride and YouTube only)        |
+| H                  | next layout (all backgrounds)                   |
 | F                  | fullscreen                                      |
 | M                  | mute beeps and music                            |
 | Esc                | close quick settings, or ask to end the workout |

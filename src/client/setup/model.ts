@@ -5,6 +5,12 @@ import type { Segment } from '../../domain/segments';
 import type { SessionConfig } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
 import type { MessageKey } from '../i18n';
+import {
+  layoutChoices,
+  storedHud,
+  supportsRiders,
+  type LayoutKind,
+} from '../training/overlay-layouts';
 import type { SessionOptions, SessionRuntime } from '../training/session-store';
 
 export const MAX_SESSION_PLAYERS = 10;
@@ -53,25 +59,37 @@ export function applyPlanSettings(w: Workout, s: PlanSettings = DEFAULT_PLAN_SET
 }
 
 export interface LayoutOption {
-  value: Hud;
+  value: LayoutKind;
   labelKey: MessageKey;
-  disabled?: boolean;
 }
 
-/** Basic offers Solo / With players; the overlay layouts exist only on Hyperride and YouTube. */
-export function layoutOptions(background: Background, hasPlayers: boolean): LayoutOption[] {
-  if (background === 'basic') {
-    return [
-      { value: 'solo', labelKey: 'setup.layoutSolo' },
-      { value: 'players', labelKey: 'setup.layoutPlayers', disabled: !hasPlayers },
-    ];
-  }
-  return [
-    { value: 'immersive', labelKey: 'setup.layoutImmersive' },
-    { value: 'column', labelKey: 'setup.layoutColumn' },
-    { value: 'cockpit', labelKey: 'setup.layoutCockpit', disabled: hasPlayers },
-    { value: 'tunnelTime', labelKey: 'setup.layoutTunnel', disabled: hasPlayers },
-  ];
+const LAYOUT_LABEL: Record<LayoutKind, MessageKey> = {
+  classic: 'setup.layoutClassic',
+  immersive: 'setup.layoutImmersive',
+  column: 'setup.layoutColumn',
+  cockpit: 'setup.layoutCockpit',
+  tunnelTime: 'setup.layoutTunnel',
+  focus: 'setup.layoutFocus',
+};
+
+export function layoutLabelKey(kind: LayoutKind): MessageKey {
+  return LAYOUT_LABEL[kind];
+}
+
+/** Every layout works on every background; only Basic's own tiles (Classic) stay on Basic. */
+export function layoutOptions(background: Background): LayoutOption[] {
+  return layoutChoices(background).map((value) => ({ value, labelKey: LAYOUT_LABEL[value] }));
+}
+
+/** Whether the riders panel can be on: needs a selected rider and a layout with room for it. */
+export function ridersAvailable(kind: LayoutKind, hasPlayers: boolean): boolean {
+  return hasPlayers && supportsRiders(kind);
+}
+
+/** Visible reason the "Show riders" switch is off-limits (never only a tooltip). */
+export function ridersHintKey(kind: LayoutKind, hasPlayers: boolean): MessageKey | undefined {
+  if (!hasPlayers) return 'setup.ridersHint.none';
+  return supportsRiders(kind) ? undefined : 'setup.ridersHint.noRoom';
 }
 
 /**
@@ -90,28 +108,32 @@ export function initialSelection(
   return only ? [only.id] : [];
 }
 
-/** Visible reason for the layouts that are greyed out (never only a tooltip). */
-export function layoutHintKey(background: Background, hasPlayers: boolean): MessageKey | undefined {
-  if (background === 'basic') return hasPlayers ? undefined : 'setup.layoutHint.basicNoPlayers';
-  return hasPlayers ? 'setup.layoutHint.overlayPlayers' : 'setup.layoutHint.overlay';
+/** The layout in effect: the chosen one when this background offers it, else the default. */
+export function effectiveLayout(
+  background: Background,
+  chosen: LayoutKind | undefined,
+): LayoutKind {
+  const fallback: LayoutKind = background === 'basic' ? 'classic' : 'immersive';
+  return chosen !== undefined && layoutChoices(background).includes(chosen) ? chosen : fallback;
 }
 
-/** The layout that is actually in effect for the current choices. */
+/** The layout id to store; a layout without room for riders never stores a riders panel. */
 export function effectiveHud(
   background: Background,
-  chosen: Hud | undefined,
+  chosen: LayoutKind | undefined,
   hasPlayers: boolean,
+  showRiders = true,
 ): Hud {
-  const hit = layoutOptions(background, hasPlayers).find((o) => o.value === chosen && !o.disabled);
-  if (hit) return hit.value;
-  if (background === 'basic') return hasPlayers ? 'players' : 'solo';
-  return 'immersive';
+  const kind = effectiveLayout(background, chosen);
+  return storedHud(kind, showRiders && ridersAvailable(kind, hasPlayers));
 }
 
 export interface SetupChoices {
   background: Background;
-  /** Undefined means "automatic" (players layout whenever someone is selected). */
-  hud: Hud | undefined;
+  /** Undefined means the background's default layout. */
+  hud: LayoutKind | undefined;
+  /** The "Show riders" switch; undefined means on. */
+  showRiders?: boolean;
   playerIds: string[];
   /** The toggle as the user left it; it only takes effect when the workout has cues. */
   music: boolean;
@@ -122,7 +144,8 @@ export interface SetupChoices {
 export function buildConfig(c: SetupChoices, hasMusicCues: boolean): SessionConfig {
   return {
     background: c.background,
-    hud: effectiveHud(c.background, c.hud, c.playerIds.length > 0),
+    hud: effectiveHud(c.background, c.hud, c.playerIds.length > 0, c.showRiders),
+    ...(c.showRiders === false ? { showRiders: false } : {}),
     playerIds: c.playerIds,
     music: c.music && hasMusicCues,
     ...(c.background === 'youtube' && c.youtubeUrl ? { youtubeUrl: c.youtubeUrl } : {}),

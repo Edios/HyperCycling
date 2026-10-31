@@ -7,10 +7,11 @@ import {
   buildConfig,
   effectiveHud,
   initialSelection,
-  layoutHintKey,
   layoutOptions,
   parsePlanRef,
   pickPlayers,
+  ridersAvailable,
+  ridersHintKey,
 } from './model';
 
 describe('applyPlanSettings', () => {
@@ -51,49 +52,50 @@ describe('initialSelection', () => {
   });
 });
 
-describe('layoutHintKey', () => {
-  it('explains the disabled With players on Basic', () => {
-    expect(layoutHintKey('basic', false)).toBe('setup.layoutHint.basicNoPlayers');
-    expect(layoutHintKey('basic', true)).toBeUndefined();
+describe('ridersHintKey / ridersAvailable', () => {
+  it('explains a Show riders switch that has no rider to show', () => {
+    expect(ridersHintKey('classic', false)).toBe('setup.ridersHint.none');
+    expect(ridersAvailable('classic', false)).toBe(false);
+    expect(ridersHintKey('classic', true)).toBeUndefined();
+    expect(ridersAvailable('focus', true)).toBe(true);
   });
-  it('explains where the players column lives on Hyperride and YouTube', () => {
-    expect(layoutHintKey('hyperride', false)).toBe('setup.layoutHint.overlay');
-    expect(layoutHintKey('youtube', true)).toBe('setup.layoutHint.overlayPlayers');
+  it('explains the layouts that have no room for the riders panel', () => {
+    for (const kind of ['cockpit', 'tunnelTime'] as const) {
+      expect(ridersHintKey(kind, true)).toBe('setup.ridersHint.noRoom');
+      expect(ridersAvailable(kind, true)).toBe(false);
+    }
   });
 });
 
 describe('layoutOptions', () => {
-  it('Basic offers only Solo and With players', () => {
-    expect(layoutOptions('basic', false).map((o) => o.value)).toEqual(['solo', 'players']);
-    expect(layoutOptions('basic', false)[1]?.disabled).toBe(true);
-    expect(layoutOptions('basic', true)[1]?.disabled).toBeFalsy();
-  });
-
-  it('overlay backgrounds disable Cockpit and Tunnel when players are selected', () => {
+  it('every background offers every layout; only Classic is Basic-only', () => {
+    const overlays = ['immersive', 'column', 'cockpit', 'tunnelTime', 'focus'];
+    expect(layoutOptions('basic').map((o) => o.value)).toEqual(['classic', ...overlays]);
     for (const bg of ['hyperride', 'youtube'] as const) {
-      const solo = layoutOptions(bg, false);
-      expect(solo.map((o) => o.value)).toEqual(['immersive', 'column', 'cockpit', 'tunnelTime']);
-      expect(solo.every((o) => !o.disabled)).toBe(true);
-      const group = layoutOptions(bg, true);
-      expect(group.filter((o) => o.disabled).map((o) => o.value)).toEqual([
-        'cockpit',
-        'tunnelTime',
-      ]);
+      expect(layoutOptions(bg).map((o) => o.value)).toEqual(overlays);
     }
   });
 });
 
 describe('effectiveHud', () => {
-  it('is automatic on Basic', () => {
+  it('stores Classic as solo / players depending on the riders switch', () => {
     expect(effectiveHud('basic', undefined, false)).toBe('solo');
     expect(effectiveHud('basic', undefined, true)).toBe('players');
-    expect(effectiveHud('basic', 'solo', true)).toBe('solo');
-    expect(effectiveHud('basic', 'players', false)).toBe('solo');
+    expect(effectiveHud('basic', 'classic', true, false)).toBe('solo');
+    expect(effectiveHud('basic', 'classic', false)).toBe('solo');
   });
 
-  it('falls back to immersive when the chosen overlay layout becomes disabled', () => {
-    expect(effectiveHud('hyperride', 'cockpit', false)).toBe('cockpit');
-    expect(effectiveHud('hyperride', 'cockpit', true)).toBe('immersive');
+  it('keeps every layout on every background, with or without riders', () => {
+    for (const bg of ['basic', 'hyperride', 'youtube'] as const) {
+      for (const hud of ['immersive', 'column', 'cockpit', 'tunnelTime', 'focus'] as const) {
+        expect(effectiveHud(bg, hud, true)).toBe(hud);
+        expect(effectiveHud(bg, hud, false)).toBe(hud);
+      }
+    }
+  });
+
+  it('falls back to the default layout when Classic is chosen off Basic', () => {
+    expect(effectiveHud('hyperride', 'classic', false)).toBe('immersive');
   });
 });
 
@@ -102,6 +104,14 @@ describe('buildConfig', () => {
     expect(
       buildConfig({ background: 'basic', hud: undefined, playerIds: ['a'], music: true }, false),
     ).toEqual({ background: 'basic', hud: 'players', playerIds: ['a'], music: false });
+  });
+
+  it('records a switched-off riders panel on an overlay layout', () => {
+    const cfg = buildConfig(
+      { background: 'hyperride', hud: 'focus', playerIds: ['a'], music: false, showRiders: false },
+      false,
+    );
+    expect(cfg).toMatchObject({ hud: 'focus', showRiders: false });
   });
 });
 
