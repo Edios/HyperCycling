@@ -60,14 +60,13 @@ export const en = {
     countTitle: 'Count toward plan',
     countDetail: '{plan} · week {week} · {slot}',
     ftpTitle: 'FTP test',
-    ftpBest: 'Best 1-minute power (W)',
     ftpProposal: 'Proposed FTP: {ftp} W',
     ftpWho: 'Rider',
     ftpSave: 'Save FTP',
     ftpError: 'FTP must be a whole number from 50 to 600.',
     ftpSaved: 'FTP saved.',
     ftpChoose: 'Choose a rider first.',
-    ftpBestError: 'Enter your best power as a whole number of watts.',
+    ftpBestError: 'Enter the measured power as a whole number of watts.',
     ftpSaveFailed: 'Could not save the FTP. Try again.',
   },
   setup: {
@@ -259,7 +258,7 @@ export const en = {
     startPick: 'Pick a week',
     startWeek: 'Start week',
     ftp: 'Your FTP (for watts)',
-    ftpHint: 'Don’t know your FTP? The plan starts with a ramp test (20 min).',
+    ftpHint: 'Don’t know your FTP? The plan starts with a 20-minute test.',
     ftpError: 'FTP must be between 50 and 600 W.',
     me: 'Me',
     startPlan: 'Start plan',
@@ -359,6 +358,15 @@ export const en = {
       testFormula: 'Formula',
       testStart: 'Start this test',
       testStartRamp: 'Start the ramp test',
+      recommended: "Recommended if you don't know your FTP.",
+      pacingTitle: 'Pacing for your first time:',
+      pacing: {
+        start:
+          'Start at a hard but sustainable effort, around 8 out of 10. If you can talk in sentences, go harder.',
+        steady:
+          "Don't go out too fast. Hold the same effort for the first 15 minutes, even if it feels easy.",
+        finish: 'In the last 5 minutes empty the tank and give everything you have left.',
+      },
       ramp: {
         summary: 'Shortest of the three, about 35 minutes. Needs no pacing.',
         steps: {

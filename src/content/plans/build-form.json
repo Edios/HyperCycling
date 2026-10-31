@@ -20,7 +20,7 @@
       "sessions": [
         {
           "slot": "progres",
-          "workoutId": "ramp-test"
+          "workoutId": "ftp-test-20"
         },
         {
           "slot": "freestyle",
@@ -118,7 +118,7 @@
       "sessions": [
         {
           "slot": "progres",
-          "workoutId": "ramp-test"
+          "workoutId": "ftp-test-20"
         },
         {
           "slot": "freestyle",

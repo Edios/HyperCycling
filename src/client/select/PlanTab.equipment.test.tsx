@@ -59,17 +59,17 @@ beforeEach(() => {
   ];
 });
 
-describe('PlanTab and the ramp test', () => {
-  it('week 1 of Build Form really is a ramp test', () => {
-    expect(bf.weeks[0]?.sessions.find((x) => x.slot === 'progres')?.workoutId).toBe('ramp-test');
+describe('PlanTab and the FTP test', () => {
+  it('week 1 of Build Form really is the 20-minute FTP test', () => {
+    expect(bf.weeks[0]?.sessions.find((x) => x.slot === 'progres')?.workoutId).toBe('ftp-test-20');
   });
 
-  it('with watts the next session is the ramp test', async () => {
+  it('with watts the next session is the FTP test', async () => {
     db.settings = { ...DEFAULT_SETTINGS, activePlanId: bf.id };
     renderTab();
     fireEvent.click(await screen.findByRole('button', { name: 'Ride' }));
     expect((await screen.findByTestId('where')).textContent).toBe(
-      '/setup/ramp-test?plan=build-form&week=1&slot=progres',
+      '/setup/ftp-test-20?plan=build-form&week=1&slot=progres',
     );
   });
 
@@ -81,8 +81,8 @@ describe('PlanTab and the ramp test', () => {
     };
     renderTab();
     const week1 = await screen.findByTestId('week-1-progres');
-    expect(week1).not.toHaveTextContent(/ramp test/i);
-    expect(screen.getByTestId('week-8-progres')).not.toHaveTextContent(/ramp test/i);
+    expect(week1).not.toHaveTextContent(/FTP test/i);
+    expect(screen.getByTestId('week-8-progres')).not.toHaveTextContent(/FTP test/i);
     fireEvent.click(screen.getByRole('button', { name: 'Ride' }));
     expect((await screen.findByTestId('where')).textContent).toBe(
       '/setup/sweet-spot-2x10?plan=build-form&week=1&slot=progres',

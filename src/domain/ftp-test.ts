@@ -18,19 +18,38 @@ export const FTP_TESTS: Readonly<Record<FtpTestKind, FtpTestSpec>> = {
   twoByEight: { inputs: 2, factor: 0.9 },
 };
 
-export const FTP_TEST_KINDS: readonly FtpTestKind[] = ['ramp', 'twenty', 'twoByEight'];
+/** Built-in workout id of each FTP test. */
+export const FTP_TEST_WORKOUT_IDS: Readonly<Record<string, FtpTestKind>> = Object.freeze({
+  'ramp-test': 'ramp',
+  'ftp-test-20': 'twenty',
+  'ftp-test-2x8': 'twoByEight',
+});
+
+/** Which FTP test a workout is, or undefined for any other workout. */
+export function ftpTestKindOf(workoutId: string): FtpTestKind | undefined {
+  return Object.hasOwn(FTP_TEST_WORKOUT_IDS, workoutId)
+    ? FTP_TEST_WORKOUT_IDS[workoutId]
+    : undefined;
+}
+
+export const FTP_TEST_KINDS: readonly FtpTestKind[] = ['twenty', 'ramp', 'twoByEight'];
 
 /**
- * FTP estimated from a test, rounded to whole watts. Undefined when a measured value is missing,
- * not a positive finite number, or the result is outside the player FTP range (50..600).
+ * The shared formula: FTP in whole watts, not range checked. Undefined when the number of values
+ * is wrong or a value is not a positive finite number.
  */
-export function ftpFromTest(kind: FtpTestKind, watts: readonly number[]): number | undefined {
+export function ftpEstimate(kind: FtpTestKind, watts: readonly number[]): number | undefined {
   const spec = FTP_TESTS[kind];
   if (watts.length !== spec.inputs) return undefined;
   if (!watts.every((w) => Number.isFinite(w) && w > 0)) return undefined;
   const mean = watts.reduce((a, b) => a + b, 0) / watts.length;
-  const ftp = Math.round(mean * spec.factor);
-  return isValidFtp(ftp) ? ftp : undefined;
+  return Math.round(mean * spec.factor);
+}
+
+/** The estimate, or undefined when it is missing or outside the player FTP range (50..600). */
+export function ftpFromTest(kind: FtpTestKind, watts: readonly number[]): number | undefined {
+  const ftp = ftpEstimate(kind, watts);
+  return ftp !== undefined && isValidFtp(ftp) ? ftp : undefined;
 }
 
 /** Same rule as the player schema: a whole number from 50 to 600. */

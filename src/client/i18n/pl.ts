@@ -62,14 +62,13 @@ export const pl: Messages = {
     countTitle: 'Zalicz do planu',
     countDetail: '{plan} · tydzień {week} · {slot}',
     ftpTitle: 'Test FTP',
-    ftpBest: 'Najlepsza moc 1 minuty (W)',
     ftpProposal: 'Proponowane FTP: {ftp} W',
     ftpWho: 'Zawodnik',
     ftpSave: 'Zapisz FTP',
     ftpError: 'FTP musi być liczbą całkowitą od 50 do 600.',
     ftpSaved: 'FTP zapisane.',
     ftpChoose: 'Najpierw wybierz zawodnika.',
-    ftpBestError: 'Wpisz najlepszą moc jako liczbę całkowitą watów.',
+    ftpBestError: 'Wpisz zmierzoną moc jako liczbę całkowitą watów.',
     ftpSaveFailed: 'Nie udało się zapisać FTP. Spróbuj ponownie.',
   },
   setup: {
@@ -261,7 +260,7 @@ export const pl: Messages = {
     startPick: 'Wybierz tydzień',
     startWeek: 'Tydzień startu',
     ftp: 'Twoje FTP (do watów)',
-    ftpHint: 'Nie znasz FTP? Plan zaczyna się od testu rampowego (20 min).',
+    ftpHint: 'Nie znasz FTP? Plan zaczyna się od testu 20-minutowego.',
     ftpError: 'FTP musi mieścić się między 50 a 600 W.',
     me: 'Ja',
     startPlan: 'Zacznij plan',
@@ -360,6 +359,15 @@ export const pl: Messages = {
       testFormula: 'Wzór',
       testStart: 'Zacznij ten test',
       testStartRamp: 'Zacznij test Ramp',
+      recommended: 'Polecany, jeśli nie znasz swojego FTP.',
+      pacingTitle: 'Jak rozłożyć siły za pierwszym razem:',
+      pacing: {
+        start:
+          'Zacznij od wysiłku ciężkiego, ale możliwego do utrzymania, około 8 w skali 10. Jeśli możesz mówić pełnymi zdaniami, jedź mocniej.',
+        steady:
+          'Nie startuj zbyt szybko. Przez pierwsze 15 minut trzymaj ten sam wysiłek, nawet jeśli wydaje się łatwy.',
+        finish: 'W ostatnich 5 minutach wyciśnij wszystko, co zostało.',
+      },
       ramp: {
         summary: 'Najkrótszy z trzech, około 35 minut. Nie wymaga rozkładania sił.',
         steps: {

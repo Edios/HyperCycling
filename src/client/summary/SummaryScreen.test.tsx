@@ -73,6 +73,8 @@ const freestyleWorkout = builtinWorkouts.find(
   (w) => w.category === 'freestyle' && w.id !== 'ramp-test',
 )!;
 const ramp = builtinWorkouts.find((w) => w.id === 'ramp-test')!;
+const twenty = builtinWorkouts.find((w) => w.id === 'ftp-test-20')!;
+const twoByEight = builtinWorkouts.find((w) => w.id === 'ftp-test-2x8')!;
 const mirek: Player = { id: 'p1', name: 'Mirek', ftp: 270, isMe: true };
 const ania: Player = { id: 'p2', name: 'Ania', ftp: 190 };
 
@@ -490,6 +492,41 @@ describe('SummaryScreen', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save FTP' }));
       await waitFor(() => expect(db.playerPuts).toHaveLength(1));
       expect(db.playerPuts[0]).toEqual({ ...mirek, ftp: 300 });
+    });
+
+    it('20-minute test: asks for the 20-minute average and proposes 95 %', async () => {
+      useLastResult.getState().set(result({ workout: twenty }));
+      renderSummary();
+      fireEvent.change(await screen.findByLabelText('20-minute average power (W)'), {
+        target: { value: '300' },
+      });
+      expect(screen.getByTestId('ftp-proposal')).toHaveTextContent('285 W');
+      fireEvent.click(screen.getByRole('button', { name: 'Save FTP' }));
+      await waitFor(() => expect(db.playerPuts).toHaveLength(1));
+      expect(db.playerPuts[0]).toEqual({ ...mirek, ftp: 285 });
+    });
+
+    it('2 x 8 test: asks for both efforts and proposes 90 % of their mean', async () => {
+      useLastResult.getState().set(result({ workout: twoByEight }));
+      renderSummary();
+      const first = await screen.findByLabelText('Effort 1 average power (W)');
+      fireEvent.change(first, { target: { value: '300' } });
+      expect(screen.queryByTestId('ftp-proposal')).not.toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText('Effort 2 average power (W)'), {
+        target: { value: '280' },
+      });
+      expect(screen.getByTestId('ftp-proposal')).toHaveTextContent('261 W');
+    });
+
+    it('is hidden for the 20-minute test when the equipment shows no watts', async () => {
+      db.settings = {
+        ...DEFAULT_SETTINGS,
+        equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
+      };
+      useLastResult.getState().set(result({ workout: twenty }));
+      renderSummary();
+      await screen.findByTestId('summary-name');
+      expect(screen.queryByTestId('ftp-card')).not.toBeInTheDocument();
     });
 
     it('rounds the proposal', async () => {

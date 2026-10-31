@@ -131,6 +131,9 @@ const QUICK_BOOST_RANGE: [number, number] = [1500, 2400];
 const DURATION_EXCEPTIONS: Record<string, [number, number]> = {
   // Ramp test: warm-up + 25 one-minute steps + cool-down, a measurement and not a 45 minute session.
   'ramp-test': [2000, 2400],
+  // 20-minute FTP test: warm-up with a hard opener, long rest, 20 min effort and cool-down.
+  // Tests are never scaled to the session length, so they get their own window.
+  'ftp-test-20': [3000, 3300],
   // Design: "Tempo z kadencją ... (35 min)".
   'tempo-cadence-3x6': [2000, 2300],
   // Seiler 4 x 8 format is a 55 minute session by design.
@@ -147,8 +150,13 @@ function hardMinutes(w: Workout): number {
   return sec / 60;
 }
 
+const FTP_TEST_IDS = new Set(['ramp-test', 'ftp-test-20', 'ftp-test-2x8']);
+
 /** Hard minutes plus minutes in the 80-85 % band at half weight. */
 function weightedMinutes(w: Workout): number {
+  // An FTP test is a measurement and is never scaled, so whichever test a plan uses counts as
+  // the ramp test does: the light-week rule then does not depend on the test's own length.
+  if (FTP_TEST_IDS.has(w.id)) w = get('ramp-test');
   let sec = 0;
   for (const seg of flattenWorkout(w)) {
     const mean = (seg.ftpPctStart + seg.ftpPctEnd) / 2;

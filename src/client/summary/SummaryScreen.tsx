@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { DEFAULT_PLAN_SETTINGS, type Plan, type PlanProgress } from '../../domain/plan';
+import { FTP_TESTS, ftpTestKindOf, type FtpTestKind } from '../../domain/ftp-test';
 import type { Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
 import { builtinPlans } from '../data/builtin';
 import { localizedText } from '../data/localized';
 import { getRepositories } from '../data/repositories';
 import { useSettings } from '../data/useSettings';
-import { RAMP_TEST_ID } from '../plans/effective-session';
-import { useLang, useT } from '../i18n';
+import { useLang, useT, type MessageKey } from '../i18n';
 import { formatClock } from '../training/format';
 import { useLastResult, type LastResult } from '../training/last-result';
 import { AppBar } from '../ui/AppBar';
@@ -97,7 +97,8 @@ function Summary({ result }: { result: LastResult }) {
   };
 
   const name = localizedText(result.workout, lang).name;
-  const showFtp = result.workout.id === RAMP_TEST_ID && settings.equipment.showsWatts;
+  const testKind = ftpTestKindOf(result.workout.id);
+  const showFtp = testKind !== undefined && settings.equipment.showsWatts;
 
   return (
     <main data-testid="summary-screen" className={styles.page}>
@@ -139,7 +140,7 @@ function Summary({ result }: { result: LastResult }) {
           </Card>
         )}
 
-        {showFtp && <FtpCard />}
+        {showFtp && testKind && <FtpCard key={testKind} kind={testKind} />}
 
         <div className={styles.buttons}>
           <Button onClick={() => leave(setupPath(result), false)}>{t('summary.again')}</Button>
@@ -152,11 +153,19 @@ function Summary({ result }: { result: LastResult }) {
   );
 }
 
-/** Ramp test: the best 1-minute power gives a proposed FTP (75 %) for the rider. */
-function FtpCard() {
+const FTP_INPUT_KEY: Record<FtpTestKind, MessageKey> = {
+  ramp: 'settings.equipment.ramp.input',
+  twenty: 'settings.equipment.twenty.input',
+  twoByEight: 'settings.equipment.twoByEight.input',
+};
+
+/** After an FTP test: the measured power gives a proposed FTP (shared formula) for the rider. */
+function FtpCard({ kind }: { kind: FtpTestKind }) {
   const t = useT();
   const [players, setPlayers] = useState<Player[]>([]);
-  const [best, setBest] = useState('');
+  const [entries, setEntries] = useState<string[]>(() =>
+    Array.from({ length: FTP_TESTS[kind].inputs }, () => ''),
+  );
   const [riderId, setRiderId] = useState('');
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | undefined>();
 
@@ -178,7 +187,8 @@ function FtpCard() {
 
   const me = meOf(players);
   const rider = me ?? players.find((p) => p.id === riderId);
-  const proposal = proposeFtp(best);
+  const proposal = proposeFtp(kind, entries);
+  const inputKey = FTP_INPUT_KEY[kind];
 
   const save = async (): Promise<void> => {
     if (!rider) {
@@ -208,19 +218,21 @@ function FtpCard() {
   return (
     <Card className={styles.ftp} data-testid="ftp-card">
       <h2>{t('summary.ftpTitle')}</h2>
-      <Field label={t('summary.ftpBest')}>
-        {(id) => (
-          <input
-            id={id}
-            inputMode="numeric"
-            value={best}
-            onChange={(e) => {
-              setBest(e.target.value);
-              setMessage(undefined);
-            }}
-          />
-        )}
-      </Field>
+      {entries.map((value, i) => (
+        <Field key={i} label={t(inputKey, { n: i + 1 })}>
+          {(id) => (
+            <input
+              id={id}
+              inputMode="numeric"
+              value={value}
+              onChange={(e) => {
+                setEntries((cur) => cur.map((old, k) => (k === i ? e.target.value : old)));
+                setMessage(undefined);
+              }}
+            />
+          )}
+        </Field>
+      ))}
       {proposal !== undefined && (
         <p className={styles.proposal} data-testid="ftp-proposal">
           {t('summary.ftpProposal', { ftp: proposal })}

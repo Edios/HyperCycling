@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Plan } from '../../domain/plan';
 import { DEFAULT_SETTINGS } from '../../domain/settings';
-import { effectiveSession, FALLBACK_PROGRES_ID, RAMP_TEST_ID } from './effective-session';
+import { effectiveSession, FALLBACK_PROGRES_ID } from './effective-session';
+
+const RAMP_TEST_ID = 'ramp-test';
 
 const plan: Plan = {
   id: 'p',
@@ -65,6 +67,23 @@ describe('effectiveSession', () => {
     expect(effectiveSession(plan, 2, 'freestyle', noWatts, 'doubleProgres')).toBe(
       FALLBACK_PROGRES_ID,
     );
+  });
+
+  it.each(['ftp-test-20', 'ftp-test-2x8'])('treats %s like the ramp test', (id) => {
+    const p: Plan = {
+      ...plan,
+      weeks: [
+        {
+          light: false,
+          sessions: [{ slot: 'progres', workoutId: id }],
+          progresAlt: 'alt-1',
+        },
+        { light: false, sessions: [{ slot: 'progres', workoutId: id }] },
+      ],
+    };
+    expect(effectiveSession(p, 1, 'progres', watts)).toBe(id);
+    expect(effectiveSession(p, 1, 'progres', noWatts)).toBe('alt-1');
+    expect(effectiveSession(p, 2, 'progres', noWatts)).toBe(FALLBACK_PROGRES_ID);
   });
 
   it('is undefined for a week that does not exist', () => {

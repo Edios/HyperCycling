@@ -1,11 +1,11 @@
 import { workoutOf, type Plan, type PlanLayout, type PlanSlot } from '../../domain/plan';
+import { ftpTestKindOf } from '../../domain/ftp-test';
 import type { Equipment } from '../../domain/settings';
 
-export const RAMP_TEST_ID = 'ramp-test';
 export const FALLBACK_PROGRES_ID = 'sweet-spot-2x10';
 
 /**
- * Workout id actually ridden for a plan slot. A ramp test needs a power reading, so without
+ * Workout id actually ridden for a plan slot. An FTP test (ramp, 20-minute or 2 x 8) needs a power reading, so without
  * `showsWatts` it is replaced by the week's `progresAlt` (fallback: sweet spot 2 x 10).
  */
 export function effectiveSession(
@@ -16,7 +16,7 @@ export function effectiveSession(
   layout: PlanLayout = 'progresFreestyle',
 ): string | undefined {
   const id = workoutOf(plan, week, slot, layout);
-  if (id !== RAMP_TEST_ID || equipment.showsWatts) return id;
+  if (id === undefined || ftpTestKindOf(id) === undefined || equipment.showsWatts) return id;
   const alt = plan.weeks[week - 1]?.progresAlt;
-  return alt !== undefined && alt !== RAMP_TEST_ID ? alt : FALLBACK_PROGRES_ID;
+  return alt !== undefined && ftpTestKindOf(alt) === undefined ? alt : FALLBACK_PROGRES_ID;
 }

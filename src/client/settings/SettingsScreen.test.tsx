@@ -210,10 +210,20 @@ describe('FTP test guide', () => {
 
   it('explains each test with its formula and links the ramp test to its workout', async () => {
     const guide = await openGuide();
+    const radios = within(guide).getAllByRole('radio');
+    expect(radios[0]).toHaveAccessibleName('20-minute test');
+    expect(radios[0]).toBeChecked();
+    expect(within(guide).getByTestId('ftp-recommended')).toHaveTextContent("don't know your FTP");
+    expect(within(guide).getByTestId('ftp-recommended')).toHaveTextContent('8 out of 10');
+    expect(within(guide).getByText('FTP = 95 % of the 20-minute average power')).toBeVisible();
+    expect(within(guide).getByTestId('ftp-test-start')).toHaveAttribute(
+      'href',
+      '/setup/ftp-test-20',
+    );
+    fireEvent.click(within(guide).getByRole('radio', { name: 'Ramp test' }));
+    expect(within(guide).queryByTestId('ftp-recommended')).not.toBeInTheDocument();
     expect(within(guide).getByText('FTP = 75 % of best 1-minute power')).toBeVisible();
     expect(within(guide).getByTestId('ftp-test-start')).toHaveAttribute('href', '/setup/ramp-test');
-    fireEvent.click(within(guide).getByRole('radio', { name: '20-minute test' }));
-    expect(within(guide).getByText('FTP = 95 % of the 20-minute average power')).toBeVisible();
     fireEvent.click(within(guide).getByRole('radio', { name: '2 x 8-minute test' }));
     expect(within(guide).getByText('FTP = 90 % of the average of the two efforts')).toBeVisible();
     expect(within(guide).getAllByRole('listitem')).toHaveLength(3);
@@ -223,6 +233,7 @@ describe('FTP test guide', () => {
     db.players = [{ id: 'b', name: 'Marek', ftp: 250, isMe: true }];
     const guide = await openGuide();
     await screen.findByTestId('my-ftp');
+    fireEvent.click(within(guide).getByRole('radio', { name: 'Ramp test' }));
     fireEvent.change(within(guide).getByLabelText('Best 1-minute power (W)'), {
       target: { value: '320' },
     });
@@ -246,6 +257,7 @@ describe('FTP test guide', () => {
   it('cannot save without a me player', async () => {
     const guide = await openGuide();
     await screen.findByTestId('my-ftp-none');
+    fireEvent.click(within(guide).getByRole('radio', { name: 'Ramp test' }));
     fireEvent.change(within(guide).getByLabelText('Best 1-minute power (W)'), {
       target: { value: '320' },
     });
