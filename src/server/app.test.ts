@@ -3,6 +3,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { expect, it } from 'vitest';
 import { buildServer } from './app';
+import { warmUpServer } from './test-warmup';
+
+await warmUpServer();
 
 it('GET /api/health returns ok', async () => {
   const app = await buildServer({ dbPath: ':memory:' });

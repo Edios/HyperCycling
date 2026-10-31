@@ -3,6 +3,9 @@ import { afterEach, expect, it } from 'vitest';
 import { buildServer } from '../../server/app';
 import { runRepositoryContract } from '../contract';
 import { createHttpRepositories } from './index';
+import { warmUpServer } from '../../server/test-warmup';
+
+await warmUpServer();
 
 const apps: FastifyInstance[] = [];
 afterEach(async () => {

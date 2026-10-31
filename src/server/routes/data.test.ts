@@ -2,6 +2,9 @@ import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { buildServer } from '../app';
 import { serverConfig } from '../config';
+import { warmUpServer } from '../test-warmup';
+
+await warmUpServer();
 
 let app: FastifyInstance;
 beforeEach(async () => {

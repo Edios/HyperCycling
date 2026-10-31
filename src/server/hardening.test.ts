@@ -3,6 +3,9 @@ import { afterEach, expect, it } from 'vitest';
 import { createSqliteRepositories } from '../storage/sqlite';
 import { buildServer } from './app';
 import { parsePort } from './config';
+import { warmUpServer } from './test-warmup';
+
+await warmUpServer();
 
 let app: FastifyInstance | undefined;
 afterEach(async () => {

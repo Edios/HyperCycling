@@ -6,6 +6,9 @@ import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { bundle, workout } from '../../storage/contract';
 import { buildServer } from '../app';
+import { warmUpServer } from '../test-warmup';
+
+await warmUpServer();
 
 let dir: string;
 let dbPath: string;
