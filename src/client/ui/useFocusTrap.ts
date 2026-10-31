@@ -1,15 +1,16 @@
-import { useEffect, type RefObject } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 
 const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 /**
  * Keeps Tab / Shift+Tab inside `panel` while it is mounted and gives focus back to the element
  * that had it before the dialog opened. Call it before any effect that moves focus into the
- * dialog, so the previously focused element is captured first.
+ * dialog. The opener is captured while rendering, which is before any child `autoFocus` runs at
+ * commit, so the order of the dialog's own effects does not matter.
  */
 export function useFocusTrap(panel: RefObject<HTMLElement | null>): void {
+  const [previous] = useState(() => document.activeElement as HTMLElement | null);
   useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
     const onKey = (e: KeyboardEvent): void => {
       if (e.key !== 'Tab' || !panel.current) return;
       const items = Array.from(panel.current.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
@@ -36,5 +37,5 @@ export function useFocusTrap(panel: RefObject<HTMLElement | null>): void {
       document.removeEventListener('keydown', onKey);
       previous?.focus?.();
     };
-  }, [panel]);
+  }, [panel, previous]);
 }

@@ -78,6 +78,7 @@ export function FtpTestGuide({
     twoByEight: ['', ''],
   });
   const [saved, setSaved] = useState<number | undefined>();
+  const [saveFailed, setSaveFailed] = useState(false);
   const copy = COPY[kind];
   const values = typed[kind];
   const ftp = ftpFromTest(
@@ -87,6 +88,7 @@ export function FtpTestGuide({
 
   const setValue = (i: number, v: string): void => {
     setSaved(undefined);
+    setSaveFailed(false);
     setTyped((all) => ({ ...all, [kind]: all[kind].map((old, k) => (k === i ? v : old)) }));
   };
 
@@ -159,13 +161,21 @@ export function FtpTestGuide({
               variant="primary"
               disabled={ftp === undefined || !canSave}
               onClick={() => {
-                if (ftp !== undefined)
-                  void onSave(ftp).then((ok) => setSaved(ok ? ftp : undefined));
+                if (ftp === undefined) return;
+                void onSave(ftp).then((ok) => {
+                  setSaved(ok ? ftp : undefined);
+                  setSaveFailed(!ok);
+                });
               }}
             >
               {t('settings.equipment.calcSave')}
             </Button>
             {!canSave && <span className={styles.note}>{t('settings.equipment.calcNoMe')}</span>}
+            {saveFailed && (
+              <span role="alert" className={styles.note}>
+                {t('settings.saveFailed')}
+              </span>
+            )}
             {saved !== undefined && (
               <span role="status" className={styles.note}>
                 {t('settings.equipment.ftpSaved')}

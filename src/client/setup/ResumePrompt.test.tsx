@@ -83,6 +83,23 @@ beforeEach(() => {
 });
 
 describe('ResumePrompt', () => {
+  it('gives focus back to the element that had it before the dialog opened', async () => {
+    db.active = active();
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <button type="button">Opener</button>
+        <ResumePrompt />
+      </MemoryRouter>,
+    );
+    const opener = screen.getByRole('button', { name: 'Opener' });
+    opener.focus();
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(opener).toHaveFocus();
+  });
+
   it('shows nothing without an interrupted session', async () => {
     renderApp();
     await screen.findByTestId('where');
