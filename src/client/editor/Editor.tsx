@@ -208,6 +208,9 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
     <DndContext sensors={sensors} onDragEnd={onDragEnd}>
       <div className={styles.screen} data-testid="editor-screen" data-readonly={readOnly}>
         <header className={styles.bar}>
+          <Link to="/" className={styles.back} title={t('nav.mainMenu')}>
+            <span aria-hidden="true">⌂</span> {t('nav.mainMenu')}
+          </Link>
           <Link to="/freestyle" className={styles.back}>
             {t('editor.back')}
           </Link>
@@ -263,6 +266,9 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
           >
             ↷
           </button>
+          <Link to="/settings" className={styles.back} title={t('nav.settings')}>
+            <span aria-hidden="true">⚙</span> {t('nav.settings')}
+          </Link>
           {!isNew && !readOnly && (
             <>
               <Button onClick={() => void duplicate()}>{t('editor.duplicate')}</Button>

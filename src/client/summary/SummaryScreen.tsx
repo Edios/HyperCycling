@@ -11,6 +11,7 @@ import { RAMP_TEST_ID } from '../plans/effective-session';
 import { useLang, useT } from '../i18n';
 import { formatClock } from '../training/format';
 import { useLastResult, type LastResult } from '../training/last-result';
+import { AppBar } from '../ui/AppBar';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
@@ -100,6 +101,7 @@ function Summary({ result }: { result: LastResult }) {
 
   return (
     <main data-testid="summary-screen" className={styles.page}>
+      <AppBar />
       <div className={styles.inner}>
         <h1 className={styles.heading}>
           <span data-testid="summary-name">{name}</span>
