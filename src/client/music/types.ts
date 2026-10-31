@@ -17,4 +17,15 @@ export interface MusicProvider {
   /** `v` is 0..1. */
   setVolume(v: number): Promise<void>;
   isReady(): boolean;
+  /**
+   * Optional: looks up the name (and artists) of a track. The director uses it for tracks saved
+   * without a title; it may reject and never holds up playback.
+   */
+  describeTrack?(track: TrackRef): Promise<TrackInfo | undefined>;
+}
+
+/** What a provider knows about a track's name. */
+export interface TrackInfo {
+  title: string;
+  artist?: string;
 }

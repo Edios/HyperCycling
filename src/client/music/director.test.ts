@@ -752,3 +752,68 @@ describe('music director: volume and now playing', () => {
     expect(errors[0]).toBeInstanceOf(Error);
   });
 });
+
+describe('music director: missing titles', () => {
+  const bare = (id: string): TrackRef => ({ provider: 'spotify', id, title: '', startAtSec: 0 });
+
+  it('announces the track again with the name the provider resolves', async () => {
+    const seen: TrackRef[] = [];
+    spotify = createFakeMusicProvider({
+      kind: 'spotify',
+      describe: () => Promise.resolve({ title: 'Real Name', artist: 'Some Band' }),
+    });
+    make({ fallback: [bare('X')], onPlaying: (t) => t && seen.push(t) }).start();
+    await runAt(0);
+    expect(seen.map((t) => t.title)).toEqual(['', 'Real Name']);
+    expect(seen[1]).toMatchObject({ id: 'X', artist: 'Some Band' });
+  });
+
+  it('does not ask for a track that already has a title', async () => {
+    const describe = vi.fn(() => Promise.resolve({ title: 'Other' }));
+    spotify = createFakeMusicProvider({ kind: 'spotify', describe });
+    make({ fallback: [track('T')] }).start();
+    await runAt(0);
+    expect(describe).not.toHaveBeenCalled();
+  });
+
+  it('plays without waiting for the lookup, and survives one that never settles', async () => {
+    const seen: (string | null)[] = [];
+    spotify = createFakeMusicProvider({ kind: 'spotify', describe: () => new Promise(() => {}) });
+    make({ fallback: [bare('X')], onPlaying: (t) => seen.push(t?.title ?? null) }).start();
+    await runAt(0);
+    expect(spotify.log).toEqual(['play:X@0']);
+    await advance(CONTROL_TIMEOUT_MS + 1000);
+    expect(seen).toEqual(['']);
+    expect(warnings).toEqual([]);
+  });
+
+  it('survives a lookup that fails', async () => {
+    const seen: (string | null)[] = [];
+    spotify = createFakeMusicProvider({
+      kind: 'spotify',
+      describe: () => Promise.reject(new Error('nope')),
+    });
+    make({ fallback: [bare('Y')], onPlaying: (t) => seen.push(t?.title ?? null) }).start();
+    await runAt(0);
+    expect(seen).toEqual(['']);
+    expect(warnings).toEqual([]);
+  });
+
+  it('drops a name that arrives after the track has changed', async () => {
+    const seen: (string | null)[] = [];
+    let resolve: (v: { title: string }) => void = () => undefined;
+    spotify = createFakeMusicProvider({
+      kind: 'spotify',
+      describe: () => new Promise((r) => (resolve = r)),
+    });
+    make({
+      cues: [cue('a', bare('A')), cue('b', track('B'))],
+      onPlaying: (t) => seen.push(t?.title ?? null),
+    }).start();
+    await runAt(0);
+    await runAt(150);
+    resolve({ title: 'Late' });
+    await settle();
+    expect(seen).not.toContain('Late');
+  });
+});
