@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
@@ -372,9 +372,13 @@ function AddPlayerForm({
   const [name, setName] = useState('');
   const [ftp, setFtp] = useState('');
   const [errors, setErrors] = useState<{ name?: string; ftp?: string; save?: string }>({});
+  const [saving, setSaving] = useState(false);
+  // A ref, not just state: a second submit can arrive before React re-renders with saving=true.
+  const inFlight = useRef(false);
 
   const submit = (e: FormEvent): void => {
     e.preventDefault();
+    if (inFlight.current) return;
     const trimmed = ftp.trim();
     const parsed = playerSchema.safeParse({
       id: newId(),
@@ -390,10 +394,17 @@ function AddPlayerForm({
       return;
     }
     setErrors({});
-    onAdd(parsed.data).catch((err) => {
-      console.warn('Saving the new player failed', err);
-      setErrors({ save: t('setup.saveError') });
-    });
+    inFlight.current = true;
+    setSaving(true);
+    onAdd(parsed.data)
+      .catch((err) => {
+        console.warn('Saving the new player failed', err);
+        setErrors({ save: t('setup.saveError') });
+      })
+      .finally(() => {
+        inFlight.current = false;
+        setSaving(false);
+      });
   };
 
   return (
@@ -421,7 +432,7 @@ function AddPlayerForm({
       )}
       <div className={styles.addButtons}>
         <Button onClick={onCancel}>{t('setup.playerCancel')}</Button>
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" disabled={saving}>
           {t('setup.playerSave')}
         </Button>
       </div>

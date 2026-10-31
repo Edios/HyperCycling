@@ -6,6 +6,7 @@ import {
   type PlanProgress,
   type PlanSlot,
 } from '../../domain/plan';
+import { ftpEstimate, type FtpTestKind } from '../../domain/ftp-test';
 import { playerSchema, type Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
 import type { EffortTable } from '../../domain/effort';
@@ -54,13 +55,21 @@ export function entryCycle(result: LastResult, plan: Plan, progress: PlanProgres
   return result.plan?.cycle ?? nextSession(plan, progress)?.cycle ?? 1;
 }
 
-/** 75 % of the best 1-minute power, rounded; undefined unless the input is a positive whole number. */
-export function proposeFtp(bestWatts: string): number | undefined {
-  const trimmed = bestWatts.trim();
-  if (!/^\d+$/.test(trimmed)) return undefined;
-  const n = Number(trimmed);
-  if (!Number.isSafeInteger(n) || n <= 0) return undefined;
-  return Math.round(0.75 * n);
+/**
+ * FTP proposed from what the rider typed after an FTP test (one value for ramp and 20-minute,
+ * two for 2 x 8). Undefined unless every entry is a positive whole number. Uses the shared
+ * formula, so the range check stays with `withFtp`.
+ */
+export function proposeFtp(kind: FtpTestKind, entries: readonly string[]): number | undefined {
+  const watts: number[] = [];
+  for (const entry of entries) {
+    const trimmed = entry.trim();
+    if (!/^\d+$/.test(trimmed)) return undefined;
+    const n = Number(trimmed);
+    if (!Number.isSafeInteger(n) || n <= 0) return undefined;
+    watts.push(n);
+  }
+  return ftpEstimate(kind, watts);
 }
 
 /** The rider an FTP result belongs to: the player flagged as me, if any. */

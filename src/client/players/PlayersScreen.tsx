@@ -71,6 +71,8 @@ function PlayerForm({
   const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
   const firstInput = useRef<HTMLInputElement>(null);
+  // A ref next to the state: a second submit can arrive before React re-renders with saving=true.
+  const inFlight = useRef(false);
 
   useEffect(() => {
     if (autoFocus) firstInput.current?.focus();
@@ -78,13 +80,15 @@ function PlayerForm({
 
   const submit = (e: FormEvent): void => {
     e.preventDefault();
-    if (saving) return;
+    if (inFlight.current) return;
+    inFlight.current = true;
     setSaving(true);
     void (async () => {
       let result: Errors = {};
       try {
         result = (await onSubmit(name, ftp)) ?? {};
       } finally {
+        inFlight.current = false;
         setSaving(false);
       }
       setErrors(result);

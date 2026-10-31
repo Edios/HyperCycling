@@ -13,6 +13,7 @@ import { formatClock } from '../training/format';
 import { useSessionStore, type SessionRuntime } from '../training/session-store';
 import { Button } from '../ui/Button';
 import { ProfileChart } from '../ui/ProfileChart';
+import { useFocusTrap } from '../ui/useFocusTrap';
 import { buildRuntime, pickPlayers, snapshotFits, totalSec } from './model';
 import styles from './ResumePrompt.module.css';
 
@@ -36,8 +37,6 @@ async function clearActive(): Promise<void> {
  * Stale records, or ones whose workout no longer exists, are removed without asking.
  */
 export function ResumePrompt() {
-  const t = useT();
-  const [lang] = useLang();
   const navigate = useNavigate();
   const { settings, loaded } = useSettings();
   const effortTable = useRef(settings.effortTable);
@@ -47,6 +46,10 @@ export function ResumePrompt() {
   const [pending, setPending] = useState<Pending | undefined>();
   // Never replace a session that is already on screen.
   const sessionOpen = useSessionStore((s) => s.runtime !== undefined);
+
+  // Once a session is on screen the offer is obsolete for good: drop it, so it cannot resurface
+  // when that session is cleared again (e.g. Leave without saving).
+  if (sessionOpen && pending) setPending(undefined);
 
   useEffect(() => {
     if (!loaded) return undefined;
@@ -112,12 +115,9 @@ export function ResumePrompt() {
   }, [loaded]);
 
   if (!pending || sessionOpen) return null;
-  const { runtime, active, minutesAgo } = pending;
-  const total = totalSec(runtime.segments);
-  const snap = active.snapshot;
 
   const resume = (): void => {
-    useSessionStore.getState().load(runtime, snap);
+    useSessionStore.getState().load(pending.runtime, pending.active.snapshot);
     setPending(undefined);
     navigate('/train');
   };
@@ -125,10 +125,30 @@ export function ResumePrompt() {
     setPending(undefined);
     void clearActive();
   };
+  return <ResumeDialog pending={pending} onResume={resume} onDiscard={discard} />;
+}
+
+function ResumeDialog({
+  pending,
+  onResume,
+  onDiscard,
+}: {
+  pending: Pending;
+  onResume: () => void;
+  onDiscard: () => void;
+}) {
+  const t = useT();
+  const [lang] = useLang();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
+  const { runtime, active, minutesAgo } = pending;
+  const total = totalSec(runtime.segments);
+  const snap = active.snapshot;
 
   return (
     <div className={styles.backdrop}>
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="resume-title"
@@ -162,8 +182,8 @@ export function ResumePrompt() {
           <span>{t('resume.paused')}</span>
         </div>
         <div className={styles.actions}>
-          <Button onClick={discard}>{t('resume.discard')}</Button>
-          <Button variant="primary" autoFocus onClick={resume}>
+          <Button onClick={onDiscard}>{t('resume.discard')}</Button>
+          <Button variant="primary" autoFocus onClick={onResume}>
             {t('resume.resume')}
           </Button>
         </div>

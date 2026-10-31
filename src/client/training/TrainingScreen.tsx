@@ -49,10 +49,6 @@ const CONTROLS_HIDE_MS = 3000;
 /** Music warnings carry instructions (open Spotify...), so they stay longer than other toasts. */
 const MUSIC_WARNING_MS = 8000;
 
-function warnSave(err: unknown): void {
-  console.warn('Saving the quick settings failed', err);
-}
-
 /** Route /train. Redirects home when no session is loaded. */
 export function TrainingScreen() {
   const runtime = useSessionStore((s) => s.runtime);
@@ -291,15 +287,27 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const youtubeUrl = youtubeUrlFor(sessionYoutubeUrl, settings.recentYoutubeUrls);
 
   /** Applies a live background / layout choice: the session config and the saved defaults follow. */
+  const [saveFailures, setSaveFailures] = useState(0);
+  const warnSave = useCallback((err: unknown): void => {
+    console.warn('Saving the quick settings failed', err);
+    setSaveFailures((n) => n + 1);
+  }, []);
+
   const applyChoice = useCallback(
     (bg: SessionConfig['background'], hud: SessionConfig['hud'], url: string | undefined) => {
       const config = withLiveChoice(runtime.config, bg, hud, url);
       useSessionStore.getState().setConfig(config);
+      // Leaving YouTube must not forget the link that setup offers as its default.
+      const kept = config.youtubeUrl ?? settingsRef.current.lastSession?.youtubeUrl;
       void updateSettings({
-        lastSession: { ...config, music: settingsRef.current.lastSession?.music ?? config.music },
-      }).catch((err) => console.warn('Saving the quick settings failed', err));
+        lastSession: {
+          ...config,
+          ...(kept ? { youtubeUrl: kept } : {}),
+          music: settingsRef.current.lastSession?.music ?? config.music,
+        },
+      }).catch(warnSave);
     },
-    [runtime.config, updateSettings],
+    [runtime.config, updateSettings, warnSave],
   );
 
   const changeBackground = (bg: SessionConfig['background']): void => {
@@ -422,6 +430,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             videoId={youtube.videoId}
             startSec={youtube.startSec}
             paused={status === 'paused'}
+            reducedMotion={reducedMotion}
             onFail={onYoutubeFail}
           />
           <div className={`${styles.layout} ${styles.overlayLayer}`}>
@@ -449,6 +458,13 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
               youtubeFailure === 'embed-blocked' ? 'youtube.embedBlocked' : 'youtube.unavailable',
             )}
             onClose={() => setYoutubeToastDismissed(true)}
+          />
+        )}
+        {saveFailures > 0 && (
+          <Toast
+            key={saveFailures}
+            message={t('settings.saveFailed')}
+            onClose={() => setSaveFailures(0)}
           />
         )}
         {musicWarning && (

@@ -590,3 +590,18 @@ describe('search and devices', () => {
     ]);
   });
 });
+
+describe('describeTrack', () => {
+  it('reads the name and artists of a track', async () => {
+    const seen = api(() =>
+      HttpResponse.json({ id: 'abc', name: 'Song', artists: [{ name: 'A' }, { name: 'B' }] }),
+    );
+    const info = await setup().provider.describeTrack({ ...track, id: 'abc', title: '' });
+    expect(info).toEqual({ title: 'Song', artist: 'A, B' });
+    expect(seen[0]).toMatchObject({ method: 'GET', path: '/v1/tracks/abc' });
+  });
+  it('fails on an unexpected shape', async () => {
+    api(() => HttpResponse.json({ nope: 1 }));
+    await expect(setup().provider.describeTrack(track)).rejects.toMatchObject({ code: 'http' });
+  });
+});

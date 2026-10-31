@@ -244,3 +244,85 @@ describe('Spotify search', () => {
     expect(await screen.findByText('No tracks found.')).toBeInTheDocument();
   });
 });
+
+describe('Spotify pasted link', () => {
+  const SP_ID = '4uLU6hMCjMI75M1A2tKUQC';
+  const SP_URL = `https://open.spotify.com/track/${SP_ID}`;
+  const connected: Settings = {
+    ...DEFAULT_SETTINGS,
+    spotify: {
+      clientId: 'cid',
+      accessToken: 'AT',
+      refreshToken: 'RT',
+      expiresAt: Date.now() + 3_600_000,
+    },
+  };
+  const oembed = (status: number, body?: unknown) =>
+    server.use(
+      http.get('https://open.spotify.com/oembed', () =>
+        body === undefined
+          ? new HttpResponse(null, { status })
+          : HttpResponse.json(body as Record<string, unknown>, { status }),
+      ),
+    );
+
+  it('fills the title and artist from the Web API when connected', async () => {
+    repo.settings = connected;
+    server.use(
+      http.get(`https://api.spotify.com/v1/tracks/${SP_ID}`, () =>
+        HttpResponse.json({ id: SP_ID, name: 'Api Song', artists: [{ name: 'X' }, { name: 'Y' }] }),
+      ),
+    );
+    await openEditor();
+    await screen.findByTestId('spotify-query');
+    fireEvent.change(screen.getByTestId('track-url'), { target: { value: SP_URL } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    await waitFor(() => expect(screen.getByTestId('music-pill')).toHaveTextContent('Api Song'));
+    expect(screen.getByTestId('track-pinned')).toHaveTextContent('Api Song');
+  });
+
+  it('falls back to oEmbed when not connected', async () => {
+    oembed(200, { title: 'Embed Song' });
+    await openEditor();
+    fireEvent.change(screen.getByTestId('track-url'), { target: { value: SP_URL } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    await waitFor(() => expect(screen.getByTestId('music-pill')).toHaveTextContent('Embed Song'));
+  });
+
+  it('falls back to oEmbed when the Web API call fails', async () => {
+    repo.settings = connected;
+    server.use(
+      http.get(
+        `https://api.spotify.com/v1/tracks/${SP_ID}`,
+        () => new HttpResponse(null, { status: 500 }),
+      ),
+    );
+    oembed(200, { title: 'Embed Song' });
+    await openEditor();
+    await screen.findByTestId('spotify-query');
+    fireEvent.change(screen.getByTestId('track-url'), { target: { value: SP_URL } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    await waitFor(() => expect(screen.getByTestId('music-pill')).toHaveTextContent('Embed Song'));
+  });
+
+  it('leaves the title empty, without an error, when nothing answers', async () => {
+    server.use(http.get('https://open.spotify.com/oembed', () => HttpResponse.error()));
+    await openEditor();
+    fireEvent.change(screen.getByTestId('track-url'), { target: { value: SP_URL } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+    expect(screen.getByTestId('music-pill')).toHaveTextContent('♫');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('fills the title of a track added to the fallback playlist', async () => {
+    oembed(200, { title: 'Embed Song' });
+    await openEditor();
+    fireEvent.change(screen.getByTestId('fallback-url'), { target: { value: SP_URL } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    const item = await screen.findByTestId('fallback-track');
+    await waitFor(() => expect(item).toHaveTextContent('Embed Song'));
+  });
+});

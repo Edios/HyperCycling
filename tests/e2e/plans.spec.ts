@@ -23,7 +23,7 @@ test('gallery filters and opens a plan', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Build Form' })).toBeVisible();
 });
 
-test('Build Form at 30 min shortens a scalable session but never the ramp test', async ({
+test('Build Form at 30 min shortens a scalable session but never the FTP test', async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -31,7 +31,7 @@ test('Build Form at 30 min shortens a scalable session but never the ramp test',
 
   await page.goto('./#/plans/build-form');
   await page.getByRole('radio', { name: '45 min' }).check({ force: true });
-  // Week 1 progres is the ramp test (never scaled); the freestyle preview follows the length.
+  // Week 1 progres is the 20-minute FTP test (never scaled); the freestyle preview follows the length.
   const preview45 = await page.getByTestId('preview-freestyle-minutes').innerText();
   // Other specs may have activated Build Form already (shared local database): then it is Save changes.
   await page.getByRole('button', { name: /^(Start plan|Save changes)$/ }).click();

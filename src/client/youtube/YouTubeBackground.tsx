@@ -15,6 +15,8 @@ export interface YouTubeBackgroundProps {
   startSec?: number;
   /** True while the engine is paused; the video follows. */
   paused: boolean;
+  /** Prefers-reduced-motion: show a still frame instead of moving video. */
+  reducedMotion?: boolean;
   onFail: (reason: YoutubeFailure) => void;
 }
 
@@ -23,15 +25,18 @@ export function YouTubeBackground({
   videoId,
   startSec = 0,
   paused,
+  reducedMotion = false,
   onFail,
 }: YouTubeBackgroundProps) {
   const frameRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | undefined>(undefined);
   const readyRef = useRef(false);
-  const pausedRef = useRef(paused);
+  // The video only plays while the session runs and motion is welcome.
+  const halted = paused || reducedMotion;
+  const pausedRef = useRef(halted);
   const onFailRef = useRef(onFail);
   useEffect(() => {
-    pausedRef.current = paused;
+    pausedRef.current = halted;
     onFailRef.current = onFail;
   });
 
@@ -118,9 +123,9 @@ export function YouTubeBackground({
   useEffect(() => {
     const player = playerRef.current;
     if (!player || !readyRef.current) return;
-    if (paused) player.pauseVideo();
+    if (halted) player.pauseVideo();
     else player.playVideo();
-  }, [paused]);
+  }, [halted]);
 
   return (
     <div data-testid="youtube-background" className={styles.root} aria-hidden="true">

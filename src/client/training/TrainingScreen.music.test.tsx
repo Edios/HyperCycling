@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flattenWorkout } from '../../domain/segments';
@@ -195,6 +195,18 @@ describe('now playing, mute and warnings', () => {
     const corner = screen.getByTestId('now-playing');
     expect(corner).toHaveTextContent('Warm up jam');
     expect(corner).toHaveTextContent('The Band · YouTube');
+  });
+
+  it('shows the name the provider resolves for a track saved without a title', async () => {
+    music.provider = createFakeMusicProvider({
+      kind: 'youtube',
+      describe: () => Promise.resolve({ title: 'Looked Up', artist: 'Resolved Band' }),
+    });
+    load(workoutWith({ fallbackPlaylist: [{ ...titled, title: '', artist: undefined }] }), true);
+    await renderScreen();
+    await startRunning();
+    await waitFor(() => expect(screen.getByTestId('now-playing')).toHaveTextContent('Looked Up'));
+    expect(screen.getByTestId('now-playing')).toHaveTextContent('Resolved Band');
   });
 
   it('shows nothing when the session has music off', async () => {

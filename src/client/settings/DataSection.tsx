@@ -24,7 +24,7 @@ function useLocation(): Location | undefined {
   useEffect(() => {
     if (browser) return undefined;
     let cancelled = false;
-    fetch('/api/health')
+    fetch('/api/location')
       .then((r) => r.json() as Promise<{ dbPath?: unknown }>)
       .then((body) => (typeof body.dbPath === 'string' ? body.dbPath : undefined))
       .catch(() => undefined)

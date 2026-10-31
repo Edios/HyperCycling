@@ -265,6 +265,23 @@ describe('CoachOverlay', () => {
     expect(screen.queryByTestId('coach-overlay')).toBeNull();
     expect(screen.getByTestId('coach-live')).toHaveAttribute('aria-live', 'polite');
   });
+  it('announces the cue in an sr-only polite live region; the big visual text is hidden from AT', () => {
+    const { rerender } = render(<CoachOverlay cue={null} cueKey={0} color="#fff" />);
+    const live = screen.getByTestId('coach-live');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveClass('sr-only');
+    expect(live).toBeEmptyDOMElement();
+    rerender(<CoachOverlay cue={{ kind: 'attack' }} cueKey={1} color="#fff" />);
+    expect(live).toHaveTextContent('ATTACK!');
+    expect(screen.getByTestId('coach-overlay')).toHaveAttribute('aria-hidden', 'true');
+    expect(live).not.toContainElement(screen.getByTestId('coach-overlay'));
+  });
+  it('re-announces an identical cue (the announced node is replaced per cueKey)', () => {
+    const { rerender } = render(<CoachOverlay cue={{ kind: 'attack' }} cueKey={1} color="#fff" />);
+    const first = screen.getByTestId('coach-live').firstElementChild;
+    rerender(<CoachOverlay cue={{ kind: 'attack' }} cueKey={2} color="#fff" />);
+    expect(screen.getByTestId('coach-live').firstElementChild).not.toBe(first);
+  });
   it('translates @token custom cues', () => {
     render(<CoachOverlay cue={{ kind: 'custom', text: '@sprint' }} cueKey={1} color="#fff" />);
     expect(screen.getByTestId('coach-overlay')).toHaveTextContent('Sprint!');

@@ -270,7 +270,7 @@ describe('PlanDetail', () => {
     renderDetail();
     const input = await screen.findByLabelText('Your FTP (for watts)');
     expect(input).toHaveValue(250);
-    expect(screen.getByText(/ramp test/)).toBeInTheDocument();
+    expect(screen.getByText(/20-Minute FTP Test/)).toBeInTheDocument();
     fireEvent.change(input, { target: { value: '270' } });
     fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     await screen.findByTestId('where');
@@ -285,7 +285,7 @@ describe('PlanDetail', () => {
     expect(screen.getByRole('button', { name: 'Start plan' })).toBeDisabled();
   });
 
-  it('hides the FTP field and swaps the ramp test when the bike shows no watts', async () => {
+  it('hides the FTP field and swaps the FTP test when the bike shows no watts', async () => {
     db.settings = {
       ...DEFAULT_SETTINGS,
       equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
@@ -293,7 +293,7 @@ describe('PlanDetail', () => {
     renderDetail();
     await screen.findByTestId('preview-progres');
     expect(screen.queryByLabelText('Your FTP (for watts)')).not.toBeInTheDocument();
-    expect(screen.getByTestId('preview-progres')).not.toHaveTextContent(/ramp test/i);
+    expect(screen.getByTestId('preview-progres')).not.toHaveTextContent(/FTP test/i);
     expect(screen.getAllByTestId('load-label').map((l) => l.textContent)).not.toContain(
       'W1 · test',
     );

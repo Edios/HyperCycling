@@ -17,6 +17,7 @@ import { TrainingScreen } from './TrainingScreen';
 
 let stored: Settings | undefined;
 const puts = vi.hoisted(() => [] as Settings[]);
+const failPuts = vi.hoisted(() => ({ value: false }));
 vi.mock('../data/repositories', () => ({
   getRepositories: () =>
     Promise.resolve({
@@ -24,7 +25,7 @@ vi.mock('../data/repositories', () => ({
         get: () => Promise.resolve(stored),
         put: (s: Settings) => {
           puts.push(s);
-          return Promise.resolve();
+          return failPuts.value ? Promise.reject(new Error('disk full')) : Promise.resolve();
         },
       },
     }),
@@ -108,6 +109,7 @@ beforeEach(() => {
   now = 0;
   stored = undefined;
   puts.length = 0;
+  failPuts.value = false;
   resetSettingsForTests();
   useLastResult.getState().clear();
   vi.stubGlobal('requestAnimationFrame', () => 1);
@@ -264,5 +266,17 @@ describe('quick settings', () => {
     await waitFor(() => expect(puts.at(-1)?.sounds).toBe(!DEFAULT_SETTINGS.sounds));
     fireEvent.click(screen.getByRole('switch', { name: 'On-screen cues' }));
     await waitFor(() => expect(puts.at(-1)?.coach).toBe(!DEFAULT_SETTINGS.coach));
+  });
+
+  it('shows an error toast when a quick setting cannot be saved, and the ride goes on', async () => {
+    load();
+    await renderScreen();
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    failPuts.value = true;
+    fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Beeps' }));
+    expect(await screen.findByText('Could not save the setting. Try again.')).toBeInTheDocument();
+    expect(useSessionStore.getState().runtime).toBeDefined();
+    expect(screen.getByTestId('quick-settings')).toBeInTheDocument();
   });
 });

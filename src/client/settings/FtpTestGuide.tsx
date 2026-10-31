@@ -60,6 +60,12 @@ const COPY: Record<FtpTestKind, TestCopy> = {
   },
 };
 
+const PACING: readonly MessageKey[] = [
+  'settings.equipment.pacing.start',
+  'settings.equipment.pacing.steady',
+  'settings.equipment.pacing.finish',
+];
+
 /** Expandable guide: how to ride each FTP test, what to note, and a calculator for the result. */
 export function FtpTestGuide({
   canSave,
@@ -71,13 +77,14 @@ export function FtpTestGuide({
   const t = useT();
   const panelId = useId();
   const [open, setOpen] = useState(false);
-  const [kind, setKind] = useState<FtpTestKind>('ramp');
+  const [kind, setKind] = useState<FtpTestKind>('twenty');
   const [typed, setTyped] = useState<Record<FtpTestKind, string[]>>({
     ramp: [''],
     twenty: [''],
     twoByEight: ['', ''],
   });
   const [saved, setSaved] = useState<number | undefined>();
+  const [saveFailed, setSaveFailed] = useState(false);
   const copy = COPY[kind];
   const values = typed[kind];
   const ftp = ftpFromTest(
@@ -87,6 +94,7 @@ export function FtpTestGuide({
 
   const setValue = (i: number, v: string): void => {
     setSaved(undefined);
+    setSaveFailed(false);
     setTyped((all) => ({ ...all, [kind]: all[kind].map((old, k) => (k === i ? v : old)) }));
   };
 
@@ -115,6 +123,17 @@ export function FtpTestGuide({
             setSaved(undefined);
           }}
         />
+        {kind === 'twenty' && (
+          <div className={styles.recommend} data-testid="ftp-recommended">
+            <p className={styles.recommendTitle}>{t('settings.equipment.recommended')}</p>
+            <p className={styles.note}>{t('settings.equipment.pacingTitle')}</p>
+            <ul className={styles.pacing}>
+              {PACING.map((key) => (
+                <li key={key}>{t(key)}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <p className={styles.lead}>{t(copy.summary)}</p>
         <ol className={styles.steps}>
           {copy.steps.map((key) => (
@@ -159,13 +178,21 @@ export function FtpTestGuide({
               variant="primary"
               disabled={ftp === undefined || !canSave}
               onClick={() => {
-                if (ftp !== undefined)
-                  void onSave(ftp).then((ok) => setSaved(ok ? ftp : undefined));
+                if (ftp === undefined) return;
+                void onSave(ftp).then((ok) => {
+                  setSaved(ok ? ftp : undefined);
+                  setSaveFailed(!ok);
+                });
               }}
             >
               {t('settings.equipment.calcSave')}
             </Button>
             {!canSave && <span className={styles.note}>{t('settings.equipment.calcNoMe')}</span>}
+            {saveFailed && (
+              <span role="alert" className={styles.note}>
+                {t('settings.saveFailed')}
+              </span>
+            )}
             {saved !== undefined && (
               <span role="status" className={styles.note}>
                 {t('settings.equipment.ftpSaved')}

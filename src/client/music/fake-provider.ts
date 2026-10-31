@@ -1,5 +1,5 @@
 import type { TrackRef } from '../../domain/workout';
-import type { MusicProvider } from './types';
+import type { MusicProvider, TrackInfo } from './types';
 
 export type FakeCall =
   | { type: 'connect' }
@@ -15,6 +15,8 @@ export interface FakeMusicProviderOptions {
   ready?: boolean;
   /** When set, `fadeOut` takes this long on the (fake) timer clock instead of resolving at once. */
   fadeDurationMs?: number;
+  /** Gives the provider a `describeTrack` that answers with this. */
+  describe?: (track: TrackRef) => Promise<TrackInfo | undefined>;
 }
 
 export interface FakeMusicProvider extends MusicProvider {
@@ -48,6 +50,7 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
 
   return {
     kind,
+    ...(options.describe ? { describeTrack: options.describe } : {}),
     calls,
     log,
     failNextPlays(n) {

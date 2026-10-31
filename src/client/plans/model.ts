@@ -2,7 +2,8 @@ import { totalDurationSec } from '../../domain/workout';
 import { weeklyLoad, type Plan, type PlanLayout } from '../../domain/plan';
 import type { Equipment } from '../../domain/settings';
 import { getWorkout } from '../data/builtin';
-import { effectiveSession, RAMP_TEST_ID } from './effective-session';
+import { ftpTestKindOf } from '../../domain/ftp-test';
+import { effectiveSession } from './effective-session';
 
 export type LevelFilter = 'all' | 'beginner' | 'intermediate' | 'short';
 
@@ -47,13 +48,14 @@ export function hoursPerWeek(minutes: number, layout: PlanLayout): number {
   return Math.round(((minutes * sessionsPerWeek(layout)) / 60) * 2) / 2;
 }
 
-/** 1-based weeks whose served sessions include the ramp test (after the equipment swap). */
+/** 1-based weeks whose served sessions include an FTP test (after the equipment swap). */
 export function testWeeks(plan: Plan, equipment: Equipment, layout: PlanLayout): number[] {
   const out: number[] = [];
   plan.weeks.forEach((_, i) => {
-    const hit = (['progres', 'freestyle'] as const).some(
-      (slot) => effectiveSession(plan, i + 1, slot, equipment, layout) === RAMP_TEST_ID,
-    );
+    const hit = (['progres', 'freestyle'] as const).some((slot) => {
+      const id = effectiveSession(plan, i + 1, slot, equipment, layout);
+      return id !== undefined && ftpTestKindOf(id) !== undefined;
+    });
     if (hit) out.push(i + 1);
   });
   return out;
