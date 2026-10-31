@@ -1,40 +1,6 @@
-/** Pure terrain and elevation helpers of the Scenes world (no three.js), unit tested. */
-
-/** Climb grade = slopeTarget × this: a stylised hill, clearly rising toward the horizon. */
-export const CLIMB_GRADE_GAIN = 2.8;
-/** Grade in recovery (effort ≤ 3): the road runs down into a valley. */
-export const RECOVERY_GRADE = -0.13;
-/** effortGlow at or below this counts as recovery (effort ≤ 3). */
-const RECOVERY_GLOW = 0.3;
+/** Pure terrain helpers of the Scenes world (no three.js), unit tested. */
 
 const smooth01 = (u: number): number => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
-
-/** Gentle world-fixed hills and valleys under the road (world z along the path). */
-export function rollingY(z: number): number {
-  return 4.2 * Math.sin(z / 190) + 2.2 * Math.sin(z / 83 + 1.3);
-}
-
-/** Gentle world-fixed left/right meander on top of the PathModel bends. */
-export function meanderX(z: number): number {
-  return 8 * Math.sin(z / 260 + 0.7) + 3.5 * Math.sin(z / 109 + 2.1);
-}
-
-/**
- * Height of the road ahead at `depth` for a grade: level at the camera, bending up (or down) ahead
- * to a crest of 1.25 · grade · length at 2.5 · length, never steeper than 0.75 · grade. A climb
- * reads as a hill rising toward the horizon, a recovery as a road dropping into a valley.
- */
-export function hillProfile(depth: number, grade: number, length: number): number {
-  if (grade === 0 || depth <= 0 || !(length > 0)) return 0;
-  return grade * length * 1.25 * smooth01(depth / (2.5 * length));
-}
-
-/** Grade the road eases toward: up in climbs, down in recovery, flat otherwise. */
-export function gradeTarget(slopeTarget: number, effortGlow: number): number {
-  if (slopeTarget > 0) return slopeTarget * CLIMB_GRADE_GAIN;
-  if (effortGlow <= RECOVERY_GLOW + 1e-9) return RECOVERY_GRADE;
-  return 0;
-}
 
 /** Exponential smoothing step toward a target (rate per second), never overshooting. */
 export function approach(current: number, target: number, dtSec: number, rate: number): number {

@@ -44,6 +44,9 @@ export type SkyUniforms = {
   uHorizonY: { value: number };
   uAspect: { value: number };
   uTime: { value: number };
+  /** Camera bank (radians) and the screen point it turns around (uv). */
+  uRoll: { value: number };
+  uPivot: { value: THREE.Vector2 };
 };
 
 export function skyMaterial(): THREE.ShaderMaterial & { uniforms: SkyUniforms } {
@@ -64,6 +67,8 @@ export function skyMaterial(): THREE.ShaderMaterial & { uniforms: SkyUniforms } 
     uHorizonY: f(0.55),
     uAspect: f(1.78),
     uTime: f(),
+    uRoll: f(),
+    uPivot: { value: new THREE.Vector2(0.5, 0.55) },
   };
   const mat = new THREE.ShaderMaterial({
     uniforms,
@@ -79,10 +84,20 @@ export function skyMaterial(): THREE.ShaderMaterial & { uniforms: SkyUniforms } 
     fragmentShader: /* glsl */ `
       uniform vec3 uTop, uMid, uHor, uGlow, uSunA, uSunB, uBelow;
       uniform float uSunSize, uSunX, uSunY, uStripes, uRing, uStars, uHorizonY, uAspect, uTime;
+      uniform float uRoll;
+      uniform vec2 uPivot;
       varying vec2 vUv;
       ${HASH}
       void main() {
-        float h = vUv.y - uHorizonY;
+        // the sky banks with the camera, around the level horizon's centre
+        vec2 c = vUv - uPivot;
+        c.x *= uAspect;
+        float cr = cos(uRoll);
+        float sr = sin(uRoll);
+        c = mat2(cr, sr, -sr, cr) * c;
+        c.x /= uAspect;
+        vec2 uv = c + uPivot;
+        float h = uv.y - uHorizonY;
         if (h < 0.0) { gl_FragColor = vec4(uBelow, 1.0); return; }
         float t = clamp(h / max(0.05, 1.0 - uHorizonY), 0.0, 1.0);
         vec3 col = mix(uHor, uMid, smoothstep(0.0, 0.42, t));
@@ -90,7 +105,7 @@ export function skyMaterial(): THREE.ShaderMaterial & { uniforms: SkyUniforms } 
         col += uGlow * exp(-h * 22.0) * 0.55;
 
         // stars: sparse cells, fading toward the horizon, slow twinkle
-        vec2 sp = vec2(vUv.x * uAspect, vUv.y) * 150.0;
+        vec2 sp = vec2(uv.x * uAspect, uv.y) * 150.0;
         vec2 cell = floor(sp);
         float r = hash21(cell);
         if (r > 0.986) {
@@ -102,7 +117,7 @@ export function skyMaterial(): THREE.ShaderMaterial & { uniforms: SkyUniforms } 
         // sun: gradient disc, optional scanline cuts in its lower half, soft halo, optional ring
         float size = uSunSize * min(1.0, uAspect * 1.1);
         if (size > 0.0) {
-          vec2 p = vec2((vUv.x - uSunX) * uAspect, h - uSunY);
+          vec2 p = vec2((uv.x - uSunX) * uAspect, h - uSunY);
           float d = length(p) / size;
           float sy = p.y / size;
           vec3 disc = mix(uSunB, uSunA, smoothstep(-1.0, 1.0, sy));

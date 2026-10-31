@@ -6,17 +6,11 @@ import { prefersReducedMotion } from './motion';
 import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
 import { buildExtra, type Disposable, type SceneExtra } from './scenes-extras';
 import { BASE_VFOV_DEG, baseVerticalFov, dashOffset, gateDepth, hash01 } from './road-model';
-import {
-  approach,
-  gradeTarget,
-  hillProfile,
-  meanderX,
-  rollingY,
-  terrainHeight,
-  type TerrainShape,
-} from './scenes-model';
+import { approach, terrainHeight, type TerrainShape } from './scenes-model';
+import { elevationTable, sampleTable, windX } from './scenes-path';
 import { SCENES, SCENE_VARIANT_COUNTS, type SceneExtraId, type SceneLook } from './scenes-registry';
 import {
+  workoutSeed,
   buildSceneSchedule,
   lerpLook,
   sceneStateAt,
@@ -48,14 +42,14 @@ const VIEW = 560;
 const TERRAIN_VIEW = 720;
 const NEAR_DEPTH = 0.5;
 const LOOK_AHEAD = 30;
-/** PathModel bends are scaled down: a road swings gently, it does not corkscrew. */
-const CURVE_SCALE = 0.35;
-/** PathModel height changes (effort jumps) are scaled down the same way. */
-const HEIGHT_SCALE = 0.35;
-/** Length over which a climb/valley grade flattens out (scenes-model hillProfile). */
-const HILL_LENGTH = 150;
 /** The camera pitches by this share of the road's rise ahead (the rest reads as the hill). */
-const PITCH_SHARE = 0.2;
+const PITCH_SHARE = 0.6;
+/** Bank into bends: roll per unit of lateral acceleration (speed² · curvature), capped. */
+const BANK_PER_ACCEL = 0.03;
+const MAX_BANK = 0.07;
+/** Elevation table step (world units) on high / low quality. */
+const PROFILE_STEP_HIGH = 8;
+const PROFILE_STEP_LOW = 12;
 const HORIZON_LANDSCAPE = 0.45;
 const HORIZON_PORTRAIT = 0.4;
 
@@ -192,7 +186,10 @@ export function createScenes(opts: ScenesOptions = {}): HyperrideWorld {
   let speed = 12;
   let fov = BASE_VFOV_DEG;
   let appliedFov = NaN;
-  let grade = 0;
+  let bank = 0;
+  let seed = 0;
+  let profile = new Float32Array(0);
+  let profileStep = PROFILE_STEP_HIGH;
   let intensity: number | undefined;
   let sprint = 0;
   let time = 0;
@@ -314,6 +311,8 @@ export function createScenes(opts: ScenesOptions = {}): HyperrideWorld {
     terrain.renderOrder = 0;
     scene.add(terrain);
 
+    profileStep = high ? PROFILE_STEP_HIGH : PROFILE_STEP_LOW;
+    profile = new Float32Array(Math.ceil(TERRAIN_VIEW / profileStep) + 2);
     const segs = high ? RIBBON_SEGMENTS_HIGH : RIBBON_SEGMENTS_LOW;
     const ribbonDepths = new Float32Array(segs + 1);
     for (let i = 0; i <= segs; i++) {
@@ -538,7 +537,6 @@ export function createScenes(opts: ScenesOptions = {}): HyperrideWorld {
       dist += speed * dt;
       time += dt;
       fov += (frame.fovTarget - fov) * Math.min(1, dt * 2);
-      grade = approach(grade, gradeTarget(frame.slopeTarget, frame.effortGlow), dt, 0.35);
       sprint = approach(sprint, sprinting ? 1 : 0, dt, 1.2);
     }
     if (Math.abs(fov - appliedFov) > 1e-3) applyProjection();
@@ -547,6 +545,7 @@ export function createScenes(opts: ScenesOptions = {}): HyperrideWorld {
     if (scheduleFor !== frame.segments) {
       scheduleFor = frame.segments;
       schedule = buildSceneSchedule(frame.segments, { variantCounts: SCENE_VARIANT_COUNTS });
+      seed = workoutSeed(frame.segments);
     }
     const st = sceneStateAt(schedule, frame.workoutSec);
     const def = SCENES[st.scene] ?? SCENES[0];
@@ -557,24 +556,42 @@ export function createScenes(opts: ScenesOptions = {}): HyperrideWorld {
     const look: SceneLook = st.variantMix >= 1 ? toLook : lerpLook(fromLook, toLook, st.variantMix);
 
     // road geometry ahead: curves and elevation relative to the camera
-    const path = frame.path;
-    const kx = reduced ? 0 : CURVE_SCALE;
-    const ky = reduced ? 0 : HEIGHT_SCALE;
-    const x0 = path.curveX(dist) * kx + meanderX(dist);
-    const y0 = path.curveY(dist) * ky + rollingY(dist);
-    const roadX = (d: number): number => path.curveX(dist + d) * kx + meanderX(dist + d) - x0;
-    const roadY = (d: number): number =>
-      path.curveY(dist + d) * ky + rollingY(dist + d) - y0 + hillProfile(d, grade, HILL_LENGTH);
+    // (scenes-path: winding bends, rolling crests and dips, block grades integrated ahead;
+    // under reduced motion the profile ignores the workout so the scene stays still)
+    const x0 = windX(dist, seed);
+    const roadX = (d: number): number => windX(dist + d, seed) - x0;
+    elevationTable(
+      reduced ? [] : frame.segments,
+      reduced ? 0 : frame.workoutSec,
+      speed,
+      dist,
+      seed,
+      profileStep,
+      profile,
+    );
+    const roadY = (d: number): number => sampleTable(profile, profileStep, d);
     const yawAt = (d: number): number => -Math.atan(roadX(d + 0.5) - roadX(d - 0.5));
 
+    // camera: pitches with the slope ahead, banks gently into bends
     const lookY = roadY(LOOK_AHEAD) * PITCH_SHARE;
     cam.lookAt(roadX(LOOK_AHEAD), CAM_HEIGHT + lookY, -LOOK_AHEAD);
+    if (!reduced) {
+      const curvature = (roadX(30) - 2 * roadX(20) + roadX(10)) / 100;
+      const bankTarget = Math.max(
+        -MAX_BANK,
+        Math.min(MAX_BANK, -BANK_PER_ACCEL * curvature * speed * speed),
+      );
+      bank = approach(bank, bankTarget, dt, 1.5);
+    }
+    cam.rotateZ(bank);
     const pitch = Math.atan(lookY / LOOK_AHEAD);
     const halfFov = (cam.fov * Math.PI) / 360;
     const sky = s.sky.uniforms;
     applySkyLook(sky, look);
-    sky.uHorizonY.value =
-      1 - horizonFraction(width, height) - (0.5 * Math.tan(pitch)) / Math.tan(halfFov);
+    const level = 1 - horizonFraction(width, height);
+    sky.uHorizonY.value = level - (0.5 * Math.tan(pitch)) / Math.tan(halfFov);
+    sky.uRoll.value = bank;
+    sky.uPivot.value.set(0.5 - viewOffsetX, level);
     sky.uSunX.value = look.sunX - viewOffsetX;
     sky.uTime.value = time;
 
@@ -610,7 +627,8 @@ export function createScenes(opts: ScenesOptions = {}): HyperrideWorld {
     tm.uTime.value = time;
     tm.uDist.value = dist;
     // climbs lift the side terrain, recovery lowers it
-    const lift = 1 + Math.max(-0.35, Math.min(0.7, grade * 2.6));
+    const slopeAhead = roadY(200) / 200;
+    const lift = 1 + Math.max(-0.35, Math.min(0.7, slopeAhead * 4));
     const shape: TerrainShape = {
       height: look.height * lift,
       flat: look.flat,
