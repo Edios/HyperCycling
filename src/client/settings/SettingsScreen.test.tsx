@@ -284,6 +284,14 @@ describe('Training', () => {
     await waitFor(() => expect(db.settings?.hyperrideQuality).toBe('low'));
   });
 
+  it('saves the Hyperride world', async () => {
+    renderScreen();
+    const tr = await section('training');
+    expect(within(tr).getByRole('radio', { name: 'Neon tunnel' })).toBeChecked();
+    fireEvent.click(within(tr).getByRole('radio', { name: 'Road' }));
+    await waitFor(() => expect(db.settings?.hyperrideWorld).toBe('road'));
+  });
+
   it('saves the effects intensity as 0..1', async () => {
     renderScreen();
     const tr = await section('training');

@@ -46,6 +46,7 @@ export const en = {
     quickClose: 'Close',
     quickBackground: 'Background',
     quickLayout: 'Screen layout',
+    quickWorld: 'World',
     quickSounds: 'Beeps',
     quickCoach: 'On-screen cues',
     quickYoutubeNone: 'Add a YouTube link in the setup screen to use this background.',
@@ -78,6 +79,7 @@ export const en = {
     musicSome: 'Music: {n} pinned tracks.',
     missing: 'This workout is missing from the library.',
     background: 'Background',
+    world: 'World',
     backgroundBasic: 'Basic',
     backgroundHyperride: 'Hyperride',
     backgroundYoutube: 'YouTube video',
@@ -414,6 +416,7 @@ export const en = {
       coach: 'Coach messages',
       effects: 'Effects intensity',
       effectsValue: '{pct}%',
+      hyperrideWorld: 'Hyperride world',
       quality: 'Hyperride quality',
       qualityHigh: 'High',
       qualityLow: 'Low',
@@ -529,6 +532,10 @@ export const en = {
   },
   hyperride: {
     unavailable: 'WebGL is not available on this computer. Using the Basic background.',
+  },
+  world: {
+    neonTunnel: 'Neon tunnel',
+    road: 'Road',
   },
   dev: {
     title: 'Workouts',

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
+import type { HyperrideWorldId } from '../../domain/settings';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
 import { playerSchema, type Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
@@ -9,6 +10,7 @@ import { localizedText } from '../data/localized';
 import { useLibrary } from '../data/useLibrary';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
+import { WORLD_CHOICES } from '../hyperride/world-options';
 import { useSessionStore } from '../training/session-store';
 import { formatClock } from '../training/format';
 import { AppBar } from '../ui/AppBar';
@@ -123,6 +125,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const [beeps, setBeeps] = useState(settings.sounds);
   const [coach, setCoach] = useState(settings.coach);
   const [music, setMusic] = useState(last?.music ?? false);
+  const [world, setWorld] = useState<HyperrideWorldId>(settings.hyperrideWorld);
   const [adding, setAdding] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState(last?.youtubeUrl ?? '');
 
@@ -181,6 +184,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
       sounds: beeps,
       coach,
       lastSession: { ...config, music },
+      hyperrideWorld: world,
       ...(config.youtubeUrl
         ? { recentYoutubeUrls: addRecentYoutubeUrl(settings.recentYoutubeUrls, config.youtubeUrl) }
         : {}),
@@ -259,6 +263,18 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
               })}
             </div>
           </section>
+
+          {background === 'hyperride' && (
+            <section>
+              <h2 className={styles.label}>{t('setup.world')}</h2>
+              <Segmented
+                label={t('setup.world')}
+                value={world}
+                options={WORLD_CHOICES.map((w) => ({ value: w.value, label: t(w.labelKey) }))}
+                onChange={setWorld}
+              />
+            </section>
+          )}
 
           {background === 'youtube' && (
             <section data-testid="youtube-section">

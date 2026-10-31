@@ -59,3 +59,20 @@ describe('sessionConfigSchema', () => {
     ).toBe(false);
   });
 });
+
+describe('settingsSchema hyperrideWorld', () => {
+  const withoutWorld: Record<string, unknown> = { ...DEFAULT_SETTINGS };
+  delete withoutWorld.hyperrideWorld;
+  it('defaults to the neon tunnel when the field is missing', () => {
+    const r = settingsSchema.safeParse(withoutWorld);
+    expect(r.success && r.data.hyperrideWorld).toBe('neon-tunnel');
+  });
+  it('falls back to the neon tunnel for an unknown world id', () => {
+    const r = settingsSchema.safeParse({ ...withoutWorld, hyperrideWorld: 'mars' });
+    expect(r.success && r.data.hyperrideWorld).toBe('neon-tunnel');
+  });
+  it('keeps a known world id', () => {
+    const r = settingsSchema.safeParse({ ...withoutWorld, hyperrideWorld: 'road' });
+    expect(r.success && r.data.hyperrideWorld).toBe('road');
+  });
+});
