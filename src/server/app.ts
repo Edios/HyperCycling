@@ -44,7 +44,8 @@ export async function buildServer(opts: BuildServerOptions): Promise<FastifyInst
       .send({ error: status >= 500 ? 'Internal server error' : err.message });
   });
 
-  app.get('/api/health', async () => ({ ok: true, version }));
+  const dbLocation = opts.dbPath === ':memory:' ? opts.dbPath : path.resolve(opts.dbPath);
+  app.get('/api/health', async () => ({ ok: true, version, dbPath: dbLocation }));
   registerDataRoutes(app, repos, {
     // in-memory databases have nothing to back up
     backup:

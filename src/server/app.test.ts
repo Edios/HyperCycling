@@ -10,6 +10,7 @@ it('GET /api/health returns ok', async () => {
   expect(res.statusCode).toBe(200);
   expect(res.json()).toMatchObject({ ok: true });
   expect(typeof res.json<{ version: unknown }>().version).toBe('string');
+  expect(res.json<{ dbPath: string }>().dbPath).toBe(':memory:');
   await app.close();
 });
 

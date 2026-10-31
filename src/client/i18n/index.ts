@@ -23,6 +23,12 @@ export function detectLang(navigatorLanguage: string): Lang {
 let current: Lang = detectLang(typeof navigator === 'undefined' ? 'en' : navigator.language);
 const listeners = new Set<() => void>();
 
+/** Keeps `<html lang>` in step with the UI language (screen readers, hyphenation, spellcheck). */
+function applyDocumentLang(lang: Lang): void {
+  if (typeof document !== 'undefined') document.documentElement.lang = lang;
+}
+applyDocumentLang(current);
+
 export function getLang(): Lang {
   return current;
 }
@@ -30,6 +36,7 @@ export function getLang(): Lang {
 export function setLang(lang: Lang): void {
   if (lang === current) return;
   current = lang;
+  applyDocumentLang(lang);
   listeners.forEach((l) => l());
 }
 

@@ -112,9 +112,9 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const last = settings.lastSession;
 
   const [players, setPlayers] = useState(initialPlayers);
-  const [background, setBackground] = useState<Background>('basic');
+  const [background, setBackground] = useState<Background>(last?.background ?? 'basic');
   const [chosenHud, setChosenHud] = useState<Hud | undefined>(
-    last?.background === 'basic' && last.hud === 'solo' ? 'solo' : undefined,
+    last && last.hud !== 'players' ? last.hud : undefined,
   );
   const [selected, setSelected] = useState<string[]>(() =>
     (last?.playerIds ?? []).filter((id) => initialPlayers.some((p) => p.id === id)),
@@ -183,9 +183,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
       ...(config.youtubeUrl
         ? { recentYoutubeUrls: addRecentYoutubeUrl(settings.recentYoutubeUrls, config.youtubeUrl) }
         : {}),
-    }).catch((err) =>
-      console.warn('Saving the session choices failed', err),
-    );
+    }).catch((err) => console.warn('Saving the session choices failed', err));
     useSessionStore.getState().load(runtime);
     navigate('/train');
   };
