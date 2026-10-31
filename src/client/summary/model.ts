@@ -6,7 +6,7 @@ import {
   type PlanProgress,
   type PlanSlot,
 } from '../../domain/plan';
-import { ftpEstimate, type FtpTestKind } from '../../domain/ftp-test';
+import { FTP_TESTS, ftpEstimate, isValidFtp, type FtpTestKind } from '../../domain/ftp-test';
 import { playerSchema, type Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
 import type { EffortTable } from '../../domain/effort';
@@ -36,6 +36,7 @@ export function countTarget(
   totalSec: number,
 ): CountTarget | undefined {
   if (!plan || !progress) return undefined;
+  if (result.riddenSec < MIN_COUNT_SEC) return undefined;
   const defaultOn = suggestCountTowardPlan(result.riddenSec, totalSec);
   if (result.plan) {
     return plan.id === result.plan.planId
@@ -70,6 +71,26 @@ export function proposeFtp(kind: FtpTestKind, entries: readonly string[]): numbe
     watts.push(n);
   }
   return ftpEstimate(kind, watts);
+}
+
+/** A ride shorter than this is never credited to a plan. */
+export const MIN_COUNT_SEC = 120;
+
+/** The numbers behind the proposal, ready for "FTP = {expr} × {factor} = {ftp} W". */
+export function ftpFormulaParts(
+  kind: FtpTestKind,
+  entries: readonly string[],
+): { expr: string; factor: number; ftp: number } | undefined {
+  const ftp = proposeFtp(kind, entries);
+  if (ftp === undefined) return undefined;
+  const nums = entries.map((e) => Number(e.trim()));
+  const expr = nums.length === 1 ? String(nums[0]) : `(${nums.join(' + ')}) / ${nums.length}`;
+  return { expr, factor: FTP_TESTS[kind].factor, ftp };
+}
+
+/** True when the proposal cannot be stored as a player FTP (50-600 whole watts). */
+export function ftpOutOfRange(ftp: number): boolean {
+  return !isValidFtp(ftp);
 }
 
 /** The rider an FTP result belongs to: the player flagged as me, if any. */

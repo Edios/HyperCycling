@@ -30,6 +30,8 @@ import {
   effectiveHud,
   ENABLED_BACKGROUNDS,
   layoutOptions,
+  initialSelection,
+  layoutHintKey,
   MAX_SESSION_PLAYERS,
   parsePlanRef,
   peakEffort,
@@ -120,7 +122,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
     last && last.hud !== 'players' ? last.hud : undefined,
   );
   const [selected, setSelected] = useState<string[]>(() =>
-    (last?.playerIds ?? []).filter((id) => initialPlayers.some((p) => p.id === id)),
+    initialSelection(initialPlayers, last?.playerIds),
   );
   const [beeps, setBeeps] = useState(settings.sounds);
   const [coach, setCoach] = useState(settings.coach);
@@ -143,6 +145,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const text = localizedText(workout, lang);
   const hasPlayers = selected.length > 0;
   const hud = effectiveHud(background, chosenHud, hasPlayers);
+  const layoutHint = layoutHintKey(background, hasPlayers);
 
   const togglePlayer = (id: string): void => {
     setSelected((cur) => {
@@ -179,17 +182,17 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
       hasCues,
     );
     const runtime = buildRuntime(scaled, segments, config, pickPlayers(players, selected), plan);
-    // Persist the choices as the user left them (music stays on even for a workout without cues).
-    updateSettings({
-      sounds: beeps,
-      coach,
-      lastSession: { ...config, music },
-      hyperrideWorld: world,
-      ...(config.youtubeUrl
-        ? { recentYoutubeUrls: addRecentYoutubeUrl(settings.recentYoutubeUrls, config.youtubeUrl) }
-        : {}),
-    }).catch((err) => console.warn('Saving the session choices failed', err));
-    useSessionStore.getState().load(runtime);
+    // The choices on this screen are for this ride only (they live in the runtime); the saved
+    // defaults change in Settings. Only the list of recent links is remembered.
+    if (config.youtubeUrl) {
+      updateSettings({
+        recentYoutubeUrls: addRecentYoutubeUrl(settings.recentYoutubeUrls, config.youtubeUrl),
+      }).catch((err) => console.warn('Saving the recent links failed', err));
+    }
+    useSessionStore.getState().load({
+      ...runtime,
+      options: { sounds: beeps, coach, ...(background === 'hyperride' ? { world } : {}) },
+    });
     navigate('/train');
   };
 
@@ -325,6 +328,11 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
               }))}
               onChange={setChosenHud}
             />
+            {layoutHint && (
+              <p className={styles.note} data-testid="layout-hint">
+                {t(layoutHint)}
+              </p>
+            )}
           </section>
 
           <section>
@@ -361,8 +369,12 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
               checked={music && hasCues}
               onChange={setMusic}
               disabled={!hasCues}
-              title={hasCues ? undefined : t('setup.musicDisabled')}
             />
+            {!hasCues && (
+              <p className={styles.note} data-testid="music-hint">
+                {t('setup.musicDisabled')}
+              </p>
+            )}
           </Card>
 
           <div className={styles.startRow}>

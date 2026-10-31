@@ -39,7 +39,7 @@ The Plan tab then shows your next session with **Ride**, a **Swap** button for a
 - **Who rides today**: pick up to 10 riders, or add one on the spot. With players selected, the screen shows each rider's target watts, computed from their own FTP.
 - **Beeps**, **On-screen cues** and **Music** switches. Music is available when the workout has pinned tracks.
 
-The next ride starts with the choices from the last one. Defaults live in Settings, Training.
+Choices on this screen, and in the quick settings during a ride, apply to that ride only. The setup screen always starts from the defaults in Settings, Training (and ticks you, or the only rider, as the player).
 
 ### Players
 

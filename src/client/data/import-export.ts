@@ -60,6 +60,23 @@ export interface ImportOptions {
 const defaultDownload = (): DownloadFn | undefined =>
   import.meta.env.VITE_STORAGE === 'indexeddb' ? triggerDownload : undefined;
 
+/** Reads and validates a file without touching any data; used before the replace confirm. */
+export async function checkImportFile(file: Blob): Promise<ImportResult> {
+  try {
+    const parsed = parseExportBundle(await readBlobText(file));
+    if (parsed.ok) return { ok: true };
+    return parsed.details === undefined
+      ? { ok: false, reason: parsed.reason }
+      : { ok: false, reason: parsed.reason, details: parsed.details };
+  } catch (err) {
+    return {
+      ok: false,
+      reason: 'failed',
+      details: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
 /**
  * Validates the file first; only a valid bundle ever reaches the backup and replace steps, so
  * a bad file leaves existing data untouched.

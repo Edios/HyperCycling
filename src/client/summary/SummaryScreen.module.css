@@ -75,3 +75,13 @@
   gap: 1rem;
   margin-top: 1rem;
 }
+
+.timeLabel {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  color: var(--mut);
+}
+
+.error {
+  color: var(--z9);
+}
