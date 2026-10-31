@@ -24,6 +24,8 @@ export const en = {
     remaining: 'remaining {time}',
     playersTarget: 'Target for block · ~{pct}% FTP',
     watts: 'W',
+    playerEffort: '{pct}% FTP',
+    shortcutHint: 'Space: pause / resume',
     effortScale: '/10',
     start: 'Start',
     pause: 'Pause',

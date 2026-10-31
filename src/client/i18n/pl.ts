@@ -26,6 +26,8 @@ export const pl: Messages = {
     remaining: 'pozostało {time}',
     playersTarget: 'Cel w bloku · ~{pct}% FTP',
     watts: 'W',
+    playerEffort: '{pct}% FTP',
+    shortcutHint: 'Spacja: pauza / wznów',
     effortScale: '/10',
     start: 'Start',
     pause: 'Pauza',

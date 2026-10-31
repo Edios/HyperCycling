@@ -23,7 +23,7 @@ function isChoiceInput(target: EventTarget | null): boolean {
   );
 }
 
-/** Buttons and links activate themselves with Space/Enter. */
+/** Buttons and links activate themselves with Enter (and Space, which is ours here). */
 function isActivatable(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && /^(BUTTON|A|SUMMARY)$/.test(target.tagName);
 }
@@ -33,7 +33,8 @@ export function bindTrainingKeys(target: Window, actions: TrainingKeyActions): (
   const handler = (e: KeyboardEvent): void => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (isTextField(e.target) && !(e.code === 'Escape' && isChoiceInput(e.target))) return;
-    if ((e.code === 'Space' || e.code === 'Enter') && isActivatable(e.target)) return;
+    // Space is a global pause/resume (R22), also on a focused button; Enter stays with the button.
+    if (e.code === 'Enter' && isActivatable(e.target)) return;
     let run: (() => void) | undefined;
     switch (e.code) {
       case 'Space':
@@ -68,6 +69,16 @@ export function bindTrainingKeys(target: Window, actions: TrainingKeyActions): (
     if (e.repeat) return;
     run?.();
   };
+  // Firefox activates a button on Space keyup: swallow it so the keydown action is the only one.
+  const upHandler = (e: KeyboardEvent): void => {
+    if (e.code === 'Space' && isActivatable(e.target) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+    }
+  };
   target.addEventListener('keydown', handler);
-  return () => target.removeEventListener('keydown', handler);
+  target.addEventListener('keyup', upHandler);
+  return () => {
+    target.removeEventListener('keydown', handler);
+    target.removeEventListener('keyup', upHandler);
+  };
 }

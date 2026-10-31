@@ -25,9 +25,12 @@ export function PlayersList({ players, ftpPct, showsWatts }: PlayersListProps) {
         {players.map((p) => (
           <li key={p.id} className={`${styles.row} ${p.isMe ? styles.me : ''}`}>
             <span className={styles.name}>{p.name}</span>
-            {showsWatts && (
-              <span className={styles.watts}>{safeWatts(p.ftp, ftpPct, t('training.watts'))}</span>
-            )}
+            {/* Without watts the row still carries the effort target, never an empty card. */}
+            <span className={styles.watts}>
+              {showsWatts
+                ? safeWatts(p.ftp, ftpPct, t('training.watts'))
+                : t('training.playerEffort', { pct: Math.round(ftpPct) })}
+            </span>
           </li>
         ))}
       </ul>

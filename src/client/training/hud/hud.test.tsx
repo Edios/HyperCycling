@@ -257,6 +257,12 @@ describe('PlayersList', () => {
     expect(root).toHaveTextContent('Ann');
     expect(root).not.toHaveTextContent(/\bW\b/);
   });
+  it('without watts each player still shows the effort target', () => {
+    render(<PlayersList players={players} ftpPct={92} showsWatts={false} />);
+    const rows = screen.getByTestId('players-list').querySelectorAll('li');
+    expect(rows).toHaveLength(2);
+    for (const row of rows) expect(row).toHaveTextContent('92% FTP');
+  });
 });
 
 describe('CoachOverlay', () => {

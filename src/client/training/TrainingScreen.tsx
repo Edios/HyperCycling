@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
 import { resolveWorld } from '../hyperride/world-options';
 import type { FrameInput } from '../hyperride/world';
@@ -21,7 +21,13 @@ import {
   type OverlayHudId,
 } from './overlay-layouts';
 import type { SessionConfig } from '../../domain/settings';
-import { Navigate, useNavigate } from 'react-router-dom';
+import {
+  Navigate,
+  UNSAFE_DataRouterContext,
+  useBlocker,
+  useNavigate,
+  type Blocker,
+} from 'react-router-dom';
 import { cueForTransition, type CoachCue } from '../../domain/coach';
 import type { TrackRef } from '../../domain/workout';
 import { useSettings } from '../data/useSettings';
@@ -49,6 +55,26 @@ import styles from './TrainingScreen.module.css';
 const CONTROLS_HIDE_MS = 3000;
 /** Music warnings carry instructions (open Spotify...), so they stay longer than other toasts. */
 const MUSIC_WARNING_MS = 8000;
+/** The background fell back silently: the toast explaining why must outlast the layout switch. */
+const FALLBACK_TOAST_MS = 8000;
+
+/**
+ * Asks before browser Back / Forward leaves a started ride. Only mounted under a data router
+ * (useBlocker needs one); the plain-router tests render without it.
+ */
+function LeaveGuard({
+  shouldBlock,
+  onBlocked,
+}: {
+  shouldBlock: () => boolean;
+  onBlocked: (blocker: Blocker) => void;
+}) {
+  const blocker = useBlocker(shouldBlock);
+  useEffect(() => {
+    if (blocker.state === 'blocked') onBlocked(blocker);
+  }, [blocker, onBlocked]);
+  return null;
+}
 
 /** Route /train. Redirects home when no session is loaded. */
 export function TrainingScreen() {
@@ -243,7 +269,25 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     setConfirmEnd(true);
   }, []);
 
+  // Browser Back / Forward during a started ride opens the same exit question.
+  const dataRouter = useContext(UNSAFE_DataRouterContext) !== null;
+  const blockedNav = useRef<Blocker | null>(null);
+  const shouldBlockNav = useCallback(
+    () => !ended.current && useSessionStore.getState().state.status !== 'idle',
+    [],
+  );
+  const onNavBlocked = useCallback(
+    (blocker: Blocker) => {
+      const already = blockedNav.current !== null;
+      blockedNav.current = blocker;
+      if (!already) openEnd();
+    },
+    [openEnd],
+  );
+
   const resumeFromDialog = useCallback(() => {
+    blockedNav.current?.reset?.();
+    blockedNav.current = null;
     setConfirmEnd(false);
     if (pausedByDialog.current) useSessionStore.getState().resume();
     pausedByDialog.current = false;
@@ -447,6 +491,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             message={t(
               youtubeFailure === 'embed-blocked' ? 'youtube.embedBlocked' : 'youtube.unavailable',
             )}
+            durationMs={FALLBACK_TOAST_MS}
             onClose={() => setYoutubeToastDismissed(true)}
           />
         )}
@@ -486,6 +531,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       {status === 'paused' && !confirmEnd && (
         <div role="status" className={styles.paused}>
           {t('training.paused')}
+          <small className={styles.pausedHint}>{t('training.shortcutHint')}</small>
         </div>
       )}
       {quickOpen && !confirmEnd && (
@@ -505,6 +551,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           onClose={() => setQuickOpen(false)}
         />
       )}
+      {dataRouter && <LeaveGuard shouldBlock={shouldBlockNav} onBlocked={onNavBlocked} />}
       {confirmEnd && (
         <EndDialog
           onResume={resumeFromDialog}

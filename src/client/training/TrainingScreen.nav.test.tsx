@@ -275,3 +275,57 @@ describe('quick settings', () => {
     expect(screen.getByTestId('quick-youtube-hint')).toHaveTextContent(/YouTube link/);
   });
 });
+
+describe('focus and Space (QA F2, F3)', () => {
+  it('closing the quick settings gives focus back to the gear', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    const gear = screen.getByRole('button', { name: 'Quick settings' });
+    gear.focus();
+    fireEvent.click(gear);
+    expect(gear).not.toHaveFocus();
+    key('Escape');
+    expect(gear).toHaveFocus();
+  });
+
+  it('cancelling the exit dialog gives focus back to the Menu button', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    const menu = screen.getByRole('button', { name: 'Menu' });
+    menu.focus();
+    fireEvent.click(menu);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(menu).toHaveFocus();
+  });
+
+  it('Space pauses even when "Next block" has focus, and does not skip the block', async () => {
+    load();
+    await renderScreen();
+    key('Space');
+    advance(3100);
+    advance(2000);
+    const next = screen.getByRole('button', { name: 'Next block' });
+    next.focus();
+    const down = new KeyboardEvent('keydown', {
+      code: 'Space',
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => {
+      next.dispatchEvent(down);
+    });
+    expect(down.defaultPrevented).toBe(true);
+    expect(useSessionStore.getState().state.status).toBe('paused');
+    expect(useSessionStore.getState().state.segmentIndex).toBe(0);
+  });
+
+  it('shows the Space shortcut hint while paused', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    expect(screen.getByRole('status')).toHaveTextContent('Space: pause / resume');
+  });
+});

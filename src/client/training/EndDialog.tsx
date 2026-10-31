@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useRestoreFocus } from '../ui/useRestoreFocus';
 import { useT } from '../i18n';
 import styles from './EndDialog.module.css';
 
@@ -18,10 +19,9 @@ export function EndDialog({ onResume, onEnd, onLeave }: EndDialogProps) {
   const endRef = useRef<HTMLButtonElement>(null);
   const leaveRef = useRef<HTMLButtonElement>(null);
 
+  useRestoreFocus(); // back to where the rider was (the Menu button, or nowhere)
   useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null;
     cancelRef.current?.focus();
-    return () => opener?.focus?.(); // back to where the rider was (the Menu button, or nowhere)
   }, []);
 
   const onKeyDown = (e: React.KeyboardEvent): void => {
