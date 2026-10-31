@@ -57,4 +57,10 @@ describe('plans model', () => {
     );
     expect(none).toEqual([]);
   });
+
+  it('does not count week 1 as a test week when the first test is skipped', () => {
+    const weeks = testWeeks(buildForm, DEFAULT_SETTINGS.equipment, 'progresFreestyle', true);
+    expect(weeks).not.toContain(1);
+    expect(weeks).toContain(buildForm.weeks.length);
+  });
 });

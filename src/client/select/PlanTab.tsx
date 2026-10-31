@@ -72,7 +72,14 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
   const next = useMemo(() => {
     const n = nextSession(plan, progress);
     if (!n) return n;
-    const workoutId = effectiveSession(plan, n.week, n.slot, equipment, progress.settings.layout);
+    const workoutId = effectiveSession(
+      plan,
+      n.week,
+      n.slot,
+      equipment,
+      progress.settings.layout,
+      progress.settings.skipFirstTest,
+    );
     return { ...n, workoutId: workoutId ?? n.workoutId };
   }, [plan, progress, equipment]);
   const planText = localizedText(plan, lang);
@@ -84,8 +91,15 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
       const st = weekStatus(plan, progress, week);
       for (const slot of SLOTS) {
         // Weeks without a session in this slot (or layout) are not sessions at all.
-        if (effectiveSession(plan, week, slot, equipment, progress.settings.layout) === undefined)
-          continue;
+        const id = effectiveSession(
+          plan,
+          week,
+          slot,
+          equipment,
+          progress.settings.layout,
+          progress.settings.skipFirstTest,
+        );
+        if (id === undefined) continue;
         total++;
         if (st[slot] !== 'open') done++;
       }
@@ -241,6 +255,7 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
                     slot,
                     equipment,
                     progress.settings.layout,
+                    progress.settings.skipFirstTest,
                   );
                   const w = id === undefined ? undefined : byId.get(id);
                   return (

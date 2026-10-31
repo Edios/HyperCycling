@@ -108,8 +108,8 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
   const byId = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts]);
   const load = useMemo(() => planLoad(plan), [plan]);
   const tests = useMemo(
-    () => testWeeks(plan, equipment, cfg.layout),
-    [plan, equipment, cfg.layout],
+    () => testWeeks(plan, equipment, cfg.layout, cfg.skipFirstTest),
+    [plan, equipment, cfg.layout, cfg.skipFirstTest],
   );
   const lightWeeks = plan.weeks.flatMap((w, i) => (w.light ? [i + 1] : []));
 
@@ -267,7 +267,14 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
                 badge={t(label)}
                 badgeClass={cls}
                 workout={byId.get(
-                  effectiveSession(plan, previewWeek, slot, equipment, cfg.layout) ?? '',
+                  effectiveSession(
+                    plan,
+                    previewWeek,
+                    slot,
+                    equipment,
+                    cfg.layout,
+                    cfg.skipFirstTest,
+                  ) ?? '',
                 )}
                 cfg={cfg}
               />

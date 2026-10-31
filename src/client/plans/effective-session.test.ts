@@ -86,6 +86,31 @@ describe('effectiveSession', () => {
     expect(effectiveSession(p, 2, 'progres', noWatts)).toBe(FALLBACK_PROGRES_ID);
   });
 
+  describe('skipFirstTest', () => {
+    it('replaces the week-1 test with the alternative even with watts', () => {
+      expect(effectiveSession(plan, 1, 'progres', watts, 'progresFreestyle', true)).toBe('alt-1');
+    });
+
+    it('falls back to sweet spot when week 1 has no alternative', () => {
+      const p: Plan = { ...plan, weeks: [{ ...plan.weeks[1]! }, ...plan.weeks.slice(1)] };
+      expect(effectiveSession(p, 1, 'progres', watts, 'progresFreestyle', true)).toBe(
+        FALLBACK_PROGRES_ID,
+      );
+    });
+
+    it('keeps later tests', () => {
+      expect(effectiveSession(plan, 2, 'progres', watts, 'progresFreestyle', true)).toBe(
+        RAMP_TEST_ID,
+      );
+    });
+
+    it('is off by default', () => {
+      expect(effectiveSession(plan, 1, 'progres', watts, 'progresFreestyle', false)).toBe(
+        RAMP_TEST_ID,
+      );
+    });
+  });
+
   it('is undefined for a week that does not exist', () => {
     expect(effectiveSession(plan, 9, 'progres', watts)).toBeUndefined();
   });

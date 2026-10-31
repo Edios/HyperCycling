@@ -49,11 +49,16 @@ export function hoursPerWeek(minutes: number, layout: PlanLayout): number {
 }
 
 /** 1-based weeks whose served sessions include an FTP test (after the equipment swap). */
-export function testWeeks(plan: Plan, equipment: Equipment, layout: PlanLayout): number[] {
+export function testWeeks(
+  plan: Plan,
+  equipment: Equipment,
+  layout: PlanLayout,
+  skipFirstTest = false,
+): number[] {
   const out: number[] = [];
   plan.weeks.forEach((_, i) => {
     const hit = (['progres', 'freestyle'] as const).some((slot) => {
-      const id = effectiveSession(plan, i + 1, slot, equipment, layout);
+      const id = effectiveSession(plan, i + 1, slot, equipment, layout, skipFirstTest);
       return id !== undefined && ftpTestKindOf(id) !== undefined;
     });
     if (hit) out.push(i + 1);

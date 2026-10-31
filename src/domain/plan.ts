@@ -28,6 +28,8 @@ export interface PlanSettings {
   difficulty: -5 | 0 | 5;
   layout: PlanLayout;
   startWeek: number;
+  /** Replace the week-1 FTP test with the week's no-test session (FTP already known). */
+  skipFirstTest?: boolean;
 }
 
 export const DEFAULT_PLAN_SETTINGS: PlanSettings = {
@@ -89,7 +91,8 @@ export const planSettingsSchema: z.ZodType<PlanSettings> = z.object({
   difficulty: z.union([z.literal(-5), z.literal(0), z.literal(5)]),
   layout: z.enum(['progresFreestyle', 'doubleProgres', 'plusFreestyle']),
   startWeek: z.number().int().min(1),
-});
+  skipFirstTest: z.boolean().optional(),
+}) as unknown as z.ZodType<PlanSettings>; // same optional-field inference caveat as planSchema
 
 const progressEntrySchema = z.object({
   week: z.number().int().min(1),
