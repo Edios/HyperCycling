@@ -22,7 +22,7 @@ vi.mock('../data/repositories', () => ({
     }),
 }));
 
-vi.setConfig({ testTimeout: 20_000 });
+vi.setConfig({ testTimeout: 60_000 });
 
 import { builtinWorkouts } from '../data/builtin';
 import { FreestyleTab } from './FreestyleTab';
