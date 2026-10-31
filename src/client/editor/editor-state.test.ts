@@ -153,6 +153,17 @@ describe('moveBlock', () => {
     const s = run(s0, { type: 'moveBlock', from: 1, to: 1 });
     expect(s).toBe(s0);
   });
+  it('a no-op action drops the error of the previous failed one', () => {
+    const failed = run(fresh(), { type: 'moveBlock', from: 9, to: 0 });
+    expect(failed.errors).not.toEqual([]);
+    const same = run(failed, { type: 'moveBlock', from: 1, to: 1 });
+    expect(same.errors).toEqual([]);
+    expect(same.workout).toBe(failed.workout);
+    expect(same.past).toBe(failed.past);
+    expect(run(failed, { type: 'select', id: 'does-not-exist' }).errors).toEqual([]);
+    expect(run(failed, { type: 'undo' }).errors).toEqual([]);
+    expect(run(failed, { type: 'redo' }).errors).toEqual([]);
+  });
   it('errors on out-of-range index and keeps workout', () => {
     const s0 = fresh();
     const s = run(s0, { type: 'moveBlock', from: 9, to: 0 });
