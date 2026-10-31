@@ -37,6 +37,10 @@ export interface WorldFrame {
   slopeTarget: number;
   fovTarget: number;
   path: PathModel;
+  /** Workout time in seconds (scene schedules are keyed to it). */
+  workoutSec: number;
+  /** The workout's segments (same array every frame while the workout is unchanged). */
+  segments: readonly Segment[];
 }
 
 export interface HyperrideWorld {

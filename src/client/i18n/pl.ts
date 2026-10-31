@@ -722,6 +722,7 @@ export const pl: Messages = {
   world: {
     neonTunnel: 'Neonowy tunel',
     road: 'Droga',
+    scenes: 'Sceny',
   },
   dev: {
     title: 'Treningi',

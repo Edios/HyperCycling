@@ -75,6 +75,10 @@ describe('settingsSchema hyperrideWorld', () => {
     const r = settingsSchema.safeParse({ ...withoutWorld, hyperrideWorld: 'road' });
     expect(r.success && r.data.hyperrideWorld).toBe('road');
   });
+  it('keeps the scenes world', () => {
+    const r = settingsSchema.safeParse({ ...withoutWorld, hyperrideWorld: 'scenes' });
+    expect(r.success && r.data.hyperrideWorld).toBe('scenes');
+  });
 });
 
 describe('settingsSchema diagnostics and automatic quality', () => {

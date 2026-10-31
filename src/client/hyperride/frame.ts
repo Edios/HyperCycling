@@ -45,6 +45,8 @@ export function buildWorldFrame(input: FrameInput, ctx: FrameContext): WorldFram
       slopeTarget: 0,
       fovTarget: FOV_NORMAL,
       path: ctx.path,
+      workoutSec: state.workoutElapsedSec,
+      segments,
     };
   }
 
@@ -79,5 +81,7 @@ export function buildWorldFrame(input: FrameInput, ctx: FrameContext): WorldFram
     slopeTarget: rpm < CLIMB_MAX_RPM && effort >= CLIMB_MIN_EFFORT ? 0.09 + effort * 0.006 : 0,
     fovTarget: rpm >= SPRINT_RPM && effort >= SPRINT_EFFORT ? FOV_SPRINT : FOV_NORMAL,
     path: ctx.path,
+    workoutSec: t,
+    segments,
   };
 }

@@ -3,7 +3,7 @@ import { DEFAULT_EFFORT_TABLE, effortTableSchema, type EffortTable } from './eff
 import { LANGS, type Lang } from './lang';
 
 /** Hyperride worlds the rider can pick; the client registry (worlds/index.ts) implements them. */
-export const HYPERRIDE_WORLD_IDS = ['neon-tunnel', 'road'] as const;
+export const HYPERRIDE_WORLD_IDS = ['neon-tunnel', 'road', 'scenes'] as const;
 export type HyperrideWorldId = (typeof HYPERRIDE_WORLD_IDS)[number];
 export const DEFAULT_HYPERRIDE_WORLD: HyperrideWorldId = 'neon-tunnel';
 

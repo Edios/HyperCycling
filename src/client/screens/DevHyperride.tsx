@@ -23,7 +23,7 @@ function scaledClock(rate: number): () => number {
 /**
  * Developer page: a Hyperride world driven by a running engine over the built-in demo-mixed workout.
  * Query: `t` start second, `rate` time multiplier, `quality` high|low, `offset` view offset (0..1),
- * `world` world id (default neon-tunnel).
+ * `world` world id (default neon-tunnel), `workout` built-in workout id (default demo-mixed).
  */
 export function DevHyperride() {
   const t = useT();
@@ -32,13 +32,14 @@ export function DevHyperride() {
   const rate = Math.max(0.1, num(params.get('rate'), 1));
   const quality = params.get('quality') === 'low' ? 'low' : 'high';
   const offset = num(params.get('offset'), 0);
+  const workoutId = params.get('workout') ?? 'demo-mixed';
   const worldParam = params.get('world');
   const world: WorldId =
     worldParam !== null && worldParam in WORLDS ? (worldParam as WorldId) : DEFAULT_WORLD;
   const [unavailable, setUnavailable] = useState(false);
 
   const engine = useMemo(() => {
-    const workout = getWorkout('demo-mixed');
+    const workout = getWorkout(workoutId) ?? getWorkout('demo-mixed');
     if (!workout) throw new Error('Built-in workout demo-mixed is missing');
     const segments = flattenWorkout(workout, DEFAULT_EFFORT_TABLE);
     const e = restoreSessionEngine(segments, scaledClock(rate), {
@@ -47,7 +48,7 @@ export function DevHyperride() {
       status: 'paused',
     });
     return { e, segments };
-  }, [startSec, rate]);
+  }, [startSec, rate, workoutId]);
 
   useEffect(() => {
     engine.e.resume();
