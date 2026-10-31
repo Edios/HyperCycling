@@ -2,7 +2,13 @@ import type { Messages } from './en';
 
 export const pl: Messages = {
   app: { title: 'Spinning Tutor' },
-  nav: { plan: 'Plan', freestyle: 'Freestyle', players: 'Gracze', settings: 'Ustawienia' },
+  nav: {
+    plan: 'Plan',
+    freestyle: 'Freestyle',
+    players: 'Gracze',
+    settings: 'Ustawienia',
+    mainMenu: 'Menu główne',
+  },
   training: {
     effort: 'Wysiłek',
     cadence: 'Kadencja',
@@ -33,9 +39,18 @@ export const pl: Messages = {
     fullscreen: 'Pełny ekran',
     players: 'Gracze',
     endTitle: 'Zakończyć trening?',
-    endBody: 'Postęp nie zostanie zapisany jako ukończony.',
-    endConfirm: 'Zakończ',
-    endResume: 'Wznów',
+    endBody: 'Wybierz, co zrobić z tym treningiem.',
+    endConfirm: 'Zakończ i zobacz podsumowanie',
+    endLeave: 'Wyjdź bez zapisywania',
+    endResume: 'Anuluj',
+    menu: 'Menu',
+    quickSettings: 'Szybkie ustawienia',
+    quickClose: 'Zamknij',
+    quickBackground: 'Tło',
+    quickLayout: 'Układ ekranu',
+    quickSounds: 'Sygnały dźwiękowe',
+    quickCoach: 'Podpowiedzi na ekranie',
+    quickYoutubeNone: 'Dodaj link YouTube na ekranie przygotowania, aby użyć tego tła.',
   },
   summary: {
     title: 'Podsumowanie treningu',
