@@ -48,6 +48,12 @@ export function ResumePrompt() {
   // Never replace a session that is already on screen.
   const sessionOpen = useSessionStore((s) => s.runtime !== undefined);
 
+  // Once a session is on screen the offer is obsolete for good: drop it, so it cannot resurface
+  // when that session is cleared again (e.g. Leave without saving).
+  useEffect(() => {
+    if (sessionOpen) setPending(undefined);
+  }, [sessionOpen]);
+
   useEffect(() => {
     if (!loaded) return undefined;
     let live = true;

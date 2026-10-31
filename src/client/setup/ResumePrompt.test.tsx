@@ -208,4 +208,18 @@ describe('ResumePrompt', () => {
     });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+  it('does not come back when that session is later cleared (leave without saving)', async () => {
+    db.active = active();
+    renderApp();
+    await screen.findByRole('dialog');
+    act(() => {
+      useSessionStore.setState({
+        runtime: { workout, segments: [], config: active().config, players: [] },
+      });
+    });
+    act(() => {
+      useSessionStore.setState({ runtime: undefined });
+    });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 });
