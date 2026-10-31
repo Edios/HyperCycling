@@ -99,6 +99,7 @@ describe('Settings screen structure', () => {
     const scroll = vi.fn();
     Element.prototype.scrollIntoView = scroll;
     renderScreen();
+    await section('general');
     const nav = screen.getByRole('navigation', { name: 'Settings sections' });
     fireEvent.click(within(nav).getByRole('button', { name: 'Zones' }));
     expect(scroll).toHaveBeenCalled();
