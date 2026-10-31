@@ -79,6 +79,7 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
       equipment,
       progress.settings.layout,
       progress.settings.skipFirstTest,
+      n.cycle,
     );
     return { ...n, workoutId: workoutId ?? n.workoutId };
   }, [plan, progress, equipment]);
@@ -98,6 +99,7 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
           equipment,
           progress.settings.layout,
           progress.settings.skipFirstTest,
+          next?.cycle,
         );
         if (id === undefined) continue;
         total++;
@@ -105,7 +107,7 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
       }
     }
     return { done, total };
-  }, [plan, progress, equipment]);
+  }, [plan, progress, equipment, next]);
 
   const perWeek = Math.max(...plan.weeks.map((w) => w.sessions.length));
   const minutes = progress.settings.sessionMinutes;
@@ -256,6 +258,7 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
                     equipment,
                     progress.settings.layout,
                     progress.settings.skipFirstTest,
+                    next?.cycle,
                   );
                   const w = id === undefined ? undefined : byId.get(id);
                   return (

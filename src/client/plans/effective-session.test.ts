@@ -111,6 +111,14 @@ describe('effectiveSession', () => {
     });
   });
 
+  describe('skipFirstTest on a looping plan', () => {
+    it('skips the test in the first cycle only', () => {
+      const args = [plan, 1, 'progres', watts, 'progresFreestyle', true] as const;
+      expect(effectiveSession(...args, 1)).toBe('alt-1');
+      expect(effectiveSession(...args, 2)).toBe(RAMP_TEST_ID);
+    });
+  });
+
   it('is undefined for a week that does not exist', () => {
     expect(effectiveSession(plan, 9, 'progres', watts)).toBeUndefined();
   });

@@ -46,20 +46,21 @@ export function recommendPlan(answers: WizardAnswers, plans: readonly Plan[]): R
   const plan = plans.find((p) => p.id === planId);
   if (!plan) throw new Error(`Built-in plan not found: ${planId}`);
 
-  const known = answers.ftp.kind === 'known';
+  const hasTest = weekOneHasTest(plan);
+  // Skipping only means something when the plan opens with a test.
+  const skip = answers.ftp.kind === 'known' && hasTest;
   const settings: PlanSettings = {
     sessionMinutes: answers.minutes,
     difficulty: 0,
     layout: answers.daysPerWeek === 2 ? 'progresFreestyle' : 'plusFreestyle',
     startWeek: 1,
-    ...(known ? { skipFirstTest: true } : {}),
+    ...(skip ? { skipFirstTest: true } : {}),
   };
 
-  const hasTest = weekOneHasTest(plan);
   let key: string;
   let startsWithTest = false;
   if (answers.ftp.kind === 'noWatts') key = 'wizard.reason.noWatts';
-  else if (known) key = 'wizard.reason.known';
+  else if (skip) key = 'wizard.reason.known';
   else if (hasTest) {
     key = 'wizard.reason.test';
     startsWithTest = true;

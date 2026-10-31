@@ -40,6 +40,13 @@ describe('recommendPlan', () => {
     expect(r.reason.key).toBe('wizard.reason.known');
   });
 
+  it('known FTP on a plan without a week-1 test sets no flag and claims no skipped test', () => {
+    const r = rec({ goal: 'keepFit', ftp: { kind: 'known', ftp: 230 } });
+    expect(r.settings.skipFirstTest).toBeUndefined();
+    expect(r.startsWithTest).toBe(false);
+    expect(r.reason.key).toBe('wizard.reason.noTest');
+  });
+
   it('unknown FTP keeps the test for build-form', () => {
     const r = rec({ ftp: { kind: 'unknown' } });
     expect(r.settings.skipFirstTest).toBeFalsy();

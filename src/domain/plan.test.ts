@@ -275,6 +275,13 @@ describe('schemas', () => {
     const d = DEFAULT_PLAN_SETTINGS;
     expect(planSettingsSchema.safeParse(d).success).toBe(true);
     expect(planSettingsSchema.safeParse({ ...d, sessionMinutes: 50 }).success).toBe(false);
+    // Old stored settings have no skipFirstTest; both forms are valid, other types are not.
+    expect(planSettingsSchema.safeParse(d).data).not.toHaveProperty('skipFirstTest', true);
+    expect(planSettingsSchema.safeParse({ ...d, skipFirstTest: true }).data?.skipFirstTest).toBe(
+      true,
+    );
+    expect(planSettingsSchema.safeParse({ ...d, skipFirstTest: false }).success).toBe(true);
+    expect(planSettingsSchema.safeParse({ ...d, skipFirstTest: 'yes' }).success).toBe(false);
     expect(planSettingsSchema.safeParse({ ...d, difficulty: 3 }).success).toBe(false);
     expect(planSettingsSchema.safeParse({ ...d, layout: 'x' }).success).toBe(false);
     expect(planSettingsSchema.safeParse({ ...d, startWeek: 0 }).success).toBe(false);
