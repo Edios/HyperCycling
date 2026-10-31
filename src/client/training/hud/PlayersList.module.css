@@ -52,5 +52,31 @@
 
 [data-theme='light'] .watts,
 [data-theme='light'] .me .name {
-  color: color-mix(in srgb, var(--zone) 65%, #000);
+  color: color-mix(in srgb, var(--zone) 52%, #000);
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .root {
+    border-radius: 3vw;
+    padding: 2.5vw 3.5vw;
+    overflow: auto;
+  }
+
+  .header {
+    font-size: 3.6vw;
+    margin-bottom: 1vw;
+  }
+
+  .row {
+    gap: 3vw;
+    padding: 1vw 0;
+  }
+
+  .name {
+    font-size: 5.2vw;
+  }
+
+  .watts {
+    font-size: 8vw;
+  }
 }

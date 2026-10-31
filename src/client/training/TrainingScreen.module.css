@@ -27,6 +27,8 @@
 }
 
 .center {
+  /* Above the HUD tiles and the NEXT strip, so the count-in digit is never covered. */
+  z-index: 5;
   position: fixed;
   inset: 0;
   display: grid;
@@ -97,4 +99,31 @@
 .overlayLayer {
   position: absolute;
   inset: 0;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .promptSlot {
+    top: 56vh;
+    width: 92vw;
+  }
+
+  .prompt {
+    gap: 1.5vh;
+    padding: 3vh 5vw;
+    border-radius: 4vw;
+    font-size: 4vw;
+    text-align: center;
+  }
+
+  .startButton {
+    padding: 1.4vh 10vw;
+    font-size: 12vw;
+    border-radius: 3vw;
+  }
+
+  .paused {
+    top: 1.5vh;
+    padding: 0.8vh 5vw;
+    font-size: 5.5vw;
+  }
 }

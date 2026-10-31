@@ -50,3 +50,31 @@
 .md {
   --cap: 13vh;
 }
+
+/* Phone portrait: sizes follow the width, not the (much larger) height. */
+@media (max-width: 760px) and (orientation: portrait) {
+  .tile {
+    border-radius: 3vw;
+    padding: 2.2vw 2vw 2.6vw;
+  }
+
+  .label {
+    font-size: 4vw;
+  }
+
+  .sub {
+    font-size: 3.8vw;
+  }
+
+  .xl {
+    --cap: 21vw;
+  }
+
+  .lg {
+    --cap: 17vw;
+  }
+
+  .md {
+    --cap: 13vw;
+  }
+}

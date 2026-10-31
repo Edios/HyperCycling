@@ -442,6 +442,7 @@ export const pl: Messages = {
       restoreBody: 'Twoje wartości stref zostaną zastąpione domyślnymi.',
       restoreYes: 'Przywróć',
       cancel: 'Anuluj',
+      saved: 'Zapisano',
     },
     data: {
       title: 'Dane',

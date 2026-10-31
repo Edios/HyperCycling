@@ -63,3 +63,32 @@
   color: var(--mut);
   font-size: 1.125rem;
 }
+
+@media (max-width: 1000px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .toolbar,
+  .actions {
+    flex-wrap: wrap;
+  }
+
+  .search {
+    width: 100%;
+  }
+
+  .searchWrap {
+    flex: 1 1 100%;
+  }
+}

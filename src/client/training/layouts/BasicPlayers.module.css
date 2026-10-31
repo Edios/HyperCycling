@@ -55,3 +55,31 @@
   align-items: center;
   justify-content: center;
 }
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 2vh;
+    padding: 4vh 3vw 0;
+  }
+
+  .players {
+    order: 2;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5vw;
+  }
+
+  .tiles > :first-child,
+  .two > * {
+    grid-column: 1 / -1;
+  }
+
+  .nextRow {
+    gap: 1.5vh;
+    margin-top: 2vh;
+  }
+}
