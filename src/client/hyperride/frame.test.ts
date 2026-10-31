@@ -86,6 +86,16 @@ describe('buildWorldFrame', () => {
     expect(f.path).toBe(path);
   });
 
+  it('passes the workout time and the segments through (scene schedule of the road)', () => {
+    const segments = workout();
+    const f = build({ workoutElapsedSec: 42 }, 20, segments);
+    expect(f.workoutSec).toBe(42);
+    expect(f.segments).toBe(segments);
+    const empty = build({ workoutElapsedSec: 3 }, 20, []);
+    expect(empty.workoutSec).toBe(3);
+    expect(empty.segments).toEqual([]);
+  });
+
   it('easy block: speed from rpm and effort, normal fov, flat road, blue', () => {
     const f = build();
     expect(f.speedTarget).toBeCloseTo(speedTarget(85, 3), 10);

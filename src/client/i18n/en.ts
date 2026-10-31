@@ -554,6 +554,7 @@ export const en = {
   world: {
     neonTunnel: 'Neon tunnel',
     road: 'Road',
+    scenes: 'Scenes',
   },
   dev: {
     title: 'Workouts',

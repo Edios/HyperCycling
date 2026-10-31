@@ -69,12 +69,17 @@ async function distinctColours(page: Page, png: Buffer): Promise<number> {
   }, png.toString('base64'));
 }
 
-async function startRoad(page: Page, info: TestInfo, quality: 'high' | 'low'): Promise<void> {
+async function startRoad(
+  page: Page,
+  info: TestInfo,
+  quality: 'high' | 'low',
+  world = 'Road',
+): Promise<void> {
   await seedSettings(page, info, { ...DEFAULT_SETTINGS, hyperrideQuality: quality });
   await page.goto('./#/setup/demo-mixed');
   await page.getByRole('button', { name: /Hyperride/ }).click();
-  await page.getByRole('radio', { name: 'Road' }).click();
-  await expect(page.getByRole('radio', { name: 'Road' })).toBeChecked();
+  await page.getByRole('radio', { name: world }).click();
+  await expect(page.getByRole('radio', { name: world })).toBeChecked();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
   await page.keyboard.press('Space');
@@ -119,6 +124,31 @@ test('Road world: starts from Setup, renders, and switches to Neon tunnel in qui
   await page.waitForTimeout(1200);
   expect(await distinctColours(page, await page.screenshot())).toBeGreaterThan(20);
 
+  expect(errors).toEqual([]);
+  if (info.project.name.startsWith('local')) {
+    await page.request.delete('/api/active-session');
+  }
+});
+
+test('Scenes world: starts from Setup and renders without console errors', async ({
+  page,
+}, info) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') errors.push(msg.text());
+  });
+  page.on('pageerror', (err) => errors.push(err.message));
+  await requireWebgl(page);
+
+  await startRoad(page, info, 'high', 'Scenes');
+  const canvas = page.getByTestId('hyperride-canvas');
+  await expect(canvas).toBeVisible();
+  await expect
+    .poll(() => canvas.evaluate((c: HTMLCanvasElement) => c.width), { timeout: 15_000 })
+    .toBeGreaterThan(300);
+  await page.waitForTimeout(1200);
+  expect(await distinctColours(page, await page.screenshot())).toBeGreaterThan(20);
   expect(errors).toEqual([]);
   if (info.project.name.startsWith('local')) {
     await page.request.delete('/api/active-session');
