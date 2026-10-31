@@ -1,3 +1,5 @@
+import type { MessageKey } from '../i18n';
+
 export interface TrainingKeyActions {
   /** Start when idle, pause/resume otherwise. */
   toggle(): void;
@@ -11,6 +13,26 @@ export interface TrainingKeyActions {
   escape(): void;
 }
 
+/** One training shortcut; the key handler and the Settings card both read this list. */
+export interface TrainingShortcut {
+  /** KeyboardEvent.code. */
+  code: string;
+  /** What the key cap shows. */
+  keys: string;
+  action: keyof TrainingKeyActions;
+  labelKey: MessageKey;
+}
+
+export const TRAINING_SHORTCUTS: readonly TrainingShortcut[] = [
+  { code: 'Space', keys: 'Space', action: 'toggle', labelKey: 'shortcuts.toggle' },
+  { code: 'ArrowLeft', keys: '←', action: 'prev', labelKey: 'shortcuts.prev' },
+  { code: 'ArrowRight', keys: '→', action: 'next', labelKey: 'shortcuts.next' },
+  { code: 'KeyG', keys: 'G', action: 'togglePlayers', labelKey: 'shortcuts.togglePlayers' },
+  { code: 'KeyH', keys: 'H', action: 'cycleLayout', labelKey: 'shortcuts.cycleLayout' },
+  { code: 'KeyF', keys: 'F', action: 'fullscreen', labelKey: 'shortcuts.fullscreen' },
+  { code: 'KeyM', keys: 'M', action: 'mute', labelKey: 'shortcuts.mute' },
+  { code: 'Escape', keys: 'Esc', action: 'escape', labelKey: 'shortcuts.escape' },
+];
 function isTextField(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
@@ -46,35 +68,9 @@ export function bindTrainingKeys(target: Window, actions: TrainingKeyActions): (
     }
     // Space is a global pause/resume (R22), also on a focused button; Enter stays with the button.
     if (e.code === 'Enter' && isActivatable(e.target)) return;
-    let run: (() => void) | undefined;
-    switch (e.code) {
-      case 'Space':
-        run = actions.toggle;
-        break;
-      case 'ArrowLeft':
-        run = actions.prev;
-        break;
-      case 'ArrowRight':
-        run = actions.next;
-        break;
-      case 'KeyG':
-        run = actions.togglePlayers;
-        break;
-      case 'KeyH':
-        run = actions.cycleLayout;
-        break;
-      case 'KeyF':
-        run = actions.fullscreen;
-        break;
-      case 'KeyM':
-        run = actions.mute;
-        break;
-      case 'Escape':
-        run = actions.escape;
-        break;
-      default:
-        return;
-    }
+    const shortcut = TRAINING_SHORTCUTS.find((s) => s.code === e.code);
+    if (!shortcut) return;
+    const run = actions[shortcut.action];
     // Space would otherwise scroll or click the focused button.
     e.preventDefault();
     if (e.repeat) return;

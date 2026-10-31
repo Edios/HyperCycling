@@ -7,6 +7,7 @@ import {
   useState,
   type CSSProperties,
 } from 'react';
+import { DiagnosticsOverlay } from '../diagnostics/DiagnosticsOverlay';
 import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
 import { resolveWorld } from '../hyperride/world-options';
 import type { FrameInput } from '../hyperride/world';
@@ -109,6 +110,15 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const [hyperrideFailed, setHyperrideFailed] = useState(false);
   const [unavailableDismissed, setUnavailableDismissed] = useState(false);
   const hyperride = wantsHyperride && !hyperrideFailed;
+  // Automatic quality switched to low for this session (the canvas reports it once).
+  const [autoLowered, setAutoLowered] = useState(false);
+  const [autoToastDismissed, setAutoToastDismissed] = useState(false);
+  const effectiveQuality =
+    settings.hyperrideQuality === 'auto'
+      ? autoLowered
+        ? 'low'
+        : 'high'
+      : settings.hyperrideQuality;
   // A video that cannot be played (or a link that cannot be read) also means Basic (dark).
   const youtubeTarget = useMemo(
     () =>
@@ -457,6 +467,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           <HyperrideCanvas
             getFrameInput={getFrameInput}
             quality={settings.hyperrideQuality}
+            onAutoLowered={() => setAutoLowered(true)}
             world={resolveWorld(worldId)}
             viewOffsetX={overlayHud === 'column' && !playersOn ? COLUMN_VIEW_OFFSET : 0}
             {...(motionOn ? { onSway } : {})}
@@ -503,6 +514,12 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             onClose={() => setYoutubeToastDismissed(true)}
           />
         )}
+        {autoLowered && !autoToastDismissed && (
+          <Toast
+            message={t('diagnostics.autoLowered')}
+            onClose={() => setAutoToastDismissed(true)}
+          />
+        )}
         {musicWarning && (
           <Toast
             key={musicWarning.id}
@@ -514,6 +531,16 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       </ToastStack>
       {runtime.config.music && nowPlaying && (
         <NowPlaying track={nowPlaying} muted={!musicAudible} raised={overlay} />
+      )}
+      {settings.diagnostics === true && (
+        <DiagnosticsOverlay
+          scene={
+            hyperride
+              ? `${t('setup.backgroundHyperride')} / ${resolveWorld(worldId)}`
+              : t(youtube !== null ? 'setup.backgroundYoutube' : 'setup.backgroundBasic')
+          }
+          quality={hyperride ? effectiveQuality : undefined}
+        />
       )}
       <EdgeFlash trigger={flash} color={view.color} reducedMotion={reducedMotion} />
       <div className={styles.center}>

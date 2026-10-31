@@ -1,0 +1,18 @@
+/* Corner readout: small, quiet, never over the main numbers (they sit in the centre and bottom). */
+.overlay {
+  position: fixed;
+  top: 0.8vh;
+  left: 0.8vh;
+  z-index: 20;
+  padding: 0.5vh 0.8vh;
+  border-radius: 0.5vh;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  color: var(--mut);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: max(11px, 1.35vh);
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}

@@ -91,6 +91,7 @@ export function TrainingSection() {
           options={[
             { value: 'high', label: t('settings.training.qualityHigh') },
             { value: 'low', label: t('settings.training.qualityLow') },
+            { value: 'auto', label: t('settings.training.qualityAuto') },
           ]}
           onChange={(hyperrideQuality) => void save({ hyperrideQuality })}
         />

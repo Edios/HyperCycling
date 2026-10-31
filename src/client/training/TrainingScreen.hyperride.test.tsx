@@ -30,6 +30,7 @@ interface CanvasProps {
   viewOffsetX?: number;
   onSway?: (x: number, y: number) => void;
   onUnavailable?: () => void;
+  onAutoLowered?: () => void;
 }
 const canvas = vi.hoisted(() => ({ last: undefined as unknown, mounts: 0 }));
 vi.mock('../hyperride/HyperrideCanvas', () => ({
@@ -239,5 +240,34 @@ describe('overlay layout rules', () => {
     expect(nextOverlayHud('column', true)).toBe('immersive');
     expect(nextOverlayHud('cockpit', true)).toBe('immersive');
     expect(nextOverlayHud('tunnelTime', false)).toBe('immersive');
+  });
+});
+
+describe('diagnostics and automatic quality', () => {
+  it('shows no overlay unless diagnostics mode is on', async () => {
+    load('immersive');
+    await renderScreen();
+    expect(screen.queryByTestId('diagnostics-overlay')).toBeNull();
+  });
+
+  it('shows the hidden overlay with the effective quality when diagnostics is on', async () => {
+    stored = { ...DEFAULT_SETTINGS, diagnostics: true, hyperrideQuality: 'low' };
+    load('immersive');
+    await renderScreen();
+    const overlay = screen.getByTestId('diagnostics-overlay');
+    expect(overlay).toHaveAttribute('aria-hidden', 'true');
+    expect(overlay).toHaveTextContent('low');
+    expect(overlay).toHaveTextContent('Hyperride / neon-tunnel');
+  });
+
+  it('passes automatic quality through and toasts once when it lowers', async () => {
+    stored = { ...DEFAULT_SETTINGS, diagnostics: true, hyperrideQuality: 'auto' };
+    load('immersive');
+    await renderScreen();
+    expect(lastCanvas().quality).toBe('auto');
+    expect(screen.getByTestId('diagnostics-overlay')).toHaveTextContent('high');
+    act(() => lastCanvas().onAutoLowered?.());
+    expect(screen.getByText('Lowered quality for smoothness')).toBeInTheDocument();
+    expect(screen.getByTestId('diagnostics-overlay')).toHaveTextContent('low');
   });
 });

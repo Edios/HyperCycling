@@ -1,0 +1,138 @@
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1.125rem;
+  border-top: 1px solid var(--line);
+}
+
+/* Device facts: label left, value right in a monospace face (they are readouts, often pasted). */
+.facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: 0 2rem;
+}
+
+.fact {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+  min-width: 0;
+}
+
+.fact dt {
+  color: var(--mut);
+  font-size: 0.9375rem;
+  flex: none;
+}
+
+.fact dd {
+  margin: 0;
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.875rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: 0.625rem 0.5rem;
+  text-align: right;
+  border-bottom: 1px solid var(--line);
+  font-size: 1rem;
+}
+
+.table thead th {
+  color: var(--mut);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  vertical-align: bottom;
+}
+
+.table tbody th {
+  text-align: left;
+  font-weight: 600;
+}
+
+.table th:first-child {
+  padding-left: 0;
+}
+
+.table td:last-child {
+  padding-right: 0;
+  color: var(--mut);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.sub {
+  display: block;
+  color: var(--mut);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.good {
+  color: var(--z5);
+}
+
+.warn {
+  color: var(--z7);
+}
+
+.bad {
+  color: var(--z9);
+}
+
+.recommendation {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-left: 0.25rem solid var(--act);
+  background: var(--s2);
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 30rem) {
+  .table th,
+  .table td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.9375rem;
+  }
+
+  .table thead th {
+    font-size: 0.75rem;
+  }
+}
