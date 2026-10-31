@@ -140,8 +140,7 @@ describe('overlay layouts', () => {
     stored = { ...DEFAULT_SETTINGS, hyperrideWorld: 'road' };
     load('immersive');
     await renderScreen();
-    // road is only registered once the Road world module lands; until then the default stands in
-    expect(['neon-tunnel', 'road']).toContain(lastCanvas().world);
+    expect(lastCanvas().world).toBe('road');
     fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
     expect(screen.getByRole('radio', { name: 'Road' })).toBeChecked();
     fireEvent.click(screen.getByRole('radio', { name: 'Neon tunnel' }));

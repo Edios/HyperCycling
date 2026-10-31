@@ -3,10 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
 import { HyperrideCanvas } from './HyperrideCanvas';
 import type { FrameInput, HyperrideWorld } from './world';
-import type { WorldId } from './worlds';
-
-/** 'road' is registered by the Road world module; the registry is mocked here. */
-const ROAD = 'road' as unknown as WorldId;
 
 const log = vi.hoisted(() => ({ events: [] as string[] }));
 
@@ -39,9 +35,9 @@ beforeEach(() => {
   log.events.length = 0;
   vi.stubGlobal('requestAnimationFrame', () => 1);
   vi.stubGlobal('cancelAnimationFrame', vi.fn());
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
-    { getExtension: () => null } as unknown as RenderingContext,
-  );
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    getExtension: () => null,
+  } as unknown as RenderingContext);
 });
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -54,9 +50,7 @@ describe('HyperrideCanvas world switch', () => {
       <HyperrideCanvas getFrameInput={() => input} quality="high" world="neon-tunnel" />,
     );
     await waitFor(() => expect(log.events).toContain('init:neon-tunnel'));
-    view.rerender(
-      <HyperrideCanvas getFrameInput={() => input} quality="high" world={ROAD} />,
-    );
+    view.rerender(<HyperrideCanvas getFrameInput={() => input} quality="high" world="road" />);
     await waitFor(() => expect(log.events).toContain('init:road'));
     expect(log.events).toEqual(['init:neon-tunnel', 'dispose:neon-tunnel', 'init:road']);
     view.unmount();
