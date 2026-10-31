@@ -265,10 +265,10 @@ describe('CoachOverlay', () => {
     expect(screen.queryByTestId('coach-overlay')).toBeNull();
     expect(screen.getByTestId('coach-live')).toHaveAttribute('aria-live', 'polite');
   });
-  it('announces the cue in an sr-only polite status region; the big visual text is hidden from AT', () => {
+  it('announces the cue in an sr-only polite live region; the big visual text is hidden from AT', () => {
     const { rerender } = render(<CoachOverlay cue={null} cueKey={0} color="#fff" />);
     const live = screen.getByTestId('coach-live');
-    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
     expect(live).toHaveClass('sr-only');
     expect(live).toBeEmptyDOMElement();
     rerender(<CoachOverlay cue={{ kind: 'attack' }} cueKey={1} color="#fff" />);

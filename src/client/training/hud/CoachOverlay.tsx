@@ -36,7 +36,7 @@ export function CoachOverlay({ cue, cueKey, color, reducedMotion = false }: Coac
   return (
     <>
       {/* What a screen reader announces; the oversized visual below is decoration for it. */}
-      <div data-testid="coach-live" role="status" aria-live="polite" className="sr-only">
+      <div data-testid="coach-live" aria-live="polite" aria-atomic="true" className="sr-only">
         {cue && <span key={cueKey}>{text}</span>}
       </div>
       {cue && (

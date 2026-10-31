@@ -546,7 +546,9 @@ describe('built-in workouts', () => {
     for (const i of sprints) {
       const next = blocks[i + 1];
       expect(next?.kind, `after ${blocks[i]?.id}`).toBe('steady');
-      expect(next?.durationSec, `after ${blocks[i]?.id}`).toBe(180);
+      expect(next?.kind === 'steady' ? next.durationSec : undefined, `after ${blocks[i]?.id}`).toBe(
+        180,
+      );
     }
   });
 });

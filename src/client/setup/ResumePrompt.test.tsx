@@ -197,6 +197,19 @@ describe('ResumePrompt', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('keeps Tab inside the dialog', async () => {
+    db.active = active();
+    renderApp();
+    await screen.findByRole('dialog');
+    const resume = screen.getByRole('button', { name: 'Resume' });
+    const discard = screen.getByRole('button', { name: 'Discard' });
+    resume.focus();
+    fireEvent.keyDown(document.body, { key: 'Tab' });
+    expect(discard).toHaveFocus();
+    fireEvent.keyDown(document.body, { key: 'Tab', shiftKey: true });
+    expect(resume).toHaveFocus();
+  });
+
   it('hides when a session starts while it is open', async () => {
     db.active = active();
     renderApp();

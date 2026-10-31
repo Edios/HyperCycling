@@ -19,7 +19,9 @@ export function EndDialog({ onResume, onEnd, onLeave }: EndDialogProps) {
   const leaveRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
     cancelRef.current?.focus();
+    return () => opener?.focus?.(); // back to where the rider was (the Menu button, or nowhere)
   }, []);
 
   const onKeyDown = (e: React.KeyboardEvent): void => {
