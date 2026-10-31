@@ -61,6 +61,19 @@ describe('bindTrainingKeys', () => {
     unbind();
   });
 
+  it('Escape works from a radio or checkbox (quick settings) but not from a text field', () => {
+    const { actions, unbind } = setup();
+    for (const type of ['radio', 'checkbox', 'text']) {
+      const input = document.createElement('input');
+      input.type = type;
+      document.body.append(input);
+      input.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true }));
+      input.remove();
+    }
+    expect(actions.escape).toHaveBeenCalledTimes(2);
+    unbind();
+  });
+
   it('leaves Space to a focused button', () => {
     const { actions, unbind } = setup();
     const btn = document.createElement('button');

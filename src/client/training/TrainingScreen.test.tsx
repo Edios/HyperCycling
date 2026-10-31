@@ -196,7 +196,7 @@ describe('TrainingScreen', () => {
     key('Escape');
     expect(screen.getByRole('dialog')).toHaveTextContent('End workout?');
     expect(useSessionStore.getState().state.status).toBe('paused');
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Resume' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(useSessionStore.getState().state.status).toBe('running');
   });
@@ -210,7 +210,7 @@ describe('TrainingScreen', () => {
     key('Escape');
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(useSessionStore.getState().state.status).toBe('idle');
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Resume' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
     expect(useSessionStore.getState().state.status).toBe('idle');
     expect(screen.getByText('Press Space or click Start')).toBeInTheDocument();
   });
@@ -234,7 +234,7 @@ describe('TrainingScreen', () => {
     advance(3100);
     advance(4000);
     key('Escape');
-    fireEvent.click(screen.getByRole('button', { name: 'End' }));
+    fireEvent.click(screen.getByRole('button', { name: 'End and see summary' }));
     expect(await screen.findByTestId('summary-page')).toBeInTheDocument();
     const r = useLastResult.getState().result;
     expect(r?.completed).toBe(false);

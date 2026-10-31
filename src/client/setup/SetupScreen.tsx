@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
 import { playerSchema, type Player } from '../../domain/player';
@@ -11,6 +11,7 @@ import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
 import { useSessionStore } from '../training/session-store';
 import { formatClock } from '../training/format';
+import { AppBar } from '../ui/AppBar';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
@@ -192,15 +193,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
 
   return (
     <div data-testid="setup-screen" className={styles.page}>
-      <header className={styles.bar}>
-        <Link to="/" className={styles.logo}>
-          <i aria-hidden="true" />
-          {t('app.title')}
-        </Link>
-        <Link to={plan ? '/' : '/freestyle'} className={styles.back}>
-          ‹ {t(plan ? 'nav.plan' : 'nav.freestyle')}
-        </Link>
-      </header>
+      <AppBar />
 
       <div className={styles.grid}>
         <Card className={styles.summary}>

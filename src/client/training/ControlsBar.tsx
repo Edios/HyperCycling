@@ -14,6 +14,10 @@ export interface ControlsBarProps {
   onMute(): void;
   onFullscreen(): void;
   onPlayers(): void;
+  /** Opens the exit dialog (end / leave / cancel). */
+  onMenu(): void;
+  quickOpen: boolean;
+  onQuick(): void;
 }
 
 export function ControlsBar(p: ControlsBarProps) {
@@ -67,6 +71,17 @@ export function ControlsBar(p: ControlsBarProps) {
       )}
       <button type="button" aria-label={t('training.fullscreen')} onClick={click(p.onFullscreen)}>
         <span aria-hidden="true">⛶</span>
+      </button>
+      <button
+        type="button"
+        aria-label={t('training.quickSettings')}
+        aria-pressed={p.quickOpen}
+        onClick={click(p.onQuick)}
+      >
+        <span aria-hidden="true">⚙</span>
+      </button>
+      <button type="button" aria-label={t('training.menu')} onClick={click(p.onMenu)}>
+        <span aria-hidden="true">☰</span>
       </button>
     </div>
   );

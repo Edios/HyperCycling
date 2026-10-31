@@ -43,6 +43,8 @@ export interface SessionStore {
   /** Unloads the runtime and discards the active session. */
   stop(): void;
   toggleMute(): void;
+  /** Swaps the session config live (background, layout...); the engine and its time are untouched. */
+  setConfig(config: SessionConfig): void;
   tick(): EngineEvent[];
 }
 
@@ -235,6 +237,14 @@ export const useSessionStore = create<SessionStore>((set, get) => {
 
     toggleMute() {
       set((s) => ({ muted: !s.muted }));
+    },
+
+    setConfig(config) {
+      const runtime = get().runtime;
+      if (!runtime) return;
+      set({ runtime: { ...runtime, config } });
+      // The stored record carries the config too: keep a later resume on the same background.
+      if (engine?.canResume()) getAutosave().onEvent(get());
     },
 
     tick() {
