@@ -34,18 +34,23 @@ export function CoachOverlay({ cue, cueKey, color, reducedMotion = false }: Coac
         : t(SIMPLE_KEYS[cue.kind]);
   const style: CSSProperties & Record<'--c', string> = { '--c': color };
   return (
-    <div data-testid="coach-live" aria-live="polite" className={styles.live}>
+    <>
+      {/* What a screen reader announces; the oversized visual below is decoration for it. */}
+      <div data-testid="coach-live" role="status" aria-live="polite" className="sr-only">
+        {cue && <span key={cueKey}>{text}</span>}
+      </div>
       {cue && (
         <div
           key={cueKey}
           data-testid="coach-overlay"
           data-animated={!reducedMotion}
+          aria-hidden="true"
           className={`${styles.root} ${reducedMotion ? '' : styles.animated}`}
           style={style}
         >
           {text}
         </div>
       )}
-    </div>
+    </>
   );
 }
