@@ -124,6 +124,21 @@ describe('YouTube background in the training screen', () => {
     expect(root).toHaveAttribute('data-theme', 'dark');
   });
 
+  it('the fallback toast stays for at least 6 seconds', async () => {
+    load('https://youtu.be/dQw4w9WgXcQ');
+    await renderScreen();
+    vi.useFakeTimers();
+    try {
+      act(() => props().onFail('embed-blocked'));
+      act(() => {
+        vi.advanceTimersByTime(5900);
+      });
+      expect(screen.getByText(/cannot be embedded/)).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('a YouTube failure leaves the running session untouched', async () => {
     load('https://youtu.be/dQw4w9WgXcQ');
     await renderScreen();

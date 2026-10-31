@@ -4,6 +4,7 @@ import { useT, type MessageKey } from '../i18n';
 import { WORLD_CHOICES } from '../hyperride/world-options';
 import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
+import { useRestoreFocus } from '../ui/useRestoreFocus';
 import styles from './QuickSettings.module.css';
 
 type Background = SessionConfig['background'];
@@ -44,6 +45,7 @@ export interface QuickSettingsProps {
 /** Live settings during a ride. Nothing here touches the engine: time and state carry on. */
 export function QuickSettings(p: QuickSettingsProps) {
   const t = useT();
+  useRestoreFocus();
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     closeRef.current?.focus();
@@ -108,6 +110,7 @@ export function QuickSettings(p: QuickSettingsProps) {
       )}
       <Toggle label={t('training.quickSounds')} checked={p.sounds} onChange={p.onSounds} />
       <Toggle label={t('training.quickCoach')} checked={p.coach} onChange={p.onCoach} />
+      <p className={styles.hint}>{t('training.shortcutHint')}</p>
     </section>
   );
 }
