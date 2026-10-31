@@ -422,6 +422,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             videoId={youtube.videoId}
             startSec={youtube.startSec}
             paused={status === 'paused'}
+            reducedMotion={reducedMotion}
             onFail={onYoutubeFail}
           />
           <div className={`${styles.layout} ${styles.overlayLayer}`}>

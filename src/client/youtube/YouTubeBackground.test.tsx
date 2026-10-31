@@ -104,6 +104,31 @@ describe('YouTubeBackground', () => {
     expect(last().calls).toEqual(['pause', 'play']);
   });
 
+  it('reduced motion keeps the video still: paused on ready, never played, even on resume', async () => {
+    const { rerender } = render(
+      <YouTubeBackground videoId="dQw4w9WgXcQ" paused={false} reducedMotion onFail={vi.fn()} />,
+    );
+    await flush();
+    act(() => events().onReady({ target: target() }));
+    expect(last().calls).toEqual(['mute', 'pause']);
+    rerender(<YouTubeBackground videoId="dQw4w9WgXcQ" paused reducedMotion onFail={vi.fn()} />);
+    rerender(
+      <YouTubeBackground videoId="dQw4w9WgXcQ" paused={false} reducedMotion onFail={vi.fn()} />,
+    );
+    expect(last().calls).not.toContain('play');
+  });
+
+  it('turning reduced motion off while running starts the video', async () => {
+    const { rerender } = render(
+      <YouTubeBackground videoId="dQw4w9WgXcQ" paused={false} reducedMotion onFail={vi.fn()} />,
+    );
+    await flush();
+    act(() => events().onReady({ target: target() }));
+    last().calls.length = 0;
+    rerender(<YouTubeBackground videoId="dQw4w9WgXcQ" paused={false} onFail={vi.fn()} />);
+    expect(last().calls).toEqual(['play']);
+  });
+
   it('starts paused when the engine is paused', async () => {
     render(<YouTubeBackground videoId="dQw4w9WgXcQ" paused onFail={vi.fn()} />);
     await flush();
