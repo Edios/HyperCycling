@@ -108,7 +108,7 @@ FTP is the power you can hold for about an hour. Pick a test, ride it (each has 
 
 ## Editor and importing workouts
 
-**+ New workout** in Freestyle opens the editor. Built-in workouts are read-only: press **Duplicate** to make your own copy.
+**+ New workout** in Freestyle opens the editor. Built-in workouts are read-only: press **Duplicate to edit** to make your own copy.
 
 ![Editor](images/editor.png)
 

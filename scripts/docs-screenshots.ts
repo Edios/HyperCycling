@@ -24,6 +24,17 @@ const DEMO_RIDERS = [
   { name: 'Tomek', ftp: '240', me: false },
 ];
 
+/** mulberry32: deterministic Math.random replacement, injected before any page script runs. */
+const SEEDED_RANDOM = `(() => {
+  let a = 0x2f6e2b1;
+  Math.random = () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+})();`;
+
 async function shot(page: Page, name: string): Promise<void> {
   // Let layout, fonts and CSS transitions settle without moving the page clock.
   await page.evaluate(() => document.fonts.ready);
@@ -66,6 +77,8 @@ async function main(): Promise<void> {
     });
     const page = await context.newPage();
     await page.clock.install({ time: FIXED_TIME });
+    // Hyperride draws its tunnel with Math.random; a seeded PRNG keeps the PNGs stable.
+    await page.addInitScript(SEEDED_RANDOM);
     page.on('pageerror', (err) => console.warn('page error:', err.message));
 
     await seedRiders(page);
