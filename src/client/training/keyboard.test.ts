@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { bindTrainingKeys, type TrainingKeyActions } from './keyboard';
+import { bindTrainingKeys, TRAINING_SHORTCUTS, type TrainingKeyActions } from './keyboard';
 
 function setup() {
   const actions: TrainingKeyActions = {
@@ -127,5 +127,29 @@ describe('bindTrainingKeys', () => {
     unbind();
     press('Space');
     expect(actions.toggle).not.toHaveBeenCalled();
+  });
+});
+
+describe('TRAINING_SHORTCUTS', () => {
+  it('is the single source: every listed key triggers its listed action', () => {
+    const calls: string[] = [];
+    const actions: Required<TrainingKeyActions> = {
+      toggle: () => calls.push('toggle'),
+      prev: () => calls.push('prev'),
+      next: () => calls.push('next'),
+      togglePlayers: () => calls.push('togglePlayers'),
+      cycleLayout: () => calls.push('cycleLayout'),
+      fullscreen: () => calls.push('fullscreen'),
+      mute: () => calls.push('mute'),
+      escape: () => calls.push('escape'),
+    };
+    const unbind = bindTrainingKeys(window, actions);
+    for (const s of TRAINING_SHORTCUTS) {
+      calls.length = 0;
+      press(s.code);
+      expect(calls, s.code).toEqual([s.action]);
+    }
+    unbind();
+    expect(TRAINING_SHORTCUTS.length).toBe(8);
   });
 });

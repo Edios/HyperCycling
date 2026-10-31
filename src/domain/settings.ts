@@ -40,8 +40,10 @@ export interface Settings {
   coach: boolean;
   /** 0..1 */
   effectsIntensity: number;
-  hyperrideQuality: 'high' | 'low';
+  hyperrideQuality: 'high' | 'low' | 'auto';
   hyperrideWorld: HyperrideWorldId;
+  /** Diagnostics mode: live FPS overlay while training, device info and performance test. */
+  diagnostics?: boolean;
   activePlanId?: string;
   lastSession?: SessionConfig;
   spotify?: SpotifySettings;
@@ -79,8 +81,9 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   sounds: z.boolean(),
   coach: z.boolean(),
   effectsIntensity: z.number().min(0).max(1),
-  hyperrideQuality: z.enum(['high', 'low']),
+  hyperrideQuality: z.enum(['high', 'low', 'auto']),
   hyperrideWorld: z.enum(HYPERRIDE_WORLD_IDS).catch(DEFAULT_HYPERRIDE_WORLD),
+  diagnostics: z.boolean().optional(),
   activePlanId: z.string().optional(),
   lastSession: sessionConfigSchema.optional(),
   spotify: spotifySettingsSchema.optional(),

@@ -3,6 +3,7 @@ import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
 import { AppBar } from '../ui/AppBar';
 import { DataSection } from './DataSection';
+import { DiagnosticsSection } from './DiagnosticsSection';
 import { EquipmentSection } from './EquipmentSection';
 import { GeneralSection } from './GeneralSection';
 import { MusicSection } from './MusicSection';
@@ -80,6 +81,12 @@ const SECTIONS: readonly {
     titleKey: 'settings.data.title',
     navKey: 'settings.nav.data',
     body: <DataSection />,
+  },
+  {
+    id: 'diagnostics',
+    titleKey: 'diagnostics.title',
+    navKey: 'settings.nav.diagnostics',
+    body: <DiagnosticsSection />,
   },
 ];
 

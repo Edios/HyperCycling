@@ -3,6 +3,7 @@ import { useSettings } from '../data/useSettings';
 import { getLang, setLang, useT } from '../i18n';
 import { Segmented } from '../ui/Segmented';
 import { useSave } from './save';
+import { ShortcutsCard } from './ShortcutsCard';
 import styles from './Settings.module.css';
 
 /** Each language is named in itself, so it can be found whatever the UI language is. */
@@ -51,6 +52,7 @@ export function GeneralSection() {
           {t('settings.general.help')}
         </a>
       </div>
+      <ShortcutsCard />
     </div>
   );
 }

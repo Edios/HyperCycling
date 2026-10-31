@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 import { injectCspMeta } from './src/shared/cspMeta';
@@ -15,7 +16,14 @@ function cspMeta(): Plugin {
   };
 }
 
+const { version } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as {
+  version: string;
+};
+
 export default defineConfig({
+  define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(version) },
   base: process.env.VITE_BASE ?? '/',
   // Vite would inline a small modulepreload polyfill; the CSP has no 'unsafe-inline' for scripts.
   build: { modulePreload: { polyfill: false } },

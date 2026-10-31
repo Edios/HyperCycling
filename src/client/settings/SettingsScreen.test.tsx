@@ -84,13 +84,29 @@ afterEach(() => {
 });
 
 describe('Settings screen structure', () => {
-  it('has a nav entry and a section for each of the six parts', async () => {
+  it('has a nav entry and a section for each of the seven parts', async () => {
     renderScreen();
     const nav = screen.getByRole('navigation', { name: 'Settings sections' });
-    for (const name of ['General', 'Equipment & FTP', 'Training', 'Zones', 'Music', 'Data']) {
+    for (const name of [
+      'General',
+      'Equipment & FTP',
+      'Training',
+      'Zones',
+      'Music',
+      'Data',
+      'Diagnostics',
+    ]) {
       expect(within(nav).getByRole('button', { name })).toBeInTheDocument();
     }
-    for (const id of ['general', 'equipment', 'training', 'zones', 'music', 'data']) {
+    for (const id of [
+      'general',
+      'equipment',
+      'training',
+      'zones',
+      'music',
+      'data',
+      'diagnostics',
+    ]) {
       expect(await section(id)).toBeInTheDocument();
     }
   });
@@ -282,6 +298,8 @@ describe('Training', () => {
     await waitFor(() => expect(db.settings?.coach).toBe(false));
     fireEvent.click(within(tr).getByRole('radio', { name: 'Low' }));
     await waitFor(() => expect(db.settings?.hyperrideQuality).toBe('low'));
+    fireEvent.click(within(tr).getByRole('radio', { name: 'Automatic' }));
+    await waitFor(() => expect(db.settings?.hyperrideQuality).toBe('auto'));
   });
 
   it('saves the Hyperride world', async () => {
