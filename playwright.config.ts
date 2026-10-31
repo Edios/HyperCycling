@@ -1,11 +1,14 @@
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
+import { assertSafeE2eDbPath } from './src/server/e2e-db-guard';
 
 // The local project runs against its own server and a throwaway database, never the real data.
 // Workers and globalTeardown inherit the env var, so the path is the same everywhere.
 const E2E_PORT = 5185;
 process.env.E2E_DB_PATH ??= path.join(tmpdir(), `spinning-tutor-e2e-${Date.now()}.db`);
+// Refuse an explicit E2E_DB_PATH that points into the real data/ directory.
+assertSafeE2eDbPath(process.env.E2E_DB_PATH);
 
 export default defineConfig({
   testDir: 'tests/e2e',
