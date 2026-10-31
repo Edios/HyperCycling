@@ -30,6 +30,8 @@ export interface WorldFrame {
   effortColor: string;
   /** Zone color of the block that will be active when the camera reaches `depth`. */
   colorAtDepth(depth: number): string;
+  /** Seconds until the next block starts; null in the last block (or with no workout). */
+  nextBlockInSec: number | null;
   /** Current effort mapped to 0..1 (effort / 10). */
   effortGlow: number;
   slopeTarget: number;

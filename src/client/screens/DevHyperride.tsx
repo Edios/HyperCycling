@@ -6,6 +6,7 @@ import { restoreSessionEngine } from '../../domain/session-engine';
 import { getWorkout } from '../data/builtin';
 import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
 import type { FrameInput } from '../hyperride/world';
+import { DEFAULT_WORLD, WORLDS, type WorldId } from '../hyperride/worlds';
 import { useT } from '../i18n';
 
 const num = (v: string | null, fallback: number): number => {
@@ -20,8 +21,9 @@ function scaledClock(rate: number): () => number {
 }
 
 /**
- * Developer page: the Neon Tunnel driven by a running engine over the built-in demo-mixed workout.
- * Query: `t` start second, `rate` time multiplier, `quality` high|low, `offset` view offset (0..1).
+ * Developer page: a Hyperride world driven by a running engine over the built-in demo-mixed workout.
+ * Query: `t` start second, `rate` time multiplier, `quality` high|low, `offset` view offset (0..1),
+ * `world` world id (default neon-tunnel).
  */
 export function DevHyperride() {
   const t = useT();
@@ -30,6 +32,9 @@ export function DevHyperride() {
   const rate = Math.max(0.1, num(params.get('rate'), 1));
   const quality = params.get('quality') === 'low' ? 'low' : 'high';
   const offset = num(params.get('offset'), 0);
+  const worldParam = params.get('world');
+  const world: WorldId =
+    worldParam !== null && worldParam in WORLDS ? (worldParam as WorldId) : DEFAULT_WORLD;
   const [unavailable, setUnavailable] = useState(false);
 
   const engine = useMemo(() => {
@@ -66,6 +71,7 @@ export function DevHyperride() {
         <HyperrideCanvas
           getFrameInput={getFrameInput}
           quality={quality}
+          world={world}
           viewOffsetX={offset}
           onUnavailable={() => setUnavailable(true)}
         />

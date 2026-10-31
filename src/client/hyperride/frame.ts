@@ -40,6 +40,7 @@ export function buildWorldFrame(input: FrameInput, ctx: FrameContext): WorldFram
       speedTarget: 0,
       effortColor: color,
       colorAtDepth: () => color,
+      nextBlockInSec: null,
       effortGlow: 0.1,
       slopeTarget: 0,
       fovTarget: FOV_NORMAL,
@@ -65,11 +66,15 @@ export function buildWorldFrame(input: FrameInput, ctx: FrameContext): WorldFram
     return effortRow(intensityAt(s, arrive - s.startSec, table).effort, table).color;
   };
 
+  const hasNext = segments[state.segmentIndex + 1] !== undefined;
+  const nextBlockInSec = hasNext ? Math.max(0, segment.startSec + segment.durationSec - t) : null;
+
   return {
     dtSec: ctx.dtSec,
     speedTarget: running ? speedTarget(rpm, effort) : 0,
     effortColor,
     colorAtDepth,
+    nextBlockInSec,
     effortGlow: effort / 10,
     slopeTarget: rpm < CLIMB_MAX_RPM && effort >= CLIMB_MIN_EFFORT ? 0.09 + effort * 0.006 : 0,
     fovTarget: rpm >= SPRINT_RPM && effort >= SPRINT_EFFORT ? FOV_SPRINT : FOV_NORMAL,

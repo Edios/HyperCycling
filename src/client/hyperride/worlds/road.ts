@@ -1,0 +1,851 @@
+import * as THREE from 'three';
+import type { HyperrideQuality, HyperrideWorld, WorldFrame } from '../world';
+import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
+import { BASE_VFOV_DEG, baseVerticalFov, dashOffset, gateDepth, hash01 } from './road-model';
+
+/**
+ * "Road": a calm, stylised road at dusk (spec 5, mockup docs/design/mockups/wizard/07-road-world).
+ * Zone-coloured bars run along both road edges; each bar takes the colour of the block that will
+ * be active when the rider reaches it, so the next block's colour travels toward the rider, and a
+ * gate frame marks where the next block begins. The sky (gradient, sun, mountains, skyline) is
+ * drawn once per size into a CanvasTexture; the handlebar and front wheel are a screen-space
+ * overlay anchored bottom-centre. No post-processing: `high` adds a soft additive glow under the
+ * edge bars and a full pixel ratio, `low` halves the road segments, bars and props.
+ *
+ * World units: the camera sits CAM_HEIGHT above the road; one camera height ≈ the mockup's unit.
+ */
+
+const CAM_HEIGHT = 4;
+const ROAD_HALF = 5.4;
+/** Farthest depth the road, bars and gate are drawn to. */
+const VIEW = 420;
+const NEAR_DEPTH = 0.5;
+const LOOK_AHEAD = 30;
+/** The tunnel path bends are scaled down: a road swings gently, it does not corkscrew. */
+const CURVE_SCALE = 0.3;
+/** Horizon height as a fraction of the canvas height, from the top. */
+const HORIZON_LANDSCAPE = 0.45;
+const HORIZON_PORTRAIT = 0.4;
+
+const EDGE_INNER = 0.8;
+const EDGE_OUTER = 0.99;
+const LINE_INNER = 0.755;
+const LINE_OUTER = 0.775;
+const DASH_PERIOD = 10.4;
+const DASH_LENGTH = 5;
+const DASH_HALF = 0.11;
+const BAR_PERIOD = 4;
+const BAR_FILL = 0.88;
+const BAR_DIM = 0.55;
+const TREE_PERIOD = 8;
+const GATE_HEIGHT = ROAD_HALF * 0.78;
+const GATE_POST = 0.3;
+
+/** Widest backdrop / cockpit texture in pixels. */
+const MAX_TEXTURE_WIDTH = 2560;
+const RIBBON_SEGMENTS_HIGH = 140;
+const RIBBON_SEGMENTS_LOW = 70;
+
+const FOG_COLOR = 0x6e4058;
+const FOG_NEAR = 30;
+const FOG_FAR = 470;
+const GROUND_COLOR = 0x0b0c1a;
+const ROAD_COLOR = 0x1d1a33;
+const LINE_COLOR = 0xd9d4e6;
+const DASH_COLOR = 0xffecc8;
+const TREE_COLOR = 0x0d0a22;
+
+export interface RoadOptions {
+  /** Static scene (no streaming); defaults to the prefers-reduced-motion media query. */
+  reducedMotion?: boolean;
+}
+
+interface Disposable {
+  dispose(): void;
+}
+
+/** A flat strip along the road between two lateral offsets (fractions of ROAD_HALF). */
+interface Ribbon {
+  mesh: THREE.Mesh;
+  pos: Float32Array;
+  inner: number;
+  outer: number;
+}
+
+interface Scene3D {
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  cam: THREE.PerspectiveCamera;
+  overlayScene: THREE.Scene;
+  overlayCam: THREE.OrthographicCamera;
+  overlayQuad: THREE.Mesh;
+  overlayMat: THREE.MeshBasicMaterial;
+  ground: THREE.Mesh;
+  ribbons: Ribbon[];
+  /** Depths of the ribbon cross-sections (denser near the camera). */
+  ribbonDepths: Float32Array;
+  bars: THREE.InstancedMesh;
+  barsPerSide: number;
+  barPeriod: number;
+  glow?: THREE.InstancedMesh;
+  dashes: THREE.InstancedMesh;
+  dashCount: number;
+  trees: THREE.InstancedMesh;
+  treesPerSide: number;
+  treePeriod: number;
+  gate: THREE.Group;
+  gateSolid: THREE.MeshBasicMaterial;
+  gateFill: THREE.MeshBasicMaterial;
+  high: boolean;
+  /** Owned by the scene for its whole life (geometries, materials, static textures). */
+  disposables: Disposable[];
+  /** Re-created on every resize. */
+  backdrop?: THREE.CanvasTexture;
+  overlay?: THREE.CanvasTexture;
+  unwatchDpr(): void;
+}
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
+const isPortrait = (w: number, h: number): boolean => h > w;
+const horizonFraction = (w: number, h: number): number =>
+  isPortrait(w, h) ? HORIZON_PORTRAIT : HORIZON_LANDSCAPE;
+
+// ---------------------------------------------------------------------------------------------
+// 2D drawing (backdrop + cockpit overlay), adapted from the mockup's canvas code
+// ---------------------------------------------------------------------------------------------
+
+function make2d(w: number, h: number): CanvasRenderingContext2D | null {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(w));
+  c.height = Math.max(1, Math.round(h));
+  return c.getContext('2d');
+}
+
+/** Sky gradient, stars, sun, two mountain ridges and a city skyline; ground below in fog colour. */
+function drawBackdrop(g: CanvasRenderingContext2D, high: boolean): void {
+  const W = g.canvas.width;
+  const H = g.canvas.height;
+  const P = isPortrait(W, H);
+  const hy = Math.round(H * horizonFraction(W, H));
+
+  const sky = g.createLinearGradient(0, 0, 0, hy);
+  sky.addColorStop(0, '#060818');
+  sky.addColorStop(0.3, '#161650');
+  sky.addColorStop(0.6, '#5b2a75');
+  sky.addColorStop(0.82, '#d4506b');
+  sky.addColorStop(1, '#ff9d5c');
+  g.fillStyle = sky;
+  g.fillRect(0, 0, W, hy + 2);
+
+  const starSize = Math.max(1.2, Math.min(W, H) / 450);
+  g.fillStyle = '#ffffff';
+  for (let i = 0; i < (high ? 80 : 50); i++) {
+    g.globalAlpha = 0.2 + hash01(i + 900) * 0.6;
+    g.fillRect(hash01(i) * W, hash01(i + 400) * hy * 0.55, starSize, starSize);
+  }
+  g.globalAlpha = 1;
+
+  const sunX = W / 2 + W * (P ? 0.22 : 0.2);
+  const sunR = Math.min(W, H) * (P ? 0.14 : 0.11);
+  const sunY = hy - sunR * (P ? 0.95 : 0.55);
+  const halo = g.createRadialGradient(sunX, sunY, sunR * 0.2, sunX, sunY, sunR * 4.2);
+  halo.addColorStop(0, 'rgba(255,200,120,0.75)');
+  halo.addColorStop(0.25, 'rgba(255,140,90,0.32)');
+  halo.addColorStop(1, 'rgba(255,120,90,0)');
+  g.fillStyle = halo;
+  g.fillRect(0, 0, W, hy);
+  g.fillStyle = '#ffd58f';
+  g.beginPath();
+  g.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+  g.fill();
+
+  const ridge = (base: number, amp: number, seed: number, color: string, freq: number): void => {
+    g.fillStyle = color;
+    g.beginPath();
+    g.moveTo(0, hy + 2);
+    const step = Math.max(2, W / 400);
+    for (let x = 0; x <= W + step; x += step) {
+      const t = (x / W) * freq;
+      const y =
+        base -
+        amp *
+          (0.55 * Math.abs(Math.sin(t * 1.7 + seed)) +
+            0.3 * Math.abs(Math.sin(t * 3.9 + seed * 2)) +
+            0.15 * Math.sin(t * 9 + seed * 3));
+      g.lineTo(x, y);
+    }
+    g.lineTo(W, hy + 2);
+    g.closePath();
+    g.fill();
+  };
+  ridge(hy - H * 0.015, H * 0.15, 1.3, '#4a2a6a', P ? 5 : 6);
+
+  // skyline: a band of blocks, taller in the middle, with a few lit windows
+  const cityX = W * (P ? 0.06 : 0.56);
+  const cityW = W * (P ? 0.5 : 0.36);
+  const base = hy - H * 0.01;
+  const win = Math.max(2, H * 0.0032);
+  let x = cityX;
+  let k = 0;
+  while (x < cityX + cityW) {
+    const bw = W * (0.012 + hash01(k + 50) * 0.018);
+    const centre = 1 - Math.abs((x - cityX - cityW / 2) / cityW) * 0.9;
+    const bh = H * (0.015 + hash01(k + 70) * 0.07 * centre);
+    g.fillStyle = '#1c1238';
+    g.fillRect(x, base - bh, bw, bh + H * 0.012);
+    g.fillStyle = '#ffc77a';
+    for (let j = 0; j < bh / (H * 0.012); j++) {
+      if (hash01(k * 31 + j) > 0.62) {
+        g.fillRect(
+          x + bw * 0.25 + hash01(k + j) * bw * 0.4,
+          base - bh + j * H * 0.012 + 3,
+          win,
+          win * 1.2,
+        );
+      }
+    }
+    x += bw + W * 0.002;
+    k++;
+  }
+  ridge(hy + H * 0.002, H * 0.07, 4.1, '#160e2e', P ? 7 : 9);
+
+  // below the horizon the 3D ground covers everything; match its far (fog) colour
+  g.fillStyle = `#${FOG_COLOR.toString(16).padStart(6, '0')}`;
+  g.fillRect(0, hy + 2, W, H - hy - 2);
+}
+
+/** Bottom shade, front wheel, stem and drop handlebar, vignette. Transparent elsewhere. */
+function drawCockpit(g: CanvasRenderingContext2D): void {
+  const W = g.canvas.width;
+  const H = g.canvas.height;
+  const P = isPortrait(W, H);
+  const cx = W / 2;
+  g.clearRect(0, 0, W, H);
+
+  // warm haze on the ground just below the horizon (perspective squeezes the fog into a line)
+  const hy = H * horizonFraction(W, H);
+  const hz = g.createLinearGradient(0, hy - 2, 0, hy + (H - hy) * 0.24);
+  hz.addColorStop(0, 'rgba(255,150,100,0.34)');
+  hz.addColorStop(1, 'rgba(255,150,100,0)');
+  g.fillStyle = hz;
+  g.fillRect(0, hy - 2, W, (H - hy) * 0.24 + 2);
+
+  const shade = g.createLinearGradient(0, H * 0.72, 0, H);
+  shade.addColorStop(0, 'rgba(5,6,12,0)');
+  shade.addColorStop(1, 'rgba(5,6,12,0.72)');
+  g.fillStyle = shade;
+  g.fillRect(0, H * 0.72, W, H * 0.28);
+
+  const U = P ? W : Math.min(W * 0.62, H * 1.15);
+  const bw = U * 0.34;
+  const ink = '#04050a';
+  const rim = 'rgba(255,170,120,0.45)';
+  const line = Math.max(1, U / 700);
+
+  // front wheel seen from above: a tyre tapering toward the road
+  const wy = H * (P ? 0.69 : 0.66);
+  const tw1 = U * 0.022;
+  const tw2 = U * 0.04;
+  g.fillStyle = ink;
+  g.strokeStyle = rim;
+  g.lineWidth = line * 1.5;
+  g.beginPath();
+  g.moveTo(cx - tw1, wy);
+  g.quadraticCurveTo(cx, wy - tw1 * 1.6, cx + tw1, wy);
+  g.lineTo(cx + tw2, H + 4);
+  g.lineTo(cx - tw2, H + 4);
+  g.closePath();
+  g.fill();
+  g.stroke();
+  g.fillRect(cx - U * 0.012, H * 0.84, U * 0.024, H * 0.2);
+
+  // drop handlebar
+  const by = H * 0.885;
+  g.lineCap = 'round';
+  g.lineJoin = 'round';
+  g.strokeStyle = ink;
+  g.lineWidth = U * 0.026;
+  g.beginPath();
+  g.moveTo(cx - bw, H * 0.985);
+  g.bezierCurveTo(
+    cx - bw * 1.08,
+    by + H * 0.03,
+    cx - bw * 0.9,
+    by - H * 0.005,
+    cx - bw * 0.5,
+    by - H * 0.008,
+  );
+  g.lineTo(cx + bw * 0.5, by - H * 0.008);
+  g.bezierCurveTo(cx + bw * 0.9, by - H * 0.005, cx + bw * 1.08, by + H * 0.03, cx + bw, H * 0.985);
+  g.stroke();
+  g.strokeStyle = rim;
+  g.lineWidth = line * 1.6;
+  g.beginPath();
+  g.moveTo(cx - bw * 0.5, by - H * 0.008 - U * 0.013);
+  g.lineTo(cx + bw * 0.5, by - H * 0.008 - U * 0.013);
+  g.stroke();
+  g.fillStyle = ink;
+  g.beginPath();
+  g.ellipse(cx - bw * 0.92, by + H * 0.012, U * 0.03, H * 0.035, -0.12, 0, Math.PI * 2);
+  g.fill();
+  g.beginPath();
+  g.ellipse(cx + bw * 0.92, by + H * 0.012, U * 0.03, H * 0.035, 0.12, 0, Math.PI * 2);
+  g.fill();
+  g.fillRect(cx - U * 0.03, by - H * 0.03, U * 0.06, H * 0.04);
+
+  const vig = g.createRadialGradient(
+    cx,
+    H * 0.5,
+    Math.min(W, H) * 0.45,
+    cx,
+    H * 0.5,
+    Math.max(W, H) * 0.8,
+  );
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.5)');
+  g.fillStyle = vig;
+  g.fillRect(0, 0, W, H);
+}
+
+/** 1-D texture: vertical alpha ramp (gate fill) or horizontal soft falloff (bar glow). */
+function rampTexture(kind: 'vertical' | 'soft'): THREE.CanvasTexture | null {
+  const g = make2d(kind === 'soft' ? 64 : 4, kind === 'soft' ? 4 : 64);
+  if (!g) return null;
+  const { width: w, height: h } = g.canvas;
+  const grad =
+    kind === 'soft' ? g.createLinearGradient(0, 0, w, 0) : g.createLinearGradient(0, 0, 0, h);
+  if (kind === 'soft') {
+    grad.addColorStop(0, 'rgba(255,255,255,0)');
+    grad.addColorStop(0.5, 'rgba(255,255,255,1)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+  } else {
+    grad.addColorStop(0, 'rgba(255,255,255,0)');
+    grad.addColorStop(1, 'rgba(255,255,255,1)');
+  }
+  g.fillStyle = grad;
+  g.fillRect(0, 0, w, h);
+  const t = new THREE.CanvasTexture(g.canvas);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+// ---------------------------------------------------------------------------------------------
+
+export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
+  let s: Scene3D | undefined;
+  let width = 1;
+  let height = 1;
+  let viewOffsetX = 0;
+  let reduced = false;
+
+  // smoothed state; the road starts already rolling like the tunnel
+  let dist = 0;
+  let speed = 12;
+  let fov = BASE_VFOV_DEG;
+  let appliedFov = NaN;
+
+  const tmp = new THREE.Object3D();
+  const col = new THREE.Color();
+  const glowCol = new THREE.Color();
+  const colorCache = new Map<string, THREE.Color>();
+  const parsed = (hex: string): THREE.Color => {
+    let c = colorCache.get(hex);
+    if (!c) {
+      c = new THREE.Color(hex);
+      colorCache.set(hex, c);
+    }
+    return c;
+  };
+
+  /** Fov (sprint widening relative to 70°) and both view offsets: x for the HUD, y for the horizon. */
+  function applyProjection(): void {
+    if (!s) return;
+    const { cam } = s;
+    cam.aspect = width / height;
+    cam.fov = baseVerticalFov(width / height) * (fov / BASE_VFOV_DEG);
+    // the camera looks level, so the horizon is the frustum centre; shift the view to lift it
+    const shiftY = height * (0.5 - horizonFraction(width, height));
+    cam.setViewOffset(width, height, width * viewOffsetX, shiftY, width, height);
+    appliedFov = fov;
+    s.overlayQuad.position.x = -2 * viewOffsetX;
+  }
+
+  /** Redraws the size-dependent backdrop and cockpit textures. */
+  function paint(): void {
+    if (!s) return;
+    // a 4K canvas at ratio 2 does not need two 8K textures for a soft sky and a silhouette
+    const ratio = Math.min(s.renderer.getPixelRatio(), MAX_TEXTURE_WIDTH / width);
+    const w = width * ratio;
+    const h = height * ratio;
+    const bg = make2d(w, h);
+    const fg = make2d(w, h);
+    if (!bg || !fg) return;
+    drawBackdrop(bg, s.high);
+    drawCockpit(fg);
+    s.backdrop?.dispose();
+    s.overlay?.dispose();
+    s.backdrop = new THREE.CanvasTexture(bg.canvas);
+    s.backdrop.colorSpace = THREE.SRGBColorSpace;
+    s.overlay = new THREE.CanvasTexture(fg.canvas);
+    s.overlay.colorSpace = THREE.SRGBColorSpace;
+    s.scene.background = s.backdrop;
+    s.overlayMat.map = s.overlay;
+    s.overlayMat.needsUpdate = true;
+  }
+
+  function makeRibbon(
+    segments: number,
+    inner: number,
+    outer: number,
+    color: number,
+    order: number,
+    created: Disposable[],
+  ): Ribbon {
+    const pos = new Float32Array((segments + 1) * 2 * 3);
+    const idx: number[] = [];
+    for (let i = 0; i < segments; i++) {
+      const a = i * 2;
+      idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);
+    }
+    const geo = new THREE.BufferGeometry();
+    created.push(geo);
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setIndex(idx);
+    const mat = new THREE.MeshBasicMaterial({ color, depthWrite: false, side: THREE.DoubleSide });
+    created.push(mat);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.frustumCulled = false;
+    mesh.renderOrder = order;
+    return { mesh, pos, inner, outer };
+  }
+
+  function flatQuad(created: Disposable[]): THREE.PlaneGeometry {
+    const geo = new THREE.PlaneGeometry(1, 1);
+    geo.rotateX(-Math.PI / 2);
+    created.push(geo);
+    return geo;
+  }
+
+  function build(renderer: THREE.WebGLRenderer, high: boolean, created: Disposable[]): Scene3D {
+    renderer.setPixelRatio(high ? maxPixelRatio() : 1);
+    renderer.setSize(width, height, false);
+    renderer.autoClear = false;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(FOG_COLOR, FOG_NEAR, FOG_FAR);
+    const cam = new THREE.PerspectiveCamera(BASE_VFOV_DEG, width / height, 0.1, 1200);
+    cam.position.set(0, CAM_HEIGHT, 0);
+
+    // ground: a wide plane under the road (the camera stays at x = 0, the road bends around it);
+    // fog paints the dusk haze on its far part
+    const groundGeo = new THREE.PlaneGeometry(2400, 1100);
+    groundGeo.rotateX(-Math.PI / 2);
+    created.push(groundGeo);
+    const groundMat = new THREE.MeshBasicMaterial({ color: GROUND_COLOR, depthWrite: false });
+    created.push(groundMat);
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.position.set(0, -0.01, -540);
+    ground.renderOrder = 0;
+    scene.add(ground);
+
+    const segs = high ? RIBBON_SEGMENTS_HIGH : RIBBON_SEGMENTS_LOW;
+    const ribbonDepths = new Float32Array(segs + 1);
+    for (let i = 0; i <= segs; i++) {
+      const u = i / segs;
+      ribbonDepths[i] = NEAR_DEPTH + (VIEW - NEAR_DEPTH) * u * u;
+    }
+    const ribbons = [
+      makeRibbon(segs, -1, 1, ROAD_COLOR, 1, created),
+      makeRibbon(segs, -LINE_OUTER, -LINE_INNER, LINE_COLOR, 3, created),
+      makeRibbon(segs, LINE_INNER, LINE_OUTER, LINE_COLOR, 3, created),
+    ];
+    for (const r of ribbons) scene.add(r.mesh);
+
+    const quad = flatQuad(created);
+
+    const barPeriod = high ? BAR_PERIOD : BAR_PERIOD * 2;
+    const barsPerSide = Math.ceil(VIEW / barPeriod) + 1;
+    // transparent only to be drawn after the additive glow (three draws opaque objects first)
+    const barMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      depthWrite: false,
+    });
+    created.push(barMat);
+    const bars = new THREE.InstancedMesh(quad, barMat, barsPerSide * 2);
+    created.push(bars);
+    bars.instanceColor = new THREE.InstancedBufferAttribute(
+      new Float32Array(barsPerSide * 2 * 3),
+      3,
+    );
+    bars.frustumCulled = false;
+    bars.renderOrder = 4;
+    scene.add(bars);
+
+    let glow: THREE.InstancedMesh | undefined;
+    if (high) {
+      const soft = rampTexture('soft');
+      if (soft) created.push(soft);
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        map: soft,
+        transparent: true,
+        opacity: 0.55,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        fog: false,
+      });
+      created.push(glowMat);
+      glow = new THREE.InstancedMesh(quad, glowMat, barsPerSide * 2);
+      created.push(glow);
+      glow.instanceColor = new THREE.InstancedBufferAttribute(
+        new Float32Array(barsPerSide * 2 * 3),
+        3,
+      );
+      glow.frustumCulled = false;
+      glow.renderOrder = 2;
+      scene.add(glow);
+    }
+
+    const dashCount = Math.ceil(VIEW / DASH_PERIOD) + 1;
+    const dashMat = new THREE.MeshBasicMaterial({ color: DASH_COLOR, depthWrite: false });
+    created.push(dashMat);
+    const dashes = new THREE.InstancedMesh(quad, dashMat, dashCount);
+    created.push(dashes);
+    dashes.frustumCulled = false;
+    dashes.renderOrder = 5;
+    scene.add(dashes);
+
+    // pine silhouettes: a triangle on a short trunk, facing the camera
+    const treeShape = new THREE.Shape();
+    treeShape.moveTo(0, 1);
+    treeShape.lineTo(0.32, 0.12);
+    treeShape.lineTo(0.045, 0.12);
+    treeShape.lineTo(0.045, 0);
+    treeShape.lineTo(-0.045, 0);
+    treeShape.lineTo(-0.045, 0.12);
+    treeShape.lineTo(-0.32, 0.12);
+    treeShape.closePath();
+    const treeGeo = new THREE.ShapeGeometry(treeShape);
+    created.push(treeGeo);
+    const treeMat = new THREE.MeshBasicMaterial({ color: TREE_COLOR });
+    created.push(treeMat);
+    const treePeriod = high ? TREE_PERIOD : TREE_PERIOD * 2;
+    const treesPerSide = Math.ceil(VIEW / treePeriod) + 1;
+    const trees = new THREE.InstancedMesh(treeGeo, treeMat, treesPerSide * 2);
+    created.push(trees);
+    trees.frustumCulled = false;
+    trees.renderOrder = 10;
+    scene.add(trees);
+
+    // gate: two posts, a lintel, a stripe across the road and a translucent fill
+    const gate = new THREE.Group();
+    const gateSolid = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      fog: false,
+    });
+    created.push(gateSolid);
+    const box = new THREE.BoxGeometry(1, 1, 1);
+    created.push(box);
+    const post = (x: number): void => {
+      const m = new THREE.Mesh(box, gateSolid);
+      m.scale.set(GATE_POST, GATE_HEIGHT, GATE_POST);
+      m.position.set(x, GATE_HEIGHT / 2, 0);
+      gate.add(m);
+    };
+    post(-ROAD_HALF);
+    post(ROAD_HALF);
+    const lintel = new THREE.Mesh(box, gateSolid);
+    lintel.scale.set(ROAD_HALF * 2 + GATE_POST, GATE_POST, GATE_POST);
+    lintel.position.set(0, GATE_HEIGHT, 0);
+    gate.add(lintel);
+    const stripe = new THREE.Mesh(quad, gateSolid);
+    stripe.scale.set(ROAD_HALF * 2, 1, 0.9);
+    stripe.position.set(0, 0.02, -0.45);
+    gate.add(stripe);
+    const fillTex = rampTexture('vertical');
+    if (fillTex) created.push(fillTex);
+    const gateFill = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      map: fillTex,
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      fog: false,
+    });
+    created.push(gateFill);
+    const fillGeo = new THREE.PlaneGeometry(ROAD_HALF * 2, GATE_HEIGHT);
+    created.push(fillGeo);
+    const fill = new THREE.Mesh(fillGeo, gateFill);
+    fill.position.set(0, GATE_HEIGHT / 2, 0);
+    gate.add(fill);
+    gate.visible = false;
+    gate.renderOrder = 11;
+    scene.add(gate);
+
+    // cockpit overlay: a full-screen quad in its own scene, drawn after the world
+    const overlayScene = new THREE.Scene();
+    const overlayCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const overlayGeo = new THREE.PlaneGeometry(2, 2);
+    created.push(overlayGeo);
+    const overlayMat = new THREE.MeshBasicMaterial({
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+    });
+    created.push(overlayMat);
+    const overlayQuad = new THREE.Mesh(overlayGeo, overlayMat);
+    overlayScene.add(overlayQuad);
+
+    const out: Scene3D = {
+      renderer,
+      scene,
+      cam,
+      overlayScene,
+      overlayCam,
+      overlayQuad,
+      overlayMat,
+      ground,
+      ribbons,
+      ribbonDepths,
+      bars,
+      barsPerSide,
+      barPeriod,
+      dashes,
+      dashCount,
+      trees,
+      treesPerSide,
+      treePeriod,
+      gate,
+      gateSolid,
+      gateFill,
+      high,
+      disposables: created,
+      unwatchDpr: () => undefined,
+    };
+    if (glow) out.glow = glow;
+    if (high) {
+      out.unwatchDpr = watchDevicePixelRatio(() => {
+        renderer.setPixelRatio(maxPixelRatio());
+        renderer.setSize(width, height, false);
+        paint();
+      });
+    }
+    return out;
+  }
+
+  function update(frame: WorldFrame): void {
+    if (!s) return;
+    const { cam, ribbons, ribbonDepths, bars, glow, dashes, trees, gate } = s;
+    const dt = frame.dtSec;
+
+    // the speed keeps following the effort even when static: colorAtDepth depends on it
+    speed += (frame.speedTarget - speed) * Math.min(1, dt * 1.5);
+    if (!reduced) {
+      dist += speed * dt;
+      fov += (frame.fovTarget - fov) * Math.min(1, dt * 2);
+    }
+    if (Math.abs(fov - appliedFov) > 1e-3) applyProjection();
+
+    const k = reduced ? 0 : CURVE_SCALE;
+    const x0 = frame.path.curveX(dist);
+    const roadX = (depth: number): number => (frame.path.curveX(dist + depth) - x0) * k;
+    const yawAt = (depth: number): number => -Math.atan(frame.path.slopeX(dist + depth) * k);
+
+    cam.lookAt(roadX(LOOK_AHEAD), CAM_HEIGHT, -LOOK_AHEAD);
+
+    for (const r of ribbons) {
+      const { pos, inner, outer } = r;
+      for (let i = 0; i < ribbonDepths.length; i++) {
+        const d = ribbonDepths[i] ?? 0;
+        const x = roadX(d);
+        const o = i * 6;
+        pos[o] = x + inner * ROAD_HALF;
+        pos[o + 1] = 0;
+        pos[o + 2] = -d;
+        pos[o + 3] = x + outer * ROAD_HALF;
+        pos[o + 4] = 0;
+        pos[o + 5] = -d;
+      }
+      r.mesh.geometry.getAttribute('position').needsUpdate = true;
+    }
+
+    // edge bars: each takes the colour of the block active when the rider reaches it
+    const barW = (EDGE_OUTER - EDGE_INNER) * ROAD_HALF;
+    const barMid = ((EDGE_OUTER + EDGE_INNER) / 2) * ROAD_HALF;
+    const barLen = s.barPeriod * BAR_FILL;
+    const barPhase = dashOffset(dist, s.barPeriod);
+    const barBase = Math.floor(dist / s.barPeriod);
+    for (let i = 0; i < s.barsPerSide; i++) {
+      const near = i * s.barPeriod - barPhase;
+      const a = Math.max(near, NEAR_DEPTH);
+      const b = near + barLen;
+      const visible = b > a;
+      const mid = (a + b) / 2;
+      const len = visible ? b - a : 0;
+      const x = roadX(mid);
+      const yaw = yawAt(mid);
+      col.copy(parsed(frame.colorAtDepth(Math.max(0, near))));
+      if ((i + barBase) % 2 === 1) col.multiplyScalar(BAR_DIM);
+      // near the horizon the glow would only add haze: fade it out with depth
+      const glowFade = Math.max(0, 1 - mid / 140);
+      glowCol.copy(col).multiplyScalar(glowFade);
+      for (let side = 0; side < 2; side++) {
+        const sign = side === 0 ? -1 : 1;
+        const n = i * 2 + side;
+        tmp.position.set(x + sign * barMid, 0, -mid);
+        tmp.rotation.set(0, yaw, 0);
+        tmp.scale.set(barW, 1, Math.max(len, 1e-4));
+        tmp.updateMatrix();
+        bars.setMatrixAt(n, tmp.matrix);
+        bars.setColorAt(n, col);
+        if (glow) {
+          tmp.scale.set(barW * 3.2, 1, Math.max(len / BAR_FILL, 1e-4));
+          tmp.position.y = -0.005;
+          tmp.updateMatrix();
+          glow.setMatrixAt(n, tmp.matrix);
+          glow.setColorAt(n, glowCol);
+        }
+      }
+    }
+    bars.instanceMatrix.needsUpdate = true;
+    if (bars.instanceColor) bars.instanceColor.needsUpdate = true;
+    if (glow) {
+      glow.instanceMatrix.needsUpdate = true;
+      if (glow.instanceColor) glow.instanceColor.needsUpdate = true;
+    }
+
+    const dashPhase = dashOffset(dist, DASH_PERIOD);
+    for (let i = 0; i < s.dashCount; i++) {
+      const near = i * DASH_PERIOD - dashPhase;
+      const a = Math.max(near, NEAR_DEPTH);
+      const b = near + DASH_LENGTH;
+      const mid = (a + b) / 2;
+      tmp.position.set(roadX(mid), 0, -mid);
+      tmp.rotation.set(0, yawAt(mid), 0);
+      tmp.scale.set(DASH_HALF * 2, 1, Math.max(b - a, 1e-4));
+      tmp.updateMatrix();
+      dashes.setMatrixAt(i, tmp.matrix);
+    }
+    dashes.instanceMatrix.needsUpdate = true;
+
+    const treePhase = dashOffset(dist, s.treePeriod);
+    const treeBase = Math.floor(dist / s.treePeriod);
+    for (let i = 0; i < s.treesPerSide; i++) {
+      const depth = i * s.treePeriod - treePhase;
+      const slot = i + treeBase;
+      for (let side = 0; side < 2; side++) {
+        const key = slot * 2 + side;
+        const n = i * 2 + side;
+        const sign = side === 0 ? -1 : 1;
+        const skip = hash01(key * 5 + 3) < 0.35 || depth < 1;
+        const h = skip ? 0 : CAM_HEIGHT * (0.55 + hash01(key) * 0.7);
+        tmp.position.set(
+          roadX(depth) + sign * ROAD_HALF * (1.6 + hash01(key + 77) * 2.2),
+          0,
+          -depth,
+        );
+        tmp.rotation.set(0, 0, 0);
+        tmp.scale.set(h * 0.95, h, 1);
+        tmp.updateMatrix();
+        trees.setMatrixAt(n, tmp.matrix);
+      }
+    }
+    trees.instanceMatrix.needsUpdate = true;
+
+    // gate at the start of the next block, in that block's colour
+    const gd = gateDepth({ speed, nextBlockInSec: frame.nextBlockInSec, viewDistance: VIEW });
+    if (gd === null) {
+      gate.visible = false;
+    } else {
+      gate.visible = true;
+      gate.position.set(roadX(gd), 0, -gd);
+      gate.rotation.set(0, yawAt(gd), 0);
+      const c = parsed(frame.colorAtDepth(gd + 0.5));
+      // fade in from the far end, and out just before the rider rides through it
+      const fade = Math.min(1, (VIEW - gd) / 80) * Math.min(1, Math.max(0, (gd - 2) / 10));
+      s.gateSolid.color.copy(c);
+      s.gateSolid.opacity = fade;
+      s.gateFill.color.copy(c);
+      s.gateFill.opacity = 0.5 * fade;
+    }
+
+    const { renderer } = s;
+    renderer.clear();
+    renderer.render(s.scene, cam);
+    renderer.render(s.overlayScene, s.overlayCam);
+  }
+
+  return {
+    get speed() {
+      return speed;
+    },
+    get distance() {
+      return dist;
+    },
+
+    init(canvas: HTMLCanvasElement, quality: HyperrideQuality) {
+      reduced = opts.reducedMotion ?? prefersReducedMotion();
+      width = Math.max(1, canvas.clientWidth || canvas.width);
+      height = Math.max(1, canvas.clientHeight || canvas.height);
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      const created: Disposable[] = [];
+      try {
+        s = build(renderer, quality === 'high', created);
+        applyProjection();
+        paint();
+      } catch (err) {
+        s?.backdrop?.dispose();
+        s?.overlay?.dispose();
+        s = undefined;
+        for (const c of created) c.dispose();
+        renderer.dispose();
+        renderer.forceContextLoss();
+        throw err;
+      }
+    },
+
+    update,
+
+    resize(w: number, h: number) {
+      const nw = Math.max(1, Math.round(w));
+      const nh = Math.max(1, Math.round(h));
+      if (nw === width && nh === height && s?.backdrop) return;
+      width = nw;
+      height = nh;
+      if (!s) return;
+      s.renderer.setSize(width, height, false);
+      applyProjection();
+      paint();
+    },
+
+    setViewOffsetX(fraction: number) {
+      if (fraction === viewOffsetX) return;
+      viewOffsetX = fraction;
+      applyProjection();
+    },
+
+    dispose() {
+      if (!s) return;
+      const cur = s;
+      s = undefined;
+      cur.unwatchDpr();
+      cur.scene.background = null;
+      cur.scene.clear();
+      cur.overlayScene.clear();
+      cur.backdrop?.dispose();
+      cur.overlay?.dispose();
+      for (const d of cur.disposables) d.dispose();
+      cur.renderer.dispose();
+      cur.renderer.forceContextLoss();
+      colorCache.clear();
+    },
+  };
+}

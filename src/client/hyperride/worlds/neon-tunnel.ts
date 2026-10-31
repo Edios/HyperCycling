@@ -6,6 +6,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { TUNNEL_LENGTH } from '../../../domain/tunnel-path';
 import { glowStrength } from '../frame';
 import type { HyperrideQuality, HyperrideWorld, WorldFrame } from '../world';
+import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
 
 /**
  * "Neon Tunnel": a port of docs/design/prototypes/hyperride-prototype.html. Comfort rules
@@ -55,25 +56,6 @@ interface Scene3D {
   disposables: Disposable[];
   /** Removes the devicePixelRatio listener. */
   unwatchDpr(): void;
-}
-
-const maxPixelRatio = (): number => Math.min(window.devicePixelRatio || 1, 2);
-
-/** Calls `onChange` whenever devicePixelRatio changes (window moved to another screen, zoom). */
-function watchDevicePixelRatio(onChange: () => void): () => void {
-  if (typeof window.matchMedia !== 'function') return () => undefined;
-  let mq: MediaQueryList | undefined;
-  const handle = (): void => {
-    onChange();
-    listen();
-  };
-  function listen(): void {
-    mq?.removeEventListener('change', handle);
-    mq = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
-    mq.addEventListener('change', handle);
-  }
-  listen();
-  return () => mq?.removeEventListener('change', handle);
 }
 
 export function createNeonTunnel(opts: NeonTunnelOptions = {}): HyperrideWorld {
