@@ -17,7 +17,7 @@ function injectFetch(app: FastifyInstance): typeof fetch {
     const res = await app.inject({
       method: req.method as 'GET',
       url: url.pathname + url.search,
-      headers: Object.fromEntries(req.headers.entries()),
+      headers: { ...Object.fromEntries(req.headers.entries()), host: url.host },
       payload: req.method === 'GET' ? undefined : await req.text(),
     });
     const headers = new Headers();
@@ -33,7 +33,7 @@ function injectFetch(app: FastifyInstance): typeof fetch {
 }
 
 async function makeRepos() {
-  const app = await buildServer({ dbPath: ':memory:' });
+  const app = await buildServer({ dbPath: ':memory:', port: 5175 });
   apps.push(app);
   return createHttpRepositories('http://127.0.0.1:5175', injectFetch(app));
 }

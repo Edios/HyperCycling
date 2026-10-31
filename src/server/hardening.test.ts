@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { afterEach, expect, it } from 'vitest';
 import { createSqliteRepositories } from '../storage/sqlite';
-import { buildServer } from './app';
+import { buildTestServer as buildServer } from './test-support';
 import { parsePort } from './config';
 
 let app: FastifyInstance | undefined;

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   exportBundleSchema,
   parseExportBundle,
+  parseExportBundleObject,
   stripSecrets,
   type ExportBundle,
 } from './export-bundle';
@@ -170,5 +171,19 @@ describe('stripSecrets', () => {
     expect(stripSecrets(none)).toBe(none);
     const noSpotify = { ...good(), settings: DEFAULT_SETTINGS } as unknown as ExportBundle;
     expect(stripSecrets(noSpotify)).toBe(noSpotify);
+  });
+});
+
+describe('parseExportBundleObject', () => {
+  it('accepts a bundle object', () => {
+    expect(parseExportBundleObject(good()).ok).toBe(true);
+  });
+  it('never parses strings or arrays (server bodies must already be objects)', () => {
+    expect(parseExportBundleObject(JSON.stringify(good()))).toMatchObject({
+      ok: false,
+      reason: 'wrongApp',
+    });
+    expect(parseExportBundleObject([good()])).toMatchObject({ ok: false, reason: 'wrongApp' });
+    expect(parseExportBundleObject(undefined)).toMatchObject({ ok: false, reason: 'wrongApp' });
   });
 });
