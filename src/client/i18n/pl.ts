@@ -96,18 +96,16 @@ export const pl: Messages = {
     youtubeRecent: 'Ostatnie linki',
     soon: 'wkrótce',
     layout: 'Układ ekranu',
-    layoutSolo: 'Solo',
-    layoutPlayers: 'Z graczami',
-    layoutImmersive: 'Immersyjny',
+    layoutClassic: 'Klasyczny',
+    layoutImmersive: 'Narożniki',
     layoutColumn: 'Kolumna',
     layoutCockpit: 'Kokpit',
-    layoutTunnel: 'Czas w tunelu',
-    layoutHint: {
-      basicNoPlayers: 'Wybierz osobę poniżej, aby użyć układu Z graczami.',
-      overlay:
-        'Gracze pokazują się tylko w układach Immersyjny i Kolumna. Wybierz osobę, aby ich użyć.',
-      overlayPlayers:
-        'Gdy jadą osoby, układy Immersyjny i Kolumna pokazują graczy. Kokpit i Czas w tunelu nie mają na nich miejsca.',
+    layoutTunnel: 'Minimal',
+    layoutFocus: 'Skupienie',
+    riders: 'Pokaż graczy',
+    ridersHint: {
+      none: 'Wybierz osobę poniżej, aby pokazać graczy.',
+      noRoom: 'Kokpit i Minimal nie mają miejsca na panel graczy.',
     },
     who: 'Kto dziś jedzie',
     add: '+ Dodaj',

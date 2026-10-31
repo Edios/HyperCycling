@@ -160,13 +160,18 @@ describe('SetupScreen', () => {
     );
   });
 
-  it('says why With players is unavailable and where players show on Hyperride', async () => {
+  it('says why Show riders is unavailable: no rider, or a layout without room', async () => {
     renderSetup(`/setup/${scalable.id}`);
     expect(await screen.findByTestId('layout-hint')).toHaveTextContent(/Select a rider/);
+    expect(screen.getByRole('switch', { name: 'Show riders' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: /Hyperride/ }));
-    expect(screen.getByTestId('layout-hint')).toHaveTextContent(/Immersive and Column/);
+    expect(screen.getByTestId('layout-hint')).toHaveTextContent(/Select a rider/);
     fireEvent.click(screen.getByRole('button', { name: /Mirek/ }));
-    expect(screen.getByTestId('layout-hint')).toHaveTextContent(/Cockpit and Time in the tunnel/);
+    expect(screen.queryByTestId('layout-hint')).toBeNull();
+    expect(screen.getByRole('switch', { name: 'Show riders' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('radio', { name: 'Cockpit' }));
+    expect(screen.getByTestId('layout-hint')).toHaveTextContent(/Cockpit and Minimal/);
+    expect(screen.getByRole('switch', { name: 'Show riders' })).toBeDisabled();
   });
 
   it('shows the reason under a disabled Music toggle', async () => {
@@ -197,7 +202,8 @@ describe('SetupScreen', () => {
       'aria-pressed',
       'true',
     );
-    expect(screen.getByRole('radio', { name: 'Solo' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Classic' })).toBeChecked();
+    expect(screen.getByRole('switch', { name: 'Show riders' })).not.toBeChecked();
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     await screen.findByTestId('where');
     expect(useSessionStore.getState().runtime!.config).toMatchObject({
@@ -229,19 +235,20 @@ describe('SetupScreen', () => {
     );
     expect(screen.getByRole('button', { name: /Mirek/ })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByRole('switch', { name: 'On-screen cues' })).not.toBeChecked();
-    expect(screen.getByRole('radio', { name: 'With players' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Classic' })).toBeChecked();
+    expect(screen.getByRole('switch', { name: 'Show riders' })).toBeChecked();
   });
 
-  it('layout: Solo overrides the auto choice and Basic hides the overlay layouts', async () => {
+  it('layout: every layout is offered on Basic; Show riders can be switched off', async () => {
     renderSetup(`/setup/${scalable.id}`);
     await screen.findByRole('heading', { level: 1 });
-    expect(screen.getByRole('radio', { name: 'With players' })).toBeDisabled();
-    for (const name of ['Immersive', 'Column', 'Cockpit', 'Time in the tunnel']) {
-      expect(screen.queryByRole('radio', { name })).not.toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Show riders' })).toBeDisabled();
+    for (const name of ['Classic', 'Corners', 'Column', 'Cockpit', 'Minimal', 'Focus']) {
+      expect(screen.getByRole('radio', { name })).toBeEnabled();
     }
     fireEvent.click(screen.getByRole('button', { name: /Mirek/ }));
-    expect(screen.getByRole('radio', { name: 'With players' })).toBeChecked();
-    fireEvent.click(screen.getByRole('radio', { name: 'Solo' }));
+    expect(screen.getByRole('switch', { name: 'Show riders' })).toBeChecked();
+    fireEvent.click(screen.getByRole('switch', { name: 'Show riders' }));
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     await screen.findByTestId('where');
     expect(useSessionStore.getState().runtime!.config).toMatchObject({
@@ -271,14 +278,15 @@ describe('SetupScreen', () => {
     expect(saved).toEqual([]);
   });
 
-  it('Hyperride offers the overlay layouts (Immersive by default); players disable two', async () => {
+  it('Hyperride offers every layout (Corners by default), with or without riders', async () => {
     renderSetup(`/setup/${scalable.id}`);
     fireEvent.click(await screen.findByRole('button', { name: /Hyperride/ }));
-    expect(screen.getByRole('radio', { name: 'Immersive' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Cockpit' })).toBeEnabled();
+    expect(screen.getByRole('radio', { name: 'Corners' })).toBeChecked();
+    expect(screen.queryByRole('radio', { name: 'Classic' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /Mirek/ }));
-    expect(screen.getByRole('radio', { name: 'Cockpit' })).toBeDisabled();
-    expect(screen.getByRole('radio', { name: 'Time in the tunnel' })).toBeDisabled();
+    for (const name of ['Corners', 'Column', 'Cockpit', 'Minimal', 'Focus']) {
+      expect(screen.getByRole('radio', { name })).toBeEnabled();
+    }
     fireEvent.click(screen.getByRole('radio', { name: 'Column' }));
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     await screen.findByTestId('where');

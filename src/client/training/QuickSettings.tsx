@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { HyperrideWorldId, SessionConfig } from '../../domain/settings';
 import { useT, type MessageKey } from '../i18n';
+import { layoutLabelKey } from '../setup/model';
+import type { LayoutKind } from './overlay-layouts';
 import { WORLD_CHOICES } from '../hyperride/world-options';
 import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
@@ -8,7 +10,6 @@ import { useRestoreFocus } from '../ui/useRestoreFocus';
 import styles from './QuickSettings.module.css';
 
 type Background = SessionConfig['background'];
-type Hud = SessionConfig['hud'];
 
 const BACKGROUND_KEY: Record<Background, MessageKey> = {
   basic: 'setup.backgroundBasic',
@@ -16,26 +17,21 @@ const BACKGROUND_KEY: Record<Background, MessageKey> = {
   youtube: 'setup.backgroundYoutube',
 };
 
-const HUD_KEY: Record<Hud, MessageKey> = {
-  solo: 'setup.layoutSolo',
-  players: 'setup.layoutPlayers',
-  immersive: 'setup.layoutImmersive',
-  column: 'setup.layoutColumn',
-  cockpit: 'setup.layoutCockpit',
-  tunnelTime: 'setup.layoutTunnel',
-};
-
 export interface QuickSettingsProps {
   background: Background;
   /** False when there is no link to play (none in the session, none recent). */
   youtubeAvailable: boolean;
-  hud: Hud;
-  hudChoices: readonly Hud[];
+  layout: LayoutKind;
+  layoutChoices: readonly LayoutKind[];
+  /** The "Show riders" switch: on / off, and whether it can be used (with the reason if not). */
+  riders: boolean;
+  ridersHint?: MessageKey | undefined;
   world: HyperrideWorldId;
   sounds: boolean;
   coach: boolean;
   onBackground(b: Background): void;
-  onHud(h: Hud): void;
+  onLayout(l: LayoutKind): void;
+  onRiders(on: boolean): void;
   onWorld(w: HyperrideWorldId): void;
   onSounds(on: boolean): void;
   onCoach(on: boolean): void;
@@ -101,10 +97,21 @@ export function QuickSettings(p: QuickSettingsProps) {
       </span>
       <Segmented
         label={t('training.quickLayout')}
-        value={p.hud}
-        options={p.hudChoices.map((h) => ({ value: h, label: t(HUD_KEY[h]) }))}
-        onChange={p.onHud}
+        value={p.layout}
+        options={p.layoutChoices.map((l) => ({ value: l, label: t(layoutLabelKey(l)) }))}
+        onChange={p.onLayout}
       />
+      <Toggle
+        label={t('setup.riders')}
+        checked={p.riders}
+        onChange={p.onRiders}
+        disabled={p.ridersHint !== undefined}
+      />
+      {p.ridersHint && (
+        <p className={styles.hint} data-testid="quick-riders-hint">
+          {t(p.ridersHint)}
+        </p>
+      )}
       {p.background === 'hyperride' && (
         <>
           <span className={styles.label} aria-hidden="true">

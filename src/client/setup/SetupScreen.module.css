@@ -323,3 +323,7 @@
     align-items: stretch;
   }
 }
+
+.ridersRow {
+  margin-top: 0.75rem;
+}

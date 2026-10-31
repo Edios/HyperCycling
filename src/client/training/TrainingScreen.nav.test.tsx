@@ -217,7 +217,7 @@ describe('quick settings', () => {
     );
   });
 
-  it('offers only the layouts valid for the background', async () => {
+  it('offers every layout on every background; Show riders is a switch', async () => {
     load({}, true);
     await renderScreen();
     fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
@@ -225,13 +225,17 @@ describe('quick settings', () => {
       within(screen.getByRole('radiogroup', { name: 'Screen layout' }))
         .getAllByRole('radio')
         .map((r) => (r.parentElement as HTMLElement).textContent);
-    expect(layouts()).toEqual(['Solo', 'With players']);
-    fireEvent.click(screen.getByRole('radio', { name: 'With players' }));
+    const overlays = ['Corners', 'Column', 'Cockpit', 'Minimal', 'Focus'];
+    expect(layouts()).toEqual(['Classic', ...overlays]);
+    fireEvent.click(screen.getByRole('switch', { name: 'Show riders' }));
     expect(screen.getByTestId('layout-players')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('radio', { name: 'Hyperride' }));
-    expect(layouts()).toEqual(['Immersive', 'Column']);
+    expect(layouts()).toEqual(overlays);
     fireEvent.click(screen.getByRole('radio', { name: 'Column' }));
     expect(useSessionStore.getState().runtime?.config.hud).toBe('column');
+    fireEvent.click(screen.getByRole('radio', { name: 'Cockpit' }));
+    expect(screen.getByRole('switch', { name: 'Show riders' })).toBeDisabled();
+    expect(screen.getByTestId('quick-riders-hint')).toHaveTextContent(/Cockpit and Minimal/);
   });
 
   it('YouTube needs a link: disabled without one, available from the recent links', async () => {

@@ -14,7 +14,7 @@ import {
   useSessionStore,
 } from './session-store';
 import { TrainingScreen } from './TrainingScreen';
-import { allowedOverlayHuds, initialOverlayHud, nextOverlayHud } from './overlay-layouts';
+import { layoutKindOf, nextLayout } from './overlay-layouts';
 
 let stored: Settings | undefined;
 vi.mock('../data/repositories', () => ({
@@ -169,23 +169,39 @@ describe('overlay layouts', () => {
     expect(screen.getByTestId('players-list')).toBeInTheDocument();
   });
 
-  it('H cycles all four layouts without players', async () => {
+  it('H cycles all five layouts, Focus included', async () => {
     load('immersive');
     await renderScreen();
     const seen: string[] = [];
-    for (let i = 0; i < 4; i += 1) {
-      seen.push(screen.getByTestId(/^layout-/).dataset['layout'] ?? '');
+    for (let i = 0; i < 5; i += 1) {
+      const focus = screen.queryByTestId('focus-layer') !== null;
+      seen.push(focus ? 'focus' : (screen.getByTestId(/^layout-/).dataset['layout'] ?? ''));
       key('KeyH');
     }
-    expect(seen).toEqual(['immersive', 'column', 'cockpit', 'tunnel']);
+    expect(seen).toEqual(['immersive', 'column', 'cockpit', 'tunnel', 'focus']);
     expect(screen.getByTestId('layout-immersive')).toBeInTheDocument();
   });
 
-  it('H skips Cockpit and Tunnel time while players are shown', async () => {
+  it('Focus keeps its HUD visible before the ride starts', async () => {
+    load('focus');
+    await renderScreen();
+    expect(screen.getByTestId('focus-layer')).toHaveAttribute('data-hud-visible', 'true');
+    expect(screen.getByTestId('layout-immersive')).toBeInTheDocument();
+  });
+
+  it('H does not skip any layout while players are shown; they show where there is room', async () => {
     load('immersive', true);
     await renderScreen();
     key('KeyH');
     expect(screen.getByTestId('layout-column')).toBeInTheDocument();
+    expect(screen.getByTestId('players-list')).toBeInTheDocument();
+    key('KeyH');
+    expect(screen.getByTestId('layout-cockpit')).toBeInTheDocument();
+    expect(screen.queryByTestId('players-list')).toBeNull();
+    key('KeyH');
+    key('KeyH');
+    expect(screen.getByTestId('focus-layer')).toBeInTheDocument();
+    expect(screen.getByTestId('players-list')).toBeInTheDocument();
     key('KeyH');
     expect(screen.getByTestId('layout-immersive')).toBeInTheDocument();
   });
@@ -193,9 +209,8 @@ describe('overlay layouts', () => {
   it('turning players on in Cockpit moves to Immersive', async () => {
     load('cockpit', true);
     await renderScreen();
-    // starts with players on a layout that cannot show them: first toggle hides, second shows
-    key('KeyG');
-    expect(screen.getByTestId('layout-cockpit')).toBeInTheDocument();
+    // Cockpit has no room for the riders panel: showing the riders switches to Immersive.
+    expect(screen.queryByTestId('players-list')).toBeNull();
     key('KeyG');
     expect(screen.getByTestId('layout-immersive')).toBeInTheDocument();
     expect(screen.getByTestId('players-list')).toBeInTheDocument();
@@ -233,13 +248,11 @@ describe('overlay layouts', () => {
 });
 
 describe('overlay layout rules', () => {
-  it('maps stored huds and cycles within the allowed set', () => {
-    expect(initialOverlayHud('solo')).toBe('immersive');
-    expect(initialOverlayHud('cockpit')).toBe('cockpit');
-    expect(allowedOverlayHuds(true)).toEqual(['immersive', 'column']);
-    expect(nextOverlayHud('column', true)).toBe('immersive');
-    expect(nextOverlayHud('cockpit', true)).toBe('immersive');
-    expect(nextOverlayHud('tunnelTime', false)).toBe('immersive');
+  it('maps stored huds and cycles through every layout', () => {
+    expect(layoutKindOf('solo', 'hyperride')).toBe('immersive');
+    expect(layoutKindOf('cockpit', 'hyperride')).toBe('cockpit');
+    expect(nextLayout('column', 'hyperride')).toBe('cockpit');
+    expect(nextLayout('focus', 'hyperride')).toBe('immersive');
   });
 });
 
