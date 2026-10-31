@@ -311,6 +311,16 @@ describe('Training', () => {
     await waitFor(() => expect(db.settings?.lastSession?.hud).toBe('column'));
   });
 
+  it('the music default toggle writes lastSession.music and keeps the rest', async () => {
+    renderScreen();
+    const tr = await section('training');
+    const toggle = await within(tr).findByRole('switch', { name: 'Music on by default' });
+    expect(toggle).not.toBeChecked();
+    fireEvent.click(toggle);
+    await waitFor(() => expect(db.settings?.lastSession?.music).toBe(true));
+    expect(db.settings?.lastSession).toMatchObject({ background: 'basic', playerIds: [] });
+  });
+
   it('keeps the rest of an existing lastSession', async () => {
     db.settings = {
       ...DEFAULT_SETTINGS,

@@ -91,6 +91,25 @@ describe('bindTrainingKeys', () => {
     unbind();
   });
 
+  it('Space on a checkbox inside the quick settings pauses and is not a toggle', () => {
+    const { actions, unbind } = setup();
+    const panel = document.createElement('div');
+    panel.dataset['quickSettings'] = '';
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    panel.append(box);
+    document.body.append(panel);
+    const down = new KeyboardEvent('keydown', { code: 'Space', bubbles: true, cancelable: true });
+    box.dispatchEvent(down);
+    const up = new KeyboardEvent('keyup', { code: 'Space', bubbles: true, cancelable: true });
+    box.dispatchEvent(up);
+    expect(actions.toggle).toHaveBeenCalledTimes(1);
+    expect(down.defaultPrevented).toBe(true);
+    expect(up.defaultPrevented).toBe(true);
+    panel.remove();
+    unbind();
+  });
+
   it('Enter on a focused button is left to the button', () => {
     const { actions, unbind } = setup();
     const btn = document.createElement('button');

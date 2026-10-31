@@ -119,7 +119,9 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const [players, setPlayers] = useState(initialPlayers);
   const [background, setBackground] = useState<Background>(last?.background ?? 'basic');
   const [chosenHud, setChosenHud] = useState<Hud | undefined>(
-    last && last.hud !== 'players' ? last.hud : undefined,
+    // The Settings default layout, also with a preselected rider; only the user's own change of
+    // the selection hands the choice back to "automatic" (players layout).
+    last?.hud === 'players' ? undefined : (last?.hud ?? 'solo'),
   );
   const [selected, setSelected] = useState<string[]>(() =>
     initialSelection(initialPlayers, last?.playerIds),

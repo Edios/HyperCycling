@@ -1,8 +1,23 @@
 import { z } from 'zod';
 import type { PlanSlot } from './plan';
 import type { EngineSnapshot } from './session-engine';
-import { sessionConfigSchema, type SessionConfig } from './settings';
+import {
+  HYPERRIDE_WORLD_IDS,
+  sessionConfigSchema,
+  type HyperrideWorldId,
+  type SessionConfig,
+} from './settings';
 import { workoutSchema, type Workout } from './workout';
+
+/**
+ * Choices that apply to one ride only (Setup / quick settings); a missing field falls back to the
+ * Settings default. Stored with the active session so a resume keeps them.
+ */
+export interface SessionOptions {
+  sounds?: boolean;
+  coach?: boolean;
+  world?: HyperrideWorldId;
+}
 
 export interface SessionLog {
   id: string;
@@ -19,6 +34,8 @@ export interface ActiveSession {
   workoutId: string;
   config: SessionConfig;
   snapshot: EngineSnapshot;
+  /** Absent in older records: the Settings defaults apply. */
+  options?: SessionOptions;
   savedAt: string;
   plan?: { planId: string; week: number; slot: PlanSlot; cycle?: number };
   /** The exact (scaled) workout that was ridden, so a resume never depends on current settings. */
@@ -44,6 +61,13 @@ export const activeSessionSchema: z.ZodType<ActiveSession> = z.object({
     workoutElapsedSec: z.number().min(0),
     status: z.enum(['paused', 'running']),
   }),
+  options: z
+    .object({
+      sounds: z.boolean().optional(),
+      coach: z.boolean().optional(),
+      world: z.enum(HYPERRIDE_WORLD_IDS).optional(),
+    })
+    .optional(),
   savedAt: z.iso.datetime({ offset: true }),
   plan: z
     .object({

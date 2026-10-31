@@ -1,4 +1,12 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
 import { resolveWorld } from '../hyperride/world-options';
 import type { FrameInput } from '../hyperride/world';
@@ -531,7 +539,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       {status === 'paused' && !confirmEnd && (
         <div role="status" className={styles.paused}>
           {t('training.paused')}
-          <small className={styles.pausedHint}>{t('training.shortcutHint')}</small>
+          {/* The quick settings carry the same hint: show it in one place only. */}
+          {!quickOpen && <small className={styles.pausedHint}>{t('training.shortcutHint')}</small>}
         </div>
       )}
       {quickOpen && !confirmEnd && (

@@ -10,8 +10,8 @@ import {
   type EngineState,
   type SessionEngine,
 } from '../../domain/session-engine';
-import type { ActiveSession } from '../../domain/session-log';
-import type { HyperrideWorldId, SessionConfig } from '../../domain/settings';
+import type { ActiveSession, SessionOptions } from '../../domain/session-log';
+import type { SessionConfig } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
 import { getRepositories } from '../data/repositories';
 import { createAutosave, type Autosave } from './autosave';
@@ -24,11 +24,7 @@ export type { Autosave, AutosaveOptions } from './autosave';
  * Choices that apply to this ride only (set on Setup, changed in the quick settings). They never
  * write the saved Settings; a missing field falls back to the Settings default.
  */
-export interface SessionOptions {
-  sounds?: boolean;
-  coach?: boolean;
-  world?: HyperrideWorldId;
-}
+export type { SessionOptions };
 
 export interface SessionRuntime {
   workout: Workout;
@@ -265,6 +261,8 @@ export const useSessionStore = create<SessionStore>((set, get) => {
       const runtime = get().runtime;
       if (!runtime) return;
       set({ runtime: { ...runtime, options: { ...runtime.options, ...patch } } });
+      // Kept in the stored record so a later resume rides with the same beeps / cues / world.
+      if (engine?.canResume()) getAutosave().onEvent(get());
     },
 
     tick() {

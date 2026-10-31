@@ -132,6 +132,14 @@ export function TrainingSection() {
             onChange={(hud) => void save({ lastSession: { ...last, hud } })}
           />
         </div>
+        <div className={styles.field}>
+          <Toggle
+            label={t('settings.training.music')}
+            checked={last.music}
+            onChange={(music) => void save({ lastSession: { ...last, music } })}
+          />
+          <span className={styles.note}>{t('settings.training.musicHint')}</span>
+        </div>
       </div>
     </div>
   );

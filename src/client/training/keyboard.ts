@@ -28,11 +28,22 @@ function isActivatable(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && /^(BUTTON|A|SUMMARY)$/.test(target.tagName);
 }
 
+/** Space on a switch / radio of the quick settings pauses the ride (R22) instead of toggling it. */
+function isQuickChoice(target: EventTarget | null): boolean {
+  return isChoiceInput(target) && (target as HTMLElement).closest('[data-quick-settings]') !== null;
+}
+
 /** Binds the training shortcuts; returns the unbind function. */
 export function bindTrainingKeys(target: Window, actions: TrainingKeyActions): () => void {
   const handler = (e: KeyboardEvent): void => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (isTextField(e.target) && !(e.code === 'Escape' && isChoiceInput(e.target))) return;
+    if (
+      isTextField(e.target) &&
+      !(e.code === 'Escape' && isChoiceInput(e.target)) &&
+      !(e.code === 'Space' && isQuickChoice(e.target))
+    ) {
+      return;
+    }
     // Space is a global pause/resume (R22), also on a focused button; Enter stays with the button.
     if (e.code === 'Enter' && isActivatable(e.target)) return;
     let run: (() => void) | undefined;
@@ -71,7 +82,13 @@ export function bindTrainingKeys(target: Window, actions: TrainingKeyActions): (
   };
   // Firefox activates a button on Space keyup: swallow it so the keydown action is the only one.
   const upHandler = (e: KeyboardEvent): void => {
-    if (e.code === 'Space' && isActivatable(e.target) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if (
+      e.code === 'Space' &&
+      (isActivatable(e.target) || isQuickChoice(e.target)) &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.altKey
+    ) {
       e.preventDefault();
     }
   };

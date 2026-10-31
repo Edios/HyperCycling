@@ -100,6 +100,26 @@ describe('ResumePrompt', () => {
     expect(opener).toHaveFocus();
   });
 
+  it('restores the session-only options (R19) when resuming', async () => {
+    db.active = active({ options: { sounds: false, coach: false, world: 'road' } });
+    renderApp();
+    fireEvent.click(await screen.findByRole('button', { name: 'Resume' }));
+    await screen.findByText('/train');
+    expect(useSessionStore.getState().runtime?.options).toEqual({
+      sounds: false,
+      coach: false,
+      world: 'road',
+    });
+  });
+
+  it('an old autosave without options falls back to the Settings defaults', async () => {
+    db.active = active();
+    renderApp();
+    fireEvent.click(await screen.findByRole('button', { name: 'Resume' }));
+    await screen.findByText('/train');
+    expect(useSessionStore.getState().runtime?.options).toBeUndefined();
+  });
+
   it('shows nothing without an interrupted session', async () => {
     renderApp();
     await screen.findByTestId('where');

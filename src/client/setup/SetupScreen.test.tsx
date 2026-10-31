@@ -190,6 +190,32 @@ describe('SetupScreen', () => {
     expect(runtime.plan).toBeUndefined();
   });
 
+  it('a preselected rider does not switch the layout away from the Settings default', async () => {
+    db.players = [{ ...mirek, isMe: true }, ania];
+    renderSetup(`/setup/${scalable.id}`);
+    expect(await screen.findByRole('button', { name: /Mirek/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('radio', { name: 'Solo' })).toBeChecked();
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    await screen.findByTestId('where');
+    expect(useSessionStore.getState().runtime!.config).toMatchObject({
+      hud: 'solo',
+      playerIds: ['p1'],
+    });
+  });
+
+  it('music starts on when Settings has it on by default and the workout has cues', async () => {
+    if (!withCues) return;
+    db.settings = {
+      ...DEFAULT_SETTINGS,
+      lastSession: { background: 'basic', hud: 'solo', playerIds: [], music: true },
+    };
+    renderSetup(`/setup/${withCues.id}`);
+    expect(await screen.findByRole('switch', { name: 'Music' })).toBeChecked();
+  });
+
   it('prefills players and toggles from the last session', async () => {
     db.settings = {
       ...DEFAULT_SETTINGS,

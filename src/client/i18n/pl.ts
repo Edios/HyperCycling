@@ -26,7 +26,7 @@ export const pl: Messages = {
     remaining: 'pozostało {time}',
     playersTarget: 'Cel w bloku · ~{pct}% FTP',
     watts: 'W',
-    playerEffort: '{pct}% FTP',
+    playersTargetEffort: 'Cel w bloku · wysiłek {effort}/10',
     shortcutHint: 'Spacja: pauza / wznów',
     effortScale: '/10',
     start: 'Start',
@@ -104,7 +104,8 @@ export const pl: Messages = {
     layoutTunnel: 'Czas w tunelu',
     layoutHint: {
       basicNoPlayers: 'Wybierz osobę poniżej, aby użyć układu Z graczami.',
-      overlay: 'Gracze pokazują się tylko w układach Immersyjny i Kolumna. Wybierz osobę, aby ich użyć.',
+      overlay:
+        'Gracze pokazują się tylko w układach Immersyjny i Kolumna. Wybierz osobę, aby ich użyć.',
       overlayPlayers:
         'Gdy jadą osoby, układy Immersyjny i Kolumna pokazują graczy. Kokpit i Czas w tunelu nie mają na nich miejsca.',
     },
@@ -438,6 +439,8 @@ export const pl: Messages = {
       defaultsHint: 'Ekran przygotowania zaczyna od tych wyborów.',
       background: 'Tło',
       hud: 'Układ',
+      music: 'Muzyka domyślnie włączona',
+      musicHint: 'Dotyczy treningów z przypiętymi utworami; przed każdą jazdą możesz to zmienić.',
     },
     zones: {
       title: 'Strefy',

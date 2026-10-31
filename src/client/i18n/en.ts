@@ -24,7 +24,7 @@ export const en = {
     remaining: 'remaining {time}',
     playersTarget: 'Target for block · ~{pct}% FTP',
     watts: 'W',
-    playerEffort: '{pct}% FTP',
+    playersTargetEffort: 'Target for block · effort {effort}/10',
     shortcutHint: 'Space: pause / resume',
     effortScale: '/10',
     start: 'Start',
@@ -437,6 +437,9 @@ export const en = {
       defaultsHint: 'The setup screen starts with these choices.',
       background: 'Background',
       hud: 'Layout',
+      music: 'Music on by default',
+      musicHint:
+        'Applies to workouts with pinned tracks; you can still switch it on or off per ride.',
     },
     zones: {
       title: 'Zones',

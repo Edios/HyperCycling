@@ -322,6 +322,58 @@ describe('focus and Space (QA F2, F3)', () => {
     expect(useSessionStore.getState().state.segmentIndex).toBe(0);
   });
 
+  it('opening the quick settings puts focus on its first control, not on Close', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
+    const panel = screen.getByTestId('quick-settings');
+    expect(panel).toContainElement(document.activeElement as HTMLElement);
+    expect(document.activeElement).not.toBe(within(panel).getByRole('button', { name: 'Close' }));
+    expect(document.activeElement?.tagName).toBe('INPUT');
+  });
+
+  it('Space inside the quick settings resumes the ride and does not toggle the focused control', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
+    const beeps = screen.getByRole('switch', { name: 'Beeps' });
+    beeps.focus();
+    const checked = (beeps as HTMLInputElement).checked;
+    const down = new KeyboardEvent('keydown', {
+      code: 'Space',
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => {
+      beeps.dispatchEvent(down);
+    });
+    const up = new KeyboardEvent('keyup', {
+      code: 'Space',
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => {
+      beeps.dispatchEvent(up);
+    });
+    expect(down.defaultPrevented).toBe(true);
+    expect(up.defaultPrevented).toBe(true);
+    expect(useSessionStore.getState().state.status).toBe('running');
+    expect((beeps as HTMLInputElement).checked).toBe(checked);
+  });
+
+  it('shows the Space hint once when the quick settings are open while paused', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    expect(screen.getAllByText('Space: pause / resume')).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
+    expect(screen.getAllByText('Space: pause / resume')).toHaveLength(1);
+  });
+
   it('shows the Space shortcut hint while paused', async () => {
     load();
     await renderScreen();

@@ -513,6 +513,14 @@ describe('SummaryScreen', () => {
       expect(screen.queryByLabelText('Best 1-minute power (W)')).not.toBeInTheDocument();
     });
 
+    it('is hidden on a summary restored after a reload, so it cannot overwrite a newer FTP', async () => {
+      useLastResult.setState({ result: { ...result({ workout: ramp }), restored: true } });
+      renderSummary();
+      await screen.findByTestId('summary-name');
+      expect(screen.queryByLabelText('Best 1-minute power (W)')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('ftp-card')).not.toBeInTheDocument();
+    });
+
     it('proposes 75 % for the isMe player and saves it', async () => {
       useLastResult.getState().set(result({ workout: ramp }));
       renderSummary();

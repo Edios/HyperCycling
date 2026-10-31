@@ -98,7 +98,7 @@ export function ResumePrompt() {
         };
         if (!live || useSessionStore.getState().runtime) return;
         setPending({
-          runtime: buildRuntime(ridden, segments, config, players, active.plan),
+          runtime: buildRuntime(ridden, segments, config, players, active.plan, active.options),
           active,
           minutesAgo: Math.max(
             0,

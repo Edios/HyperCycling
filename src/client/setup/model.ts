@@ -5,7 +5,7 @@ import type { Segment } from '../../domain/segments';
 import type { SessionConfig } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
 import type { MessageKey } from '../i18n';
-import type { SessionRuntime } from '../training/session-store';
+import type { SessionOptions, SessionRuntime } from '../training/session-store';
 
 export const MAX_SESSION_PLAYERS = 10;
 
@@ -144,8 +144,16 @@ export function buildRuntime(
   config: SessionConfig,
   players: Player[],
   plan: PlanRef | undefined,
+  options?: SessionOptions,
 ): SessionRuntime {
-  return { workout, segments, config, players, ...(plan ? { plan } : {}) };
+  return {
+    workout,
+    segments,
+    config,
+    players,
+    ...(plan ? { plan } : {}),
+    ...(options ? { options } : {}),
+  };
 }
 
 /** Players for the ids, in the given order; unknown ids are dropped. */

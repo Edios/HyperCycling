@@ -46,13 +46,19 @@ export interface QuickSettingsProps {
 export function QuickSettings(p: QuickSettingsProps) {
   const t = useT();
   useRestoreFocus();
-  const closeRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  // Start on the first control (the background choice), not on Close: Space and arrows work at once.
   useEffect(() => {
-    closeRef.current?.focus();
+    const first =
+      panelRef.current?.querySelector<HTMLElement>('input:checked:not(:disabled)') ??
+      panelRef.current?.querySelector<HTMLElement>('input:not(:disabled)');
+    first?.focus();
   }, []);
   const backgrounds: Background[] = ['basic', 'hyperride', 'youtube'];
   return (
     <section
+      ref={panelRef}
+      data-quick-settings=""
       className={styles.panel}
       role="region"
       aria-label={t('training.quickSettings')}
@@ -61,7 +67,6 @@ export function QuickSettings(p: QuickSettingsProps) {
       <header className={styles.head}>
         <h2>{t('training.quickSettings')}</h2>
         <button
-          ref={closeRef}
           type="button"
           className={styles.close}
           aria-label={t('training.quickClose')}

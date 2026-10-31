@@ -22,7 +22,12 @@ export function BasicPlayers({
     <div className={styles.root} data-testid="layout-players">
       <div className={styles.main}>
         <div className={styles.players}>
-          <PlayersList players={players} ftpPct={view.ftpPct} showsWatts={showsWatts} />
+          <PlayersList
+            players={players}
+            ftpPct={view.ftpPct}
+            effort={view.effort}
+            showsWatts={showsWatts}
+          />
         </div>
         <div className={styles.right}>
           <div className={`${styles.tiles} ${hideRpmTile ? styles.two : ''}`}>

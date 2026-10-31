@@ -227,6 +227,35 @@ describe('session store', () => {
   });
 });
 
+describe('session options in the autosave', () => {
+  it('persists the session-only options with the record, and again after a quick-settings change', async () => {
+    const s = useSessionStore.getState();
+    s.load({ ...makeRuntime(), options: { sounds: false, world: 'road' } });
+    s.start();
+    now = 3000;
+    s.tick();
+    s.pause();
+    await flush();
+    expect(saved.at(-1)?.options).toEqual({ sounds: false, world: 'road' });
+    s.setOptions({ coach: false });
+    s.resume();
+    s.pause();
+    await flush();
+    expect(saved.at(-1)?.options).toEqual({ sounds: false, world: 'road', coach: false });
+  });
+
+  it('omits options when none were chosen', async () => {
+    const s = useSessionStore.getState();
+    s.load(makeRuntime());
+    s.start();
+    now = 3000;
+    s.tick();
+    s.pause();
+    await flush();
+    expect(saved.at(-1)).not.toHaveProperty('options');
+  });
+});
+
 describe('session store resilience', () => {
   it('a throwing listener does not abort tick; finish still clears and releases', async () => {
     const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);

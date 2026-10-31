@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { HyperrideQuality, HyperrideWorld, WorldFrame } from '../world';
+import { prefersReducedMotion } from './motion';
 import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
 import { BASE_VFOV_DEG, baseVerticalFov, dashOffset, gateDepth, hash01 } from './road-model';
 
@@ -8,8 +9,9 @@ import { BASE_VFOV_DEG, baseVerticalFov, dashOffset, gateDepth, hash01 } from '.
  * Zone-coloured bars run along both road edges; each bar takes the colour of the block that will
  * be active when the rider reaches it, so the next block's colour travels toward the rider, and a
  * gate frame marks where the next block begins. The sky (gradient, sun, mountains, skyline) is
- * drawn once per size into a CanvasTexture. There is no bike in view: only the road. No post-processing: `high` adds a soft additive glow under the
- * edge bars and a full pixel ratio, `low` halves the road segments, bars and props.
+ * drawn once per size into a CanvasTexture. There is no bike in view: only the road.
+ * No post-processing: `high` adds a soft additive glow under the edge bars and a full pixel
+ * ratio, `low` halves the road segments, bars and props.
  *
  * World units: the camera sits CAM_HEIGHT above the road; one camera height ≈ the mockup's unit.
  */
@@ -99,13 +101,6 @@ interface Scene3D {
   /** Re-created on every resize. */
   backdrop?: THREE.CanvasTexture;
   unwatchDpr(): void;
-}
-
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
 }
 
 const isPortrait = (w: number, h: number): boolean => h > w;
@@ -476,7 +471,6 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
     gate.renderOrder = 11;
     scene.add(gate);
 
-
     const out: Scene3D = {
       renderer,
       scene,
@@ -670,6 +664,7 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
         applyProjection();
         paint();
       } catch (err) {
+        s?.unwatchDpr();
         s?.backdrop?.dispose();
         s = undefined;
         for (const c of created) c.dispose();

@@ -234,7 +234,7 @@ describe('PlayersList', () => {
     { id: 'b', name: 'Bob', ftp: 255, isMe: true },
   ];
   it('shows target watts per player', () => {
-    render(<PlayersList players={players} ftpPct={92} showsWatts />);
+    render(<PlayersList players={players} ftpPct={92} effort={6} showsWatts />);
     const root = screen.getByTestId('players-list');
     expect(root).toHaveTextContent('Target for block · ~92% FTP');
     expect(root).toHaveTextContent('Ann');
@@ -246,22 +246,26 @@ describe('PlayersList', () => {
       { id: 'x', name: 'Zero', ftp: 0 },
       { id: 'y', name: 'Nan', ftp: Number.NaN },
     ];
-    render(<PlayersList players={bad} ftpPct={92} showsWatts />);
+    render(<PlayersList players={bad} ftpPct={92} effort={6} showsWatts />);
     const root = screen.getByTestId('players-list');
     expect(root).toHaveTextContent('Zero');
     expect(root.textContent?.match(/—/g)).toHaveLength(2);
   });
   it('shows names only when the bike has no watts', () => {
-    render(<PlayersList players={players} ftpPct={92} showsWatts={false} />);
+    render(<PlayersList players={players} ftpPct={92} effort={6} showsWatts={false} />);
     const root = screen.getByTestId('players-list');
     expect(root).toHaveTextContent('Ann');
     expect(root).not.toHaveTextContent(/\bW\b/);
   });
-  it('without watts each player still shows the effort target', () => {
-    render(<PlayersList players={players} ftpPct={92} showsWatts={false} />);
-    const rows = screen.getByTestId('players-list').querySelectorAll('li');
+  it('without watts shows the block effort once on the 1-10 scale and no % FTP per row', () => {
+    render(<PlayersList players={players} ftpPct={92} effort={6} showsWatts={false} />);
+    const root = screen.getByTestId('players-list');
+    expect(root).toHaveTextContent('Target for block · effort 6/10');
+    expect(root).not.toHaveTextContent('FTP');
+    const rows = root.querySelectorAll('li');
     expect(rows).toHaveLength(2);
-    for (const row of rows) expect(row).toHaveTextContent('92% FTP');
+    expect(rows[0]).toHaveTextContent(/^Ann$/);
+    expect(rows[1]).toHaveTextContent(/^Bob$/);
   });
 });
 

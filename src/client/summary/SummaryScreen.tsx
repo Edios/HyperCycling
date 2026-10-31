@@ -110,7 +110,7 @@ function Summary({ result }: { result: LastResult }) {
 
   const name = localizedText(result.workout, lang).name;
   const testKind = ftpTestKindOf(result.workout.id);
-  const showFtp = testKind !== undefined && settings.equipment.showsWatts;
+  const showFtp = testKind !== undefined && settings.equipment.showsWatts && !restored;
 
   return (
     <main data-testid="summary-screen" className={styles.page}>
