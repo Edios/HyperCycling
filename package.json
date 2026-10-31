@@ -20,7 +20,7 @@
     "format:check": "prettier --check src tests scripts .github *.ts *.js *.json *.md",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "check": "npm run typecheck && npm run lint && npm test",
-    "docs:screenshots": "echo \"docs:screenshots: not implemented yet\""
+    "docs:screenshots": "tsx scripts/docs-screenshots.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
