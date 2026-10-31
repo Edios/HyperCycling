@@ -473,6 +473,27 @@ describe('volume and fade', () => {
     expect(volumeCalls(seen)).toEqual(['60', '100', '0']);
   });
 
+  it('mute remembers the device level and unmute restores it, not 100 %', async () => {
+    const seen = api(playerAt(40));
+    const { provider } = setup();
+    await provider.setVolume(0);
+    await provider.setVolume(0); // muting again must not remember 0
+    await provider.setVolume(1);
+    expect(volumeCalls(seen)).toEqual(['0', '0', '40']);
+    await provider.setVolume(1); // forgotten after the restore: a plain full level
+    expect(volumeCalls(seen).at(-1)).toBe('100');
+  });
+
+  it('mute still works when the device level cannot be read', async () => {
+    const seen = api((s) =>
+      s.method === 'GET' && s.path === '/v1/me/player' ? error(500, '') : undefined,
+    );
+    const { provider } = setup();
+    await provider.setVolume(0);
+    await provider.setVolume(1);
+    expect(volumeCalls(seen)).toEqual(['0', '100']);
+  });
+
   it('puts the original volume back even when a fade step fails, and reports the failure', async () => {
     let puts = 0;
     const seen = api((s) => {

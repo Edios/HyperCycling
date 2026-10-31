@@ -31,10 +31,15 @@ function CopyUri({ label, uri }: { label: string; uri: string }) {
   const t = useT();
   const [note, setNote] = useState<'copied' | 'failed' | undefined>();
   const copy = (): void => {
-    navigator.clipboard.writeText(uri).then(
-      () => setNote('copied'),
-      () => setNote('failed'),
-    );
+    try {
+      void navigator.clipboard.writeText(uri).then(
+        () => setNote('copied'),
+        () => setNote('failed'),
+      );
+    } catch {
+      // No clipboard in this context (insecure origin, locked-down browser).
+      setNote('failed');
+    }
   };
   return (
     <li className={styles.uri}>
@@ -104,7 +109,7 @@ export function MusicSection() {
   });
   const [busy, setBusy] = useState(false);
   const devices = useDevices(connected);
-  const onLocalhost = location.hostname === 'localhost';
+  const onLocalhost = location.hostname === 'localhost' || location.hostname.endsWith('.localhost');
 
   const current = (): SpotifySettings => settingsSpotifyStore.read() ?? { clientId: '' };
 

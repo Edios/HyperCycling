@@ -107,6 +107,44 @@ async function rideIt(page: Page, name: string): Promise<void> {
   await expect(page.getByTestId('training-screen')).toBeVisible();
 }
 
+async function rideWithRider(page: Page, name: string, hyperride: boolean): Promise<void> {
+  await page.goto('./#/freestyle');
+  await page.getByRole('button', { name: 'Mine', exact: true }).click();
+  await page.getByTestId('workout-card').filter({ hasText: name }).click();
+  await expect(page.getByTestId('setup-screen')).toBeVisible();
+  if (hyperride) await page.getByRole('button', { name: /Hyperride/ }).click();
+  await page.getByRole('button', { name: '+ Add' }).click();
+  const form = page.getByTestId('add-player-form');
+  await form.getByLabel('Name').fill('Mirek');
+  await form.getByLabel('FTP (W)').fill('250');
+  await form.getByRole('button', { name: 'Add rider' }).click();
+  const music = page.getByRole('switch', { name: 'Music' });
+  if (!(await music.isChecked())) await music.check({ force: true });
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await expect(page.getByTestId('training-screen')).toBeVisible();
+  await page.keyboard.press('Space');
+}
+
+/** Text-bearing HUD pieces that sit under the now-playing corner (none is the goal). */
+async function underCorner(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const c = document.querySelector('[data-testid="now-playing"]')?.getBoundingClientRect();
+    if (!c) return ['no corner'];
+    const hits: string[] = [];
+    const root = document.querySelector('[data-testid="training-screen"]');
+    for (const el of root?.querySelectorAll<HTMLElement>('*') ?? []) {
+      if (el.closest('[data-testid="now-playing"]') || el.closest('[data-testid="toast-stack"]'))
+        continue;
+      if (el.children.length > 0 || !el.textContent?.trim()) continue; // leaf text only
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) continue;
+      const hit = r.left < c.right && r.right > c.left && r.top < c.bottom && r.bottom > c.top;
+      if (hit) hits.push(`${el.tagName}.${el.className}:${el.textContent.trim().slice(0, 20)}`);
+    }
+    return hits;
+  });
+}
+
 test('Spotify: connect, pick a device, search in the editor, play with a now-playing corner and mute', async ({
   page,
 }, info) => {
@@ -203,4 +241,71 @@ test('Polish: settings and the editor search hint are translated', async ({ page
   await page.goto('./#/editor/new');
   await page.getByTestId('editor-block').nth(1).click();
   await expect(page.getByTestId('spotify-search-hint')).toContainText('Połącz Spotify');
+});
+
+test('now-playing corner: lays out clear of the HUD in the players, Immersive and Column layouts', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+  test.setTimeout(180_000);
+  await page.goto('about:blank');
+  const webgl = await page.evaluate(() => {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') ?? c.getContext('webgl'));
+  });
+  test.skip(!webgl, 'WebGL is not available in this headless browser');
+
+  await mockSpotify(page, [{ id: 'D-PC', name: 'My PC', type: 'Computer', is_active: true }]);
+  await connectSpotify(page);
+  const name = `E2E Layouts ${Date.now()}`;
+  await buildWorkoutWithSpotifyTrack(page, name);
+
+  await rideWithRider(page, name, true);
+  const corner = page.getByTestId('now-playing');
+  await expect(corner).toBeVisible({ timeout: 20_000 });
+
+  for (const [w, h] of [
+    [1920, 1080],
+    [1280, 720],
+  ] as const) {
+    await page.setViewportSize({ width: w, height: h });
+    // Basic-style layouts first would need a restart; the three Hyperride layouts cycle with H.
+    for (const layout of ['immersive', 'column'] as const) {
+      while ((await page.getByTestId(`layout-${layout}`).count()) === 0) {
+        await page.keyboard.press('h');
+        await page.waitForTimeout(150);
+      }
+      await page.waitForTimeout(500);
+      await shot(page, `corner-${layout}-${w}`);
+      expect(await underCorner(page), `${layout} at ${w}`).toEqual([]);
+    }
+    // Players off/on does not move the corner.
+    await page.keyboard.press('g');
+    await page.waitForTimeout(300);
+    await shot(page, `corner-players-toggled-${w}`);
+    expect(await underCorner(page), `toggled players at ${w}`).toEqual([]);
+    await page.keyboard.press('g');
+  }
+});
+
+test('now-playing corner: lays out clear of the HUD in the Basic players layout', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+  test.setTimeout(120_000);
+  await mockSpotify(page, [{ id: 'D-PC', name: 'My PC', type: 'Computer', is_active: true }]);
+  await connectSpotify(page);
+  const name = `E2E Players ${Date.now()}`;
+  await buildWorkoutWithSpotifyTrack(page, name);
+  await rideWithRider(page, name, false);
+  await expect(page.getByTestId('now-playing')).toBeVisible({ timeout: 20_000 });
+  for (const [w, h] of [
+    [1920, 1080],
+    [1280, 720],
+  ] as const) {
+    await page.setViewportSize({ width: w, height: h });
+    await page.waitForTimeout(400);
+    await shot(page, `corner-players-${w}`);
+    expect(await underCorner(page), `players at ${w}`).toEqual([]);
+  }
 });

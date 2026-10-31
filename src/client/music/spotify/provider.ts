@@ -74,6 +74,8 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
   });
   const sleep = options.sleep ?? defaultSleep;
   let connected = false;
+  /** The device volume (0..100) from before the session was muted; restored on unmute. */
+  let volumeBeforeMute: number | undefined;
   const now = options.now ?? Date.now;
 
   async function listDevices(): Promise<SpotifyDevice[]> {
@@ -186,8 +188,23 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
       await client.request('PUT', '/v1/me/player/play', { query: { device_id: device } });
     },
 
+    /**
+     * `v` scales the user's own device level: 0 mutes (remembering the level it found), anything
+     * above 0 brings it back, 1 being the remembered level (100 % when it was never read).
+     */
     async setVolume(v) {
-      await putVolume(await resolveDeviceId(), clamp01(v) * 100);
+      const device = await resolveDeviceId();
+      const level = clamp01(v);
+      if (level === 0) {
+        if (volumeBeforeMute === undefined) {
+          const current = await currentVolume(device).catch(() => undefined);
+          if (current !== undefined && current > 0) volumeBeforeMute = current;
+        }
+        await putVolume(device, 0);
+        return;
+      }
+      await putVolume(device, (volumeBeforeMute ?? 100) * level);
+      if (level === 1) volumeBeforeMute = undefined;
     },
 
     listDevices,

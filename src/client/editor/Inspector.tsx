@@ -1,16 +1,12 @@
 import { useEffect, useId, useRef, useState, type Dispatch } from 'react';
 import { effortRow, effortToFtpPct, type EffortLevel, type EffortTable } from '../../domain/effort';
-import type { Block, Intensity, Position, Workout } from '../../domain/workout';
+import type { Block, Intensity, Position, TrackRef, Workout } from '../../domain/workout';
 import { parseClock, parseTrackUrl } from '../music/parse-track-url';
 import { useT } from '../i18n';
-import { Link } from 'react-router-dom';
-import type { TrackRef } from '../../domain/workout';
-import { spotifyErrorKey } from '../music/spotify/messages';
-import { getSharedSpotifyProvider } from '../music/spotify/shared';
-import { useSpotifyConnected } from '../music/spotify/useSpotify';
-import { checkYoutubeEmbeddable } from '../music/youtube-check';
+import { applyYoutubeCheck, checkYoutubeEmbeddable } from '../music/youtube-check';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Segmented';
+import { SpotifySearch } from './SpotifySearch';
 import { formatClock } from '../training/format';
 import type { EditorAction } from './editor-state';
 import { findBlock, intensityEffort, rpmOutsideUsual, type Leaf } from './model';
@@ -507,12 +503,8 @@ function TrackField({
       // Pinning remounts this field, so the current cue is read from the workout, not from here.
       const now = getCue();
       if (!now || now.provider !== 'youtube' || now.id !== track.id) return;
-      const patch: Partial<TrackRef> = {};
-      if (check.title && !now.title) patch.title = check.title;
-      if (check.author && !now.artist) patch.artist = check.author;
-      if (check.status === 'blocked' || check.status === 'missing') patch.notEmbeddable = true;
-      if (Object.keys(patch).length === 0) return;
-      dispatch({ type: 'setCue', blockId, rep: 1, track: { ...now, ...patch } });
+      const checked = applyYoutubeCheck(now, check);
+      if (checked !== now) dispatch({ type: 'setCue', blockId, rep: 1, track: checked });
     });
   };
 
@@ -609,93 +601,6 @@ function TrackField({
   );
 }
 
-/** Spotify track search (at most 10 results) for the track field; hints at Settings when offline. */
-function SpotifySearch({ onPick }: { onPick: (track: TrackRef) => void }) {
-  const t = useT();
-  const connected = useSpotifyConnected();
-  const inputId = useId();
-  const [query, setQuery] = useState('');
-  const [state, setState] = useState<
-    | { kind: 'idle' }
-    | { kind: 'loading' }
-    | { kind: 'results'; items: TrackRef[] }
-    | { kind: 'error'; message: string }
-  >({ kind: 'idle' });
-  const run = (): void => {
-    const q = query.trim();
-    if (!q) return;
-    setState({ kind: 'loading' });
-    getSharedSpotifyProvider()
-      .search(q)
-      .then(
-        (items) => setState({ kind: 'results', items: items.slice(0, 10) }),
-        (err: unknown) => setState({ kind: 'error', message: t(spotifyErrorKey(err)) }),
-      );
-  };
-  if (!connected) {
-    return (
-      <small className={styles.caption} data-testid="spotify-search-hint">
-        {t('music.spotifyConnectHint')} <Link to="/settings">{t('music.spotifyOpenSettings')}</Link>
-      </small>
-    );
-  }
-  return (
-    <div className={styles.group} data-testid="spotify-search">
-      <label className={styles.groupLabel} htmlFor={inputId}>
-        {t('music.spotifySearch')}
-      </label>
-      <div className={styles.row}>
-        <input
-          id={inputId}
-          data-testid="spotify-query"
-          className={styles.wide}
-          placeholder={t('music.spotifySearchPlaceholder')}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              run();
-            }
-          }}
-        />
-        <Button onClick={run}>{t('music.spotifySearchGo')}</Button>
-      </div>
-      <div aria-live="polite">
-        {state.kind === 'loading' && (
-          <small className={styles.caption}>{t('music.spotifySearching')}</small>
-        )}
-        {state.kind === 'error' && (
-          <small role="alert" className={styles.error}>
-            {state.message}
-          </small>
-        )}
-        {state.kind === 'results' && state.items.length === 0 && (
-          <small className={styles.caption}>{t('music.spotifyNoResults')}</small>
-        )}
-      </div>
-      {state.kind === 'results' && state.items.length > 0 && (
-        <ul className={styles.results} aria-label={t('music.spotifyResults')}>
-          {state.items.map((tr) => (
-            <li key={tr.id} data-testid="spotify-result">
-              <span className={styles.trackName}>
-                {tr.title}
-                {tr.artist ? ` · ${tr.artist}` : ''}
-              </span>
-              <Button
-                onClick={() => onPick(tr)}
-                aria-label={`${t('music.spotifyUse')}: ${tr.title}`}
-              >
-                {t('music.spotifyUse')}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
 function FallbackPlaylist({
   workout,
   dispatch,
@@ -731,16 +636,13 @@ function FallbackPlaylist({
     setTouched(false);
     if (parsed.provider !== 'youtube') return;
     void checkYoutubeEmbeddable(parsed.id).then((check) => {
-      const patch: Partial<TrackRef> = {};
-      if (check.title) patch.title = check.title;
-      if (check.author) patch.artist = check.author;
-      if (check.status === 'blocked' || check.status === 'missing') patch.notEmbeddable = true;
-      if (Object.keys(patch).length === 0) return;
       // The list may have changed meanwhile: patch the first matching entry that is still bare.
       const latest = listRef.current;
       const at = latest.findIndex((x) => x.provider === 'youtube' && x.id === added.id && !x.title);
-      if (at < 0) return;
-      set(latest.map((x, i) => (i === at ? { ...x, ...patch } : x)));
+      const found = latest[at];
+      if (!found) return;
+      const checked = applyYoutubeCheck(found, check);
+      if (checked !== found) set(latest.map((x, i) => (i === at ? checked : x)));
     });
   };
   const move = (i: number, to: number): void => {

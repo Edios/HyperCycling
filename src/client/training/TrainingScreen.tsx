@@ -43,6 +43,8 @@ import { buildTrainingView } from './view';
 import styles from './TrainingScreen.module.css';
 
 const CONTROLS_HIDE_MS = 3000;
+/** Music warnings carry instructions (open Spotify...), so they stay longer than other toasts. */
+const MUSIC_WARNING_MS = 8000;
 
 /** Route /train. Redirects home when no session is loaded. */
 export function TrainingScreen() {
@@ -395,12 +397,13 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           <Toast
             key={musicWarning.id}
             message={musicWarning.message}
+            durationMs={MUSIC_WARNING_MS}
             onClose={() => setMusicWarning(null)}
           />
         )}
       </ToastStack>
       {runtime.config.music && nowPlaying && (
-        <NowPlaying track={nowPlaying} muted={!musicAudible} />
+        <NowPlaying track={nowPlaying} muted={!musicAudible} raised={overlay} />
       )}
       <EdgeFlash trigger={flash} color={view.color} reducedMotion={reducedMotion} />
       <div className={styles.center}>

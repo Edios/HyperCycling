@@ -17,8 +17,15 @@
   pointer-events: none;
 }
 
-.root[data-muted='true'] {
-  opacity: 0.55;
+.raised {
+  bottom: 29vh;
+}
+
+.mute {
+  flex: none;
+  width: 3.2vh;
+  height: 3.2vh;
+  color: var(--z7);
 }
 
 .icon {
@@ -40,7 +47,7 @@
 .title {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 3vh;
+  font-size: 3.4vh;
   line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
@@ -48,8 +55,9 @@
 }
 
 .meta {
-  font-size: 2vh;
-  color: var(--mut);
+  font-size: 2.6vh;
+  color: var(--fg);
+  opacity: 0.85;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

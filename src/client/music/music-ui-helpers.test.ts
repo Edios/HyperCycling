@@ -3,7 +3,8 @@ import { DEFAULT_SETTINGS } from '../../domain/settings';
 import { SpotifyError, type SpotifyErrorCode } from './spotify/errors';
 import { spotifyErrorKey } from './spotify/messages';
 import { isSpotifyUsable } from './spotify/shared';
-import { checkYoutubeEmbeddable } from './youtube-check';
+import { applyYoutubeCheck, checkYoutubeEmbeddable } from './youtube-check';
+import type { TrackRef } from '../../domain/workout';
 import { createMusicProviders } from './providers';
 import { settingsSpotifyStore } from './spotify/settings-store';
 import { loadSettings, resetSettingsForTests, updateSettings } from '../data/useSettings';
@@ -70,6 +71,48 @@ describe('checkYoutubeEmbeddable', () => {
     }) as unknown as typeof fetch;
     await checkYoutubeEmbeddable('dQw4w9WgXcQ', spy);
     expect(decodeURIComponent(seen)).toContain('watch?v=dQw4w9WgXcQ');
+  });
+});
+
+describe('checkYoutubeEmbeddable request', () => {
+  it('sends no referrer and gives up after the timeout', async () => {
+    let init: RequestInit | undefined;
+    const hang = ((_url: string, i?: RequestInit) => {
+      init = i;
+      return new Promise((_resolve, reject) => {
+        i?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+      });
+    }) as unknown as typeof fetch;
+    const result = await checkYoutubeEmbeddable('abc', hang, 20);
+    expect(result.status).toBe('unknown');
+    expect(init?.referrerPolicy).toBe('no-referrer');
+    expect(init?.signal?.aborted).toBe(true);
+  });
+});
+
+describe('applyYoutubeCheck', () => {
+  const base: TrackRef = { provider: 'youtube', id: 'abc', title: '', startAtSec: 0 };
+
+  it('fills empty title/author and marks a blocked video', () => {
+    expect(applyYoutubeCheck(base, { status: 'blocked', title: 'T', author: 'A' })).toEqual({
+      ...base,
+      title: 'T',
+      artist: 'A',
+      notEmbeddable: true,
+    });
+  });
+
+  it('clears the mark once the video embeds, and keeps existing text', () => {
+    const marked = { ...base, title: 'Mine', notEmbeddable: true };
+    const next = applyYoutubeCheck(marked, { status: 'ok', title: 'Other' });
+    expect(next.notEmbeddable).toBeUndefined();
+    expect(next.title).toBe('Mine');
+  });
+
+  it('leaves the track alone for unknown answers and when nothing changes', () => {
+    const marked = { ...base, notEmbeddable: true };
+    expect(applyYoutubeCheck(marked, { status: 'unknown' })).toBe(marked);
+    expect(applyYoutubeCheck(base, { status: 'ok' })).toBe(base);
   });
 });
 

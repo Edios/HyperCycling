@@ -132,6 +132,20 @@ describe('YouTube embed check', () => {
     );
   });
 
+  it('clears the mark when the video embeds on a later check', async () => {
+    oembed(401);
+    await openEditor();
+    fireEvent.change(screen.getByTestId('track-url'), { target: { value: YT_URL } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    await screen.findByTestId('track-not-embeddable');
+    oembed(200, { title: 'Back again', author_name: 'X' });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    await waitFor(() =>
+      expect(screen.queryByTestId('track-not-embeddable')).not.toBeInTheDocument(),
+    );
+    expect(screen.getByTestId('music-pill')).not.toHaveTextContent('⚠');
+  });
+
   it('marks nothing when YouTube cannot be reached', async () => {
     server.use(http.get('https://www.youtube.com/oembed', () => HttpResponse.error()));
     await openEditor();

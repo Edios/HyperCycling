@@ -214,6 +214,7 @@ describe('now playing, mute and warnings', () => {
     });
     expect(music.provider.log.at(-1)).toBe('setVolume:0');
     expect(screen.getByTestId('now-playing')).toHaveAttribute('data-muted', 'true');
+    expect(screen.getByTestId('now-playing')).toHaveTextContent('muted');
     await act(async () => {
       fireEvent.keyDown(window, { code: 'KeyM' });
     });
