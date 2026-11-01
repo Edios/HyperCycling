@@ -11,7 +11,8 @@ afterEach(cleanup);
 // which breaks react-router navigations and fetch calls in tests. Drop the signal; tests never abort.
 function withoutSignal(init?: RequestInit): RequestInit | undefined {
   if (!init || !('signal' in init)) return init;
-  const { signal: _signal, ...rest } = init;
+  const rest = { ...init };
+  delete rest.signal;
   return rest;
 }
 const NativeRequest = globalThis.Request;
