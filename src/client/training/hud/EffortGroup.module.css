@@ -153,3 +153,39 @@
     margin-top: 0;
   }
 }
+
+/* Short landscape phone: ring with NEXT beside it, name and caption tight underneath. */
+@media (orientation: landscape) and (max-height: 450px) {
+  .eff {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: calc(1.6 * var(--u));
+  }
+
+  .dash,
+  .nextDesc {
+    display: none;
+  }
+
+  .caption {
+    margin-top: 0;
+  }
+
+  .next,
+  .next[data-finish='true'] {
+    grid-template-areas:
+      'label'
+      'ring'
+      'time';
+    grid-template-columns: auto;
+    row-gap: calc(0.5 * var(--u));
+    justify-items: start;
+    padding-top: calc(0.4 * var(--u));
+  }
+
+  .nextTime {
+    font-size: var(--next-fs, clamp(16px, calc(4.6 * var(--u)), 40px));
+    margin-top: 0;
+  }
+}

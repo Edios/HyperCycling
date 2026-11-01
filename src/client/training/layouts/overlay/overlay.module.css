@@ -268,6 +268,46 @@
   }
 }
 
+/* ---------------- phone landscape (short screens): compact arrangement, no panel overlaps ---------------- */
+@media (orientation: landscape) and (max-height: 450px) {
+  .root[data-layout='immersive'],
+  .root[data-layout='cockpit'],
+  .root[data-layout='tunnel'] {
+    --ring: calc(23 * var(--u));
+    --nring: calc(8 * var(--u));
+    --next-fs: calc(4.6 * var(--u));
+    --lbl: clamp(11px, calc(2.6 * var(--u)), 40px);
+  }
+
+  .root[data-layout='column'] {
+    --ring: calc(19 * var(--u));
+    --nring: calc(7 * var(--u));
+    --next-fs: calc(4.6 * var(--u));
+    --time-fs: calc(11 * var(--u));
+    --mval: calc(5 * var(--u));
+    --pad: calc(1.6 * var(--u)) calc(2 * var(--u));
+  }
+
+  .root > [data-g='W'] {
+    width: auto;
+    --pad: calc(1.6 * var(--u)) calc(2 * var(--u));
+  }
+
+  .root[data-layout='immersive'] > [data-g='W'] {
+    width: auto;
+  }
+
+  .root[data-layout='column'] .col {
+    overflow-y: auto;
+    gap: calc(0.8 * var(--u));
+    width: calc(46 * var(--u));
+  }
+
+  .root[data-layout='column'] .col > [data-g='W'] {
+    width: auto;
+  }
+}
+
 /* ---------------- phone portrait: every overlay layout collapses into one stack ---------------- */
 @media (max-width: 760px) and (orientation: portrait) {
   .root {
@@ -309,7 +349,8 @@
 
   .root > [data-g='R'] {
     order: 3;
-    max-height: calc(22 * var(--u));
+    flex: 0 1 auto;
+    max-height: none;
   }
 
   .free {
@@ -318,6 +359,14 @@
     inset: auto;
     flex: none;
     height: calc(9 * var(--u));
+  }
+
+  .root[data-players='true'] .free {
+    height: calc(4 * var(--u));
+  }
+
+  .root[data-players='true'] {
+    --ring: 34vw;
   }
 
   .root > [data-g='M'] {
