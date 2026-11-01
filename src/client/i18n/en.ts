@@ -1,0 +1,29 @@
+export const en = {
+  app: { title: 'Spinning Tutor' },
+  nav: { plan: 'Plan', freestyle: 'Freestyle', players: 'Players', settings: 'Settings' },
+  training: {
+    effort: 'Effort',
+    cadence: 'Cadence',
+    timeLeft: 'Time left',
+    next: 'Next',
+    rpm: 'rpm',
+    seated: 'Seated',
+    standing: 'Standing',
+    blockOf: 'block {n} of {total}',
+    cadenceCue: 'Cadence {rpm}!',
+  },
+  coach: { attack: 'ATTACK!', standUp: 'Stand up!', sitDown: 'Sit down' },
+  effort: {
+    veryEasy: 'Very easy',
+    easy: 'Easy',
+    steady: 'Steady',
+    endurance: 'Endurance',
+    tempo: 'Tempo',
+    hardTempo: 'Hard tempo',
+    hard: 'Hard',
+    threshold: 'Threshold',
+    veryHard: 'Very hard',
+    max: 'Max',
+  },
+};
+export type Messages = typeof en;
