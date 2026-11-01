@@ -16,6 +16,16 @@ export interface SessionConfig {
   music: boolean;
 }
 
+export interface SpotifySettings {
+  clientId: string;
+  deviceId?: string;
+  /** OAuth tokens; stored locally only and removed from export bundles (see stripSecrets). */
+  accessToken?: string;
+  refreshToken?: string;
+  /** Epoch milliseconds at which `accessToken` expires. */
+  expiresAt?: number;
+}
+
 export interface Settings {
   lang?: Lang;
   effortTable: EffortTable;
@@ -28,7 +38,7 @@ export interface Settings {
   hyperrideQuality: 'high' | 'low';
   activePlanId?: string;
   lastSession?: SessionConfig;
-  spotify?: { clientId: string; deviceId?: string };
+  spotify?: SpotifySettings;
   /** Max 10 entries. */
   recentYoutubeUrls: string[];
 }
@@ -47,6 +57,14 @@ export const sessionConfigSchema: z.ZodType<SessionConfig> = z.object({
   music: z.boolean(),
 }) as unknown as z.ZodType<SessionConfig>; // optional-field inference caveat
 
+export const spotifySettingsSchema: z.ZodType<SpotifySettings> = z.object({
+  clientId: z.string(),
+  deviceId: z.string().optional(),
+  accessToken: z.string().optional(),
+  refreshToken: z.string().optional(),
+  expiresAt: z.number().optional(),
+}) as unknown as z.ZodType<SpotifySettings>; // optional-field inference caveat
+
 export const settingsSchema: z.ZodType<Settings> = z.object({
   lang: z.enum(LANGS).optional(),
   effortTable: effortTableSchema,
@@ -58,7 +76,7 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   hyperrideQuality: z.enum(['high', 'low']),
   activePlanId: z.string().optional(),
   lastSession: sessionConfigSchema.optional(),
-  spotify: z.object({ clientId: z.string(), deviceId: z.string().optional() }).optional(),
+  spotify: spotifySettingsSchema.optional(),
   recentYoutubeUrls: z.array(z.string()).max(10),
 }) as unknown as z.ZodType<Settings>; // optional-field inference caveat
 

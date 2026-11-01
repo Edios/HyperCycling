@@ -49,6 +49,8 @@ export interface TrackRef {
   artist?: string;
   durationSec?: number;
   startAtSec: number;
+  /** Set by the editor when YouTube reports that the video cannot be embedded. */
+  notEmbeddable?: boolean;
 }
 
 export interface MusicCue {
@@ -134,6 +136,7 @@ const trackRefSchema = z.object({
   artist: z.string().optional(),
   durationSec: z.number().min(0).optional(),
   startAtSec: z.number().min(0),
+  notEmbeddable: z.boolean().optional(),
 });
 
 const musicCueSchema = z.object({

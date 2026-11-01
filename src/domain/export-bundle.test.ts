@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { parseExportBundle } from './export-bundle';
+import {
+  exportBundleSchema,
+  parseExportBundle,
+  stripSecrets,
+  type ExportBundle,
+} from './export-bundle';
 import { DEFAULT_SETTINGS } from './settings';
 
 const good = () => ({
@@ -123,5 +128,47 @@ describe('parseExportBundle duplicate ids', () => {
   );
   it('rejects a non ISO exportedAt', () => {
     expect(parseExportBundle({ ...good(), exportedAt: 'yesterday' }).ok).toBe(false);
+  });
+});
+
+describe('stripSecrets', () => {
+  const tokens = {
+    clientId: 'cid',
+    deviceId: 'dev',
+    accessToken: 'access-secret',
+    refreshToken: 'refresh-secret',
+    expiresAt: 123,
+  };
+  const withSpotify = (): ExportBundle =>
+    exportBundleSchema.parse({ ...good(), settings: { ...DEFAULT_SETTINGS, spotify: tokens } });
+
+  it('accepts spotify settings with tokens (backward compatible with clientId only)', () => {
+    expect(withSpotify().settings?.spotify?.accessToken).toBe('access-secret');
+    const minimal = parseExportBundle({
+      ...good(),
+      settings: { ...DEFAULT_SETTINGS, spotify: { clientId: 'cid' } },
+    });
+    expect(minimal.ok).toBe(true);
+  });
+  it('drops tokens from an imported file so a file can never plant credentials', () => {
+    const r = parseExportBundle({ ...good(), settings: { ...DEFAULT_SETTINGS, spotify: tokens } });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.bundle.settings?.spotify).toEqual({ clientId: 'cid', deviceId: 'dev' });
+  });
+  it('removes access token, refresh token and expiry but keeps clientId and deviceId', () => {
+    const stripped = stripSecrets(withSpotify());
+    expect(stripped.settings?.spotify).toEqual({ clientId: 'cid', deviceId: 'dev' });
+    expect(JSON.stringify(stripped)).not.toContain('secret');
+  });
+  it('does not mutate its input', () => {
+    const original = withSpotify();
+    stripSecrets(original);
+    expect(original.settings?.spotify?.refreshToken).toBe('refresh-secret');
+  });
+  it('passes through bundles without settings or without spotify', () => {
+    const none = { ...good(), settings: null } as unknown as ExportBundle;
+    expect(stripSecrets(none)).toBe(none);
+    const noSpotify = { ...good(), settings: DEFAULT_SETTINGS } as unknown as ExportBundle;
+    expect(stripSecrets(noSpotify)).toBe(noSpotify);
   });
 });

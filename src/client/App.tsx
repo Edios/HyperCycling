@@ -1,7 +1,7 @@
 import { createHashRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
 import { EditorScreen } from './editor/EditorScreen';
 import { DevHome } from './screens/DevHome';
-import { PlaceholderPage } from './screens/PlaceholderPage';
+import { SettingsScreen } from './settings/SettingsScreen';
 import { PlayersScreen } from './players/PlayersScreen';
 import { ResumePrompt } from './setup/ResumePrompt';
 import { SetupScreen } from './setup/SetupScreen';
@@ -70,7 +70,7 @@ function routes(): RouteObject[] {
           ),
         },
         { path: '/editor/:workoutId', element: <EditorScreen /> },
-        { path: '/settings', element: <PlaceholderPage titleKey="nav.settings" /> },
+        { path: '/settings', element: <SettingsScreen /> },
         // Developer shortcut (see DEV_ROUTE): rides any built-in workout with demo players.
         ...(DEV_ROUTE ? [{ path: '/dev', element: <DevHome /> }] : []),
         { path: '*', element: planPage },
@@ -80,9 +80,12 @@ function routes(): RouteObject[] {
 }
 
 // A data router (not <HashRouter>) is required for useBlocker, which guards unsaved editor changes.
-// Created once at module level: a router created during render would be duplicated by StrictMode.
-const router = createHashRouter(routes());
+// Created once, on first render: not at import time, because the Spotify login redirect lands
+// without a hash and main.tsx restores the route (history.replaceState) before the first render.
+// A singleton, since a router created during render would be duplicated by StrictMode.
+let router: ReturnType<typeof createHashRouter> | undefined;
 
 export function App() {
+  router ??= createHashRouter(routes());
   return <RouterProvider router={router} />;
 }

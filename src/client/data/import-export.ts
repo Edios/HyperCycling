@@ -1,4 +1,4 @@
-import { parseExportBundle, type ParseExportResult } from '../../domain/export-bundle';
+import { parseExportBundle, stripSecrets, type ParseExportResult } from '../../domain/export-bundle';
 import type { Repositories } from '../../domain/repositories';
 
 export type DownloadFn = (blob: Blob, fileName: string) => void | Promise<void>;
@@ -31,7 +31,7 @@ export function readBlobText(blob: Blob): Promise<string> {
 }
 
 export async function exportToFile(repos: Repositories): Promise<Blob> {
-  const bundle = await repos.exportAll();
+  const bundle = stripSecrets(await repos.exportAll());
   return new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
 }
 

@@ -269,6 +269,88 @@ export const en = {
     resetYes: 'Erase and start over',
     cancel: 'Cancel',
   },
+  music: {
+    nowPlaying: 'Now playing',
+    nowPlayingMuted: 'muted',
+    unknownTrack: 'Track',
+    error: {
+      generic: 'Cannot play "{title}". The workout goes on without it.',
+      noDevice:
+        'Spotify has no active device. Open Spotify on a phone or computer and start any track. The workout goes on without music.',
+      premium:
+        'Spotify needs a Premium account to control playback. The workout goes on without music.',
+      notConnected:
+        'Spotify is not connected. Connect it in Settings. The workout goes on without music.',
+      rateLimited: 'Spotify is busy right now. The workout goes on without music.',
+      network: 'Cannot reach Spotify. The workout goes on without music.',
+      stateMismatch: 'The Spotify login did not match this window. Try connecting again.',
+      authDenied: 'Spotify access was not granted. Try connecting again.',
+    },
+    notEmbeddable:
+      'This video cannot be embedded (embedding is off, or it is private or removed), so it will not play in the app.',
+    notEmbeddableBadge: 'not embeddable',
+    spotifySearch: 'Search Spotify',
+    spotifySearchPlaceholder: 'Song or artist',
+    spotifySearchGo: 'Search',
+    spotifySearching: 'Searching…',
+    spotifyNoResults: 'No tracks found.',
+    spotifyResults: 'Spotify results',
+    spotifyUse: 'Use',
+    spotifyConnectHint: 'Connect Spotify in Settings to search for tracks here.',
+    spotifyOpenSettings: 'Open Settings',
+  },
+  settings: {
+    title: 'Settings',
+    sections: 'Settings sections',
+    music: {
+      title: 'Music',
+      intro:
+        'Spotify plays through the Spotify app on one of your devices. YouTube needs no sign-in.',
+      localhostTitle: 'Spotify does not accept "localhost"',
+      localhostBody:
+        'Open the app at the address 127.0.0.1 instead of localhost, then connect. Connecting is disabled on this address.',
+      localhostLink: 'Open this page on 127.0.0.1',
+      clientId: 'Spotify Client ID',
+      clientIdHint: 'A public identifier from your Spotify app. No client secret is needed.',
+      clientIdDefault: 'Default for this build: {id}',
+      clientIdPlaceholder: 'Paste the Client ID',
+      clientIdMissing: 'Enter the Client ID first.',
+      saveFailed: 'Could not save the setting.',
+      status: 'Status',
+      connected: 'Connected',
+      notConnected: 'Not connected',
+      connect: 'Connect Spotify',
+      disconnect: 'Disconnect',
+      connectFailed: 'Could not start the Spotify login.',
+      device: 'Playback device',
+      deviceAuto: 'Automatic (the active device)',
+      deviceRefresh: 'Refresh devices',
+      deviceLoading: 'Loading devices…',
+      deviceNone: 'No devices found. Open Spotify on a phone or computer and refresh.',
+      deviceActive: 'active',
+      setupTitle: 'How to set up Spotify',
+      setupSteps: {
+        dashboard:
+          'Open the Spotify Developer Dashboard (developer.spotify.com/dashboard) and create an app. Any name works.',
+        redirect:
+          'Under "Redirect URIs" add the addresses below (each exactly as shown, then Save):',
+        api: 'Tick "Web API" as the API you plan to use.',
+        users:
+          'In the "User Management" of the app, add your own Spotify account (the app stays in development mode).',
+        clientId:
+          'Copy the Client ID from the app settings and paste it above. No client secret is needed (PKCE).',
+        connect: 'Press "Connect Spotify" and approve access. You return to this page.',
+      },
+      uriLocal: 'Local app',
+      uriPages: 'GitHub Pages',
+      uriThis: 'This page',
+      copy: 'Copy',
+      copied: 'Copied',
+      copyFailed: 'Copy failed',
+      premiumNote:
+        'Controlling playback needs Spotify Premium and the Spotify app open on a device. Music never pauses the workout.',
+    },
+  },
   placeholder: { body: 'This screen arrives in a later update.', plans: 'Plans' },
   youtube: {
     embedBlocked: 'This video cannot be embedded. Using the Basic background.',

@@ -1,0 +1,64 @@
+/* Lower-left corner, above the timeline strip: readable at 2-3 m, but small and translucent so the HUD stays the focus. */
+.root {
+  position: fixed;
+  left: 2.5vh;
+  bottom: 17vh;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 1.4vh;
+  max-width: 34vw;
+  padding: 1.2vh 2vh;
+  border-radius: 1.6vh;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+  color: var(--fg);
+  pointer-events: none;
+}
+
+.raised {
+  bottom: 29vh;
+}
+
+.mute {
+  flex: none;
+  width: 3.2vh;
+  height: 3.2vh;
+  color: var(--z7);
+}
+
+.icon {
+  flex: none;
+  font-size: 2.6vh;
+  color: var(--z5);
+}
+
+.root[data-provider='youtube'] .icon {
+  color: var(--z9);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 3.4vh;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  font-size: 2.6vh;
+  color: var(--fg);
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

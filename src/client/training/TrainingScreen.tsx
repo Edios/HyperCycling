@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
 import type { FrameInput } from '../hyperride/world';
-import { Toast } from '../ui/Toast';
+import { useMusicDirector } from '../music/useMusicDirector';
+import { Toast, ToastStack } from '../ui/Toast';
+import { getSettingsSnapshot } from '../data/useSettings';
+import { isSpotifyUsable } from '../music/spotify/shared';
+import { spotifyErrorKey } from '../music/spotify/messages';
+import { isSpotifyError } from '../music/spotify/errors';
 import { parseYoutubeUrl } from '../youtube/parseYoutubeUrl';
 import { YouTubeBackground, type YoutubeFailure } from '../youtube/YouTubeBackground';
 import { Cockpit } from './layouts/overlay/Cockpit';
@@ -16,10 +21,12 @@ import {
 } from './overlay-layouts';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { cueForTransition, type CoachCue } from '../../domain/coach';
+import type { TrackRef } from '../../domain/workout';
 import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
 import { ControlsBar } from './ControlsBar';
 import { EndDialog } from './EndDialog';
+import { NowPlaying } from './NowPlaying';
 import { CoachOverlay } from './hud/CoachOverlay';
 import { Countdown } from './hud/Countdown';
 import { EdgeFlash } from './hud/EdgeFlash';
@@ -36,6 +43,8 @@ import { buildTrainingView } from './view';
 import styles from './TrainingScreen.module.css';
 
 const CONTROLS_HIDE_MS = 3000;
+/** Music warnings carry instructions (open Spotify...), so they stay longer than other toasts. */
+const MUSIC_WARNING_MS = 8000;
 
 /** Route /train. Redirects home when no session is loaded. */
 export function TrainingScreen() {
@@ -83,6 +92,30 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const [showPlayers, setShowPlayers] = useState(
     wantsOverlay ? hasPlayers : runtime.config.hud === 'players' && hasPlayers,
   );
+  // A track that cannot be played only shows a notice; the workout carries on.
+  const [musicWarning, setMusicWarning] = useState<{ id: number; message: string } | null>(null);
+  const musicWarningCount = useRef(0);
+  const onMusicWarning = useCallback(
+    (track: TrackRef, error?: unknown) => {
+      // A Spotify track with no provider at all means the user never connected (or cleared) it.
+      const notConnected =
+        track.provider === 'spotify' &&
+        !isSpotifyError(error) &&
+        !isSpotifyUsable(getSettingsSnapshot().spotify);
+      const key = notConnected ? 'music.error.notConnected' : spotifyErrorKey(error);
+      setMusicWarning({
+        id: ++musicWarningCount.current,
+        message: t(key, { title: track.title || t('music.unknownTrack') }),
+      });
+    },
+    [t],
+  );
+  const [nowPlaying, setNowPlaying] = useState<TrackRef | null>(null);
+  const musicAudible = settings.sounds && !muted;
+  useMusicDirector(runtime, onMusicWarning, {
+    volume: musicAudible ? 1 : 0,
+    onPlaying: setNowPlaying,
+  });
   const rootRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef(settings);
   useEffect(() => {
@@ -345,16 +378,32 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           </div>
         </>
       )}
-      {wantsHyperride && hyperrideFailed && !unavailableDismissed && (
-        <Toast message={t('hyperride.unavailable')} onClose={() => setUnavailableDismissed(true)} />
-      )}
-      {wantsYoutube && youtube === null && !youtubeToastDismissed && (
-        <Toast
-          message={t(
-            youtubeFailure === 'embed-blocked' ? 'youtube.embedBlocked' : 'youtube.unavailable',
-          )}
-          onClose={() => setYoutubeToastDismissed(true)}
-        />
+      <ToastStack>
+        {wantsHyperride && hyperrideFailed && !unavailableDismissed && (
+          <Toast
+            message={t('hyperride.unavailable')}
+            onClose={() => setUnavailableDismissed(true)}
+          />
+        )}
+        {wantsYoutube && youtube === null && !youtubeToastDismissed && (
+          <Toast
+            message={t(
+              youtubeFailure === 'embed-blocked' ? 'youtube.embedBlocked' : 'youtube.unavailable',
+            )}
+            onClose={() => setYoutubeToastDismissed(true)}
+          />
+        )}
+        {musicWarning && (
+          <Toast
+            key={musicWarning.id}
+            message={musicWarning.message}
+            durationMs={MUSIC_WARNING_MS}
+            onClose={() => setMusicWarning(null)}
+          />
+        )}
+      </ToastStack>
+      {runtime.config.music && nowPlaying && (
+        <NowPlaying track={nowPlaying} muted={!musicAudible} raised={overlay} />
       )}
       <EdgeFlash trigger={flash} color={view.color} reducedMotion={reducedMotion} />
       <div className={styles.center}>
