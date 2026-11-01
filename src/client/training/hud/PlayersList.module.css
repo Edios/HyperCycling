@@ -65,20 +65,52 @@
 }
 
 @media (max-width: 760px) and (orientation: portrait) {
+  /* The stack may squeeze the panel, but never below the header and two rows; the list scrolls. */
   .root {
-    flex: none;
-    overflow: visible;
+    flex: 0 1 auto;
+    min-height: 34vw;
+    overflow: hidden;
   }
 
   .list {
-    max-height: 31vh;
+    flex: 1 1 auto;
+    min-height: 19vw;
+    max-height: 30vh;
+  }
+
+  .row {
+    padding: 1vw 0;
+  }
+
+  .who {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 2.4vw;
   }
 
   .name {
     font-size: 5.2vw;
   }
 
+  .ftp {
+    font-size: 3.7vw;
+  }
+
   .watts {
     font-size: 8vw;
+  }
+}
+
+/* Short landscape phone: compact rows, the list scrolls inside the panel. */
+@media (orientation: landscape) and (max-height: 450px) {
+  .row {
+    padding: calc(0.4 * var(--u)) 0;
+  }
+
+  .who {
+    flex-direction: row;
+    align-items: baseline;
+    gap: calc(1.4 * var(--u));
   }
 }
