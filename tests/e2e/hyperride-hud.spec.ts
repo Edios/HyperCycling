@@ -132,3 +132,62 @@ test('Hyperride: canvas renders under the HUD, H cycles layouts, G toggles playe
   await expect(page.getByTestId('players-list')).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('Phone: riders panel lists every rider with FTP and target, unclipped between Time and Cadence', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+  test.setTimeout(120_000);
+  await requireWebgl(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('./#/setup/demo-mixed');
+  await page.getByRole('button', { name: /^World/ }).click();
+  for (const [name, ftp] of [
+    ['Mirek', '250'],
+    ['Ania', '190'],
+    ['Bartek', '300'],
+  ] as const) {
+    await page.getByRole('button', { name: '+ Add' }).click();
+    const form = page.getByTestId('add-player-form');
+    await form.getByLabel('Name').fill(name);
+    await form.getByLabel('FTP (W)').fill(ftp);
+    await form.getByRole('button', { name: 'Add rider' }).click();
+  }
+  const toggle = page.getByRole('switch', { name: 'Show riders' });
+  await expect(toggle).toBeEnabled();
+  if (!(await toggle.isChecked())) await toggle.click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await expect(page.getByTestId('training-screen')).toBeVisible();
+
+  const list = page.getByTestId('players-list');
+  await expect(list).toBeVisible();
+  for (const name of ['Mirek', 'Ania', 'Bartek']) await expect(list).toContainText(name);
+  await expect(list).toContainText('FTP 250 W');
+  await expect(list).toContainText('FTP 190 W');
+  await expect(list).toContainText('FTP 300 W');
+  await expect(list).toContainText(/\d+ W/);
+
+  const box = (await list.boundingBox())!;
+  expect(box.height).toBeGreaterThan(80);
+  const fits = await list.evaluate((el) => {
+    const ul = el.querySelector('ul')!;
+    return {
+      panel: el.scrollHeight <= el.clientHeight + 1,
+      listOk: ul.scrollHeight <= ul.clientHeight + 1 || getComputedStyle(ul).overflowY === 'auto',
+    };
+  });
+  expect(fits.panel).toBe(true);
+  expect(fits.listOk).toBe(true);
+  for (const name of ['Mirek', 'Ania', 'Bartek']) {
+    const r = (await list.getByText(name, { exact: true }).boundingBox())!;
+    expect(r.y).toBeGreaterThanOrEqual(box.y - 1);
+    expect(r.y + r.height).toBeLessThanOrEqual(box.y + box.height + 1);
+  }
+  for (const g of ['C', 'M']) {
+    const other = page.locator(`[data-testid^="layout-"] > [data-g="${g}"]`).first();
+    if ((await other.count()) === 0) continue;
+    const o = (await other.boundingBox())!;
+    const overlap = !(o.y + o.height <= box.y + 0.5 || o.y >= box.y + box.height - 0.5);
+    expect(overlap, `riders overlap panel ${g}`).toBe(false);
+  }
+});

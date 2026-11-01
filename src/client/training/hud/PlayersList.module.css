@@ -15,7 +15,21 @@
   margin: 0;
   padding: 0;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ftp {
+  font-family: var(--font-body);
+  font-size: calc(var(--rname, clamp(14px, calc(3.3 * var(--u)), 44px)) * 0.72);
+  opacity: 0.7;
+  white-space: nowrap;
 }
 
 .row {
@@ -51,6 +65,15 @@
 }
 
 @media (max-width: 760px) and (orientation: portrait) {
+  .root {
+    flex: none;
+    overflow: visible;
+  }
+
+  .list {
+    max-height: 31vh;
+  }
+
   .name {
     font-size: 5.2vw;
   }

@@ -35,7 +35,23 @@ export function PlayersList({ players, ftpPct, effort, showsWatts, className }: 
       <ul className={styles.list}>
         {players.map((p) => (
           <li key={p.id} className={`${styles.row} ${p.isMe ? styles.me : ''}`}>
-            <span className={styles.name}>{p.name}</span>
+            <span className={styles.who}>
+              <span className={styles.name}>{p.name}</span>
+              {showsWatts &&
+                (Number.isFinite(p.ftp) && p.ftp > 0 ? (
+                  <span className={styles.ftp} data-testid="player-ftp">
+                    {t('training.playerFtp', { w: Math.round(p.ftp) })}
+                  </span>
+                ) : (
+                  <span
+                    className={styles.ftp}
+                    data-testid="player-ftp"
+                    title={t('training.playerFtpHint')}
+                  >
+                    {t('training.playerFtpMissing')}
+                  </span>
+                ))}
+            </span>
             {showsWatts && (
               <span className={`${hud.big} ${styles.watts}`}>
                 {safeWatts(p.ftp, ftpPct, t('training.watts'))}

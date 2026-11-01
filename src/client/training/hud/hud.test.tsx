@@ -252,6 +252,7 @@ describe('PlayersList', () => {
     const root = screen.getByTestId('players-list');
     expect(root).toHaveTextContent('Target for block · ~92% FTP');
     expect(root).toHaveTextContent('Ann');
+    expect(root).toHaveTextContent('FTP 200 W');
     expect(root).toHaveTextContent('184 W');
     expect(root).toHaveTextContent('235 W');
   });
@@ -263,7 +264,8 @@ describe('PlayersList', () => {
     render(<PlayersList players={bad} ftpPct={92} effort={6} showsWatts />);
     const root = screen.getByTestId('players-list');
     expect(root).toHaveTextContent('Zero');
-    expect(root.textContent?.match(/—/g)).toHaveLength(2);
+    expect(root.textContent?.match(/—/g)).toHaveLength(4);
+    expect(screen.getAllByText('FTP —')).toHaveLength(2);
   });
   it('shows names only when the bike has no watts', () => {
     render(<PlayersList players={players} ftpPct={92} effort={6} showsWatts={false} />);

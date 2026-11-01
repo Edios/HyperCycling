@@ -309,7 +309,9 @@
 
   .root > [data-g='R'] {
     order: 3;
-    max-height: calc(22 * var(--u));
+    flex: none;
+    max-height: none;
+    min-height: min-content;
   }
 
   .free {
