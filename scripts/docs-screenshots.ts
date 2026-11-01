@@ -13,7 +13,7 @@ import { build, preview } from 'vite';
 
 const OUT_DIR = path.resolve('docs/images');
 const BUILD_DIR = path.resolve('dist/docs-shots');
-const BASE = '/Spinning-Tutor/';
+const BASE = '/HyperCycling/';
 const PORT = 5177;
 const ORIGIN = `http://127.0.0.1:${PORT}${BASE}`;
 const FIXED_TIME = new Date('2026-03-02T18:00:00');
