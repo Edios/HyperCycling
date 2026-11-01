@@ -28,14 +28,14 @@ test('solo: countdown, running, block change, pause, skip, finish, summary', asy
   await expect(page.getByTestId('countdown')).toHaveText('2');
   await page.clock.runFor(2100);
   await expect(status(page)).toHaveAttribute('data-status', 'running');
-  await expect(page.getByTestId('block-timer')).toContainText('block 1 of');
+  await expect(page.getByTestId('timeline')).toContainText('block 1 of');
 
   // Skip the 2-minute warm-up ramp, then let the 30 s push block end on its own.
   await page.keyboard.press('ArrowRight');
-  await expect(page.getByTestId('block-timer')).toContainText('block 2 of');
+  await expect(page.getByTestId('timeline')).toContainText('block 2 of');
   await expect(page.getByTestId('effort-value')).toContainText('7');
   await page.clock.runFor(30_500);
-  await expect(page.getByTestId('block-timer')).toContainText('block 3 of');
+  await expect(page.getByTestId('timeline')).toContainText('block 3 of');
   await expect(page.getByTestId('effort-value')).toContainText('3');
 
   // Space pauses: time stays frozen while the clock runs.
@@ -49,7 +49,7 @@ test('solo: countdown, running, block change, pause, skip, finish, summary', asy
 
   // ArrowRight skips to the next block.
   await page.keyboard.press('ArrowRight');
-  await expect(page.getByTestId('block-timer')).toContainText('block 4 of');
+  await expect(page.getByTestId('timeline')).toContainText('block 4 of');
 
   // A long jump ends the workout and lands on the summary placeholder.
   await page.clock.fastForward(3_600_000);
@@ -126,10 +126,9 @@ for (const size of [
 
         await expect(page.getByTestId('block-timer-value')).toHaveText(text);
         await page.evaluate(() => document.fonts.ready);
-        // Each big number (the text, not its tile-wide box) stays inside its tile with padding to spare.
+        // Each big number (the text, not its box) stays inside its panel with padding to spare.
         for (const [valueId, tileId] of [
           ['block-timer-value', 'block-timer'],
-          ['effort-value-number', 'effort-value'],
           ['rpm-value-number', 'rpm-value'],
         ] as const) {
           // Polled: the first measurement can land before the web font and the fitted size settle.
@@ -153,32 +152,26 @@ for (const size of [
             )
             .toBe(true);
         }
+        // The effort number sits inside its ring.
         await expect(page.getByTestId('effort-value-number')).toContainText('10');
+        const ring = (await page
+          .getByTestId('effort-value')
+          .getByTestId('effort-ring')
+          .boundingBox())!;
+        const digits = (await page.getByTestId('effort-value-number').boundingBox())!;
+        expect(inside(digits, ring)).toBe(true);
 
-        // Shared bottom edge: the big numbers in the row end on the same bottom edge.
-        const bottoms = await Promise.all(
-          ['effort-value-number', 'rpm-value-number', 'block-timer-value'].map(async (id) => {
-            // Layout box (offsetParent chain), unaffected by the flip/pulse transforms.
-            return page.getByTestId(id).evaluate((el) => {
-              let y = 0;
-              for (
-                let n: HTMLElement | null = el as HTMLElement;
-                n;
-                n = n.offsetParent as HTMLElement | null
-              )
-                y += n.offsetTop;
-              return y + (el as HTMLElement).offsetHeight;
-            });
-          }),
-        );
-        expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThan(2);
+        // Groups: Effort + Next is the right-hand tile, Time is to its left (Measures between).
+        const effort = (await page.getByTestId('effort-group').boundingBox())!;
+        const timer = (await page.getByTestId('block-timer').boundingBox())!;
+        expect(effort.x).toBeGreaterThan(timer.x + timer.width - 0.5);
+        const nextBox = (await page.getByTestId('next-block').boundingBox())!;
+        expect(inside(nextBox, effort)).toBe(true);
 
-        // Layout: NEXT card centred, controls bar right below it, also centred.
-        const next = (await page.getByTestId('next-block').boundingBox())!;
+        // Layout: the controls bar is centred and sits below the tiles.
         const controls = (await page.getByTestId('controls').boundingBox())!;
-        expect(controls.y).toBeGreaterThanOrEqual(next.y + next.height - 0.5);
-        const mid = (b: typeof next) => b.x + b.width / 2;
-        expect(Math.abs(mid(next) - mid(controls))).toBeLessThan(2);
+        expect(controls.y).toBeGreaterThanOrEqual(effort.y + effort.height - 0.5);
+        expect(Math.abs(controls.x + controls.width / 2 - size.width / 2)).toBeLessThan(2);
       });
     }
   }
@@ -213,7 +206,7 @@ test('pause, switch background in quick settings, resume: the time carries on', 
   await expect(status(page)).toHaveAttribute('data-status', 'running');
   await page.clock.runFor(3000);
   await expect(page.getByTestId('block-timer')).not.toHaveText(frozen);
-  await expect(page.getByTestId('block-timer')).toContainText('block 1 of');
+  await expect(page.getByTestId('timeline')).toContainText('block 1 of');
 });
 
 test('Menu: leave without saving goes home and forgets the ride', async ({ page }) => {

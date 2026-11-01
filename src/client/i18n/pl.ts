@@ -23,7 +23,7 @@ export const pl: Messages = {
     blockOf: 'blok {n} z {total}',
     cadenceCue: 'Kadencja {rpm}!',
     ftpApprox: '~{pct}% FTP',
-    target: 'cel',
+    targetFromPlan: 'cel z planu',
     finish: 'Meta',
     elapsedOf: '{elapsed} / {total}',
     remaining: 'pozostało {time}',

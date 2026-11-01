@@ -1,24 +1,52 @@
+/* Group P: the floor. Full width, bottom of the screen, never in the picture. */
 .root {
-  padding: 2.4vh 4vh 1.4vh;
   font-family: var(--font-body);
 }
 
-.compact {
-  padding: 0;
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: calc(2 * var(--u));
+  margin-bottom: calc(1.2 * var(--u));
+  font-size: var(--cap, clamp(12px, calc(2.2 * var(--u)), 32px));
+  line-height: 1.2;
+  color: var(--sub);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.compact .track {
-  height: 8vh;
+.title {
+  font-weight: 600;
+  color: #f4f6fa;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
-.compact .meta {
-  font-size: 1.8vh;
-  opacity: 0.7;
+[data-theme='light'] .title {
+  color: var(--fg);
+}
+
+.facts {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+
+/* Grey rectangular dash as a separator. */
+.sep {
+  display: inline-block;
+  width: 10px;
+  height: 4px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--sub) 50%, transparent);
+  margin: 0 calc(1.6 * var(--u));
 }
 
 .track {
   position: relative;
-  height: 14vh;
+  height: var(--tl, calc(8.3 * var(--u)));
 }
 
 .bars {
@@ -32,7 +60,6 @@
   position: relative;
   flex-basis: 0;
   min-width: 2px;
-  filter: drop-shadow(0 -1px 6px color-mix(in srgb, var(--c) 45%, transparent));
 }
 
 .fill,
@@ -52,62 +79,54 @@
 
 .past {
   opacity: 0.35;
-  filter: none;
 }
 
-.current {
-  filter: drop-shadow(0 -1px 12px var(--c));
+/* Over a background the bars are glass: zone colour at 22% (past 34%, now 50%) with a 2px edge. */
+:global([data-material='glass']) .fill {
+  background: color-mix(in srgb, var(--c) 22%, transparent);
 }
 
+:global([data-material='glass']) .past {
+  opacity: 1;
+}
+
+:global([data-material='glass']) .past .fill {
+  background: color-mix(in srgb, var(--c) 34%, transparent);
+}
+
+:global([data-material='glass']) .current .fill {
+  background: color-mix(in srgb, var(--c) 50%, transparent);
+}
+
+:global([data-material='glass']) .bar {
+  text-shadow: none;
+}
+
+/* Playhead. */
 .cursor {
   position: absolute;
-  top: -1vh;
-  bottom: -1vh;
-  width: 2px;
-  margin-left: -1px;
-  background: linear-gradient(to top, var(--fg), color-mix(in srgb, var(--fg) 20%, transparent));
+  top: calc(-0.8 * var(--u));
+  bottom: calc(-0.6 * var(--u));
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 1px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
   pointer-events: none;
 }
 
-.meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.9vh;
-  color: var(--mut);
-  margin-top: 1vh;
-  font-variant-numeric: tabular-nums;
+[data-theme='light'] .cursor {
+  background: var(--fg);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
 }
 
-/* Monochrome tone (Hyperride overlays): quiet bars, only the current block carries its colour. */
-.mono_future,
-.mono_next,
-.mono_past {
-  filter: none;
-}
+@media (max-width: 760px) and (orientation: portrait) {
+  .meta {
+    font-size: 3.3vw;
+    margin-bottom: 1.4vw;
+  }
 
-.mono_future {
-  --c: rgba(255, 255, 255, 0.25);
-}
-
-.mono_future .fill,
-.mono_next .fill,
-.mono_past .fill {
-  display: none;
-}
-
-.mono_next {
-  --c: color-mix(in srgb, var(--z) 35%, transparent);
-}
-
-.mono_past {
-  --c: rgba(255, 255, 255, 0.1);
-}
-
-.mono_current {
-  --c: var(--z);
-  filter: drop-shadow(0 -1px 12px var(--z));
-}
-
-.mono_current .fill {
-  background: linear-gradient(to top, transparent, color-mix(in srgb, var(--z) 14%, transparent));
+  .track {
+    height: var(--tl, 11vw);
+  }
 }

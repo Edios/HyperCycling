@@ -10,6 +10,12 @@
   height: 100%;
 }
 
+/* Segments scale around their own centre when the effort changes (see EffortRing motion). */
+.ring path {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .num {
   position: absolute;
   inset: 0;

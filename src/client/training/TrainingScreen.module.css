@@ -2,8 +2,14 @@
   position: fixed;
   inset: 0;
   overflow: hidden;
-  background: var(--bg);
+  /* Plain background: a 7% tint of the effort colour (a background behind covers it). */
+  background: color-mix(in srgb, var(--zone) 7%, var(--bg));
   color: var(--fg);
+  /*
+   * HUD unit: 1vh on a 16:9 screen or wider, and scaled by the width on narrower ones (4:3), so
+   * panels sized in this unit never outgrow the screen. Phone portrait sizes by width instead.
+   */
+  --u: min(1vh, 0.5625vw);
   font-family: var(--font-body);
 }
 
@@ -12,13 +18,13 @@
   cursor: none;
 }
 
+/* The 8px zone bar on top of every Basic screen. */
 .topbar {
   position: absolute;
   inset: 0 0 auto 0;
-  height: 0.75vh;
+  height: 8px;
   background: var(--zone);
-  box-shadow: 0 0 3.7vh var(--zone);
-  transition: background 0.4s;
+  z-index: 1;
 }
 
 .layout {
@@ -111,6 +117,10 @@
 }
 
 @media (max-width: 760px) and (orientation: portrait) {
+  .root {
+    --u: 1vh;
+  }
+
   .promptSlot {
     top: 56vh;
     width: 92vw;
@@ -138,9 +148,9 @@
 }
 
 /*
- * Overlay-style layouts (Hyperride, YouTube, and the corner layouts on Basic): the start prompt
- * sits in the free centre band, between the HUD tiles above and the controls bar (bottom 20vh,
- * i.e. from 72vh down). It is also stacked above the controls so a clash can never hide Start.
+ * Start prompt, every layout: it sits in the free centre band, between the HUD panels above and
+ * the controls bar (bottom band, from about 73vh down). On Classic tiles it covers the middle of
+ * the tiles until the ride starts. Stacked above the controls so a clash can never hide Start.
  */
 .promptOverlay {
   top: 40vh;
@@ -164,73 +174,32 @@
   }
 }
 
-/* Corner layouts on the plain background: a quiet glow of the effort colour, no tunnel. */
+/* Corner layouts on the plain background: the 7% tint of the root plus the 8px bar on top. */
 .zoneBackdrop {
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    ellipse at 50% 45%,
-    color-mix(in srgb, var(--zone) 30%, #06080c) 0%,
-    #06080c 75%
-  );
-  transition: background 0.4s;
 }
 
-/* Focus: the HUD layer comes and goes; with reduced motion it switches instantly. */
+.zoneBackdrop::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 8px;
+  background: var(--zone);
+}
+
+/*
+ * Focus: the HUD layer comes and goes. The fade durations are set inline from hud/motion.ts
+ * (180 ms in, 700 ms out, 0 with reduced motion or Effects off); only opacity moves.
+ */
 .focusLayer {
-  transition:
-    opacity 0.45s ease,
-    visibility 0s linear 0s;
+  transition-property: opacity, visibility;
+  transition-timing-function: ease-out, linear;
 }
 
 .focusHidden {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition:
-    opacity 0.45s ease,
-    visibility 0s linear 0.45s;
-}
-
-.instant,
-.instant.focusHidden {
-  transition: none;
-}
-
-/*
- * Basic tiles (Classic): the centre is taken by tiles and the controls bar (which ends at about
- * 72vh without riders), so the prompt is a slim row below them, over the timeline, never over
- * the controls.
- */
-.promptClassic {
-  top: 74vh;
-  z-index: 3;
-}
-
-.promptClassic .prompt {
-  flex-direction: row;
-  gap: 3vh;
-  padding: 1.4vh 3vh;
-}
-
-.promptClassic .startButton {
-  padding: 0.9vh 4vh;
-  font-size: 4.6vh;
-}
-
-@media (max-width: 760px) and (orientation: portrait) {
-  .promptClassic {
-    top: 79vh;
-  }
-
-  .promptClassic .prompt {
-    flex-direction: column;
-    gap: 0.8vh;
-    padding: 1.2vh 5vw;
-  }
-
-  .promptClassic .startButton {
-    padding: 0.7vh 9vw;
-    font-size: 8vw;
-  }
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1), linear;
 }

@@ -21,7 +21,7 @@ export const en = {
     blockOf: 'block {n} of {total}',
     cadenceCue: 'Cadence {rpm}!',
     ftpApprox: '~{pct}% FTP',
-    target: 'target',
+    targetFromPlan: 'target from plan',
     finish: 'Finish',
     elapsedOf: '{elapsed} / {total}',
     remaining: 'remaining {time}',

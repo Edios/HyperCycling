@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DashLine, EffortRing, LogoMark, Wordmark, ZONE_COLORS, ringSegments } from '.';
 
 describe('ringSegments', () => {
@@ -108,5 +108,52 @@ describe('EffortRing', () => {
   it('sizes the box', () => {
     render(<EffortRing effort={5} size={120} />);
     expect(screen.getByTestId('effort-ring')).toHaveStyle({ width: '120px', height: '120px' });
+  });
+  it('takes a CSS length as the size and a number colour', () => {
+    render(<EffortRing effort={5} size="clamp(100px, 20vh, 300px)" numColor="var(--zone)" />);
+    expect(screen.getByTestId('effort-ring')).toHaveStyle({ width: 'clamp(100px, 20vh, 300px)' });
+    expect(screen.getByText('05')).toHaveStyle({ color: 'var(--zone)' });
+  });
+  it('puts the number test id on the number', () => {
+    render(<EffortRing effort={5} numberTestId="n" />);
+    expect(screen.getByTestId('n')).toHaveTextContent('05');
+  });
+
+  describe('motion', () => {
+    const animate = vi.fn();
+    afterEach(() => {
+      animate.mockReset();
+      // @ts-expect-error cleaning the test stub off the prototype
+      delete Element.prototype.animate;
+    });
+    function stub(): void {
+      Element.prototype.animate = animate;
+    }
+
+    it('fills the new segments one after the other, low to high, and rolls the number', () => {
+      stub();
+      const { rerender } = render(<EffortRing effort={7} motion />);
+      expect(animate).not.toHaveBeenCalled(); // first render never animates
+      rerender(<EffortRing effort={9} motion />);
+      const delays = animate.mock.calls.map((c) => (c[1] as { delay?: number }).delay);
+      // segments 8 and 9 (35 ms apart), then the number
+      expect(delays.slice(0, 2)).toEqual([0, 35]);
+      expect(animate).toHaveBeenCalledTimes(3);
+    });
+
+    it('empties from the highest segment when the effort drops', () => {
+      stub();
+      const { rerender, container } = render(<EffortRing effort={9} motion />);
+      rerender(<EffortRing effort={7} motion />);
+      expect(animate).toHaveBeenCalledTimes(3);
+      expect(container.querySelectorAll('path')).toHaveLength(10);
+    });
+
+    it('does nothing without motion', () => {
+      stub();
+      const { rerender } = render(<EffortRing effort={3} />);
+      rerender(<EffortRing effort={8} />);
+      expect(animate).not.toHaveBeenCalled();
+    });
   });
 });

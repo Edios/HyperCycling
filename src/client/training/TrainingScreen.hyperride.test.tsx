@@ -182,6 +182,20 @@ describe('overlay layouts', () => {
     expect(screen.getByTestId('layout-immersive')).toBeInTheDocument();
   });
 
+  it('uses the glass material over a background', async () => {
+    load('immersive');
+    await renderScreen();
+    expect(screen.getByTestId('training-screen')).toHaveAttribute('data-material', 'glass');
+    expect(screen.getByTestId('layout-immersive')).toHaveAttribute('data-material', 'glass');
+  });
+
+  it('Focus over a background keeps a glass badge for its rest state', async () => {
+    load('focus');
+    await renderScreen();
+    expect(screen.getByTestId('focus-badge')).toHaveAttribute('data-active', 'false');
+    expect(screen.queryByTestId('focus-rest')).toBeNull();
+  });
+
   it('Focus keeps its HUD visible before the ride starts', async () => {
     load('focus');
     await renderScreen();

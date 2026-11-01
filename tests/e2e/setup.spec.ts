@@ -94,8 +94,8 @@ test('Ride opens setup; Start rides it; reload mid-session offers Resume at the 
   await page.clock.runFor(3200);
   await expect(training).toHaveAttribute('data-status', 'running');
   await page.keyboard.press('ArrowRight');
-  await expect(page.getByTestId('block-timer')).toContainText('block 2 of');
-  const timer = (await page.getByTestId('block-timer').textContent()) ?? '';
+  await expect(page.getByTestId('timeline')).toContainText('block 2 of');
+  const timer = (await page.getByTestId('timeline').textContent()) ?? '';
   await page.keyboard.press('Space');
   await expect(training).toHaveAttribute('data-status', 'paused');
   await expect.poll(() => hasActiveSession(page, info)).toBe(true);
@@ -109,7 +109,7 @@ test('Ride opens setup; Start rides it; reload mid-session offers Resume at the 
 
   await expect(training).toBeVisible();
   await expect(training).toHaveAttribute('data-status', 'paused');
-  await expect(page.getByTestId('block-timer')).toContainText('block 2 of');
+  await expect(page.getByTestId('timeline')).toContainText('block 2 of');
   expect(timer).toContain('block 2 of');
 
   // Ending the workout forgets the stored session, so later tests start clean.

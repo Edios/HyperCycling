@@ -1,18 +1,22 @@
+/* Block change: an inset glow in the new zone colour, 600 ms, opacity only (round 11). */
 .root {
   position: fixed;
   inset: 0;
   pointer-events: none;
   opacity: 0;
-  background: radial-gradient(ellipse at center, transparent 30%, var(--c) 140%);
+  box-shadow: inset 0 0 14vh 2vh var(--c);
 }
 
 .go {
-  animation: flash 0.9s ease-out;
+  animation: flash 0.6s ease-out;
 }
 
 @keyframes flash {
   0% {
-    opacity: 0.85;
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.6;
   }
   100% {
     opacity: 0;

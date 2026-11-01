@@ -1,0 +1,49 @@
+.measures {
+  display: flex;
+  flex-direction: column;
+  gap: calc(1.4 * var(--u));
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: calc(0.8 * var(--u));
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: calc(0.3 * var(--u));
+}
+
+.vv {
+  display: flex;
+  align-items: baseline;
+}
+
+.value {
+  font-size: var(--mval, calc(7.5 * var(--u)));
+}
+
+/* Column section: label (and its note) left, value right. */
+.line .row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(1.4 * var(--u));
+}
+
+.fit {
+  container-type: inline-size;
+}
+
+.fit .value {
+  font-size: min(var(--mval, calc(7.5 * var(--u))), calc(var(--fit, 1000) * 1cqw));
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .value {
+    font-size: var(--mval, 8.7vw);
+  }
+}
