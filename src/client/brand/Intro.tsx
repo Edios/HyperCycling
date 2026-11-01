@@ -1,177 +1,103 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
-import { introSeen, markIntroSeen, shouldShowIntro } from './intro-policy';
-import { ZONE_COLORS } from './palette';
+import { logoSegments } from './geometry';
+import { INTRO_TIMING, MARK_SIZE, introLayout, introState } from './intro-timeline';
+import { introMode, type IntroMode } from './intro-policy';
 import { NAME_BOLD, NAME_LIGHT } from './Wordmark';
 import styles from './Intro.module.css';
 
-/** Animation length in seconds (the whole intro, fade included, stays under 3 s). */
-const T = 2.6;
-const FADE_MS = 280;
-const DIM = '#28313d';
-const EFFORT = 7;
-const HOLD = 0.3;
-const STAG = 0.065;
-const DUR = 0.75;
-const COUNT0 = 1.2;
-const COUNT1 = 1.9;
-const WM0 = 1.65;
-const WM1 = 2.3;
+/** Reduced motion: the finished logo for a moment, then the fade. */
+const STATIC_HOLD_MS = 200;
+const STATIC_FADE_MS = 400;
 
-const clamp = (x: number, a = 0, b = 1): number => Math.min(b, Math.max(a, x));
-const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
-const outCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
-const outBack = (t: number, s = 1.5): number => {
-  const u = clamp(t) - 1;
-  return 1 + (s + 1) * u * u * u + s * u * u;
-};
-const hex = (h: string): number[] => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-const mix = (a: string, b: string, t: number): string => {
-  const A = hex(a);
-  const B = hex(b);
-  return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i] ?? v, t))).join(',')})`;
-};
-
-function atStartPage(): boolean {
-  return location.hash === '' || location.hash === '#' || location.hash === '#/';
-}
-
-function canPlay(): boolean {
-  return (
-    shouldShowIntro({
-      e2e: import.meta.env.VITE_E2E === '1' || import.meta.env.VITE_E2E === 'true',
-      webdriver: typeof navigator !== 'undefined' && navigator.webdriver === true,
-      reducedMotion:
-        typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches,
-      effectsOff: false,
-      atStart: atStartPage(),
-      alreadySeen: introSeen(),
-    }) && typeof requestAnimationFrame === 'function'
-  );
+function envMode(effectsOff: boolean): IntroMode {
+  return introMode({
+    e2e: import.meta.env.VITE_E2E === '1' || import.meta.env.VITE_E2E === 'true',
+    webdriver: typeof navigator !== 'undefined' && navigator.webdriver === true,
+    reducedMotion:
+      typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches,
+    effectsOff,
+  });
 }
 
 /**
- * Brand intro: ten dashes lift into the effort arc, the effort counts up and the name slides in.
- * Plays once per session, on the start page, and is skipped by a click or Esc. Skipped entirely
- * for e2e builds, automated browsers, reduced motion and "Effects: off" (intensity 0).
+ * Brand intro, played on every load of the app shell (the app is rendered underneath, so it is
+ * interactive at once): ten rectangular dashes on a dotted line lift into the logo's 270 degree
+ * ring, then the name slides in and the finished logo is held. No digit. Any click, tap or key
+ * skips it. Not played for e2e builds, automated browsers or "Effects: off"; reduced motion gets
+ * a still logo for 0.6 s.
  */
 export function Intro() {
   const t = useT();
   const { settings, loaded } = useSettings();
-  // Whether this load may play the intro at all is fixed at mount; the effects setting is only
-  // known once the settings have loaded.
-  const [playable] = useState(canPlay);
   const [phase, setPhase] = useState<'show' | 'fade' | 'done'>('show');
   const ticks = useRef<(SVGPathElement | null)[]>([]);
-  const num = useRef<SVGTextElement>(null);
+  const mark = useRef<SVGGElement>(null);
   const w1 = useRef<SVGTextElement>(null);
   const w2 = useRef<SVGTextElement>(null);
-  const active =
-    playable && loaded && settings.effectsIntensity > 0 && atStartPage() && phase !== 'done';
-
-  useEffect(() => {
-    if (active) markIntroSeen();
-  }, [active]);
+  // The settings are only known once loaded; until then nothing is shown.
+  const mode: IntroMode = loaded ? envMode(settings.effectsIntensity <= 0) : 'none';
+  const active = mode !== 'none' && phase !== 'done';
+  const playing = active && phase === 'show';
+  const fadeMs = mode === 'static' ? STATIC_FADE_MS : INTRO_TIMING.fade * 1000;
 
   const skip = (): void => setPhase((p) => (p === 'show' ? 'fade' : p));
-  const playing = active && phase === 'show';
 
   useEffect(() => {
     if (!playing) return undefined;
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setPhase('fade');
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', skip);
+    return () => window.removeEventListener('keydown', skip);
   }, [playing]);
 
   useEffect(() => {
     if (!active || phase !== 'fade') return undefined;
-    const id = window.setTimeout(() => setPhase('done'), FADE_MS);
+    const id = window.setTimeout(() => setPhase('done'), fadeMs);
     return () => window.clearTimeout(id);
-  }, [active, phase]);
+  }, [active, phase, fadeMs]);
 
   useEffect(() => {
     if (!playing) return undefined;
     let raf = 0;
+    let hold = 0;
     let cancelled = false;
     const run = (): void => {
       if (cancelled) return;
       const textLen = (el: SVGTextElement | null, fallback: number): number =>
         typeof el?.getComputedTextLength === 'function' ? el.getComputedTextLength() : fallback;
-      const D = 360;
-      const stroke = 26;
-      const gap = 64;
-      const wmW = Math.max(textLen(w1.current, 330), textLen(w2.current, 380));
-      const left = (1280 - (D + gap + wmW)) / 2;
-      const cx = left + D / 2;
-      const cy = 335;
-      const r = D / 2 - stroke / 2;
-      const wx = left + D + gap;
-      const lh = 124;
-      const cap = 105;
-      const y1 = cy - (lh + cap) / 2 + cap;
-      const y2 = y1 + lh;
-      const x0 = wx + stroke / 2;
-      const x1 = wx + wmW - stroke / 2;
-      const yLine = y2 + 66;
-      w1.current?.setAttribute('x', String(wx));
-      w1.current?.setAttribute('y', String(y1));
-      w2.current?.setAttribute('x', String(wx));
-      w2.current?.setAttribute('y', String(y2));
-      num.current?.setAttribute('x', String(cx));
-      num.current?.setAttribute('y', String(cy + 52));
-
-      const SEG = 27;
-      const point = (i: number, u: number, p: number): [number, number] => {
-        const g = (Math.atan(stroke / r) * 180) / Math.PI + 3.5;
-        const a = ((135 + i * SEG + g / 2 + u * (SEG - g)) * Math.PI) / 180;
-        const ax = cx + r * Math.cos(a);
-        const ay = cy + r * Math.sin(a);
-        const sx = lerp(x0, x1, i / 9) + (u - 0.5) * 6;
-        return [lerp(sx, ax, p), lerp(yLine, ay, p) - Math.sin(Math.PI * clamp(p)) * 70];
-      };
+      const layout = introLayout(Math.max(textLen(w1.current, 330), textLen(w2.current, 380)));
+      mark.current?.setAttribute(
+        'transform',
+        `translate(${layout.left} ${layout.top}) scale(${layout.scale})`,
+      );
+      w1.current?.setAttribute('y', String(layout.y1));
+      w2.current?.setAttribute('y', String(layout.y2));
 
       const frame = (time: number): void => {
-        const c = lerp(1, EFFORT, outCubic(clamp((time - COUNT0) / (COUNT1 - COUNT0))));
-        const blend = clamp((time - COUNT0 + 0.12) / 0.12);
-        for (let i = 0; i < 10; i++) {
-          const el = ticks.current[i];
-          if (!el) continue;
-          const p = outBack((time - HOLD - i * STAG) / DUR);
-          let d = '';
-          for (let k = 0; k <= 8; k++) {
-            const [x, y] = point(i, k / 8, p);
-            d += `${k ? 'L' : 'M'}${x.toFixed(2)} ${y.toFixed(2)}`;
-          }
-          const zone = ZONE_COLORS[i] ?? DIM;
-          const lit = time < COUNT0 - 0.12 ? 1 : lerp(1, clamp(c - i + 0.0001), blend);
-          el.setAttribute('d', d);
-          el.setAttribute('stroke', lit >= 1 ? zone : mix(DIM, zone, lit));
-        }
-        if (num.current) {
-          num.current.textContent = String(Math.round(c));
-          num.current.setAttribute('opacity', String(clamp((time - (COUNT0 - 0.15)) / 0.15)));
-        }
-        const words: [SVGTextElement | null, number][] = [
-          [w1.current, 0],
-          [w2.current, 0.1],
-        ];
-        for (const [el, delay] of words) {
-          if (!el) continue;
-          const u = outCubic(clamp((time - WM0 - delay) / (WM1 - WM0 - 0.1)));
-          el.setAttribute('opacity', String(u));
-          el.setAttribute('transform', `translate(${((1 - u) * -70).toFixed(2)} 0)`);
-        }
+        const s = introState(time, layout);
+        s.ticks.forEach((tick, i) => {
+          ticks.current[i]?.setAttribute('transform', tick.transform);
+          ticks.current[i]?.setAttribute('opacity', String(tick.opacity));
+        });
+        [w1.current, w2.current].forEach((el, i) => {
+          const w = s.words[i];
+          if (!el || !w) return;
+          el.setAttribute('opacity', String(w.opacity));
+          el.setAttribute('transform', `translate(${(layout.wx + w.dx).toFixed(2)} 0)`);
+        });
       };
 
+      if (mode === 'static') {
+        frame(INTRO_TIMING.end);
+        hold = window.setTimeout(skip, STATIC_HOLD_MS);
+        return;
+      }
       const t0 = performance.now();
       const step = (now: number): void => {
-        const time = clamp((now - t0) / 1000, 0, T);
+        const time = Math.min((now - t0) / 1000, INTRO_TIMING.end);
         frame(time);
-        if (time < T) raf = requestAnimationFrame(step);
-        else setPhase((p) => (p === 'show' ? 'fade' : p));
+        if (time < INTRO_TIMING.end) raf = requestAnimationFrame(step);
+        else skip();
       };
       raf = requestAnimationFrame(step);
     };
@@ -191,33 +117,38 @@ export function Intro() {
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      window.clearTimeout(hold);
     };
-  }, [playing]);
+  }, [playing, mode]);
 
   if (!active) return null;
+  const segs = logoSegments(MARK_SIZE);
   return (
     <div
       className={`${styles.overlay} ${phase === 'fade' ? styles.fade : ''}`}
+      style={{ transitionDuration: `${fadeMs}ms` }}
       data-testid="intro"
-      role="presentation"
+      aria-hidden="true"
+      onPointerDown={skip}
       onClick={skip}
     >
-      <svg viewBox="0 0 1280 720" className={styles.stage} role="img" aria-label={t('app.title')}>
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          {ZONE_COLORS.map((color, i) => (
+      <svg viewBox="0 0 1280 720" className={styles.stage} focusable="false">
+        <g ref={mark} data-testid="intro-mark">
+          {segs.map((s, i) => (
             <path
               key={i}
               ref={(el) => {
                 ticks.current[i] = el;
               }}
-              stroke={color}
-              strokeWidth={26}
+              d={s.d}
+              fill={s.color}
+              stroke={s.color}
+              strokeWidth={s.strokeWidth}
+              strokeLinejoin="round"
+              opacity={0}
             />
           ))}
         </g>
-        <text ref={num} textAnchor="middle" className={styles.num} opacity={0}>
-          1
-        </text>
         <text ref={w1} className={styles.hyper} opacity={0}>
           {NAME_LIGHT}
         </text>

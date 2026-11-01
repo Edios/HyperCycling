@@ -63,3 +63,18 @@ export function ringSegments({
   }
   return out;
 }
+
+/** The logo mark's ring: one definition for LogoMark, the intro animation and the brand assets. */
+export function logoSegments(size: number): RingSegment[] {
+  const small = size < 40;
+  return ringSegments({ effort: 10, stroke: small ? 12 : 11, gap: small ? 5 : 4 });
+}
+
+/** Centre of tick `i` (0..9) in the 100x100 mark box, and its tangent angle in degrees. */
+export function tickCentre(i: number, size: number): { x: number; y: number; angle: number } {
+  const stroke = Math.min(size < 40 ? 12 : 11, 11.5);
+  const r = 50 - stroke / 2 - 1;
+  const angle = START + (i + 0.5) * (SPAN / SEGMENTS);
+  const a = (angle * Math.PI) / 180;
+  return { x: 50 + r * Math.cos(a), y: 50 + r * Math.sin(a), angle };
+}

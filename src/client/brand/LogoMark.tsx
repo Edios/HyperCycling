@@ -1,4 +1,4 @@
-import { ringSegments } from './geometry';
+import { logoSegments } from './geometry';
 
 export interface LogoMarkProps {
   /** Rendered width and height in px. */
@@ -15,12 +15,7 @@ export interface LogoMarkProps {
  * the number belongs to the effort ring in the HUD, never to the logo.
  */
 export function LogoMark({ size = 28, mono = false, title, className }: LogoMarkProps) {
-  const small = size < 40;
-  const segs = ringSegments({
-    effort: 10,
-    stroke: small ? 12 : 11,
-    gap: small ? 5 : 4,
-  });
+  const segs = logoSegments(size);
   return (
     <svg
       viewBox="0 0 100 100"

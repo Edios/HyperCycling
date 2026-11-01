@@ -1,6 +1,6 @@
 export const en = {
   app: { title: 'HyperCycling' },
-  intro: { skip: 'Click or press Esc to skip' },
+  intro: { skip: 'Click or press any key to skip' },
   nav: {
     plan: 'Plan',
     freestyle: 'Freestyle',
