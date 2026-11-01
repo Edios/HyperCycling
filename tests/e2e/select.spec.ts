@@ -20,9 +20,7 @@ async function seedSettings(
   }
   await page.goto('./');
   // Either Plan tab state means the app has opened (and created) its IndexedDB storage.
-  await expect(
-    page.getByRole('link', { name: 'Choose a plan' }).or(page.getByTestId('next-session')),
-  ).toBeVisible();
+  await expect(page.getByTestId('plan-empty').or(page.getByTestId('next-session'))).toBeVisible();
   await page.evaluate(
     (value) =>
       new Promise<void>((resolve, reject) => {
@@ -64,7 +62,7 @@ test('plan tab with an active plan: Ride starts the training screen', async ({ p
 
 test('without an active plan the Plan tab offers to choose one', async ({ page }, info) => {
   await seedSettings(page, info, null);
-  await expect(page.getByRole('link', { name: 'Choose a plan' })).toBeVisible();
+  await expect(page.getByTestId('plan-empty')).toBeVisible();
 });
 
 test('freestyle tab filters and searches', async ({ page }) => {

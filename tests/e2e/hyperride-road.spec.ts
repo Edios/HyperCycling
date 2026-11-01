@@ -24,9 +24,7 @@ async function seedSettings(page: Page, info: TestInfo, settings: Settings): Pro
     return;
   }
   await page.goto('./');
-  await expect(
-    page.getByRole('link', { name: 'Choose a plan' }).or(page.getByTestId('next-session')),
-  ).toBeVisible();
+  await expect(page.getByTestId('plan-empty').or(page.getByTestId('next-session'))).toBeVisible();
   await page.evaluate(
     (value) =>
       new Promise<void>((resolve, reject) => {

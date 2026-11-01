@@ -40,7 +40,7 @@ test('diagnostics: device card, performance test table and copy report', async (
   await expect(page.getByRole('dialog', { name: 'Performance test' })).toBeVisible();
   const table = page.getByTestId('results-table');
   await expect(table).toBeVisible({ timeout: 45_000 });
-  await expect(table.getByRole('row')).toHaveCount(5); // header + 4 combinations
+  await expect(table.getByRole('row')).toHaveCount(7); // header + 6 combinations (Road x4 + Scenes x2)
   await expect(
     page.getByRole('status').filter({ hasText: /Recommended quality|Basic/ }),
   ).toBeVisible();
