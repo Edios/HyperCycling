@@ -1,0 +1,53 @@
+/* Group C: the clock is final at a glance, so it is the biggest thing after the effort ring. */
+.time {
+  display: flex;
+  flex-direction: column;
+  align-items: var(--time-align, flex-start);
+  gap: calc(1.2 * var(--u));
+}
+
+.clock {
+  font-size: var(--time-fs, calc(17.2 * var(--u)));
+  transform-origin: center bottom;
+  white-space: nowrap;
+}
+
+.rail {
+  width: var(--rail, calc(37.5 * var(--u)));
+  max-width: 100%;
+}
+
+/* Classic tiles: the clock shrinks to the tile width ("59:59", "1:00:00") and the rail spans it. */
+.fit {
+  container-type: inline-size;
+  align-items: stretch;
+}
+
+.fit .clock {
+  font-size: min(var(--time-fs, calc(17.2 * var(--u))), calc(var(--fit, 1000) * 1cqw));
+}
+
+.fit .rail {
+  width: 100%;
+}
+
+/* The last seconds of a block: a short beat on the clock. */
+.pulse .clock {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .time {
+    gap: 2vw;
+  }
+
+  .clock {
+    font-size: var(--time-fs, 16.4vw);
+  }
+}

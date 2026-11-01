@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { DashLine } from '../brand';
 import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
 import { AppBar } from '../ui/AppBar';
+import { AboutSection } from './AboutSection';
 import { DataSection } from './DataSection';
 import { DiagnosticsSection } from './DiagnosticsSection';
 import { EquipmentSection } from './EquipmentSection';
@@ -88,6 +90,12 @@ const SECTIONS: readonly {
     navKey: 'settings.nav.diagnostics',
     body: <DiagnosticsSection />,
   },
+  {
+    id: 'about',
+    titleKey: 'settings.about.title',
+    navKey: 'settings.nav.about',
+    body: <AboutSection />,
+  },
 ];
 
 /** The section the reader is in, for the nav highlight (scroll position, see scroll-spy). */
@@ -138,6 +146,7 @@ export function SettingsScreen() {
       <AppBar />
       <main className={styles.main}>
         <h1 className={styles.title}>{t('settings.title')}</h1>
+        <DashLine />
         <div className={styles.layout}>
           <nav className={styles.nav} aria-label={t('settings.sections')}>
             <ul>

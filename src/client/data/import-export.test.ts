@@ -13,8 +13,8 @@ const file = (content: unknown): File =>
 describe('exportFileName', () => {
   it('formats local time as YYYYMMDD-HHmm', () => {
     const d = new Date(2026, 0, 2, 3, 4, 59);
-    expect(exportFileName(d)).toBe('spinning-tutor-20260102-0304.json');
-    expect(exportFileName(d, 'spinning-tutor-backup')).toBe('spinning-tutor-backup-20260102-0304.json');
+    expect(exportFileName(d)).toBe('hypercycling-20260102-0304.json');
+    expect(exportFileName(d, 'hypercycling-backup')).toBe('hypercycling-backup-20260102-0304.json');
   });
 });
 
@@ -26,7 +26,7 @@ describe('exportToFile', () => {
     expect(blob.type).toBe('application/json');
     const text = await readBlobText(blob);
     expect(text).toContain('\n  ');
-    expect(JSON.parse(text)).toMatchObject({ app: 'spinning-tutor', schemaVersion: 1 });
+    expect(JSON.parse(text)).toMatchObject({ app: 'hypercycling', schemaVersion: 1 });
   });
   it('never writes Spotify tokens into the exported file', async () => {
     const repos = await makeRepos();
@@ -69,7 +69,7 @@ describe('importFromFile', () => {
     let seenAtDownload: string[] = [];
     const download = vi.fn(async (blob: Blob, name: string) => {
       seenAtDownload = (await repos.players.list()).map((p) => p.id);
-      expect(name).toMatch(/^spinning-tutor-backup-\d{8}-\d{4}\.json$/);
+      expect(name).toMatch(/^hypercycling-backup-\d{8}-\d{4}\.json$/);
       expect(JSON.parse(await readBlobText(blob)).players.map((p: { id: string }) => p.id)).toEqual(['old']);
     });
     const b = bundle();

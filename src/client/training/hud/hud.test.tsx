@@ -1,15 +1,14 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { Segment } from '../../../domain/segments';
-import { BlockTimer } from './BlockTimer';
 import { CoachOverlay } from './CoachOverlay';
 import { Countdown } from './Countdown';
 import { EdgeFlash } from './EdgeFlash';
-import { EffortValue } from './EffortValue';
+import { EffortGroup } from './EffortGroup';
 import { fitCqw } from './fit';
-import { NextBlock } from './NextBlock';
+import { MeasuresGroup } from './MeasuresGroup';
 import { PlayersList } from './PlayersList';
-import { RpmValue } from './RpmValue';
+import { TimeGroup } from './TimeGroup';
 import { Timeline } from './Timeline';
 
 function seg(
@@ -28,100 +27,19 @@ function seg(
   };
 }
 
-describe('EffortValue', () => {
-  it('shows value, label and FTP', () => {
-    render(<EffortValue effort={7} ftpPct={92} labelKey="hard" variant="tile" />);
+describe('EffortGroup', () => {
+  it('shows the ring with the value, the name and % FTP', () => {
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" />);
     const root = screen.getByTestId('effort-value');
-    expect(within(root).getByText('7')).toBeInTheDocument();
+    expect(within(root).getByTestId('effort-ring')).toHaveAttribute('data-effort', '7');
+    expect(screen.getByTestId('effort-value-number')).toHaveTextContent('07');
     expect(root).toHaveTextContent('Hard · ~92% FTP');
   });
-  it('hides FTP when showFtp is false', () => {
-    render(<EffortValue effort={7} ftpPct={92} labelKey="hard" variant="tile" showFtp={false} />);
-    expect(screen.getByTestId('effort-value')).not.toHaveTextContent('FTP');
-    expect(screen.getByTestId('effort-value')).toHaveTextContent('Hard');
+  it('is group W', () => {
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" />);
+    expect(screen.getByTestId('effort-group')).toHaveAttribute('data-g', 'W');
   });
-  it('uses the given color', () => {
-    render(
-      <EffortValue effort={7} ftpPct={92} labelKey="hard" variant="overlay" color="#ffd23f" />,
-    );
-    expect(screen.getByTestId('effort-value').style.getPropertyValue('--c')).toBe('#ffd23f');
-  });
-});
-
-describe('RpmValue', () => {
-  it('shows the cadence', () => {
-    render(<RpmValue rpm={90} position="seated" isTarget={false} />);
-    const root = screen.getByTestId('rpm-value');
-    expect(root).toHaveTextContent('90');
-    expect(root).toHaveTextContent('Seated');
-  });
-  it('shows a dash when rpm is undefined', () => {
-    render(<RpmValue isTarget={false} />);
-    expect(screen.getByTestId('rpm-value')).toHaveTextContent('—');
-  });
-  it('labels the value as target when cadence is not measured', () => {
-    render(<RpmValue rpm={85} isTarget />);
-    expect(screen.getByTestId('rpm-value')).toHaveTextContent(/target/i);
-  });
-});
-
-describe('BlockTimer', () => {
-  it('shows clock, block counter and progress width', () => {
-    render(<BlockTimer remainingSec={150} durationSec={600} index={3} total={9} pulse={false} />);
-    const root = screen.getByTestId('block-timer');
-    expect(root).toHaveTextContent('2:30');
-    expect(root).toHaveTextContent('block 4 of 9');
-    expect(within(root).getByRole('progressbar').firstElementChild).toHaveStyle({ width: '25%' });
-  });
-  it('labels the progressbar', () => {
-    render(<BlockTimer remainingSec={10} durationSec={60} index={0} total={2} pulse={false} />);
-    expect(screen.getByRole('progressbar')).toHaveAccessibleName('Time left');
-  });
-  it('pulses only when asked and motion is allowed', () => {
-    const { rerender } = render(
-      <BlockTimer remainingSec={4} durationSec={60} index={0} total={2} pulse />,
-    );
-    expect(screen.getByTestId('block-timer').dataset['pulse']).toBe('true');
-    rerender(
-      <BlockTimer remainingSec={4} durationSec={60} index={0} total={2} pulse reducedMotion />,
-    );
-    expect(screen.getByTestId('block-timer').dataset['pulse']).toBe('false');
-  });
-  it('guards zero duration', () => {
-    render(<BlockTimer remainingSec={0} durationSec={0} index={0} total={1} pulse={false} />);
-    expect(
-      within(screen.getByTestId('block-timer')).getByRole('progressbar').firstElementChild,
-    ).toHaveStyle({ width: '0%' });
-  });
-});
-
-describe('fit-to-tile sizing', () => {
-  const fit = (el: HTMLElement) => el.style.getPropertyValue('--fit');
-  it.each([
-    [189, '50'],
-    [600, '40'],
-    [3599, '40'],
-    [3600, '30'],
-  ])('block timer %i s uses fit %s cqw', (sec, expected) => {
-    render(<BlockTimer remainingSec={sec} durationSec={3600} index={0} total={1} pulse={false} />);
-    expect(fit(screen.getByTestId('block-timer-value'))).toBe(expected);
-  });
-  it('shrinks as the character count grows', () => {
-    const sizes = [2, 4, 5, 7].map((n) => Number(fitCqw(n)));
-    expect(sizes).toEqual([60, 50, 40, 30]);
-  });
-  it('rpm value is sized by its digits', () => {
-    render(<RpmValue rpm={90} isTarget={false} />);
-    expect(fit(screen.getByTestId('rpm-value-number'))).toBe('60');
-  });
-  it('effort value leaves room for the /10 scale', () => {
-    render(<EffortValue effort={10} ftpPct={100} labelKey="hard" variant="tile" />);
-    expect(fit(screen.getByTestId('effort-value-number'))).toBe('52');
-  });
-});
-
-describe('NextBlock', () => {
-  it('shows effort, rpm, duration and label', () => {
+  it('shows NEXT as a quiet ring with its time and description', () => {
     const next = seg({
       index: 1,
       startSec: 60,
@@ -131,22 +49,111 @@ describe('NextBlock', () => {
       rpm: 85,
       label: 'Recovery',
     });
-    render(<NextBlock next={next} effortColor="#3d8bff" />);
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" next={next} />);
     const root = screen.getByTestId('next-block');
     expect(root).toHaveTextContent('Next');
-    expect(root).toHaveTextContent('3');
-    expect(root).toHaveTextContent('85 rpm');
     expect(root).toHaveTextContent('3:00');
+    expect(root).toHaveTextContent('85 rpm');
     expect(root).toHaveTextContent('Recovery');
+    const ring = within(root).getByTestId('effort-ring');
+    expect(ring).toHaveAttribute('data-quiet', 'true');
+    expect(ring).toHaveAttribute('data-effort', '3');
   });
   it('translates @token labels', () => {
     const next = seg({ index: 1, startSec: 60, durationSec: 60, label: '@recovery' });
-    render(<NextBlock next={next} effortColor="#fff" />);
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" next={next} />);
     expect(screen.getByTestId('next-block')).toHaveTextContent('Recovery');
   });
   it('shows Finish when there is no next block', () => {
-    render(<NextBlock effortColor="#fff" />);
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" />);
     expect(screen.getByTestId('next-block')).toHaveTextContent('Finish');
+    expect(within(screen.getByTestId('next-block')).queryByTestId('effort-ring')).toBeNull();
+  });
+  it('is a section of a column without its own panel', () => {
+    const { rerender } = render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" />);
+    const panel = screen.getByTestId('effort-group').className;
+    rerender(<EffortGroup effort={7} ftpPct={92} labelKey="hard" section />);
+    expect(screen.getByTestId('effort-group').className).not.toBe(panel);
+  });
+});
+
+describe('MeasuresGroup', () => {
+  it('shows the cadence and the position', () => {
+    render(<MeasuresGroup rpm={90} position="seated" isTarget={false} />);
+    const root = screen.getByTestId('rpm-value');
+    expect(root).toHaveAttribute('data-g', 'M');
+    expect(root).toHaveTextContent('90');
+    expect(root).toHaveTextContent('rpm');
+    expect(root).toHaveTextContent('Seated');
+  });
+  it('shows a dash when rpm is undefined', () => {
+    render(<MeasuresGroup isTarget={false} />);
+    expect(screen.getByTestId('rpm-value')).toHaveTextContent('—');
+  });
+  it('labels the value as the plan target when cadence is not measured', () => {
+    render(<MeasuresGroup rpm={85} isTarget />);
+    expect(screen.getByTestId('rpm-value')).toHaveTextContent(/target from plan/i);
+  });
+  it('drops the description in the bare strip', () => {
+    render(<MeasuresGroup rpm={85} position="standing" isTarget bare />);
+    expect(screen.getByTestId('rpm-value')).not.toHaveTextContent(/standing|target/i);
+  });
+});
+
+describe('TimeGroup', () => {
+  it('shows the clock and the progress as a scaled rail', () => {
+    render(<TimeGroup remainingSec={150} durationSec={600} pulse={false} />);
+    const root = screen.getByTestId('block-timer');
+    expect(root).toHaveAttribute('data-g', 'C');
+    expect(root).toHaveTextContent('2:30');
+    expect(within(root).getByRole('progressbar').firstElementChild).toHaveStyle({
+      transform: 'scaleX(0.25)',
+    });
+  });
+  it('labels the progressbar', () => {
+    render(<TimeGroup remainingSec={10} durationSec={60} pulse={false} />);
+    expect(screen.getByRole('progressbar')).toHaveAccessibleName('Time left');
+  });
+  it('can hide the caption', () => {
+    render(<TimeGroup remainingSec={10} durationSec={60} pulse={false} hideLabel />);
+    expect(screen.getByTestId('block-timer')).not.toHaveTextContent('Time left');
+  });
+  it('pulses only when asked and motion is allowed', () => {
+    const { rerender } = render(<TimeGroup remainingSec={4} durationSec={60} pulse />);
+    expect(screen.getByTestId('block-timer').dataset['pulse']).toBe('true');
+    rerender(<TimeGroup remainingSec={4} durationSec={60} pulse reducedMotion />);
+    expect(screen.getByTestId('block-timer').dataset['pulse']).toBe('false');
+  });
+  it('guards zero duration', () => {
+    render(<TimeGroup remainingSec={0} durationSec={0} pulse={false} />);
+    expect(
+      within(screen.getByTestId('block-timer')).getByRole('progressbar').firstElementChild,
+    ).toHaveStyle({ transform: 'scaleX(0)' });
+  });
+});
+
+describe('fit-to-tile sizing (Classic tiles)', () => {
+  const fit = (el: HTMLElement) => el.style.getPropertyValue('--fit');
+  it.each([
+    [189, '50'],
+    [600, '40'],
+    [3599, '40'],
+    [3600, '30'],
+  ])('block timer %i s uses fit %s cqw', (sec, expected) => {
+    render(<TimeGroup remainingSec={sec} durationSec={3600} pulse={false} fit />);
+    expect(fit(screen.getByTestId('block-timer-value'))).toBe(expected);
+  });
+  it('shrinks as the character count grows', () => {
+    const sizes = [2, 4, 5, 7].map((n) => Number(fitCqw(n)));
+    expect(sizes).toEqual([60, 50, 40, 30]);
+  });
+  it('cadence value is sized by its digits', () => {
+    render(<MeasuresGroup rpm={90} isTarget={false} fit />);
+    expect(fit(screen.getByTestId('rpm-value-number'))).toBe('60');
+  });
+  it('sizes nothing without fit (overlay panels are shrink-wrapped)', () => {
+    render(<TimeGroup remainingSec={150} durationSec={600} pulse={false} />);
+    expect(fit(screen.getByTestId('block-timer-value'))).toBe('');
   });
 });
 
@@ -166,35 +173,6 @@ describe('Timeline', () => {
     expect(bars[0]?.getAttribute('data-state')).toBe('past');
     expect(bars[1]?.getAttribute('data-state')).toBe('current');
   });
-  it('mono tone: past, current, next and future bars get their own classes; cursor stays', () => {
-    const four = [
-      ...segments,
-      seg({ index: 3, startSec: 240, durationSec: 60, effortStart: 5, effortEnd: 5 }),
-    ];
-    render(<Timeline segments={four} elapsedSec={90} tone="mono" />);
-    const root = screen.getByTestId('timeline');
-    expect(root.dataset['tone']).toBe('mono');
-    const bars = root.querySelectorAll<HTMLElement>('[data-state]');
-    expect(Array.from(bars).map((b) => b.dataset['state'])).toEqual([
-      'past',
-      'current',
-      'next',
-      'future',
-    ]);
-    expect(bars[0]?.className).toMatch(/mono_past/);
-    expect(bars[1]?.className).toMatch(/mono_current/);
-    expect(bars[2]?.className).toMatch(/mono_next/);
-    expect(bars[3]?.className).toMatch(/mono_future/);
-    // the zone colour is exposed for the CSS of the current and next bars
-    expect(bars[1]?.style.getPropertyValue('--z')).not.toBe('');
-    expect(bars[1]?.style.getPropertyValue('--c')).toBe('');
-    expect(root.querySelector('[data-cursor]')).not.toBeNull();
-  });
-  it('colour tone keeps the full colour classes', () => {
-    render(<Timeline segments={segments} elapsedSec={90} />);
-    expect(screen.getByTestId('timeline').dataset['tone']).toBe('color');
-    expect(screen.getByTestId('timeline').innerHTML).not.toMatch(/mono_/);
-  });
   it('sizes bars by duration and positions the cursor', () => {
     render(<Timeline segments={segments} elapsedSec={120} />);
     const root = screen.getByTestId('timeline');
@@ -213,6 +191,21 @@ describe('Timeline', () => {
     expect(root).toHaveTextContent('1:30 / 4:00');
     expect(root).toHaveTextContent('2:30');
     expect(root).toHaveTextContent(/remaining/i);
+  });
+  it('is group P and carries the workout name and "block n of m"', () => {
+    render(<Timeline segments={segments} elapsedSec={90} blockIndex={1} title="Demo mix" />);
+    const root = screen.getByTestId('timeline');
+    expect(root).toHaveAttribute('data-g', 'P');
+    expect(root).toHaveTextContent('Demo mix');
+    expect(screen.getByTestId('block-counter')).toHaveTextContent('block 2 of 3');
+  });
+  it('keeps only the block and the time left on the thin floor', () => {
+    render(<Timeline segments={segments} elapsedSec={90} blockIndex={1} title="Demo mix" mini />);
+    const root = screen.getByTestId('timeline');
+    expect(root).not.toHaveTextContent('Demo mix');
+    expect(root).not.toHaveTextContent('1:30 / 4:00');
+    expect(root).toHaveTextContent('block 2 of 3');
+    expect(root).toHaveTextContent('remaining 2:30');
   });
   it('treats non-finite elapsed as 0', () => {
     render(<Timeline segments={segments} elapsedSec={Number.NaN} />);

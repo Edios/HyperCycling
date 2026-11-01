@@ -200,7 +200,7 @@ describe('quick settings', () => {
     rideThenPause();
     const before = useSessionStore.getState().state;
     fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'Hyperride' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'World' }));
     expect(bgOf()).toBe('hyperride');
     expect(screen.getByTestId('hyperride-canvas')).toBeInTheDocument();
     expect(useSessionStore.getState().state).toEqual(before);
@@ -229,7 +229,7 @@ describe('quick settings', () => {
     expect(layouts()).toEqual(['Classic', ...overlays]);
     fireEvent.click(screen.getByRole('switch', { name: 'Show riders' }));
     expect(screen.getByTestId('layout-players')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('radio', { name: 'Hyperride' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'World' }));
     expect(layouts()).toEqual(overlays);
     fireEvent.click(screen.getByRole('radio', { name: 'Column' }));
     expect(useSessionStore.getState().runtime?.config.hud).toBe('column');

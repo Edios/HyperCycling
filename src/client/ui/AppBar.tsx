@@ -1,23 +1,28 @@
 import { Link, NavLink } from 'react-router-dom';
+import { LogoMark, ModeIcon, Wordmark, type Mode } from '../brand';
 import { useT } from '../i18n';
 import styles from './AppBar.module.css';
 
 /** Top bar of the select screens: logo, Plan | Freestyle tabs, Players and Settings links. */
 export function AppBar() {
   const t = useT();
-  const tab = ({ isActive }: { isActive: boolean }): string =>
-    `${styles.tab} ${isActive ? styles.on : ''}`;
+  const tab =
+    (mode: Mode) =>
+    ({ isActive }: { isActive: boolean }): string =>
+      `${styles.tab} ${styles[mode]} ${isActive ? styles.on : ''}`;
   return (
     <header className={styles.bar}>
       <Link to="/" className={styles.logo} title={t('nav.mainMenu')}>
-        <i aria-hidden="true" />
-        {t('app.title')}
+        <LogoMark size={30} />
+        <Wordmark />
       </Link>
       <nav className={styles.tabs}>
-        <NavLink to="/" end className={tab}>
+        <NavLink to="/" end className={tab('plan')}>
+          <ModeIcon mode="plan" />
           {t('nav.plan')}
         </NavLink>
-        <NavLink to="/freestyle" className={tab}>
+        <NavLink to="/freestyle" className={tab('free')}>
+          <ModeIcon mode="free" />
           {t('nav.freestyle')}
         </NavLink>
       </nav>

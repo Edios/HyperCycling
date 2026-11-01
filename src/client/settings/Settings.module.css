@@ -1,4 +1,7 @@
 .main {
+  /* Settings are neutral: no mode accent. */
+  --acc: var(--fg);
+  --on-acc: var(--bg);
   max-width: 66rem;
   margin: 0 auto;
   padding: 2.25rem 1rem 3rem;
@@ -116,7 +119,7 @@
 }
 
 .warning a {
-  color: var(--act);
+  color: var(--act-text);
   font-weight: 600;
 }
 
@@ -271,7 +274,7 @@
 }
 
 .link {
-  color: var(--act);
+  color: var(--act-text);
   font-weight: 600;
 }
 
@@ -555,7 +558,7 @@
 
 /* Themed link colour (the browser default blue is unreadable on the dark background). */
 .section a {
-  color: var(--act);
+  color: var(--act-text);
   text-underline-offset: 0.2em;
 }
 
@@ -651,4 +654,21 @@
   .uri code {
     overflow-wrap: anywhere;
   }
+}
+
+.about {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+.aboutText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.aboutName {
+  font-size: 2.5rem;
+  line-height: 1;
 }

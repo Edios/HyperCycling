@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { readCompat, removeCompat } from '../../data/storage-compat';
 import { SpotifyError } from './errors';
 import { challengeFor, generateState, generateVerifier } from './pkce';
 
@@ -7,7 +8,7 @@ export const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
 export const SPOTIFY_SCOPES = 'user-modify-playback-state user-read-playback-state';
 
 /** Pending login kept in sessionStorage only: it dies with the tab and is never persisted. */
-const PENDING_KEY = 'spinning-tutor.spotify.login';
+const PENDING_KEY = 'hypercycling.spotify.login';
 
 export interface PendingLogin {
   verifier: string;
@@ -101,7 +102,7 @@ const pendingSchema = z.object({
 
 function readPending(storage: NonNullable<AuthEnv['storage']>): PendingLogin | undefined {
   try {
-    const raw = storage.getItem(PENDING_KEY);
+    const raw = readCompat(storage, PENDING_KEY);
     if (!raw) return undefined;
     const parsed = pendingSchema.safeParse(JSON.parse(raw));
     return parsed.success ? parsed.data : undefined;
@@ -220,7 +221,7 @@ export async function handleCallback(
   const pending = readPending(storage);
   // One-shot: a callback can never be replayed against the same verifier.
   try {
-    storage.removeItem(PENDING_KEY);
+    removeCompat(storage, PENDING_KEY);
   } catch {
     // storage unavailable: nothing to clean up
   }

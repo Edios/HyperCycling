@@ -34,7 +34,8 @@ import {
 } from './overlay-layouts';
 import { ridersHintKey } from '../setup/model';
 import { FOCUS_INPUT_HOLD_MS, focusVisible } from './focus-visibility';
-import { FocusRest } from './layouts/FocusRest';
+import { FocusBadge, FocusRest } from './layouts/FocusRest';
+import { FOCUS_IN_MS, FOCUS_OUT_MS, fadeStyle } from './hud/motion';
 import { monotonicNowMs, useLastInput } from './useLastInput';
 import type { SessionConfig } from '../../domain/settings';
 import {
@@ -482,6 +483,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     rpmIsTarget: !settings.equipment.showsCadence,
     hideRpmTile: settings.equipment.hideRpmTile,
     reducedMotion,
+    glass: overlay,
+    workoutName: runtime.workout.name,
     controls,
     coach,
   };
@@ -497,8 +500,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         styles.overlayLayer,
         focusOn ? styles.focusLayer : '',
         focusOn && !hudShown ? styles.focusHidden : '',
-        reducedMotion ? styles.instant : '',
       ].join(' ')}
+      style={focusOn ? fadeStyle(hudShown, FOCUS_IN_MS, FOCUS_OUT_MS, reducedMotion) : undefined}
       data-testid={focusOn ? 'focus-layer' : undefined}
       data-hud-visible={focusOn ? hudShown : undefined}
     >
@@ -513,6 +516,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       data-theme={wantsOverlay || !tiled ? 'dark' : settings.basicTheme}
       data-status={status}
       data-background={hyperride ? 'hyperride' : youtube !== null ? 'youtube' : 'basic'}
+      data-material={overlay ? 'glass' : 'solid'}
       data-cursor-hidden={hideControls}
       className={`${styles.root} ${hideControls ? styles.noCursor : ''}`}
       style={rootStyle}
@@ -528,6 +532,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             {...(motionOn ? { onSway } : {})}
             onUnavailable={() => setHyperrideFailed(true)}
           />
+          {focusOn && <FocusBadge view={view} active={!hudShown} reducedMotion={reducedMotion} />}
           {hudLayer}
         </>
       ) : youtube !== null ? (
@@ -539,6 +544,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             reducedMotion={reducedMotion}
             onFail={onYoutubeFail}
           />
+          {focusOn && <FocusBadge view={view} active={!hudShown} reducedMotion={reducedMotion} />}
           {hudLayer}
         </>
       ) : tiled ? (
@@ -585,7 +591,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         )}
       </ToastStack>
       {runtime.config.music && nowPlaying && (
-        <NowPlaying track={nowPlaying} muted={!musicAudible} raised={overlay || !tiled} />
+        <NowPlaying track={nowPlaying} muted={!musicAudible} />
       )}
       {settings.diagnostics === true && (
         <DiagnosticsOverlay
@@ -602,9 +608,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         <Countdown n={countdownN} color={view.color} reducedMotion={reducedMotion} />
       </div>
       {status === 'idle' && (
-        <div
-          className={`${styles.promptSlot} ${tiled ? styles.promptClassic : styles.promptOverlay}`}
-        >
+        <div className={`${styles.promptSlot} ${styles.promptOverlay}`}>
           <div className={styles.prompt}>
             <button
               type="button"

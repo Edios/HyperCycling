@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { playerSchema, type Player } from '../../domain/player';
+import { DashLine } from '../brand';
 import { getRepositories } from '../data/repositories';
 import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
@@ -282,6 +283,7 @@ export function PlayersScreen() {
             {t('players.add')}
           </Button>
         </div>
+        <DashLine />
         <p className={styles.sub}>{t('players.subtitle')}</p>
         {!settings.equipment.showsWatts && (
           <p className={styles.note}>{t('players.wattsHidden')}</p>

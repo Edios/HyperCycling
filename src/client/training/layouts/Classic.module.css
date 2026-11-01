@@ -1,0 +1,188 @@
+/*
+ * Classic tiles. The tiles fill the area above the band where the controls and the music label
+ * sit (top of the band at calc(29 * var(--u)) from the bottom); the floor runs along the bottom.
+ */
+.root {
+  position: absolute;
+  inset: 0;
+  --mx: calc(5.5 * var(--u));
+  --my: calc(4.4 * var(--u));
+  --fb: calc(18.5 * var(--u));
+  --tl: calc(8.3 * var(--u));
+  --ring: min(calc(36 * var(--u)), 24vw);
+  --nring: calc(11.7 * var(--u));
+  --time-fs: calc(18.9 * var(--u));
+  --mval: calc(11 * var(--u));
+  --ring-word: block;
+  --rail: 100%;
+}
+
+.tiles {
+  position: absolute;
+  left: var(--mx);
+  right: var(--mx);
+  top: var(--my);
+  bottom: calc(29 * var(--u));
+  display: grid;
+  gap: calc(2.4 * var(--u));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr) minmax(0, 1.2fr);
+  grid-template-areas: 'time measures effort';
+}
+
+/* No cadence tile: Time and Effort widen. */
+.root[data-measures='false'] .tiles {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  grid-template-areas: 'time effort';
+}
+
+.time,
+.measures,
+.effort,
+.riders {
+  min-height: 0;
+  min-width: 0;
+}
+
+.time {
+  grid-area: time;
+  justify-content: center;
+  padding: calc(3 * var(--u)) calc(3 * var(--u));
+}
+
+.measures {
+  grid-area: measures;
+  justify-content: center;
+  padding: calc(3 * var(--u)) calc(3 * var(--u));
+}
+
+.effort {
+  grid-area: effort;
+  justify-content: center;
+  padding: calc(2.4 * var(--u)) calc(3 * var(--u));
+}
+
+/* With riders: riders left, Time over Measures in the middle, Effort full height on the right. */
+.root[data-players='true'] .tiles {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.2fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    'riders time effort'
+    'riders measures effort';
+}
+
+.root[data-players='true'][data-measures='false'] .tiles {
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: 'riders time effort';
+}
+
+.riders {
+  grid-area: riders;
+  padding: calc(3 * var(--u)) calc(3 * var(--u));
+}
+
+.free {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  left: 30vw;
+  right: 30vw;
+  top: calc(34 * var(--u));
+  bottom: calc(40 * var(--u));
+  z-index: 4;
+}
+
+.controls {
+  position: absolute;
+  left: 50%;
+  bottom: var(--fb);
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.floor {
+  position: absolute;
+  left: var(--mx);
+  right: var(--mx);
+  bottom: calc(3.6 * var(--u));
+}
+
+/* ---------------- phone portrait: one stack, Effort first ---------------- */
+@media (max-width: 760px) and (orientation: portrait) {
+  .root {
+    display: flex;
+    flex-direction: column;
+    gap: 2.4vw;
+    box-sizing: border-box;
+    padding: calc(4 * var(--u)) 3vw 3vw;
+    --ring: 40vw;
+    --nring: 14.5vw;
+    --time-fs: 16.4vw;
+    --mval: 8.7vw;
+    --next-fs: 7.2vw;
+    --lbl: 3.9vw;
+    --cap: 3.3vw;
+    --tl: 11vw;
+    --rname: 5.2vw;
+    --rwatts: 8vw;
+    --ring-word: none;
+  }
+
+  /* Repeated .root only raises the specificity above the grid rules for riders / no cadence. */
+  .root.root.root.root .tiles {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    gap: 2.4vw;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .effort {
+    order: 1;
+  }
+
+  .time {
+    order: 2;
+  }
+
+  .riders {
+    order: 3;
+    max-height: calc(22 * var(--u));
+  }
+
+  .measures {
+    order: 4;
+  }
+
+  .free {
+    position: relative;
+    inset: auto;
+    flex: none;
+    height: calc(8 * var(--u));
+  }
+
+  .controls {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    transform: none;
+    display: flex;
+    justify-content: center;
+  }
+
+  .floor {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+  }
+
+  .time,
+  .measures,
+  .effort,
+  .riders {
+    padding: 3vw 4vw;
+  }
+}

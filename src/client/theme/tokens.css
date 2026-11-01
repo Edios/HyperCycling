@@ -4,22 +4,37 @@
   --s2: #151d2f;
   --line: #1d2536;
   --fg: #eef1f7;
-  --mut: #8d97ab;
+  --mut: #9aa5b8;
   --muted: var(--mut);
+  --line2: #2b3547;
   --dim: #5d6679;
-  --act: #3d8bff;
+  /* Legacy name for the blue accent; now the zone 3-4 blue. Mode accents live in --acc. */
+  --act: #2f6bff;
+  /* Lighter blue for TEXT on the dark surfaces (>= 4.5:1; --act itself is 4.0:1 on --s1). */
+  --act-text: #5b8cff;
   --glass: rgb(16 22 36 / 0.72);
 
-  --z1: #8fa3b8;
-  --z2: #8fa3b8;
-  --z3: #3d8bff;
-  --z4: #3d8bff;
+  --z1: #8fdcff;
+  --z2: #8fdcff;
+  --z3: #2f6bff;
+  --z4: #2f6bff;
   --z5: #35d07f;
   --z6: #35d07f;
   --z7: #ffd23f;
   --z8: #ff8c2a;
-  --z9: #ff3d5a;
-  --z10: #ff3d5a;
+  --z9: #ff4d4d;
+  --z10: #ff4d4d;
+
+  /* Unfilled ring segment. */
+  --z-off: #28313d;
+
+  /* Mode accents: only the tab, the primary button, the mode icon and the selected-row bar. */
+  --plan: #84e044;
+  --free: #b07dff;
+  --world: #f35bd2;
+  --coach: #e8dcc0;
+  --acc: var(--plan);
+  --on-acc: #0b1206;
 
   /* Current and next segment zone colors; set per segment by the HUD. */
   --zone: var(--z4);
@@ -34,6 +49,8 @@
   --s1: #ffffff;
   --s2: #eef1f6;
   --line: #dfe4ee;
+  --line2: #c9d1e0;
+  --on-acc: #0b1206;
   --fg: #0d1424;
   --mut: #5d6679;
   --glass: rgb(255 255 255 / 0.78);
@@ -56,7 +73,7 @@ html {
  * :where() wrapper keeps specificity at zero so component styles can still refine it.
  */
 :root {
-  --focus: var(--act);
+  --focus: var(--fg);
 }
 
 :where(

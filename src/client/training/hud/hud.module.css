@@ -1,0 +1,139 @@
+/*
+ * Shared HUD chrome (round 10): one group = one panel, or one section of a column split by a grey
+ * dash rule. Same geometry on every background, only the material changes. The layout root says
+ * which one with data-material:
+ *   solid = plain background (Basic): solid panels, zone colour bold, 7% zone tint.
+ *   glass = a background behind (World, YouTube): rgba(9,11,18,.34) + blur 6px + 1px hairline,
+ *           zone colour only in the ring, the number, the 2px top line and the timeline.
+ * Sizes come from the layout through custom properties (HUD unit --u, clamp), with landscape defaults.
+ */
+
+/* ---- type ---- */
+.lbl {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--lbl, clamp(13px, calc(2.6 * var(--u)), 40px));
+  line-height: 1.15;
+  color: var(--sub);
+}
+
+.cap {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--cap, clamp(12px, calc(2.2 * var(--u)), 32px));
+  line-height: 1.25;
+  color: var(--sub);
+}
+
+.big {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-style: italic;
+  line-height: 0.86;
+  letter-spacing: 0.005em;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-family: var(--font-body);
+  font-style: normal;
+  font-weight: 500;
+  font-size: var(--lbl, clamp(13px, calc(2.6 * var(--u)), 40px));
+  color: var(--sub);
+  margin-left: 0.4em;
+}
+
+/* ---- panel material ---- */
+.panel,
+.sec {
+  position: relative;
+  box-sizing: border-box;
+  isolation: isolate;
+  color: #f4f6fa;
+  --sub: #a4aec0;
+  --zt: var(--zone);
+  --on: var(--zt);
+  --track: #262f40;
+  --outline: #4a556b;
+}
+
+.panel {
+  border-radius: calc(1.9 * var(--u));
+  padding: var(--pad, calc(2.4 * var(--u)) calc(3 * var(--u)));
+  background: color-mix(in srgb, var(--zone) 6%, #151c2c);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+[data-theme='light'] .panel,
+[data-theme='light'] .sec {
+  color: var(--fg);
+  --sub: var(--mut);
+  --zt: color-mix(in srgb, var(--zone) 52%, #000);
+  --track: color-mix(in srgb, var(--fg) 14%, transparent);
+  --outline: #aab4c6;
+}
+
+[data-theme='light'] .panel {
+  background: color-mix(in srgb, var(--zone) 6%, var(--s1));
+  border-color: var(--line);
+}
+
+:global([data-material='glass']) .panel,
+:global([data-material='glass']) .sec {
+  --sub: #c9d0dc;
+  --on: #f1f4f8;
+  --track: rgba(255, 255, 255, 0.16);
+  --outline: #8a93a3;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.7);
+}
+
+:global([data-material='glass']) .panel {
+  background: rgba(9, 11, 18, 0.34);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+/* The Effort panel (and a whole column) carry the zone: 7% tint and a 2px line on top. */
+:global([data-material='glass']) .zoned {
+  background: color-mix(in srgb, var(--zone) 7%, rgba(9, 11, 18, 0.34));
+  border-top: 2px solid color-mix(in srgb, var(--zone) 75%, transparent);
+}
+
+.in {
+  position: relative;
+}
+
+/* ---- grey dash rule between sections ---- */
+.rule {
+  align-self: stretch;
+  flex: none;
+}
+
+/* ---- block progress rail: dashes 11x6, pitch 15; the fill is a scaled layer under the mask ---- */
+.rail {
+  position: relative;
+  height: var(--rail-h, calc(0.84 * var(--u)));
+  min-height: 5px;
+  background: var(--track);
+  overflow: hidden;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='6'%3E%3Crect width='11' height='6' rx='1.5'/%3E%3C/svg%3E")
+    left center / 15px 100% repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='6'%3E%3Crect width='11' height='6' rx='1.5'/%3E%3C/svg%3E")
+    left center / 15px 100% repeat-x;
+}
+
+.rail i {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: var(--on);
+  transform-origin: left center;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .panel {
+    border-radius: 3vw;
+    padding: var(--pad, 3vw 4vw);
+  }
+}

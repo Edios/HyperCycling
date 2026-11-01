@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { ExportBundle } from '../domain/export-bundle';
+import { APP_ID, type ExportBundle } from '../domain/export-bundle';
 import type { PlanProgress } from '../domain/plan';
 import type { Player } from '../domain/player';
 import type { CollectionRepo, Repositories } from '../domain/repositories';
@@ -88,7 +88,7 @@ const active = (): ActiveSession => ({
 
 export function bundle(): ExportBundle {
   return {
-    app: 'spinning-tutor',
+    app: APP_ID,
     schemaVersion: 1,
     exportedAt: '2026-01-01T00:00:00.000Z',
     workouts: [workout('w1'), workout('w2')],
@@ -245,7 +245,7 @@ export function runRepositoryContract(name: string, makeRepos: () => Promise<Rep
       it('exports an empty store with null settings', async () => {
         const b = await repos.exportAll();
         expect(b).toMatchObject({
-          app: 'spinning-tutor',
+          app: APP_ID,
           schemaVersion: 1,
           workouts: [],
           players: [],

@@ -15,7 +15,7 @@ async function requireWebgl(page: Page): Promise<void> {
 
 async function startHyperride(page: Page, withPlayer: boolean): Promise<void> {
   await page.goto('./#/setup/demo-mixed');
-  await page.getByRole('button', { name: /Hyperride/ }).click();
+  await page.getByRole('button', { name: /^World/ }).click();
   await expect(page.getByRole('radio', { name: 'Corners' })).toBeChecked();
   if (withPlayer) {
     await page.getByRole('button', { name: '+ Add' }).click();
@@ -86,6 +86,11 @@ test('Hyperride: canvas renders under the HUD, H cycles layouts, G toggles playe
   await page.keyboard.press('KeyH');
   await expect(page.getByTestId('layout-column')).toBeVisible();
   await shot('column');
+  // Column: the effort numeral is at least 96 px at 1920x1080 and the panel packs upward.
+  const numPx = await page
+    .getByTestId('effort-value-number')
+    .evaluate((n) => parseFloat(getComputedStyle(n).fontSize));
+  expect(numPx).toBeGreaterThanOrEqual(96);
   await page.keyboard.press('KeyH');
   await expect(page.getByTestId('layout-cockpit')).toBeVisible();
   await shot('cockpit');
@@ -97,7 +102,7 @@ test('Hyperride: canvas renders under the HUD, H cycles layouts, G toggles playe
   await page.keyboard.press('KeyH');
   await expect(page.getByTestId('layout-immersive')).toBeVisible();
 
-  // A hard block: only the current block carries colour in the timeline.
+  // A hard block: the floor (group P) is the timeline with the current block marked.
   for (let i = 0; i < 12; i += 1) {
     const effort = Number(
       (await page.getByTestId('effort-value-number').textContent())?.trim() ?? '0',
@@ -106,9 +111,23 @@ test('Hyperride: canvas renders under the HUD, H cycles layouts, G toggles playe
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(150);
   }
-  await expect(page.getByTestId('timeline')).toHaveAttribute('data-tone', 'mono');
+  await expect(page.getByTestId('timeline')).toHaveAttribute('data-g', 'P');
+  await expect(page.getByTestId('timeline').locator('[data-state="current"]')).toHaveCount(1);
   await shot('immersive-high-effort');
 
+  // Phone portrait, Column without riders: the timeline sits at the bottom, not mid-screen.
+  await page.setViewportSize({ width: 390, height: 844 });
+  while ((await page.getByTestId('layout-column').count()) === 0) {
+    await page.keyboard.press('KeyH');
+    await page.waitForTimeout(150);
+  }
+  await page.waitForTimeout(400);
+  const floor = (await page.getByTestId('timeline').boundingBox())!;
+  expect(floor.y + floor.height).toBeGreaterThan(844 - 24);
+  const phoneNum = await page
+    .getByTestId('effort-value-number')
+    .evaluate((n) => parseFloat(getComputedStyle(n).fontSize));
+  expect(phoneNum).toBeGreaterThanOrEqual(63.9);
   await page.keyboard.press('KeyG');
   await expect(page.getByTestId('players-list')).toBeVisible();
   expect(errors).toEqual([]);

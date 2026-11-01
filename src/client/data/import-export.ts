@@ -13,8 +13,8 @@ export type ImportResult =
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 
-/** `spinning-tutor-YYYYMMDD-HHmm.json` in local time. */
-export function exportFileName(now: Date, prefix = 'spinning-tutor'): string {
+/** `hypercycling-YYYYMMDD-HHmm.json` in local time. */
+export function exportFileName(now: Date, prefix = 'hypercycling'): string {
   const date = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
   return `${prefix}-${date}-${pad(now.getHours())}${pad(now.getMinutes())}.json`;
 }
@@ -96,7 +96,7 @@ export async function importFromFile(
   const now = options.now ?? (() => new Date());
   try {
     if (download) {
-      await download(await exportToFile(repos), exportFileName(now(), 'spinning-tutor-backup'));
+      await download(await exportToFile(repos), exportFileName(now(), 'hypercycling-backup'));
     }
     await repos.replaceAll(parsed.bundle);
     return { ok: true };

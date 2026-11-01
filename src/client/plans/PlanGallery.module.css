@@ -21,6 +21,10 @@
   gap: 0.5rem;
 }
 
+.dash {
+  margin-top: 0.75rem;
+}
+
 .intro {
   margin: 0.375rem 0 1.5rem;
   font-size: 1.125rem;
@@ -53,7 +57,7 @@
 }
 
 .level b {
-  color: var(--act);
+  color: var(--act-text);
   font-weight: 600;
 }
 
@@ -142,8 +146,8 @@
   margin-right: auto;
   margin-left: 1rem;
   border-radius: 0.625rem;
-  background: var(--act);
-  color: #04101f;
+  background: var(--acc);
+  color: var(--on-acc);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.1875rem;

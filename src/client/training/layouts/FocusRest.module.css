@@ -1,69 +1,155 @@
-/* Focus on the plain background: effort colour edge to edge, one big number. */
+/*
+ * Focus at rest. On Basic (variant E-b, thin): a dark field with a thin frame in the effort
+ * colour. Over a background: a small glass badge. Fades are set inline (180 ms in, 700 ms out,
+ * 0 with reduced motion), opacity only.
+ */
 .root {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1vh;
-  color: #fff;
+  display: grid;
+  place-items: center;
+  color: #f4f6fa;
   font-family: var(--font-display);
-  background: color-mix(in srgb, var(--zone) 52%, #0b0e14);
+  --sub: #b7c0cf;
+  background: color-mix(in srgb, var(--zone) 5%, #070a12);
+  box-shadow: inset 0 0 0 calc(0.9 * var(--u)) var(--zone);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition:
-    opacity 0.6s ease,
-    visibility 0s linear 0.6s;
+  transition-property: opacity, visibility;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1), linear;
 }
 
 .on {
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.6s ease;
+  transition-timing-function: ease-out, linear;
 }
 
-.instant,
-.instant.on {
-  transition: none;
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(8 * var(--u));
 }
 
-.value {
-  font-weight: 800;
-  font-size: 52vh;
-  line-height: 0.9;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 6vh rgba(0, 0, 0, 0.25);
+.ringBox {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.label {
-  font-weight: 600;
-  font-size: 4.4vh;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  opacity: 0.9;
+.name {
+  margin-top: calc(-9 * var(--u));
+  position: relative;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: calc(3 * var(--u));
+  color: var(--sub);
+  white-space: nowrap;
+}
+
+.timeBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.caption {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: calc(3 * var(--u));
+  color: var(--sub);
 }
 
 .time {
-  margin-top: 2vh;
-  font-weight: 600;
-  font-size: 3.4vh;
-  letter-spacing: 0.12em;
-  font-variant-numeric: tabular-nums;
-  opacity: 0.7;
+  font-size: calc(27.8 * var(--u));
+  margin-top: calc(1.6 * var(--u));
+}
+
+.rail {
+  width: calc(58 * var(--u));
+  max-width: 100%;
+  margin-top: calc(3.6 * var(--u));
+}
+
+/* ---- the badge over a background ---- */
+.badge.badge {
+  position: absolute;
+  left: 50%;
+  bottom: calc(16.5 * var(--u));
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: calc(2.4 * var(--u));
+  padding: calc(1.6 * var(--u)) calc(3.2 * var(--u)) calc(1.6 * var(--u)) calc(2 * var(--u));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-property: opacity, visibility;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1), linear;
+}
+
+.badge.badgeOn {
+  opacity: 1;
+  visibility: visible;
+  transition-timing-function: ease-out, linear;
+}
+
+.badgeTime {
+  display: flex;
+  flex-direction: column;
+  gap: calc(1.4 * var(--u));
+}
+
+.badgeClock {
+  font-size: calc(9.2 * var(--u));
+}
+
+.badgeRail {
+  width: calc(20.8 * var(--u));
 }
 
 @media (max-width: 760px) and (orientation: portrait) {
-  .value {
-    font-size: 48vw;
+  .content {
+    flex-direction: column;
+    gap: calc(4 * var(--u));
   }
 
-  .label {
-    font-size: 4.4vw;
+  .name {
+    margin-top: calc(-4 * var(--u));
+    font-size: 4.6vw;
+  }
+
+  .caption {
+    font-size: 4.6vw;
+  }
+
+  .timeBox {
+    align-items: center;
   }
 
   .time {
-    font-size: 5vw;
+    font-size: 34vw;
+  }
+
+  .rail {
+    width: 72vw;
+  }
+
+  .badge.badge {
+    bottom: calc(20 * var(--u));
+    gap: 4vw;
+    padding: 2vw 5vw 2vw 3vw;
+  }
+
+  .badgeClock {
+    font-size: 14vw;
+  }
+
+  .badgeRail {
+    width: 32vw;
   }
 }

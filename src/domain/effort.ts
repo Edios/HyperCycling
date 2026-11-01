@@ -24,16 +24,16 @@ export interface EffortRow {
 export type EffortTable = readonly EffortRow[];
 
 export const DEFAULT_EFFORT_TABLE: EffortTable = [
-  { level: 1, labelKey: 'veryEasy', ftpPct: 45, color: '#8fa3b8' },
-  { level: 2, labelKey: 'easy', ftpPct: 55, color: '#8fa3b8' },
-  { level: 3, labelKey: 'steady', ftpPct: 62, color: '#3d8bff' },
-  { level: 4, labelKey: 'endurance', ftpPct: 70, color: '#3d8bff' },
+  { level: 1, labelKey: 'veryEasy', ftpPct: 45, color: '#8fdcff' },
+  { level: 2, labelKey: 'easy', ftpPct: 55, color: '#8fdcff' },
+  { level: 3, labelKey: 'steady', ftpPct: 62, color: '#2f6bff' },
+  { level: 4, labelKey: 'endurance', ftpPct: 70, color: '#2f6bff' },
   { level: 5, labelKey: 'tempo', ftpPct: 78, color: '#35d07f' },
   { level: 6, labelKey: 'hardTempo', ftpPct: 85, color: '#35d07f' },
   { level: 7, labelKey: 'hard', ftpPct: 92, color: '#ffd23f' },
   { level: 8, labelKey: 'threshold', ftpPct: 100, color: '#ff8c2a' },
-  { level: 9, labelKey: 'veryHard', ftpPct: 112, color: '#ff3d5a' },
-  { level: 10, labelKey: 'max', ftpPct: 130, color: '#ff3d5a' },
+  { level: 9, labelKey: 'veryHard', ftpPct: 112, color: '#ff4d4d' },
+  { level: 10, labelKey: 'max', ftpPct: 130, color: '#ff4d4d' },
 ];
 
 const levelSchema = z.union([

@@ -1,4 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import { APP_ID } from '../../domain/export-bundle';
 import type { PlanProgress } from '../../domain/plan';
 import type { Player } from '../../domain/player';
 import type { CollectionRepo, Repositories, SingletonRepo } from '../../domain/repositories';
@@ -106,7 +107,7 @@ export async function createIndexedDbRepositories(
         tx.objectStore('singletons').get('settings'),
       ]);
       return {
-        app: 'spinning-tutor',
+        app: APP_ID,
         schemaVersion: 1,
         exportedAt: new Date().toISOString(),
         workouts: workouts.sort(byId),

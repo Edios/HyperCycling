@@ -1,9 +1,9 @@
 /** How long the Focus HUD stays after the last mouse / touch / key input. */
 export const FOCUS_INPUT_HOLD_MS = 3000;
-/** The HUD fades in this long before a block ends, so riders see what comes next. */
-export const FOCUS_BEFORE_BLOCK_END_SEC = 5;
+/** The HUD fades in this long before a block ends, so riders see what comes next (round 10). */
+export const FOCUS_BEFORE_BLOCK_END_SEC = 10;
 /** ...and stays this long after the next block started. */
-export const FOCUS_AFTER_BLOCK_START_SEC = 4;
+export const FOCUS_AFTER_BLOCK_START_SEC = 6;
 /** The finish is always shown: the last seconds of the whole workout. */
 export const FOCUS_FINAL_SEC = 10;
 

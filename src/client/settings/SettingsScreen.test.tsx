@@ -321,7 +321,7 @@ describe('Training', () => {
   it('creates lastSession from defaults when choosing a default background and layout', async () => {
     renderScreen();
     const tr = await section('training');
-    fireEvent.click(within(tr).getByRole('radio', { name: 'Hyperride' }));
+    fireEvent.click(within(tr).getByRole('radio', { name: 'World' }));
     await waitFor(() => expect(db.settings?.lastSession?.background).toBe('hyperride'));
     expect(db.settings?.lastSession?.hud).toBe('immersive');
     expect(db.settings?.lastSession?.playerIds).toEqual([]);
@@ -430,7 +430,7 @@ describe('Data', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Export data' }));
     await waitFor(() => expect(download).toHaveBeenCalled());
     const [blob, name] = download.mock.calls[0] as [Blob, string];
-    expect(name).toMatch(/^spinning-tutor-\d{8}-\d{4}\.json$/);
+    expect(name).toMatch(/^hypercycling-\d{8}-\d{4}\.json$/);
     expect(blob.type).toBe('application/json');
   });
 
@@ -449,7 +449,7 @@ describe('Data', () => {
     renderScreen();
     await pick(file('{"hello": 1}'));
     expect(await screen.findByTestId('import-result')).toHaveTextContent(
-      'Import failed. The file is not a Spinning Tutor export.',
+      'Import failed. The file is not a HyperCycling export.',
     );
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(db.replaced).toBeUndefined();

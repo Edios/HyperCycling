@@ -21,16 +21,16 @@ describe('focusVisible', () => {
     expect(focusVisible({ ...base, nowMs: 100_000, lastInputMs: 97_000 })).toBe(false);
   });
 
-  it('shows from 5 s before the block ends', () => {
-    expect(focusVisible({ ...base, blockRemainingSec: 5.01 })).toBe(false);
-    expect(focusVisible({ ...base, blockRemainingSec: 5 })).toBe(true);
+  it('shows from 10 s before the block ends', () => {
+    expect(focusVisible({ ...base, blockRemainingSec: 10.01 })).toBe(false);
+    expect(focusVisible({ ...base, blockRemainingSec: 10 })).toBe(true);
     expect(focusVisible({ ...base, blockRemainingSec: 0.2 })).toBe(true);
   });
 
-  it('stays until 4 s after the next block started', () => {
+  it('stays until 6 s after the next block started', () => {
     expect(focusVisible({ ...base, blockElapsedSec: 0 })).toBe(true);
-    expect(focusVisible({ ...base, blockElapsedSec: 3.99 })).toBe(true);
-    expect(focusVisible({ ...base, blockElapsedSec: 4 })).toBe(false);
+    expect(focusVisible({ ...base, blockElapsedSec: 5.99 })).toBe(true);
+    expect(focusVisible({ ...base, blockElapsedSec: 6 })).toBe(false);
   });
 
   it.each(['idle', 'countdown', 'paused', 'finished'] as const)(

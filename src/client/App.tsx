@@ -1,4 +1,5 @@
 import { createHashRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
+import { Intro } from './brand/Intro';
 import { EditorScreen } from './editor/EditorScreen';
 import { DevHome } from './screens/DevHome';
 import { SettingsEffects } from './settings/SettingsEffects';
@@ -25,6 +26,7 @@ function Root() {
   return (
     <>
       <SettingsEffects />
+      <Intro />
       <ResumePrompt />
       <Outlet />
     </>

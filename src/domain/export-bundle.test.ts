@@ -29,6 +29,11 @@ describe('parseExportBundle', () => {
   it('rejects non JSON strings', () => {
     expect(parseExportBundle('{nope')).toEqual({ ok: false, reason: 'notJson' });
   });
+  it('accepts both the current and the pre-rebrand app id', () => {
+    expect(parseExportBundle({ ...good(), app: 'hypercycling' }).ok).toBe(true);
+    expect(parseExportBundle({ ...good(), app: 'spinning-tutor' }).ok).toBe(true);
+    expect(exportBundleSchema.safeParse({ ...good(), app: 'hypercycling' }).success).toBe(true);
+  });
   it('rejects wrong app', () => {
     expect(parseExportBundle({ ...good(), app: 'other' })).toMatchObject({
       ok: false,

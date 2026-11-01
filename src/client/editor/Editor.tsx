@@ -295,7 +295,12 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
           )}
         </header>
 
-        <MetaBar workout={workout} description={shown.description} readOnly={readOnly} dispatch={dispatch} />
+        <MetaBar
+          workout={workout}
+          description={shown.description}
+          readOnly={readOnly}
+          dispatch={dispatch}
+        />
         {readOnly && (
           <p className={styles.banner} role="status">
             {t('editor.readOnly')}

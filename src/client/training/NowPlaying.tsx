@@ -1,22 +1,22 @@
 import type { TrackRef } from '../../domain/workout';
 import { useT } from '../i18n';
+import hud from './hud/hud.module.css';
 import styles from './NowPlaying.module.css';
 
 export interface NowPlayingProps {
   track: TrackRef;
   muted: boolean;
-  /** Hyperride and YouTube layouts keep the controls where the corner would be: sit above them. */
-  raised?: boolean;
 }
 
-/** Small corner label with the track that plays right now (title and artist when known). */
-export function NowPlaying({ track, muted, raised = false }: NowPlayingProps) {
+/** Group S: small label with the track that plays right now (title and artist when known). */
+export function NowPlaying({ track, muted }: NowPlayingProps) {
   const t = useT();
   const provider = track.provider === 'spotify' ? 'Spotify' : 'YouTube';
   const title = track.title || t('music.unknownTrack');
   return (
     <div
-      className={`${styles.root} ${raised ? styles.raised : ''}`}
+      className={`${hud.panel} ${styles.root}`}
+      data-g="S"
       data-testid="now-playing"
       data-provider={track.provider}
       data-muted={muted}
