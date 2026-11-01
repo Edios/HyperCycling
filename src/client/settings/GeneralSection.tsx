@@ -46,6 +46,11 @@ export function GeneralSection() {
         />
         <span className={styles.note}>{t('settings.general.themeHint')}</span>
       </div>
+      <div className={styles.field}>
+        <a href={`${import.meta.env.BASE_URL}docs/`} target="_blank" rel="noreferrer">
+          {t('settings.general.help')}
+        </a>
+      </div>
     </div>
   );
 }

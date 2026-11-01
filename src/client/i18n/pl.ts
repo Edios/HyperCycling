@@ -333,6 +333,7 @@ export const pl: Messages = {
       themeHint: 'Kolory tła Basic podczas treningu.',
       dark: 'Ciemny',
       light: 'Jasny',
+      help: 'Pomoc i poradniki (po angielsku)',
     },
     equipment: {
       title: 'Sprzęt i FTP',
