@@ -117,6 +117,7 @@
     --nring: calc(8.9 * var(--u));
     --time-fs: calc(13.3 * var(--u));
     --mval: calc(6.4 * var(--u));
+    --num-k: 0.534;
     --next-fs: calc(5.6 * var(--u));
     --rail: 100%;
     --pad: calc(2.8 * var(--u)) calc(3 * var(--u));
@@ -129,7 +130,7 @@
     width: calc(50 * var(--u));
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: calc(1.4 * var(--u));
     overflow: hidden;
   }
@@ -239,6 +240,7 @@
     --ring: calc(25 * var(--u));
     --nring: calc(8.3 * var(--u));
     --time-fs: calc(18.9 * var(--u));
+    --num-k: 0.534;
     --mval: calc(6.1 * var(--u));
     --next-fs: calc(5.6 * var(--u));
     --rail: calc(32 * var(--u));
@@ -286,6 +288,7 @@
     --cap: 3.3vw;
     --rail: 100%;
     --tl: 11vw;
+    --num-k: 0.412;
     --rname: 5.2vw;
     --rwatts: 8vw;
     --pad: 3vw 4vw;
@@ -321,6 +324,10 @@
 
   .root > [data-g='M'] {
     order: 5;
+  }
+
+  /* The spacer: whatever the layout, the controls and the timeline sit at the bottom. */
+  .controls {
     margin-top: auto;
   }
 

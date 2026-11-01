@@ -114,6 +114,10 @@ describe('EffortRing', () => {
     expect(screen.getByTestId('effort-ring')).toHaveStyle({ width: 'clamp(100px, 20vh, 300px)' });
     expect(screen.getByText('05')).toHaveStyle({ color: 'var(--zone)' });
   });
+  it('scales the number with --num-k (default 0.4)', () => {
+    render(<EffortRing effort={5} size="var(--ring)" numberTestId="n" />);
+    expect((screen.getByTestId('n') as HTMLElement).style.fontSize).toContain('var(--num-k, 0.4)');
+  });
   it('puts the number test id on the number', () => {
     render(<EffortRing effort={5} numberTestId="n" />);
     expect(screen.getByTestId('n')).toHaveTextContent('05');

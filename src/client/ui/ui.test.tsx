@@ -147,6 +147,9 @@ describe('AppBar', () => {
       </MemoryRouter>,
     );
     expect(screen.getByRole('link', { name: 'Freestyle' })).toHaveAttribute('aria-current', 'page');
+    // The logo links home; its name is the wordmark once (the mark is decorative).
+    expect(screen.getByRole('link', { name: 'HyperCycling' })).toHaveAttribute('href', '/');
+    expect(screen.getByTestId('logo-mark')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByRole('link', { name: 'Plan' })).not.toHaveAttribute('aria-current');
     expect(screen.getByRole('link', { name: /Players/ })).toHaveAttribute('href', '/players');
     expect(screen.getByRole('link', { name: /Settings/ })).toHaveAttribute('href', '/settings');

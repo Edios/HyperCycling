@@ -10,6 +10,8 @@
   --dim: #5d6679;
   /* Legacy name for the blue accent; now the zone 3-4 blue. Mode accents live in --acc. */
   --act: #2f6bff;
+  /* Lighter blue for TEXT on the dark surfaces (>= 4.5:1; --act itself is 4.0:1 on --s1). */
+  --act-text: #5b8cff;
   --glass: rgb(16 22 36 / 0.72);
 
   --z1: #8fdcff;

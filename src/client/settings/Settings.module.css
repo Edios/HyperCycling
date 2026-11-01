@@ -119,7 +119,7 @@
 }
 
 .warning a {
-  color: var(--act);
+  color: var(--act-text);
   font-weight: 600;
 }
 
@@ -274,7 +274,7 @@
 }
 
 .link {
-  color: var(--act);
+  color: var(--act-text);
   font-weight: 600;
 }
 
@@ -558,7 +558,7 @@
 
 /* Themed link colour (the browser default blue is unreadable on the dark background). */
 .section a {
-  color: var(--act);
+  color: var(--act-text);
   text-underline-offset: 0.2em;
 }
 

@@ -15,7 +15,6 @@ export function AppBar() {
       <Link to="/" className={styles.logo} title={t('nav.mainMenu')}>
         <LogoMark size={30} />
         <Wordmark />
-        <span className="sr-only">{t('app.title')}</span>
       </Link>
       <nav className={styles.tabs}>
         <NavLink to="/" end className={tab('plan')}>

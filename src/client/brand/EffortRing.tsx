@@ -119,7 +119,7 @@ export function EffortRing({
           fontSize:
             typeof size === 'number'
               ? size * (quiet ? 0.44 : 0.4)
-              : `calc(${box} * ${quiet ? 0.44 : 0.4})`,
+              : `calc(${box} * ${quiet ? 0.44 : 'var(--num-k, 0.4)'})`,
           color: quiet ? QUIET_TEXT : numColor,
         }}
         aria-hidden={label ? true : undefined}
