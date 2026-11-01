@@ -16,7 +16,7 @@ tests/e2e/     Playwright specs
 
 |         | Local                                                              | GitHub Pages                                                                   |
 | ------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| Build   | `npm run build` (`VITE_STORAGE=http`)                              | `npm run build:pages` (`VITE_STORAGE=indexeddb`, `VITE_BASE=/Spinning-Tutor/`) |
+| Build   | `npm run build` (`VITE_STORAGE=http`)                              | `npm run build:pages` (`VITE_STORAGE=indexeddb`, `VITE_BASE=/HyperCycling/`) |
 | Storage | Fastify on `127.0.0.1:5175` + SQLite file `data/spinning-tutor.db` | IndexedDB in the browser                                                       |
 | Backups | `data/backups/` before an import (newest 10)                       | none (use Settings, Data, Export)                                              |
 | Router  | hash router, both builds (Pages has no SPA fallback)               | same                                                                           |

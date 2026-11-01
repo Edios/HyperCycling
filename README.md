@@ -6,7 +6,7 @@ A workout screen for your indoor bike. Pick a plan or a single workout, and Spin
 
 ## Try it
 
-- **In the browser**: https://edios.github.io/Spinning-Tutor/ (data stays in your browser).
+- **In the browser**: https://edios.github.io/HyperCycling/ (data stays in your browser).
 - **On your computer** (Node 24 or newer):
 
   ```

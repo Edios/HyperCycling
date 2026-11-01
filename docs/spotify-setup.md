@@ -23,7 +23,7 @@ The redirect URI is the address where you open the app, followed by its path.
 | Where you run Spinning Tutor   | Redirect URI                                           |
 | ------------------------------ | ------------------------------------------------------ |
 | On your computer (`npm start`) | `http://127.0.0.1:5175/`                               |
-| GitHub Pages                   | `https://<your-github-name>.github.io/Spinning-Tutor/` |
+| GitHub Pages                   | `https://<your-github-name>.github.io/HyperCycling/` |
 
 Use `127.0.0.1`, never `localhost`: Spotify rejects `http://localhost` redirects. Open the local app at `http://127.0.0.1:5175` too; Settings, Music shows a warning and disables Connect if you open it on `localhost`. If you changed the port (`PORT=...`), put that port in the URI.
 

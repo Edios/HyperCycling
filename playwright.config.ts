@@ -40,7 +40,7 @@ export default defineConfig({
     },
     {
       name: 'pages',
-      use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:5176/Spinning-Tutor/' },
+      use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:5176/HyperCycling/' },
     },
   ],
   webServer: [
@@ -59,8 +59,8 @@ export default defineConfig({
     },
     {
       command:
-        'npm run build:pages:e2e && cross-env VITE_BASE=/Spinning-Tutor/ vite preview --outDir dist/e2e-pages --host 127.0.0.1 --port 5176 --strictPort',
-      url: 'http://127.0.0.1:5176/Spinning-Tutor/',
+        'npm run build:pages:e2e && cross-env VITE_BASE=/HyperCycling/ vite preview --outDir dist/e2e-pages --host 127.0.0.1 --port 5176 --strictPort',
+      url: 'http://127.0.0.1:5176/HyperCycling/',
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
     },
