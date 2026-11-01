@@ -169,7 +169,7 @@ describe('PlanWizard steps', () => {
     expect(screen.getByRole('radio', { name: '60 min' })).toBeChecked();
     next();
     next();
-    expect(screen.getByRole('heading', { level: 2, name: 'Keep Fit' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Keep Fit' })).toBeInTheDocument();
   });
 });
 
@@ -178,7 +178,7 @@ describe('PlanWizard recommendation', () => {
     renderWizard();
     await toFtpStep();
     next();
-    expect(screen.getByRole('heading', { level: 2, name: 'Build Form' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Build Form' })).toBeInTheDocument();
     expect(screen.getByTestId('wizard-reason')).toHaveTextContent(/20-minute test/);
     expect(screen.getByTestId('wizard-reason')).not.toHaveTextContent(/[{}]/);
     expect(screen.getByTestId('plan-calendar')).toBeInTheDocument();
@@ -273,5 +273,49 @@ describe('PlanWizard recommendation', () => {
     expect(await screen.findByTestId('customize')).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: '60 min' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Progres + Freestyle' })).toBeChecked();
+  });
+
+  it('Customize hands over the typed FTP, which prefills the plan screen', async () => {
+    renderWizard();
+    await toFtpStep();
+    fireEvent.click(screen.getByRole('radio', { name: /Yes, I know it/ }));
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '231' } });
+    next();
+    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+    await screen.findByTestId('customize');
+    expect(screen.getByDisplayValue('231')).toBeInTheDocument();
+  });
+
+  it('Customize after "bike without watts" hides the FTP field on the plan screen', async () => {
+    renderWizard();
+    await toFtpStep();
+    fireEvent.click(screen.getByRole('radio', { name: /Bike without watts/ }));
+    next();
+    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+    await screen.findByTestId('customize');
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+  });
+
+  it('asks before changing the settings of the active plan that already has entries', async () => {
+    db.settings = { ...DEFAULT_SETTINGS, activePlanId: buildForm.id };
+    db.progress = [progressFor(buildForm, SETTINGS)];
+    renderWizard();
+    await toFtpStep();
+    next();
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+    expect(db.puts.progress).toHaveLength(0);
+  });
+
+  it('starts the active plan without asking while it has no entries', async () => {
+    db.settings = { ...DEFAULT_SETTINGS, activePlanId: buildForm.id };
+    db.progress = [{ ...progressFor(buildForm, SETTINGS), entries: [] }];
+    renderWizard();
+    await toFtpStep();
+    next();
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    await screen.findByTestId('where');
+    expect(db.puts.progress).toHaveLength(1);
   });
 });

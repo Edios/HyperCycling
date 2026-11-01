@@ -2,7 +2,12 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Plan, PlanProgress } from '../../domain/plan';
 import type { Player } from '../../domain/player';
-import { recommendPlan, type FtpAnswer, type WizardGoal } from '../../domain/plan-wizard';
+import {
+  GOAL_PLAN,
+  recommendPlan,
+  type FtpAnswer,
+  type WizardGoal,
+} from '../../domain/plan-wizard';
 import { builtinPlans } from '../data/builtin';
 import { localizedText } from '../data/localized';
 import { getRepositories } from '../data/repositories';
@@ -20,12 +25,6 @@ import { useWeeksLabel } from './useWeeksLabel';
 import styles from './PlanWizard.module.css';
 
 const GOALS: readonly WizardGoal[] = ['backToForm', 'buildForm', 'keepFit', 'shortOnTime'];
-const GOAL_PLAN: Record<WizardGoal, string> = {
-  backToForm: 'back-to-form',
-  buildForm: 'build-form',
-  keepFit: 'keep-fit',
-  shortOnTime: 'quick-boost',
-};
 const DAYS = [2, 3] as const;
 const MINUTES = [30, 45, 60] as const;
 type FtpKind = FtpAnswer['kind'];
@@ -147,7 +146,8 @@ function Wizard({ me }: { me: Player | undefined }) {
     }
     const isActive = settings.activePlanId === plan.id;
     const otherActive = settings.activePlanId !== undefined && !isActive;
-    const hasProgress = !isActive && progress !== undefined;
+    // The active plan is only asked about once it holds entries that new settings could invalidate.
+    const hasProgress = progress !== undefined && (!isActive || progress.entries.length > 0);
     setExisting(hasProgress ? progress : undefined);
     if (otherActive || hasProgress) setConfirming('choose');
     else await commit('keep');
@@ -416,9 +416,9 @@ function Wizard({ me }: { me: Player | undefined }) {
             <div className={styles.summaryMain}>
               <Card hero className={styles.planCard}>
                 <span className={styles.badge}>{t('tag.progres')}</span>
-                <h2 ref={heading} tabIndex={-1}>
+                <h1 ref={heading} tabIndex={-1}>
                   {planName}
-                </h2>
+                </h1>
                 <div className={styles.meta}>
                   {t('wizard.summaryMeta', {
                     weeks: weeksOf(plan),
@@ -458,7 +458,11 @@ function Wizard({ me }: { me: Player | undefined }) {
               onClick={() =>
                 rec &&
                 navigate(`/plans/${encodeURIComponent(rec.planId)}`, {
-                  state: { settings: rec.settings },
+                  state: {
+                    settings: rec.settings,
+                    ftp: ftpAnswer.kind === 'known' ? ftpAnswer.ftp : undefined,
+                    showsWatts: ftpKind !== 'noWatts',
+                  },
                 })
               }
             >

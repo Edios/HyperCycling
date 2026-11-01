@@ -38,6 +38,11 @@ vi.mock('../data/repositories', () => ({
         },
       },
       players: {
+        remove: (id: string) => {
+          log.push('player-remove');
+          db.players = db.players.filter((x) => x.id !== id);
+          return Promise.resolve();
+        },
         list: () => Promise.resolve(db.players),
         put: (p: Player) => {
           log.push('player');
@@ -121,5 +126,22 @@ describe('activatePlan', () => {
     db.players = [{ id: 'p1', name: 'Ola', ftp: 180, isMe: true }];
     await activatePlan({ plan, settings: cfg, mode: 'keep', ftp: 200 });
     expect(db.players).toEqual([{ id: 'p1', name: 'Ola', ftp: 200, isMe: true }]);
+  });
+
+  it('rolls a changed FTP back when the plan write fails', async () => {
+    db.players = [{ id: 'p1', name: 'Ola', ftp: 180, isMe: true }];
+    db.failProgress = true;
+    await expect(activatePlan({ plan, settings: cfg, mode: 'keep', ftp: 200 })).rejects.toThrow(
+      'disk full',
+    );
+    expect(db.players).toEqual([{ id: 'p1', name: 'Ola', ftp: 180, isMe: true }]);
+  });
+
+  it('removes a freshly created "me" player when the plan write fails', async () => {
+    db.failProgress = true;
+    await expect(activatePlan({ plan, settings: cfg, mode: 'keep', ftp: 200 })).rejects.toThrow(
+      'disk full',
+    );
+    expect(db.players).toEqual([]);
   });
 });

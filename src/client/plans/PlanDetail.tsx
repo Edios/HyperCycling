@@ -17,7 +17,7 @@ import { builtinPlans } from '../data/builtin';
 import { localizedText } from '../data/localized';
 import { getRepositories } from '../data/repositories';
 import { useLibrary } from '../data/useLibrary';
-import { useSettings } from '../data/useSettings';
+import { updateSettings, useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
 import { minutesOf } from '../select/model';
 import { Button } from '../ui/Button';
@@ -100,18 +100,32 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
   const stored = data.progress?.settings;
   // The wizard's Customize hands over its recommendation as the starting point.
   const location = useLocation();
-  const handed = planSettingsSchema.safeParse(
-    (location.state as { settings?: unknown } | null)?.settings,
-  );
+  const handedState = location.state as {
+    settings?: unknown;
+    ftp?: unknown;
+    showsWatts?: unknown;
+  } | null;
+  const handed = planSettingsSchema.safeParse(handedState?.settings);
+  const handedFtp = typeof handedState?.ftp === 'number' ? handedState.ftp : undefined;
+  const handedWatts =
+    typeof handedState?.showsWatts === 'boolean' ? handedState.showsWatts : undefined;
   const initial = handed.success ? handed.data : (stored ?? DEFAULT_PLAN_SETTINGS);
 
   const [cfg, setCfg] = useState<PlanSettings>(initial);
   const [pickWeek, setPickWeek] = useState(initial.startWeek > 1);
-  const [ftpText, setFtpText] = useState(data.me ? String(data.me.ftp) : '');
+  const [ftpText, setFtpText] = useState(
+    handedFtp !== undefined ? String(handedFtp) : data.me ? String(data.me.ftp) : '',
+  );
   const [confirming, setConfirming] = useState<false | 'choose' | 'reset'>(false);
   const [error, setError] = useState<string | undefined>();
 
-  const equipment = settings.equipment;
+  const equipment = useMemo(
+    () =>
+      handedWatts === undefined || handedWatts === settings.equipment.showsWatts
+        ? settings.equipment
+        : { ...settings.equipment, showsWatts: handedWatts },
+    [settings.equipment, handedWatts],
+  );
   const text = localizedText(plan, lang);
   const byId = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts]);
   const load = useMemo(() => planLoad(plan), [plan]);
@@ -136,7 +150,14 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
   ];
 
   async function commit(mode: 'keep' | 'reset'): Promise<void> {
+    const before = settings.equipment;
+    let equipmentChanged = false;
     try {
+      // The wizard's "bike without watts" answer is stored along with the plan.
+      if (equipment.showsWatts !== before.showsWatts) {
+        await updateSettings({ equipment });
+        equipmentChanged = true;
+      }
       await activatePlan({
         plan,
         settings: cfg,
@@ -147,6 +168,11 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
       });
     } catch (err) {
       console.warn('Saving the plan failed', err);
+      if (equipmentChanged) {
+        await updateSettings({ equipment: before }).catch((e: unknown) =>
+          console.warn('Restoring the equipment failed', e),
+        );
+      }
       setConfirming(false);
       setError(t('plans.saveFailed'));
       return;

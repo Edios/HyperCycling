@@ -17,22 +17,29 @@ describe('createAutoQuality', () => {
     expect(run(createAutoQuality(), 1000 / 60, 20_000)).toBeUndefined();
   });
 
-  it('triggers once the 5 s window averages below 45 fps', () => {
-    const at = run(createAutoQuality(), 30, 20_000); // ~33 fps
-    expect(at).toBeGreaterThanOrEqual(5000);
-    expect(at).toBeLessThan(5100);
+  it('ignores the first 1.5 s and needs two consecutive slow windows', () => {
+    const at = run(createAutoQuality(), 30, 30_000); // ~33 fps
+    // 1.5 s warm-up + 2 x 5 s windows
+    expect(at).toBeGreaterThanOrEqual(11_500);
+    expect(at).toBeLessThan(11_600);
+  });
+
+  it('does not count a slow start-up', () => {
+    const c = createAutoQuality();
+    expect(run(c, 100, 1400)).toBeUndefined(); // 10 fps during warm-up only
+    expect(run(c, 1000 / 60, 30_000, 1500)).toBeUndefined();
+  });
+
+  it('a single slow window followed by a good one does not trigger', () => {
+    const c = createAutoQuality();
+    expect(run(c, 40, 6500)).toBeUndefined(); // warm-up + one slow window
+    expect(run(c, 1000 / 60, 20_000, 6540)).toBeUndefined();
   });
 
   it('triggers only once', () => {
     const c = createAutoQuality();
-    expect(run(c, 40, 6000)).toBeDefined();
-    expect(run(c, 40, 20_000, 7000)).toBeUndefined();
-  });
-
-  it('judges each 5 s window on its own', () => {
-    const c = createAutoQuality();
-    expect(run(c, 1000 / 60, 5000)).toBeUndefined(); // good window
-    expect(run(c, 40, 5100, 5100)).toBeDefined(); // slow window afterwards
+    expect(run(c, 40, 13_000)).toBeDefined();
+    expect(run(c, 40, 20_000, 14_000)).toBeUndefined();
   });
 
   it('restarts the window after a long pause (hidden tab)', () => {
@@ -41,5 +48,6 @@ describe('createAutoQuality', () => {
     c.onFrame(16);
     expect(c.onFrame(60_000)).toBe(false); // the gap is not a slow window
     expect(run(c, 1000 / 60, 10_000, 60_016)).toBeUndefined();
+    expect(run(c, 40, 3000, 70_100)).toBeUndefined(); // warm-up again after a pause
   });
 });

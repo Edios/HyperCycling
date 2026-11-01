@@ -19,7 +19,7 @@ export interface Recommendation {
   alternativePlanId?: string;
 }
 
-const GOAL_PLAN: Record<WizardGoal, string> = {
+export const GOAL_PLAN: Record<WizardGoal, string> = {
   backToForm: 'back-to-form',
   buildForm: 'build-form',
   keepFit: 'keep-fit',

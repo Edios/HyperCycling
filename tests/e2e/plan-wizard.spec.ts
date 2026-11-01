@@ -35,10 +35,23 @@ async function walk(page: Page, ftp: 'unknown' | number, shots = false): Promise
 
 async function start(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Start', exact: true }).click();
-  // Another spec may have left an active plan in the shared database: replace it.
-  const startOver = page.getByRole('button', { name: 'Start over' });
-  if (await startOver.isVisible({ timeout: 1000 }).catch(() => false)) await startOver.click();
-  await expect(page.getByTestId('next-session')).toBeVisible();
+  // Another spec may have left a plan in the shared database. The confirmation appears after an
+  // awaited repository read, so wait for either outcome instead of probing the dialog once.
+  const dialog = page.getByRole('dialog');
+  const nextSession = page.getByTestId('next-session');
+  await expect(dialog.or(nextSession)).toBeVisible();
+  if (await dialog.isVisible()) {
+    // "Start over" (this plan has progress, followed by a second confirmation) or
+    // "Start <plan>" (another plan is active).
+    const startOver = dialog.getByRole('button', { name: 'Start over' });
+    if (await startOver.isVisible()) {
+      await startOver.click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Erase and start over' }).click();
+    } else {
+      await dialog.getByRole('button', { name: /^Start / }).click();
+    }
+  }
+  await expect(nextSession).toBeVisible();
 }
 
 test('unknown FTP: recommendation shows the test, plan starts with the 20-min test', async ({
