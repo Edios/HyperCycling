@@ -117,11 +117,10 @@ async function main(): Promise<void> {
     await page.getByTestId('summary-screen').waitFor();
     await shot(page, 'summary');
 
-    // Hyperride with the Immersive overlay.
+    // World background (the default world).
     await page.goto(`${ORIGIN}#/setup/${WORKOUT}`);
     await page.getByTestId('setup-screen').waitFor();
-    await page.getByRole('button', { name: 'Hyperride', exact: true }).click();
-    await page.getByRole('radio', { name: 'Immersive' }).click();
+    await page.getByRole('button', { name: /^World/ }).click();
     await page.getByRole('button', { name: 'Start', exact: true }).click();
     await page.getByTestId('training-screen').waitFor();
     await page.keyboard.press('Space');
