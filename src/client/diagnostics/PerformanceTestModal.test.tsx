@@ -37,8 +37,8 @@ describe('PerformanceTestModal', () => {
     const onDone = vi.fn<(r: TestResult[]) => void>();
     render(<PerformanceTestModal durationMs={1000} onDone={onDone} onCancel={() => undefined} />);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText(/Step 1 of 4/)).toBeInTheDocument();
-    advance(4 * 1000 + 800);
+    expect(screen.getByText(/Step 1 of 6/)).toBeInTheDocument();
+    advance(6 * 1000 + 800);
     expect(onDone).toHaveBeenCalledTimes(1);
     const results = onDone.mock.calls[0]![0];
     expect(results.map((r) => `${r.world}/${r.quality}`)).toEqual([
@@ -46,6 +46,8 @@ describe('PerformanceTestModal', () => {
       'neon-tunnel/low',
       'road/high',
       'road/low',
+      'scenes/high',
+      'scenes/low',
     ]);
     for (const r of results) {
       expect(r.avgFps).toBeGreaterThan(30);
@@ -53,7 +55,14 @@ describe('PerformanceTestModal', () => {
       expect(r.height).toBe(360);
     }
     const shown = [...new Set(canvasMock.props.map((p) => `${p.world}/${p.quality}`))];
-    expect(shown).toEqual(['neon-tunnel/high', 'neon-tunnel/low', 'road/high', 'road/low']);
+    expect(shown).toEqual([
+      'neon-tunnel/high',
+      'neon-tunnel/low',
+      'road/high',
+      'road/low',
+      'scenes/high',
+      'scenes/low',
+    ]);
   });
 
   it('cancels without reporting results', () => {
