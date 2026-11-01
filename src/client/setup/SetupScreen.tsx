@@ -18,7 +18,9 @@ import { Field } from '../ui/Field';
 import { ProfileChart } from '../ui/ProfileChart';
 import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
+import { parseYoutubeUrl } from '../youtube/parseYoutubeUrl';
 import {
+  addRecentYoutubeUrl,
   applyPlanSettings,
   buildConfig,
   buildRuntime,
@@ -121,6 +123,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const [coach, setCoach] = useState(settings.coach);
   const [music, setMusic] = useState(last?.music ?? false);
   const [adding, setAdding] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState(last?.youtubeUrl ?? '');
 
   // The plan's session length and difficulty apply to what is shown and to what is ridden.
   const scaled = useMemo(
@@ -155,11 +158,32 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
     setAdding(false);
   };
 
+  const youtubeTrimmed = youtubeUrl.trim();
+  const youtubeInvalid =
+    background === 'youtube' && (youtubeTrimmed === '' || parseYoutubeUrl(youtubeTrimmed) === null);
+
   const start = (): void => {
-    const config = buildConfig({ background, hud: chosenHud, playerIds: selected, music }, hasCues);
+    if (youtubeInvalid) return;
+    const config = buildConfig(
+      {
+        background,
+        hud: chosenHud,
+        playerIds: selected,
+        music,
+        ...(background === 'youtube' ? { youtubeUrl: youtubeTrimmed } : {}),
+      },
+      hasCues,
+    );
     const runtime = buildRuntime(scaled, segments, config, pickPlayers(players, selected), plan);
     // Persist the choices as the user left them (music stays on even for a workout without cues).
-    updateSettings({ sounds: beeps, coach, lastSession: { ...config, music } }).catch((err) =>
+    updateSettings({
+      sounds: beeps,
+      coach,
+      lastSession: { ...config, music },
+      ...(config.youtubeUrl
+        ? { recentYoutubeUrls: addRecentYoutubeUrl(settings.recentYoutubeUrls, config.youtubeUrl) }
+        : {}),
+    }).catch((err) =>
       console.warn('Saving the session choices failed', err),
     );
     useSessionStore.getState().load(runtime);
@@ -245,6 +269,43 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
             </div>
           </section>
 
+          {background === 'youtube' && (
+            <section data-testid="youtube-section">
+              <Field
+                label={t('setup.youtubeUrl')}
+                {...(youtubeTrimmed !== '' && youtubeInvalid
+                  ? { error: t('setup.youtubeInvalid') }
+                  : { hint: t('setup.youtubeHint') })}
+              >
+                {(id) => (
+                  <input
+                    id={id}
+                    type="url"
+                    inputMode="url"
+                    placeholder="https://www.youtube.com/watch?v=…"
+                    value={youtubeUrl}
+                    aria-invalid={youtubeTrimmed !== '' && youtubeInvalid}
+                    onChange={(e) => setYoutubeUrl(e.target.value)}
+                  />
+                )}
+              </Field>
+              {settings.recentYoutubeUrls.length > 0 && (
+                <div>
+                  <h3 className={styles.recentTitle}>{t('setup.youtubeRecent')}</h3>
+                  <ul className={styles.recent} aria-label={t('setup.youtubeRecent')}>
+                    {settings.recentYoutubeUrls.map((u) => (
+                      <li key={u}>
+                        <button type="button" onClick={() => setYoutubeUrl(u)}>
+                          {u}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+          )}
+
           <section>
             <h2 className={styles.label}>{t('setup.layout')}</h2>
             <Segmented
@@ -299,7 +360,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
 
           <div className={styles.startRow}>
             <span className={styles.note}>{t('setup.remembered')}</span>
-            <Button variant="primary" size="big" onClick={start}>
+            <Button variant="primary" size="big" onClick={start} disabled={youtubeInvalid}>
               {t('setup.start')}
             </Button>
           </div>

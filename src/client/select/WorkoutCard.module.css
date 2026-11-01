@@ -1,3 +1,41 @@
+.wrap {
+  position: relative;
+  display: flex;
+}
+
+.wrap > .card {
+  flex: 1;
+}
+
+.dup {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--line);
+  background: var(--s2);
+  color: var(--mut);
+  font-size: 1.125rem;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.wrap:hover .dup,
+.dup:focus-visible {
+  opacity: 1;
+}
+
+.dup:hover {
+  color: var(--fg);
+}
+
+.dup:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+}
+
 .card {
   display: flex;
   flex-direction: column;

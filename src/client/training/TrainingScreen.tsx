@@ -1,4 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
+import type { FrameInput } from '../hyperride/world';
+import { Toast } from '../ui/Toast';
+import { parseYoutubeUrl } from '../youtube/parseYoutubeUrl';
+import { YouTubeBackground, type YoutubeFailure } from '../youtube/YouTubeBackground';
+import { Cockpit } from './layouts/overlay/Cockpit';
+import { Column } from './layouts/overlay/Column';
+import { Immersive } from './layouts/overlay/Immersive';
+import { TunnelTime } from './layouts/overlay/TunnelTime';
+import {
+  COLUMN_VIEW_OFFSET,
+  initialOverlayHud,
+  nextOverlayHud,
+  type OverlayHudId,
+} from './overlay-layouts';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { cueForTransition, type CoachCue } from '../../domain/coach';
 import { useSettings } from '../data/useSettings';
@@ -42,7 +57,37 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const controlsIdle = useIdleHide(CONTROLS_HIDE_MS);
 
   const hasPlayers = runtime.players.length > 0;
-  const [showPlayers, setShowPlayers] = useState(runtime.config.hud === 'players' && hasPlayers);
+  const wantsHyperride = runtime.config.background === 'hyperride';
+  // WebGL missing or the world failed to start: Basic (dark) for the rest of the session.
+  const [hyperrideFailed, setHyperrideFailed] = useState(false);
+  const [unavailableDismissed, setUnavailableDismissed] = useState(false);
+  const hyperride = wantsHyperride && !hyperrideFailed;
+  // A video that cannot be played (or a link that cannot be read) also means Basic (dark).
+  const youtubeTarget = useMemo(
+    () =>
+      runtime.config.background === 'youtube' && runtime.config.youtubeUrl
+        ? parseYoutubeUrl(runtime.config.youtubeUrl)
+        : null,
+    [runtime.config.background, runtime.config.youtubeUrl],
+  );
+  const wantsYoutube = runtime.config.background === 'youtube';
+  const [youtubeFailure, setYoutubeFailure] = useState<YoutubeFailure | undefined>();
+  const [youtubeToastDismissed, setYoutubeToastDismissed] = useState(false);
+  const youtube = youtubeFailure === undefined ? youtubeTarget : null;
+  const wantsOverlay = wantsHyperride || wantsYoutube;
+  const overlay = hyperride || youtube !== null;
+  const onYoutubeFail = useCallback((reason: YoutubeFailure) => setYoutubeFailure(reason), []);
+  const [overlayHud, setOverlayHud] = useState<OverlayHudId>(() =>
+    initialOverlayHud(runtime.config.hud),
+  );
+  const [showPlayers, setShowPlayers] = useState(
+    wantsOverlay ? hasPlayers : runtime.config.hud === 'players' && hasPlayers,
+  );
+  const rootRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+    settingsRef.current = settings;
+  });
   const [flash, setFlash] = useState(0);
   const [cue, setCue] = useState<{ cue: CoachCue | null; key: number }>({ cue: null, key: 0 });
   const [confirmEnd, setConfirmEnd] = useState(false);
@@ -161,8 +206,37 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   }, []);
 
   const togglePlayers = useCallback(() => {
-    if (hasPlayers) setShowPlayers((v) => !v);
-  }, [hasPlayers]);
+    if (!hasPlayers) return;
+    // Cockpit and Tunnel time have no room for players: showing them switches to Immersive.
+    if (overlay && !showPlayers)
+      setOverlayHud((h) => (h === 'cockpit' || h === 'tunnelTime' ? 'immersive' : h));
+    setShowPlayers((v) => !v);
+  }, [hasPlayers, overlay, showPlayers]);
+
+  const cycleLayout = useCallback(() => {
+    if (overlay) setOverlayHud((h) => nextOverlayHud(h, showPlayers && hasPlayers));
+  }, [overlay, showPlayers, hasPlayers]);
+
+  const getFrameInput = useCallback(
+    (): FrameInput => ({
+      segments: runtime.segments,
+      state: useSessionStore.getState().state,
+      table: settingsRef.current.effortTable,
+    }),
+    [runtime.segments],
+  );
+  const motionOn = !reducedMotion;
+  const onSway = useCallback((x: number, y: number) => {
+    const el = rootRef.current;
+    if (!el) return;
+    el.style.setProperty('--sx', `${x.toFixed(1)}px`);
+    el.style.setProperty('--sy', `${y.toFixed(1)}px`);
+  }, []);
+  useEffect(() => {
+    if (motionOn) return;
+    rootRef.current?.style.removeProperty('--sx');
+    rootRef.current?.style.removeProperty('--sy');
+  }, [motionOn]);
 
   useEffect(() => {
     if (confirmEnd) return;
@@ -172,11 +246,12 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       prev: () => store().prev(),
       next: () => store().next(),
       togglePlayers,
+      cycleLayout,
       fullscreen: toggleFullscreen,
       mute: () => store().toggleMute(),
       escape: openEnd,
     });
-  }, [confirmEnd, toggle, togglePlayers, toggleFullscreen, openEnd]);
+  }, [confirmEnd, toggle, togglePlayers, cycleLayout, toggleFullscreen, openEnd]);
 
   if (!view) return null;
 
@@ -205,32 +280,82 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const coach = (
     <CoachOverlay cue={cue.cue} cueKey={cue.key} color={view.color} reducedMotion={reducedMotion} />
   );
-  const Layout = showPlayers && hasPlayers ? BasicPlayers : BasicSolo;
+  const playersOn = showPlayers && hasPlayers;
+  const Layout = playersOn ? BasicPlayers : BasicSolo;
+  const Overlay = {
+    immersive: Immersive,
+    column: Column,
+    cockpit: Cockpit,
+    tunnelTime: TunnelTime,
+  }[overlayHud];
+  const layoutProps = {
+    view,
+    segments: runtime.segments,
+    players: runtime.players,
+    showsWatts: settings.equipment.showsWatts,
+    rpmIsTarget: !settings.equipment.showsCadence,
+    hideRpmTile: settings.equipment.hideRpmTile,
+    reducedMotion,
+    controls,
+    coach,
+  };
   const rootStyle: CSSProperties & Record<'--zone', string> = { '--zone': view.color };
 
   return (
     <div
+      ref={rootRef}
       data-testid="training-screen"
-      data-theme={settings.basicTheme}
+      data-theme={wantsOverlay ? 'dark' : settings.basicTheme}
       data-status={status}
+      data-background={hyperride ? 'hyperride' : youtube !== null ? 'youtube' : 'basic'}
       data-cursor-hidden={hideControls}
       className={`${styles.root} ${hideControls ? styles.noCursor : ''}`}
       style={rootStyle}
     >
-      <div className={styles.topbar} aria-hidden="true" />
-      <div className={styles.layout}>
-        <Layout
-          view={view}
-          segments={runtime.segments}
-          players={runtime.players}
-          showsWatts={settings.equipment.showsWatts}
-          rpmIsTarget={!settings.equipment.showsCadence}
-          hideRpmTile={settings.equipment.hideRpmTile}
-          reducedMotion={reducedMotion}
-          controls={controls}
-          coach={coach}
+      {hyperride ? (
+        <>
+          <HyperrideCanvas
+            getFrameInput={getFrameInput}
+            quality={settings.hyperrideQuality}
+            viewOffsetX={overlayHud === 'column' && !playersOn ? COLUMN_VIEW_OFFSET : 0}
+            {...(motionOn ? { onSway } : {})}
+            onUnavailable={() => setHyperrideFailed(true)}
+          />
+          <div className={`${styles.layout} ${styles.overlayLayer}`}>
+            <Overlay {...layoutProps} withPlayers={playersOn} />
+          </div>
+        </>
+      ) : youtube !== null ? (
+        <>
+          <YouTubeBackground
+            videoId={youtube.videoId}
+            startSec={youtube.startSec}
+            paused={status === 'paused'}
+            onFail={onYoutubeFail}
+          />
+          <div className={`${styles.layout} ${styles.overlayLayer}`}>
+            <Overlay {...layoutProps} withPlayers={playersOn} />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className={styles.topbar} aria-hidden="true" />
+          <div className={styles.layout}>
+            <Layout {...layoutProps} />
+          </div>
+        </>
+      )}
+      {wantsHyperride && hyperrideFailed && !unavailableDismissed && (
+        <Toast message={t('hyperride.unavailable')} onClose={() => setUnavailableDismissed(true)} />
+      )}
+      {wantsYoutube && youtube === null && !youtubeToastDismissed && (
+        <Toast
+          message={t(
+            youtubeFailure === 'embed-blocked' ? 'youtube.embedBlocked' : 'youtube.unavailable',
+          )}
+          onClose={() => setYoutubeToastDismissed(true)}
         />
-      </div>
+      )}
       <EdgeFlash trigger={flash} color={view.color} reducedMotion={reducedMotion} />
       <div className={styles.center}>
         <Countdown n={countdownN} color={view.color} reducedMotion={reducedMotion} />

@@ -9,38 +9,65 @@ import styles from './Timeline.module.css';
 export interface TimelineProps {
   segments: readonly Segment[];
   elapsedSec: number;
+  /** Shorter strip for the overlay layouts. */
+  compact?: boolean;
+  /** 'mono' (Hyperride overlays): neutral outlines, only the current block keeps its zone colour. */
+  tone?: 'color' | 'mono';
 }
 
 const MAX_EFFORT = 10;
 type BarState = 'past' | 'current' | 'future';
 
-export function Timeline({ segments, elapsedSec }: TimelineProps) {
+export function Timeline({ segments, elapsedSec, compact = false, tone = 'color' }: TimelineProps) {
   const t = useT();
   const total = segments.reduce((sum, s) => sum + s.durationSec, 0);
   const safeElapsed = Number.isFinite(elapsedSec) ? elapsedSec : 0;
   const clamped = Math.min(Math.max(safeElapsed, 0), total);
+  const mono = tone === 'mono';
+  const currentIdx = segments.findIndex(
+    (s) => s.startSec <= safeElapsed && s.startSec + s.durationSec > safeElapsed,
+  );
   const cursorPct = total > 0 ? (clamped / total) * 100 : 0;
 
   return (
-    <div data-testid="timeline" className={styles.root}>
+    <div
+      data-testid="timeline"
+      data-tone={tone}
+      className={`${styles.root} ${compact ? styles.compact : ''}`}
+    >
       <div className={styles.track}>
         <div className={styles.bars}>
           {segments.map((s) => {
             const end = s.startSec + s.durationSec;
-            const state: BarState =
+            const base: BarState =
               end <= safeElapsed ? 'past' : s.startSec <= safeElapsed ? 'current' : 'future';
+            const isNext =
+              mono &&
+              base === 'future' &&
+              currentIdx >= 0 &&
+              s.index === (segments[currentIdx]?.index ?? -2) + 1;
+            const state: BarState | 'next' = isNext ? 'next' : base;
             const topLevel = s.effortStart >= s.effortEnd ? s.effortStart : s.effortEnd;
             const poly = slopePolygons(s.effortStart, s.effortEnd);
-            const style: CSSProperties & Record<'--c', string> = {
-              '--c': effortRow(topLevel).color,
+            const zone = effortRow(topLevel).color;
+            const style: CSSProperties & Record<'--c' | '--z', string> = {
+              // in the mono tone the classes decide --c; inline it would win over them
+              ...(mono ? {} : { '--c': zone }),
+              '--z': zone,
               flexGrow: s.durationSec,
               height: `${(topLevel / MAX_EFFORT) * 100}%`,
-            };
+            } as CSSProperties & Record<'--c' | '--z', string>;
             return (
               <div
                 key={s.index}
                 data-state={state}
-                className={`${styles.bar} ${state === 'future' ? '' : styles[state]}`}
+                className={`${styles.bar} ${
+                  mono
+                    ? styles[`mono_${state}`]
+                    : state === 'future' || state === 'next'
+                      ? ''
+                      : styles[state]
+                }`}
                 style={style}
               >
                 <b data-fill className={styles.fill} style={{ clipPath: poly.fill }} />

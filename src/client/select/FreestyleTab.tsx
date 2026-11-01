@@ -1,4 +1,7 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { Workout } from '../../domain/workout';
+import { ImportModal } from '../editor/ImportModal';
 import { useLibrary } from '../data/useLibrary';
 import { useLang, useT } from '../i18n';
 import { Button } from '../ui/Button';
@@ -12,6 +15,8 @@ export function FreestyleTab() {
   const t = useT();
   const [lang] = useLang();
   const { workouts, loaded } = useLibrary();
+  const navigate = useNavigate();
+  const [importing, setImporting] = useState(false);
   const [filter, setFilter] = useState<FilterId>('all');
   const [query, setQuery] = useState('');
   const shown = useMemo(
@@ -51,10 +56,8 @@ export function FreestyleTab() {
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          <Button disabled title={t('common.comingSoon')}>
-            {t('free.importFile')}
-          </Button>
-          <Button variant="primary" disabled title={t('common.comingSoon')}>
+          <Button onClick={() => setImporting(true)}>{t('free.importFile')}</Button>
+          <Button variant="primary" onClick={() => void navigate('/editor/new')}>
             {t('free.newWorkout')}
           </Button>
         </div>
@@ -69,6 +72,15 @@ export function FreestyleTab() {
             <WorkoutCard key={w.id} workout={w} />
           ))}
         </div>
+      )}
+      {importing && (
+        <ImportModal
+          onClose={() => setImporting(false)}
+          onOpen={(w: Workout) => {
+            setImporting(false);
+            void navigate('/editor/new', { state: { imported: w } });
+          }}
+        />
       )}
     </div>
   );

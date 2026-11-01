@@ -12,8 +12,15 @@ export const MAX_SESSION_PLAYERS = 10;
 export type Background = SessionConfig['background'];
 export type Hud = SessionConfig['hud'];
 
-/** Backgrounds the player can pick today; Hyperride and YouTube arrive with M7 and M8. */
-export const ENABLED_BACKGROUNDS: readonly Background[] = ['basic'];
+export const RECENT_YOUTUBE_MAX = 10;
+
+/** Backgrounds the player can pick. */
+export const ENABLED_BACKGROUNDS: readonly Background[] = ['basic', 'hyperride', 'youtube'];
+
+/** The link first, then the older ones without a repeat, at most ten. */
+export function addRecentYoutubeUrl(recent: readonly string[], url: string): string[] {
+  return [url, ...recent.filter((u) => u !== url)].slice(0, RECENT_YOUTUBE_MAX);
+}
 
 export interface PlanRef {
   planId: string;
@@ -86,6 +93,8 @@ export interface SetupChoices {
   playerIds: string[];
   /** The toggle as the user left it; it only takes effect when the workout has cues. */
   music: boolean;
+  /** Used when the background is YouTube. */
+  youtubeUrl?: string;
 }
 
 export function buildConfig(c: SetupChoices, hasMusicCues: boolean): SessionConfig {
@@ -94,6 +103,7 @@ export function buildConfig(c: SetupChoices, hasMusicCues: boolean): SessionConf
     hud: effectiveHud(c.background, c.hud, c.playerIds.length > 0),
     playerIds: c.playerIds,
     music: c.music && hasMusicCues,
+    ...(c.background === 'youtube' && c.youtubeUrl ? { youtubeUrl: c.youtubeUrl } : {}),
   };
 }
 

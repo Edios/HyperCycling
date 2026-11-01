@@ -1,0 +1,14 @@
+.blank {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--mut);
+  background: var(--bg);
+}
+
+.blank a {
+  color: var(--fg);
+}
