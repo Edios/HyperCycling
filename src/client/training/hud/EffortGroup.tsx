@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { DashLine, EffortRing } from '../../brand';
 import { useT } from '../../i18n';
 import type { Segment } from '../../../domain/segments';
@@ -7,6 +7,9 @@ import { translateContentText } from '../content-text';
 import { formatClock } from '../format';
 import hud from './hud.module.css';
 import styles from './EffortGroup.module.css';
+
+/** The word 'Effort' goes inside the ring only from this ring size (px); below, a caption. */
+export const RING_WORD_MIN_PX = 230;
 
 export interface EffortGroupProps {
   effort: number;
@@ -40,6 +43,18 @@ export function EffortGroup({
   className,
 }: EffortGroupProps) {
   const t = useT();
+  const ringBoxRef = useRef<HTMLDivElement>(null);
+  const [wordInside, setWordInside] = useState(false);
+  useLayoutEffect(() => {
+    const el = ringBoxRef.current;
+    if (!el) return;
+    const measure = () => setWordInside(el.getBoundingClientRect().width >= RING_WORD_MIN_PX);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const label = t(`effort.${labelKey}`);
   const nextDesc = next
     ? [
@@ -62,7 +77,7 @@ export function EffortGroup({
   return (
     <div className={classes} data-g="W" data-testid="effort-group" style={rootStyle}>
       <div className={styles.main} data-testid="effort-value" data-variant="overlay">
-        <div className={styles.ringBox}>
+        <div className={styles.ringBox} ref={ringBoxRef} data-testid="effort-ring-box">
           <EffortRing
             effort={effort}
             size="var(--ring, calc(33 * var(--u)))"
@@ -71,11 +86,20 @@ export function EffortGroup({
             numberTestId="effort-value-number"
             motion={motion}
           />
-          <span className={`${hud.lbl} ${styles.inRing}`}>{t('training.effort')}</span>
+          {wordInside && (
+            <span className={`${hud.lbl} ${styles.inRing}`} data-testid="effort-ring-word">
+              {t('training.effort')}
+            </span>
+          )}
         </div>
         <div className={`${hud.lbl} ${styles.name}`}>
           {label} · {t('training.ftpApprox', { pct: Math.round(ftpPct) })}
         </div>
+        {!wordInside && (
+          <div className={`${hud.lbl} ${styles.caption}`} data-testid="effort-caption">
+            {t('training.effort')}
+          </div>
+        )}
       </div>
       <DashLine className={styles.dash} />
       <div

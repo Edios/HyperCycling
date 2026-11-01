@@ -1,5 +1,5 @@
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Segment } from '../../../domain/segments';
 import { CoachOverlay } from './CoachOverlay';
 import { Countdown } from './Countdown';
@@ -26,6 +26,27 @@ function seg(
     ...p,
   };
 }
+
+describe('EffortGroup ring label', () => {
+  afterEach(() => vi.restoreAllMocks());
+  const width = (w: number) =>
+    vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue({ width: w, height: w } as DOMRect);
+  it.each([120, 180, 229])('puts no label inside a %ipx ring, a caption under it', (w) => {
+    width(w);
+    render(<EffortGroup effort={10} ftpPct={92} labelKey="hard" />);
+    expect(screen.queryByTestId('effort-ring-word')).toBeNull();
+    expect(within(screen.getByTestId('effort-ring-box')).queryByText('Effort')).toBeNull();
+    expect(screen.getByTestId('effort-caption')).toHaveTextContent('Effort');
+  });
+  it.each([230, 300])('puts the label inside a %ipx ring, no caption', (w) => {
+    width(w);
+    render(<EffortGroup effort={10} ftpPct={92} labelKey="hard" />);
+    expect(screen.getByTestId('effort-ring-word')).toHaveTextContent('Effort');
+    expect(screen.queryByTestId('effort-caption')).toBeNull();
+  });
+});
 
 describe('EffortGroup', () => {
   it('shows the ring with the value, the name and % FTP', () => {
