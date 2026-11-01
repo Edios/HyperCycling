@@ -92,7 +92,7 @@ export function EffortGroup({
             </span>
           )}
         </div>
-        <div className={`${hud.lbl} ${styles.name}`}>
+        <div className={`${hud.lbl} ${styles.name}${wordInside ? ` ${styles.nameLow}` : ''}`}>
           {label} · {t('training.ftpApprox', { pct: Math.round(ftpPct) })}
         </div>
         {!wordInside && (

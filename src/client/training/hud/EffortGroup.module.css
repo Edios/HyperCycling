@@ -21,7 +21,10 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 64%;
+  /* Below the numeral: its centre is 50%, its half cap-height ~0.35 of the digit size (--num-k),
+     plus a gap of 0.25 cap-height (~0.18 of the digit size). */
+  top: calc((0.5 + 0.62 * var(--num-k, 0.4)) * 100%);
+  line-height: 1;
   text-align: center;
 }
 
@@ -31,6 +34,11 @@
   position: relative;
   white-space: nowrap;
   text-align: center;
+}
+
+.nameLow {
+  /* Room for the word above: the name starts just under it (ring-relative). */
+  margin-top: calc(var(--ring, calc(33 * var(--u))) * (-0.38 + 0.62 * var(--num-k, 0.4)));
 }
 
 .caption {
