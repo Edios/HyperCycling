@@ -1,0 +1,61 @@
+import { describe, expect, it } from 'vitest';
+import { DEFAULT_SETTINGS, sessionConfigSchema, settingsSchema } from './settings';
+
+describe('DEFAULT_SETTINGS', () => {
+  it('has watts on, cadence on, RPM tile shown', () => {
+    expect(DEFAULT_SETTINGS.equipment).toEqual({
+      showsWatts: true,
+      showsCadence: true,
+      hideRpmTile: false,
+    });
+  });
+  it('passes its own schema', () => {
+    expect(settingsSchema.safeParse(DEFAULT_SETTINGS).success).toBe(true);
+  });
+});
+
+describe('settingsSchema', () => {
+  it('rejects effectsIntensity out of range', () => {
+    expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, effectsIntensity: 1.5 }).success).toBe(
+      false,
+    );
+    expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, effectsIntensity: -0.1 }).success).toBe(
+      false,
+    );
+  });
+  it('rejects more than 10 recent urls', () => {
+    const urls = Array.from({ length: 11 }, (_, i) => `u${i}`);
+    expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, recentYoutubeUrls: urls }).success).toBe(
+      false,
+    );
+  });
+  it('rejects a non increasing effort table', () => {
+    const table = DEFAULT_SETTINGS.effortTable.map((r) => ({ ...r, ftpPct: 50 }));
+    expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, effortTable: table }).success).toBe(
+      false,
+    );
+  });
+  it('accepts optional fields', () => {
+    const r = settingsSchema.safeParse({
+      ...DEFAULT_SETTINGS,
+      lang: 'pl',
+      activePlanId: 'x',
+      spotify: { clientId: 'c', deviceId: 'd' },
+      lastSession: { background: 'basic', hud: 'solo', playerIds: [], music: false },
+    });
+    expect(r.success).toBe(true);
+  });
+});
+
+describe('sessionConfigSchema', () => {
+  it('rejects unknown hud', () => {
+    expect(
+      sessionConfigSchema.safeParse({
+        background: 'basic',
+        hud: 'nope',
+        playerIds: [],
+        music: false,
+      }).success,
+    ).toBe(false);
+  });
+});

@@ -1,0 +1,97 @@
+{
+  "id": "demo-mixed",
+  "name": "Demo mix",
+  "description": "Nine-minute mixed demo: warm-up ramp, short intervals, a sprint, a standing climb and a cool-down.",
+  "localized": {
+    "en": {
+      "name": "Demo mix",
+      "description": "Nine-minute mixed demo: warm-up ramp, short intervals, a sprint, a standing climb and a cool-down."
+    },
+    "pl": {
+      "name": "Mieszanka demo",
+      "description": "Dziewięciominutowe demo: rozgrzewka, krótkie interwały, sprint, podjazd na stojąco i schłodzenie."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["demo", "mixed"],
+  "source": { "kind": "builtin", "file": "demo-mixed.json" },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "warmup",
+      "durationSec": 120,
+      "from": { "effort": 2 },
+      "to": { "effort": 4 },
+      "rpm": 90,
+      "position": "seated",
+      "label": "Warm-up",
+      "cue": "Ease in and find a smooth rhythm"
+    },
+    {
+      "kind": "repeat",
+      "id": "intervals",
+      "times": 3,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "interval-on",
+          "durationSec": 30,
+          "intensity": { "effort": 7 },
+          "rpm": 95,
+          "position": "seated",
+          "label": "Push"
+        },
+        {
+          "kind": "steady",
+          "id": "interval-off",
+          "durationSec": 30,
+          "intensity": { "effort": 3 },
+          "rpm": 85,
+          "position": "seated",
+          "label": "Recover"
+        }
+      ]
+    },
+    {
+      "kind": "steady",
+      "id": "sprint",
+      "durationSec": 30,
+      "intensity": { "effort": 10 },
+      "rpm": 110,
+      "position": "seated",
+      "label": "Sprint",
+      "cue": "All out!"
+    },
+    {
+      "kind": "steady",
+      "id": "climb",
+      "durationSec": 120,
+      "intensity": { "effort": 6 },
+      "rpm": 60,
+      "position": "standing",
+      "label": "Standing climb",
+      "cue": "Stand up and grind the hill"
+    },
+    {
+      "kind": "ramp",
+      "id": "cooldown",
+      "durationSec": 90,
+      "from": { "effort": 4 },
+      "to": { "effort": 1 },
+      "rpm": 80,
+      "position": "seated",
+      "label": "Cool-down"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "warmup",
+    "cooldownBlockId": "cooldown",
+    "flexRepeatId": "intervals",
+    "minTimes": 2,
+    "maxTimes": 8
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

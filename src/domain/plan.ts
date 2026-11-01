@@ -96,14 +96,14 @@ const progressEntrySchema = z.object({
   slot: z.enum(['progres', 'freestyle']),
   workoutId: z.string().min(1),
   status: z.enum(['done', 'skipped']),
-  at: z.string(),
+  at: z.iso.datetime({ offset: true }),
   cycle: z.number().int().min(1).optional(),
 });
 
 export const planProgressSchema: z.ZodType<PlanProgress> = z.object({
   id: z.string().min(1),
   planId: z.string().min(1),
-  startedAt: z.string(),
+  startedAt: z.iso.datetime({ offset: true }),
   settings: planSettingsSchema,
   entries: z.array(progressEntrySchema),
 }) as unknown as z.ZodType<PlanProgress>; // same optional-field inference caveat as planSchema
