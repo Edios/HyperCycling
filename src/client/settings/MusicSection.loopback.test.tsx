@@ -61,7 +61,7 @@ describe('Settings, Music section on 127.0.0.1', () => {
     expect(screen.queryByTestId('localhost-warning')).not.toBeInTheDocument();
     expect(screen.getAllByTestId('redirect-uri').map((n) => n.textContent)).toEqual([
       'http://127.0.0.1:5175/',
-      'https://edios.github.io/Spinning-Tutor/',
+      'https://edios.github.io/HyperCycling/',
     ]);
     expect(screen.getByTestId('spotify-connect')).toBeEnabled();
   });

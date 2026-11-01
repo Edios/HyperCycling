@@ -17,7 +17,7 @@ import { Button } from '../ui/Button';
 import styles from './Settings.module.css';
 
 const LOCAL_URI = 'http://127.0.0.1:5175/';
-const PAGES_URI = 'https://edios.github.io/Spinning-Tutor/';
+const PAGES_URI = 'https://edios.github.io/HyperCycling/';
 
 type LocationParts = Pick<Location, 'protocol' | 'port' | 'pathname' | 'search' | 'hash'>;
 

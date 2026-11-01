@@ -55,7 +55,7 @@ describe('Settings, Music section on localhost', () => {
     expect(uris).toEqual([
       `${location.origin}${import.meta.env.BASE_URL}`,
       'http://127.0.0.1:5175/',
-      'https://edios.github.io/Spinning-Tutor/',
+      'https://edios.github.io/HyperCycling/',
     ]);
     expect(screen.getAllByRole('button', { name: /^Copy/ })).toHaveLength(3);
     expect(screen.getByText(/User Management/)).toBeInTheDocument();
