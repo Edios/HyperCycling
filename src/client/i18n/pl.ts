@@ -440,7 +440,7 @@ export const pl: Messages = {
       title: 'O aplikacji',
       name: 'HyperCycling',
       version: 'Wersja {version}',
-      tagline: 'Trening na rowerze stacjonarnym z odczuwalną skalą wysiłku.',
+      tagline: 'Trening na rowerze według skali wysiłku 1–10.',
       fonts: 'Czcionki: Barlow i Barlow Condensed, licencja SIL Open Font License 1.1.',
     },
     general: {
