@@ -179,8 +179,10 @@
   }
 
   /*
-   * Over a background the wings are glass plates turned 12 degrees (the inner edge recedes); the
-   * text turns only 30% of that angle (counter-skewed 70%), so numbers stay almost frontal.
+   * Over a background the wings are glass plates turned 12 degrees (the inner edge recedes). The
+   * whole wing - glass, text and ring - is ONE tilted surface (same transform), so nothing is
+   * shown at a different angle than its plate. --text-share is the part of the tilt the text
+   * keeps: 1 = all of it (default); 0.6 would counter-turn the text by the remaining 40%.
    * On Basic the wings are flat panels.
    */
   .root[data-layout='cockpit'][data-material='glass'] > [data-g='M'],
@@ -191,15 +193,19 @@
     backdrop-filter: none;
     --origin: left center;
     --plate: 12deg;
-    --text: 3.6deg;
+    --text-share: 1;
+    transform: perspective(1000px) rotateY(var(--plate));
+    transform-origin: var(--origin);
+    backface-visibility: hidden;
   }
 
   .root[data-layout='cockpit'][data-material='glass'] > [data-g='W'] {
     --origin: right center;
     --plate: -12deg;
-    --text: -3.6deg;
   }
 
+  /* The glass lies in the wing's own plane (no transform of its own); the zone line is a 3px
+     gradient strip inside the rounded border box, so it follows the corner and the tilt. */
   .root[data-layout='cockpit'][data-material='glass'] > [data-g='M']::before,
   .root[data-layout='cockpit'][data-material='glass'] > [data-g='W']::before {
     content: '';
@@ -211,18 +217,24 @@
     border: 1px solid rgba(255, 255, 255, 0.09);
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
-    transform: perspective(1000px) rotateY(var(--plate));
-    transform-origin: var(--origin);
   }
 
   .root[data-layout='cockpit'][data-material='glass'] > [data-g='W']::before {
-    background: color-mix(in srgb, var(--zone) 7%, rgba(9, 11, 18, 0.34));
-    border-top: 2px solid color-mix(in srgb, var(--zone) 75%, transparent);
+    background:
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--zone) 75%, transparent) 0 3px,
+        transparent 3px
+      ),
+      color-mix(in srgb, var(--zone) 7%, rgba(9, 11, 18, 0.34));
+    background-origin: border-box;
+    background-clip: border-box;
   }
 
+  /* Only when the text keeps less than the full tilt does it counter-turn. */
   .root[data-layout='cockpit'][data-material='glass'] > [data-g='M'] > *,
   .root[data-layout='cockpit'][data-material='glass'] > [data-g='W'] > * {
-    transform: perspective(1000px) rotateY(var(--text));
+    transform: perspective(1000px) rotateY(calc(var(--plate) * (var(--text-share) - 1)));
     transform-origin: var(--origin);
   }
 
