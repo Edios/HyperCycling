@@ -6,3 +6,20 @@ import { afterEach } from 'vitest';
 configure({ asyncUtilTimeout: 10000 });
 
 afterEach(cleanup);
+
+// Node 24's undici rejects the jsdom AbortSignal ("Expected signal to be an instance of AbortSignal"),
+// which breaks react-router navigations and fetch calls in tests. Drop the signal; tests never abort.
+function withoutSignal(init?: RequestInit): RequestInit | undefined {
+  if (!init || !('signal' in init)) return init;
+  const { signal: _signal, ...rest } = init;
+  return rest;
+}
+const NativeRequest = globalThis.Request;
+globalThis.Request = class extends NativeRequest {
+  constructor(input: RequestInfo | URL, init?: RequestInit) {
+    super(input, withoutSignal(init));
+  }
+} as typeof Request;
+const nativeFetch = globalThis.fetch;
+globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) =>
+  nativeFetch(input, withoutSignal(init))) as typeof fetch;
