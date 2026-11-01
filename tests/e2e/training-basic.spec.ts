@@ -160,6 +160,13 @@ for (const size of [
           .boundingBox())!;
         const digits = (await page.getByTestId('effort-value-number').boundingBox())!;
         expect(inside(digits, ring)).toBe(true);
+        // The word 'Effort' is inside the ring only from 230 px, else a caption that never overlaps.
+        if (await page.getByTestId('effort-ring-word').count()) {
+          expect(ring.width).toBeGreaterThanOrEqual(230);
+        } else {
+          const cap = (await page.getByTestId('effort-caption').boundingBox())!;
+          expect(cap.y).toBeGreaterThanOrEqual(digits.y + digits.height - 0.5);
+        }
 
         // Groups: Effort + Next is the right-hand tile, Time is to its left (Measures between).
         const effort = (await page.getByTestId('effort-group').boundingBox())!;

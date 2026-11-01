@@ -13,7 +13,6 @@
   --nring: calc(11.7 * var(--u));
   --time-fs: calc(18.9 * var(--u));
   --mval: calc(11 * var(--u));
-  --ring-word: block;
   --rail: 100%;
 }
 
@@ -126,7 +125,6 @@
     --tl: 11vw;
     --rname: 5.2vw;
     --rwatts: 8vw;
-    --ring-word: none;
   }
 
   /* Repeated .root only raises the specificity above the grid rules for riders / no cadence. */

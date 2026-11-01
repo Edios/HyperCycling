@@ -84,7 +84,6 @@
     --nring: calc(11.7 * var(--u));
     --time-fs: calc(17.2 * var(--u));
     --mval: calc(7.5 * var(--u));
-    --ring-word: block;
   }
 
   .root[data-layout='immersive'] > [data-g='C'] {
@@ -159,7 +158,6 @@
     --mval: calc(10.5 * var(--u));
     --rail: calc(33 * var(--u));
     --time-align: center;
-    --ring-word: block;
   }
 
   .root[data-layout='cockpit'] > [data-g='C'] {
