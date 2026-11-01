@@ -122,24 +122,33 @@ for (const size of [
         await expect(page.getByTestId('training-screen')).toBeVisible();
 
         await expect(page.getByTestId('block-timer-value')).toHaveText(text);
+        await page.evaluate(() => document.fonts.ready);
         // Each big number (the text, not its tile-wide box) stays inside its tile with padding to spare.
         for (const [valueId, tileId] of [
           ['block-timer-value', 'block-timer'],
           ['effort-value-number', 'effort-value'],
           ['rpm-value-number', 'rpm-value'],
         ] as const) {
-          const tile = (await page.getByTestId(tileId).boundingBox())!;
-          const box = await page.getByTestId(valueId).evaluate((el) => {
-            const r = document.createRange();
-            r.selectNodeContents(el);
-            const b = r.getBoundingClientRect();
-            return { x: b.x, y: b.y, width: b.width, height: b.height };
-          });
-          expect(inside(box, tile), valueId).toBe(true);
-          expect(box.x - tile.x, valueId).toBeGreaterThan(tile.width * 0.03);
-          expect(tile.x + tile.width - (box.x + box.width), valueId).toBeGreaterThan(
-            tile.width * 0.03,
-          );
+          // Polled: the first measurement can land before the web font and the fitted size settle.
+          await expect
+            .poll(
+              async () => {
+                const tile = (await page.getByTestId(tileId).boundingBox())!;
+                const box = await page.getByTestId(valueId).evaluate((el) => {
+                  const r = document.createRange();
+                  r.selectNodeContents(el);
+                  const b = r.getBoundingClientRect();
+                  return { x: b.x, y: b.y, width: b.width, height: b.height };
+                });
+                return (
+                  inside(box, tile) &&
+                  box.x - tile.x > tile.width * 0.03 &&
+                  tile.x + tile.width - (box.x + box.width) > tile.width * 0.03
+                );
+              },
+              { message: valueId },
+            )
+            .toBe(true);
         }
         await expect(page.getByTestId('effort-value-number')).toContainText('10');
 

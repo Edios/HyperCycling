@@ -115,8 +115,10 @@ test('Discard on the resume prompt forgets the session', async ({ page }, info) 
   await seedSettings(page, info, 'build-form');
   await page.getByRole('button', { name: 'Ride', exact: true }).click();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'idle');
   await page.keyboard.press('Space');
   await page.clock.runFor(3200);
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running');
   await page.keyboard.press('Space');
   await expect.poll(() => hasActiveSession(page, info)).toBe(true);
 
