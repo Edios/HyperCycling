@@ -1,6 +1,6 @@
 # Spotify setup
 
-Spinning Tutor can start tracks on your Spotify at the right moment of a workout. It does not play audio itself: the music comes from the Spotify app on one of your devices. YouTube needs no setup.
+HyperCycling can start tracks on your Spotify at the right moment of a workout. It does not play audio itself: the music comes from the Spotify app on one of your devices. YouTube needs no setup.
 
 You need:
 
@@ -11,7 +11,7 @@ You need:
 ## 1. Create a Spotify app
 
 1. Open the [Developer Dashboard](https://developer.spotify.com/dashboard) and press **Create app**. Any name and description work.
-2. Under **Redirect URIs** add the address of Spinning Tutor, exactly as written, with the trailing slash (see the table below), and save.
+2. Under **Redirect URIs** add the address of HyperCycling, exactly as written, with the trailing slash (see the table below), and save.
 3. Under "Which API/SDKs are you planning to use?" tick **Web API**.
 4. The app stays in development mode, which only lets listed users log in: open **User Management** and add the email of your Spotify account.
 5. Open the app **Settings** and copy the **Client ID**.
@@ -20,9 +20,9 @@ You need:
 
 The redirect URI is the address where you open the app, followed by its path.
 
-| Where you run Spinning Tutor   | Redirect URI                                           |
-| ------------------------------ | ------------------------------------------------------ |
-| On your computer (`npm start`) | `http://127.0.0.1:5175/`                               |
+| Where you run HyperCycling     | Redirect URI                                         |
+| ------------------------------ | ---------------------------------------------------- |
+| On your computer (`npm start`) | `http://127.0.0.1:5175/`                             |
 | GitHub Pages                   | `https://<your-github-name>.github.io/HyperCycling/` |
 
 Use `127.0.0.1`, never `localhost`: Spotify rejects `http://localhost` redirects. Open the local app at `http://127.0.0.1:5175` too; Settings, Music shows a warning and disables Connect if you open it on `localhost`. If you changed the port (`PORT=...`), put that port in the URI.

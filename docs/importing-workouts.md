@@ -1,6 +1,6 @@
 # Importing workouts
 
-Spinning Tutor imports `.zwo`, `.erg` and `.mrc` files. Open **Freestyle**, press **Import file**, drop or choose a file (at most 2 MB). The app shows what it understood and any notes, then opens the workout in the editor where you can fix it and save it under **Mine**.
+HyperCycling imports `.zwo`, `.erg` and `.mrc` files. Open **Freestyle**, press **Import file**, drop or choose a file (at most 2 MB). The app shows what it understood and any notes, then opens the workout in the editor where you can fix it and save it under **Mine**.
 
 ## What a .zwo file is
 
@@ -39,7 +39,7 @@ A `.zwo` file is a small XML document used by Zwift. Power is written as a **fra
 Both are text files with a `[COURSE HEADER]` and a `[COURSE DATA]` section: pairs of `minutes  value`. Consecutive points become a steady block (equal values) or a ramp (different values).
 
 - `.mrc` values are **percent of FTP**.
-- `.erg` values are **watts**. Spinning Tutor needs an FTP to convert them: it uses the `FTP=` line in the header, or asks you for one in the import dialog.
+- `.erg` values are **watts**. HyperCycling needs an FTP to convert them: it uses the `FTP=` line in the header, or asks you for one in the import dialog.
 
 ## How power maps to the 1-10 effort scale
 
@@ -70,4 +70,4 @@ Open-source examples you can download and try:
 - [breiko83/zwo-editor](https://github.com/breiko83/zwo-editor): a browser editor that creates `.zwo` files (MIT).
 - [tare/zwog](https://github.com/tare/zwog): generates `.zwo` files from a text description (BSD-3-Clause).
 
-Check the licence of any file you download before sharing it. Spinning Tutor itself ships only original workouts.
+Check the licence of any file you download before sharing it. HyperCycling itself ships only original workouts.
