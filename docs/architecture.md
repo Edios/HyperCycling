@@ -4,7 +4,7 @@ One React client, two interchangeable storage back ends chosen at build time.
 
 ```
 src/domain/    pure TypeScript: schemas (zod), effort scale, segments, session engine, parsers
-src/client/    React UI (screens, HUD layouts, Hyperride 3D, editor, music, i18n)
+src/client/    React UI (screens, HUD layouts, World 3D, editor, music, i18n)
 src/storage/   Repositories contract + implementations: http, indexeddb, sqlite
 src/server/    Fastify API + static hosting (local build only)
 src/content/   built-in plans and workouts (JSON, original content)
@@ -14,12 +14,12 @@ tests/e2e/     Playwright specs
 
 ## Two builds
 
-|         | Local                                                              | GitHub Pages                                                                   |
-| ------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+|         | Local                                                              | GitHub Pages                                                                 |
+| ------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
 | Build   | `npm run build` (`VITE_STORAGE=http`)                              | `npm run build:pages` (`VITE_STORAGE=indexeddb`, `VITE_BASE=/HyperCycling/`) |
-| Storage | Fastify on `127.0.0.1:5175` + SQLite file `data/spinning-tutor.db` | IndexedDB in the browser                                                       |
-| Backups | `data/backups/` before an import (newest 10)                       | none (use Settings, Data, Export)                                              |
-| Router  | hash router, both builds (Pages has no SPA fallback)               | same                                                                           |
+| Storage | Fastify on `127.0.0.1:5175` + SQLite file `data/spinning-tutor.db` | IndexedDB in the browser                                                     |
+| Backups | `data/backups/` before an import (newest 10)                       | none (use Settings, Data, Export)                                            |
+| Router  | hash router, both builds (Pages has no SPA fallback)               | same                                                                         |
 
 `src/client/data/repositories.ts` picks the implementation from `VITE_STORAGE` with dynamic imports, so each bundle contains only its own. Everything above that layer talks to the `Repositories` interface from `src/domain/repositories.ts` and does not know where data lives. The server binds to `127.0.0.1` only.
 
@@ -38,7 +38,7 @@ Persisted shapes are zod schemas (workouts and the export bundle carry a `schema
 ## Client
 
 - Screens are routes in `App.tsx` (select, setup, training, summary, players, plans, editor, settings). The `/dev` route exists only in dev builds, or in any build opened with `?dev`.
-- Training: `useSessionLoop` runs the engine on animation frames; `session-store` holds the runtime; `autosave` writes an active session every 5 s so it can be resumed. Layouts are in `training/layouts` (Basic) and `hyperride/` (three.js worlds). The corner (stored id `immersive`), Column, Cockpit, Minimal (`tunnelTime`) and Focus overlays work on every background; the Focus visibility rule is the pure `training/focus-visibility.ts`. YouTube is an iframe background.
+- Training: `useSessionLoop` runs the engine on animation frames; `session-store` holds the runtime; `autosave` writes an active session every 5 s so it can be resumed. Layouts are in `training/layouts` (Basic) and `hyperride/` (three.js worlds, shown as World). The corner (stored id `immersive`), Column, Cockpit, Minimal (`tunnelTime`) and Focus overlays work on every background; the Focus visibility rule is the pure `training/focus-visibility.ts`. YouTube is an iframe background.
 - Music (`music/`): a `director` schedules provider calls from the workout's music cues; providers are Spotify (PKCE, Web API) and YouTube (iframe). Provider errors become one toast and never touch the engine.
 - i18n: `i18n/en.ts` and `i18n/pl.ts`, same keys (a test checks it). No hard-coded UI text in components.
 
