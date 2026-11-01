@@ -16,7 +16,9 @@ export interface Equipment {
 export interface SessionConfig {
   background: 'basic' | 'hyperride' | 'youtube';
   youtubeUrl?: string;
-  hud: 'solo' | 'players' | 'immersive' | 'column' | 'cockpit' | 'tunnelTime';
+  hud: 'solo' | 'players' | 'immersive' | 'column' | 'cockpit' | 'tunnelTime' | 'focus';
+  /** Riders panel on or off; undefined = on whenever riders are selected (older saved sessions). */
+  showRiders?: boolean;
   playerIds: string[];
   music: boolean;
 }
@@ -40,8 +42,10 @@ export interface Settings {
   coach: boolean;
   /** 0..1 */
   effectsIntensity: number;
-  hyperrideQuality: 'high' | 'low';
+  hyperrideQuality: 'high' | 'low' | 'auto';
   hyperrideWorld: HyperrideWorldId;
+  /** Diagnostics mode: live FPS overlay while training, device info and performance test. */
+  diagnostics?: boolean;
   activePlanId?: string;
   lastSession?: SessionConfig;
   spotify?: SpotifySettings;
@@ -58,7 +62,8 @@ export const equipmentSchema: z.ZodType<Equipment> = z.object({
 export const sessionConfigSchema: z.ZodType<SessionConfig> = z.object({
   background: z.enum(['basic', 'hyperride', 'youtube']),
   youtubeUrl: z.string().optional(),
-  hud: z.enum(['solo', 'players', 'immersive', 'column', 'cockpit', 'tunnelTime']),
+  hud: z.enum(['solo', 'players', 'immersive', 'column', 'cockpit', 'tunnelTime', 'focus']),
+  showRiders: z.boolean().optional(),
   playerIds: z.array(z.string()).max(10),
   music: z.boolean(),
 }) as unknown as z.ZodType<SessionConfig>; // optional-field inference caveat
@@ -79,8 +84,9 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   sounds: z.boolean(),
   coach: z.boolean(),
   effectsIntensity: z.number().min(0).max(1),
-  hyperrideQuality: z.enum(['high', 'low']),
+  hyperrideQuality: z.enum(['high', 'low', 'auto']),
   hyperrideWorld: z.enum(HYPERRIDE_WORLD_IDS).catch(DEFAULT_HYPERRIDE_WORLD),
+  diagnostics: z.boolean().optional(),
   activePlanId: z.string().optional(),
   lastSession: sessionConfigSchema.optional(),
   spotify: spotifySettingsSchema.optional(),

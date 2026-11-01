@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   DEFAULT_PLAN_SETTINGS,
   type Plan,
@@ -7,8 +7,8 @@ import {
   type PlanProgress,
   type PlanSlot,
   type PlanSettings,
+  planSettingsSchema,
 } from '../../domain/plan';
-import { newId } from '../../domain/ids';
 import type { Player } from '../../domain/player';
 import { scaleForPlan } from '../../domain/scale';
 import { flattenWorkout } from '../../domain/segments';
@@ -17,7 +17,7 @@ import { builtinPlans } from '../data/builtin';
 import { localizedText } from '../data/localized';
 import { getRepositories } from '../data/repositories';
 import { useLibrary } from '../data/useLibrary';
-import { useSettings } from '../data/useSettings';
+import { updateSettings, useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
 import { minutesOf } from '../select/model';
 import { Button } from '../ui/Button';
@@ -27,8 +27,10 @@ import { Modal } from '../ui/Modal';
 import { ProfileChart } from '../ui/ProfileChart';
 import { Segmented } from '../ui/Segmented';
 import { Toast } from '../ui/Toast';
+import { activatePlan } from './activate-plan';
 import { effectiveSession } from './effective-session';
 import { LoadBars } from './LoadBars';
+import { PlanCalendar } from './PlanCalendar';
 import { hoursPerWeek, planLoad, testWeeks } from './model';
 import { useWeeksLabel } from './useWeeksLabel';
 import styles from './PlanDetail.module.css';
@@ -92,24 +94,44 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
   const [lang] = useLang();
   const navigate = useNavigate();
   const weeksLabel = useWeeksLabel();
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
   const { workouts } = useLibrary();
   const isActive = settings.activePlanId === plan.id;
   const stored = data.progress?.settings;
+  // The wizard's Customize hands over its recommendation as the starting point.
+  const location = useLocation();
+  const handedState = location.state as {
+    settings?: unknown;
+    ftp?: unknown;
+    showsWatts?: unknown;
+  } | null;
+  const handed = planSettingsSchema.safeParse(handedState?.settings);
+  const handedFtp = typeof handedState?.ftp === 'number' ? handedState.ftp : undefined;
+  const handedWatts =
+    typeof handedState?.showsWatts === 'boolean' ? handedState.showsWatts : undefined;
+  const initial = handed.success ? handed.data : (stored ?? DEFAULT_PLAN_SETTINGS);
 
-  const [cfg, setCfg] = useState<PlanSettings>(stored ?? DEFAULT_PLAN_SETTINGS);
-  const [pickWeek, setPickWeek] = useState((stored?.startWeek ?? 1) > 1);
-  const [ftpText, setFtpText] = useState(data.me ? String(data.me.ftp) : '');
+  const [cfg, setCfg] = useState<PlanSettings>(initial);
+  const [pickWeek, setPickWeek] = useState(initial.startWeek > 1);
+  const [ftpText, setFtpText] = useState(
+    handedFtp !== undefined ? String(handedFtp) : data.me ? String(data.me.ftp) : '',
+  );
   const [confirming, setConfirming] = useState<false | 'choose' | 'reset'>(false);
   const [error, setError] = useState<string | undefined>();
 
-  const equipment = settings.equipment;
+  const equipment = useMemo(
+    () =>
+      handedWatts === undefined || handedWatts === settings.equipment.showsWatts
+        ? settings.equipment
+        : { ...settings.equipment, showsWatts: handedWatts },
+    [settings.equipment, handedWatts],
+  );
   const text = localizedText(plan, lang);
   const byId = useMemo(() => new Map(workouts.map((w) => [w.id, w])), [workouts]);
   const load = useMemo(() => planLoad(plan), [plan]);
   const tests = useMemo(
-    () => testWeeks(plan, equipment, cfg.layout),
-    [plan, equipment, cfg.layout],
+    () => testWeeks(plan, equipment, cfg.layout, cfg.skipFirstTest),
+    [plan, equipment, cfg.layout, cfg.skipFirstTest],
   );
   const lightWeeks = plan.weeks.flatMap((w, i) => (w.light ? [i + 1] : []));
 
@@ -127,49 +149,28 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
       : { slot: 'freestyle', label: 'tag.freestyle', cls: styles.freestyle },
   ];
 
-  /** Writes the FTP of the isMe player (re-read from storage so there is never a second one). */
-  async function saveFtp(): Promise<void> {
-    if (!ftpDirty || ftpError) return;
-    const repos = await getRepositories();
-    const mine = (await repos.players.list()).find((p) => p.isMe);
-    const player: Player = mine
-      ? { ...mine, ftp: ftpValue }
-      : { id: newId(), name: t('plans.me'), ftp: ftpValue, isMe: true };
-    await repos.players.put(player);
-  }
-
   async function commit(mode: 'keep' | 'reset'): Promise<void> {
-    const previousActive = settings.activePlanId;
-    let activated = false;
+    const before = settings.equipment;
+    let equipmentChanged = false;
     try {
-      const repos = await getRepositories();
-      if (equipment.showsWatts) await saveFtp();
-      const progress: PlanProgress =
-        mode === 'keep' && data.progress
-          ? { ...data.progress, settings: cfg }
-          : {
-              id: plan.id,
-              planId: plan.id,
-              startedAt: new Date().toISOString(),
-              settings: cfg,
-              entries: [],
-            };
-      if (mode === 'reset') {
-        // Activate first and erase last: a failure must never leave erased progress behind.
-        await updateSettings({ activePlanId: plan.id });
-        activated = true;
-        await repos.planProgress.put(progress);
-      } else {
-        await repos.planProgress.put(progress);
-        if (!isActive) {
-          await updateSettings({ activePlanId: plan.id });
-        }
+      // The wizard's "bike without watts" answer is stored along with the plan.
+      if (equipment.showsWatts !== before.showsWatts) {
+        await updateSettings({ equipment });
+        equipmentChanged = true;
       }
+      await activatePlan({
+        plan,
+        settings: cfg,
+        mode,
+        ftp: equipment.showsWatts && ftpDirty && !ftpError ? ftpValue : undefined,
+        meName: t('plans.me'),
+        currentActiveId: settings.activePlanId,
+      });
     } catch (err) {
       console.warn('Saving the plan failed', err);
-      if (activated) {
-        await updateSettings({ activePlanId: previousActive }).catch((e: unknown) =>
-          console.warn('Restoring the active plan failed', e),
+      if (equipmentChanged) {
+        await updateSettings({ equipment: before }).catch((e: unknown) =>
+          console.warn('Restoring the equipment failed', e),
         );
       }
       setConfirming(false);
@@ -267,7 +268,14 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
                 badge={t(label)}
                 badgeClass={cls}
                 workout={byId.get(
-                  effectiveSession(plan, previewWeek, slot, equipment, cfg.layout) ?? '',
+                  effectiveSession(
+                    plan,
+                    previewWeek,
+                    slot,
+                    equipment,
+                    cfg.layout,
+                    cfg.skipFirstTest,
+                  ) ?? '',
                 )}
                 cfg={cfg}
               />
@@ -370,6 +378,8 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
             </Field>
           </div>
         )}
+
+        <PlanCalendar plan={plan} settings={cfg} equipment={equipment} />
 
         <div className={styles.foot}>
           <span className={styles.mut}>{t('plans.changeLater')}</span>

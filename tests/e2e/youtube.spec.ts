@@ -47,7 +47,7 @@ async function startYoutube(page: Page): Promise<void> {
   await page.getByRole('button', { name: /YouTube/ }).click();
   await expect(page.getByRole('button', { name: 'Start', exact: true })).toBeDisabled();
   await page.getByLabel('YouTube link').fill('https://youtu.be/dQw4w9WgXcQ?t=1m30s');
-  await expect(page.getByRole('radio', { name: 'Immersive' })).toBeChecked();
+  await expect(page.getByRole('radio', { name: 'Corners' })).toBeChecked();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
 }

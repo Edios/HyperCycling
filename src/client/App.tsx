@@ -9,6 +9,7 @@ import { SetupScreen } from './setup/SetupScreen';
 import { SummaryScreen } from './summary/SummaryScreen';
 import { PlanDetail } from './plans/PlanDetail';
 import { PlanGallery } from './plans/PlanGallery';
+import { PlanWizard } from './plans/PlanWizard';
 import { FreestyleTab } from './select/FreestyleTab';
 import { PlanTab } from './select/PlanTab';
 import { SelectShell } from './select/SelectShell';
@@ -63,6 +64,7 @@ function routes(): RouteObject[] {
             </SelectShell>
           ),
         },
+        { path: '/plans/wizard', element: <PlanWizard /> },
         {
           path: '/plans/:planId',
           element: (

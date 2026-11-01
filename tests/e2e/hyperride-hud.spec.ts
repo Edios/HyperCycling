@@ -16,14 +16,17 @@ async function requireWebgl(page: Page): Promise<void> {
 async function startHyperride(page: Page, withPlayer: boolean): Promise<void> {
   await page.goto('./#/setup/demo-mixed');
   await page.getByRole('button', { name: /Hyperride/ }).click();
-  await expect(page.getByRole('radio', { name: 'Immersive' })).toBeChecked();
+  await expect(page.getByRole('radio', { name: 'Corners' })).toBeChecked();
   if (withPlayer) {
     await page.getByRole('button', { name: '+ Add' }).click();
     const form = page.getByTestId('add-player-form');
     await form.getByLabel('Name').fill('Mirek');
     await form.getByLabel('FTP (W)').fill('250');
     await form.getByRole('button', { name: 'Add rider' }).click();
-    await expect(page.getByRole('radio', { name: 'Cockpit' })).toBeDisabled();
+    const riders = page.getByRole('switch', { name: 'Show riders' });
+    await expect(riders).toBeEnabled();
+    if (!(await riders.isChecked())) await riders.click();
+    await expect(riders).toBeChecked();
   }
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
@@ -57,7 +60,7 @@ test('Hyperride: canvas renders under the HUD, H cycles layouts, G toggles playe
     await page.screenshot({ path: info.outputPath(`${name}.png`) });
   };
 
-  // With a rider: Immersive and Column show players, H skips Cockpit and Tunnel time.
+  // With a rider: Corners and Column show players; Cockpit and Minimal have no room for them.
   await expect(page.getByTestId('layout-immersive')).toBeVisible();
   await expect(page.getByTestId('players-list')).toBeVisible();
   await shot('immersive-players');
@@ -66,9 +69,17 @@ test('Hyperride: canvas renders under the HUD, H cycles layouts, G toggles playe
   await expect(page.getByTestId('players-list')).toBeVisible();
   await shot('column-players');
   await page.keyboard.press('KeyH');
+  await expect(page.getByTestId('layout-cockpit')).toBeVisible();
+  await expect(page.getByTestId('players-list')).toHaveCount(0);
+  await page.keyboard.press('KeyH');
+  await expect(page.getByTestId('layout-tunnel')).toBeVisible();
+  await page.keyboard.press('KeyH');
+  await expect(page.getByTestId('focus-layer')).toBeVisible();
+  await page.keyboard.press('KeyH');
   await expect(page.getByTestId('layout-immersive')).toBeVisible();
+  await expect(page.getByTestId('focus-layer')).toHaveCount(0);
 
-  // G hides the rider: all four layouts are reachable.
+  // G hides the rider.
   await page.keyboard.press('KeyG');
   await expect(page.getByTestId('players-list')).toHaveCount(0);
   await shot('immersive');
@@ -81,6 +92,8 @@ test('Hyperride: canvas renders under the HUD, H cycles layouts, G toggles playe
   await page.keyboard.press('KeyH');
   await expect(page.getByTestId('layout-tunnel')).toBeVisible();
   await shot('tunnel-time');
+  await page.keyboard.press('KeyH');
+  await expect(page.getByTestId('focus-layer')).toBeVisible();
   await page.keyboard.press('KeyH');
   await expect(page.getByTestId('layout-immersive')).toBeVisible();
 

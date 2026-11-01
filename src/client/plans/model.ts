@@ -1,4 +1,6 @@
-import { totalDurationSec } from '../../domain/workout';
+import { ftpPctToEffort, type EffortLevel } from '../../domain/effort';
+import { flattenWorkout } from '../../domain/segments';
+import { totalDurationSec, type Workout } from '../../domain/workout';
 import { weeklyLoad, type Plan, type PlanLayout } from '../../domain/plan';
 import type { Equipment } from '../../domain/settings';
 import { getWorkout } from '../data/builtin';
@@ -49,11 +51,16 @@ export function hoursPerWeek(minutes: number, layout: PlanLayout): number {
 }
 
 /** 1-based weeks whose served sessions include an FTP test (after the equipment swap). */
-export function testWeeks(plan: Plan, equipment: Equipment, layout: PlanLayout): number[] {
+export function testWeeks(
+  plan: Plan,
+  equipment: Equipment,
+  layout: PlanLayout,
+  skipFirstTest = false,
+): number[] {
   const out: number[] = [];
   plan.weeks.forEach((_, i) => {
     const hit = (['progres', 'freestyle'] as const).some((slot) => {
-      const id = effectiveSession(plan, i + 1, slot, equipment, layout);
+      const id = effectiveSession(plan, i + 1, slot, equipment, layout, skipFirstTest);
       return id !== undefined && ftpTestKindOf(id) !== undefined;
     });
     if (hit) out.push(i + 1);
@@ -74,4 +81,16 @@ export function typicalMinutes(plan: Plan): number {
     }
   }
   return n === 0 ? 45 : Math.round(sec / n / 60 / 5) * 5;
+}
+
+/**
+ * Effort level (1..10) that colours a workout in the plan calendar: the hardest sustained stretch
+ * (blocks of 3 minutes or more; any block when none is that long).
+ */
+export function workoutPeakLevel(workout: Workout): EffortLevel {
+  const segments = flattenWorkout(workout);
+  const sustained = segments.filter((s) => s.durationSec >= 180);
+  const pool = sustained.length > 0 ? sustained : segments;
+  const peak = Math.max(0, ...pool.map((s) => (s.ftpPctStart + s.ftpPctEnd) / 2));
+  return ftpPctToEffort(peak);
 }

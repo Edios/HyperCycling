@@ -80,3 +80,24 @@ describe('settingsSchema hyperrideWorld', () => {
     expect(r.success && r.data.hyperrideWorld).toBe('scenes');
   });
 });
+
+describe('settingsSchema diagnostics and automatic quality', () => {
+  it('stays valid without the diagnostics field and keeps it off by default', () => {
+    expect(DEFAULT_SETTINGS.diagnostics).toBeUndefined();
+    expect(settingsSchema.safeParse(DEFAULT_SETTINGS).success).toBe(true);
+  });
+  it('accepts diagnostics true/false and rejects other types', () => {
+    expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, diagnostics: true }).success).toBe(true);
+    expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, diagnostics: 'yes' }).success).toBe(
+      false,
+    );
+  });
+  it('accepts the automatic quality value; the default stays high', () => {
+    expect(DEFAULT_SETTINGS.hyperrideQuality).toBe('high');
+    const r = settingsSchema.safeParse({ ...DEFAULT_SETTINGS, hyperrideQuality: 'auto' });
+    expect(r.success && r.data.hyperrideQuality).toBe('auto');
+    expect(
+      settingsSchema.safeParse({ ...DEFAULT_SETTINGS, hyperrideQuality: 'ultra' }).success,
+    ).toBe(false);
+  });
+});

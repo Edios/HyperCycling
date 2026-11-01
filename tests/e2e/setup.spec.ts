@@ -12,9 +12,7 @@ async function seedSettings(page: Page, info: TestInfo, activePlanId: string): P
     return;
   }
   await page.goto('./');
-  await expect(
-    page.getByRole('link', { name: 'Choose a plan' }).or(page.getByTestId('next-session')),
-  ).toBeVisible();
+  await expect(page.getByTestId('plan-empty').or(page.getByTestId('next-session'))).toBeVisible();
   await page.evaluate(
     (value) =>
       new Promise<void>((resolve, reject) => {
@@ -85,7 +83,7 @@ test('Ride opens setup; Start rides it; reload mid-session offers Resume at the 
   await expect(setup).toBeVisible();
   await expect(setup.getByRole('heading', { level: 1 })).toBeVisible();
   await expect(page.getByTestId('setup-badge')).toContainText('Progres · week 1');
-  await expect(page.getByRole('radio', { name: 'Solo' })).toBeChecked();
+  await expect(page.getByRole('radio', { name: 'Classic' })).toBeChecked();
   await expect(page.getByRole('button', { name: /Hyperride/ })).toBeEnabled();
   await expect(page.getByRole('button', { name: /YouTube/ })).toBeEnabled();
   await page.getByRole('button', { name: 'Start', exact: true }).click();

@@ -94,8 +94,8 @@ test('settings: the default background is preselected on the setup screen', asyn
   ).toBeChecked();
   await page.reload();
   await page.goto('./#/setup/ramp-test');
-  // Hyperride offers the overlay layouts, Basic would show Solo / With players.
-  await expect(page.getByRole('radio', { name: 'Immersive', checked: true })).toBeVisible();
+  // Hyperride offers the overlay layouts, Basic would also offer Classic.
+  await expect(page.getByRole('radio', { name: 'Corners', checked: true })).toBeVisible();
 
   // Put Basic back for the other tests.
   await page.goto('./#/settings');

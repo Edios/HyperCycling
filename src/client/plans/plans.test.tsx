@@ -144,6 +144,15 @@ describe('PlanGallery', () => {
     expect(screen.getAllByTestId('plan-card')).toHaveLength(builtinPlans.length);
   });
 
+  it('has a wizard button in the header', async () => {
+    renderGallery();
+    await screen.findAllByTestId('plan-card');
+    expect(screen.getByRole('link', { name: 'Plan wizard' })).toHaveAttribute(
+      'href',
+      '/plans/wizard',
+    );
+  });
+
   it('Choose opens the plan screen', async () => {
     renderGallery();
     const card = (await screen.findAllByTestId('plan-card')).find(

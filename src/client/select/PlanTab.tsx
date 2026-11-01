@@ -51,9 +51,20 @@ function EmptyState({ kind }: { kind: 'none' | 'complete' }) {
     <div className={styles.empty} data-testid={kind === 'none' ? 'plan-empty' : 'plan-complete'}>
       <h1>{kind === 'none' ? t('plan.noPlanTitle') : t('plan.complete')}</h1>
       <p>{kind === 'none' ? t('plan.noPlanBody') : t('plan.completeBody')}</p>
-      <Link to="/plans" className={styles.cta}>
-        {t('plan.choose')}
-      </Link>
+      {kind === 'none' ? (
+        <div className={styles.ctas}>
+          <Link to="/plans/wizard" className={styles.cta}>
+            {t('plan.build')}
+          </Link>
+          <Link to="/plans" className={styles.ctaSecondary}>
+            {t('plan.browse')}
+          </Link>
+        </div>
+      ) : (
+        <Link to="/plans" className={styles.cta}>
+          {t('plan.choose')}
+        </Link>
+      )}
     </div>
   );
 }
@@ -72,7 +83,15 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
   const next = useMemo(() => {
     const n = nextSession(plan, progress);
     if (!n) return n;
-    const workoutId = effectiveSession(plan, n.week, n.slot, equipment, progress.settings.layout);
+    const workoutId = effectiveSession(
+      plan,
+      n.week,
+      n.slot,
+      equipment,
+      progress.settings.layout,
+      progress.settings.skipFirstTest,
+      n.cycle,
+    );
     return { ...n, workoutId: workoutId ?? n.workoutId };
   }, [plan, progress, equipment]);
   const planText = localizedText(plan, lang);
@@ -84,14 +103,22 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
       const st = weekStatus(plan, progress, week);
       for (const slot of SLOTS) {
         // Weeks without a session in this slot (or layout) are not sessions at all.
-        if (effectiveSession(plan, week, slot, equipment, progress.settings.layout) === undefined)
-          continue;
+        const id = effectiveSession(
+          plan,
+          week,
+          slot,
+          equipment,
+          progress.settings.layout,
+          progress.settings.skipFirstTest,
+          next?.cycle,
+        );
+        if (id === undefined) continue;
         total++;
         if (st[slot] !== 'open') done++;
       }
     }
     return { done, total };
-  }, [plan, progress, equipment]);
+  }, [plan, progress, equipment, next]);
 
   const perWeek = Math.max(...plan.weeks.map((w) => w.sessions.length));
   const minutes = progress.settings.sessionMinutes;
@@ -241,6 +268,8 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
                     slot,
                     equipment,
                     progress.settings.layout,
+                    progress.settings.skipFirstTest,
+                    next?.cycle,
                   );
                   const w = id === undefined ? undefined : byId.get(id);
                   return (
