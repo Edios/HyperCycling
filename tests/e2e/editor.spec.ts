@@ -134,6 +134,11 @@ test('import: a .zwo file opens in the editor and can be saved', async ({ page }
   await page.getByLabel('Workout name').fill(name);
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('button', { name: 'Save' })).toBeDisabled();
+  // The save replaces /editor/new with the workout's own address; leave only after that.
+  await expect(page).toHaveURL(/#\/editor\/(?!new)/);
+  // Leave through the app, so a late post-save navigation cannot pull the page back to the editor.
+  await page.getByRole('link', { name: /Freestyle/ }).first().click();
+  await expect(page).toHaveURL(/#\/freestyle/);
 
   await openMine(page, name);
   expect(errors).toEqual([]);
