@@ -160,8 +160,14 @@ describe('PlanTab', () => {
     const week = plan.weeks[0];
     const alt = week?.progresAlt;
     const progres = week?.sessions.find((s) => s.slot === 'progres')?.workoutId;
-    if (alt === undefined || alt === progres) expect(swap).toBeDisabled();
-    else expect(swap).toBeEnabled();
+    if (alt === undefined || alt === progres) {
+      expect(swap).toBeDisabled();
+      // The reason is visible text, not only a tooltip.
+      expect(screen.getByTestId('swap-hint')).toHaveTextContent(/no alternative/i);
+    } else {
+      expect(swap).toBeEnabled();
+      expect(screen.queryByTestId('swap-hint')).toBeNull();
+    }
   });
 
   it('shows the last ridden session', async () => {

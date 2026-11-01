@@ -7,6 +7,8 @@ import type { HyperrideWorld } from '../world';
 export const WORLDS = {
   'neon-tunnel': async (): Promise<HyperrideWorld> =>
     (await import('./neon-tunnel')).createNeonTunnel(),
+  road: async (): Promise<HyperrideWorld> => (await import('./road')).createRoad(),
+  scenes: async (): Promise<HyperrideWorld> => (await import('./scenes')).createScenes(),
 } satisfies Record<string, () => Promise<HyperrideWorld>>;
 
 export type WorldId = keyof typeof WORLDS;

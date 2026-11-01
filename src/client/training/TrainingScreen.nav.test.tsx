@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Player } from '../../domain/player';
@@ -206,13 +206,8 @@ describe('quick settings', () => {
     expect(useSessionStore.getState().state).toEqual(before);
     expect(useSessionStore.getState().state.workoutElapsedSec).toBeGreaterThan(9);
     expect(useSessionStore.getState().runtime?.config.background).toBe('hyperride');
-    await waitFor(() =>
-      expect(puts.at(-1)?.lastSession).toMatchObject({
-        background: 'hyperride',
-        hud: 'immersive',
-        music: true,
-      }),
-    );
+    expect(useSessionStore.getState().runtime?.config.hud).toBe('immersive');
+    expect(puts).toEqual([]); // this ride only: the saved defaults stay
     // Resuming carries on from the same second.
     key('Space');
     advance(1000);
@@ -236,7 +231,7 @@ describe('quick settings', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Hyperride' }));
     expect(layouts()).toEqual(['Immersive', 'Column']);
     fireEvent.click(screen.getByRole('radio', { name: 'Column' }));
-    await waitFor(() => expect(puts.at(-1)?.lastSession?.hud).toBe('column'));
+    expect(useSessionStore.getState().runtime?.config.hud).toBe('column');
   });
 
   it('YouTube needs a link: disabled without one, available from the recent links', async () => {
@@ -258,25 +253,131 @@ describe('quick settings', () => {
     );
   });
 
-  it('beeps and cues are saved to the settings', async () => {
+  it('beeps and cues apply to this ride only and never touch the saved defaults', async () => {
     load();
     await renderScreen();
     fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
     fireEvent.click(screen.getByRole('switch', { name: 'Beeps' }));
-    await waitFor(() => expect(puts.at(-1)?.sounds).toBe(!DEFAULT_SETTINGS.sounds));
+    expect(screen.getByRole('switch', { name: 'Beeps' })).not.toBeChecked();
     fireEvent.click(screen.getByRole('switch', { name: 'On-screen cues' }));
-    await waitFor(() => expect(puts.at(-1)?.coach).toBe(!DEFAULT_SETTINGS.coach));
+    expect(useSessionStore.getState().runtime?.options).toEqual({
+      sounds: !DEFAULT_SETTINGS.sounds,
+      coach: !DEFAULT_SETTINGS.coach,
+    });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(puts).toEqual([]);
   });
 
-  it('shows an error toast when a quick setting cannot be saved, and the ride goes on', async () => {
+  it('shows why YouTube is unavailable as visible text', async () => {
     load();
     await renderScreen();
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    failPuts.value = true;
     fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
-    fireEvent.click(screen.getByRole('switch', { name: 'Beeps' }));
-    expect(await screen.findByText('Could not save the setting. Try again.')).toBeInTheDocument();
-    expect(useSessionStore.getState().runtime).toBeDefined();
-    expect(screen.getByTestId('quick-settings')).toBeInTheDocument();
+    expect(screen.getByTestId('quick-youtube-hint')).toHaveTextContent(/YouTube link/);
+  });
+});
+
+describe('focus and Space (QA F2, F3)', () => {
+  it('closing the quick settings gives focus back to the gear', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    const gear = screen.getByRole('button', { name: 'Quick settings' });
+    gear.focus();
+    fireEvent.click(gear);
+    expect(gear).not.toHaveFocus();
+    key('Escape');
+    expect(gear).toHaveFocus();
+  });
+
+  it('cancelling the exit dialog gives focus back to the Menu button', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    const menu = screen.getByRole('button', { name: 'Menu' });
+    menu.focus();
+    fireEvent.click(menu);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(menu).toHaveFocus();
+  });
+
+  it('Space pauses even when "Next block" has focus, and does not skip the block', async () => {
+    load();
+    await renderScreen();
+    key('Space');
+    advance(3100);
+    advance(2000);
+    const next = screen.getByRole('button', { name: 'Next block' });
+    next.focus();
+    const down = new KeyboardEvent('keydown', {
+      code: 'Space',
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => {
+      next.dispatchEvent(down);
+    });
+    expect(down.defaultPrevented).toBe(true);
+    expect(useSessionStore.getState().state.status).toBe('paused');
+    expect(useSessionStore.getState().state.segmentIndex).toBe(0);
+  });
+
+  it('opening the quick settings puts focus on its first control, not on Close', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
+    const panel = screen.getByTestId('quick-settings');
+    expect(panel).toContainElement(document.activeElement as HTMLElement);
+    expect(document.activeElement).not.toBe(within(panel).getByRole('button', { name: 'Close' }));
+    expect(document.activeElement?.tagName).toBe('INPUT');
+  });
+
+  it('Space inside the quick settings resumes the ride and does not toggle the focused control', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
+    const beeps = screen.getByRole('switch', { name: 'Beeps' });
+    beeps.focus();
+    const checked = (beeps as HTMLInputElement).checked;
+    const down = new KeyboardEvent('keydown', {
+      code: 'Space',
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => {
+      beeps.dispatchEvent(down);
+    });
+    const up = new KeyboardEvent('keyup', {
+      code: 'Space',
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => {
+      beeps.dispatchEvent(up);
+    });
+    expect(down.defaultPrevented).toBe(true);
+    expect(up.defaultPrevented).toBe(true);
+    expect(useSessionStore.getState().state.status).toBe('running');
+    expect((beeps as HTMLInputElement).checked).toBe(checked);
+  });
+
+  it('shows the Space hint once when the quick settings are open while paused', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    expect(screen.getAllByText('Space: pause / resume')).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
+    expect(screen.getAllByText('Space: pause / resume')).toHaveLength(1);
+  });
+
+  it('shows the Space shortcut hint while paused', async () => {
+    load();
+    await renderScreen();
+    rideThenPause();
+    expect(screen.getByRole('status')).toHaveTextContent('Space: pause / resume');
   });
 });

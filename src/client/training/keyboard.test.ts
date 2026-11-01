@@ -74,14 +74,50 @@ describe('bindTrainingKeys', () => {
     unbind();
   });
 
-  it('leaves Space to a focused button', () => {
+  it('Space pauses even with a button focused, and does not click it', () => {
     const { actions, unbind } = setup();
     const btn = document.createElement('button');
     document.body.append(btn);
     const e = new KeyboardEvent('keydown', { code: 'Space', bubbles: true, cancelable: true });
     btn.dispatchEvent(e);
-    expect(actions.toggle).not.toHaveBeenCalled();
+    expect(actions.toggle).toHaveBeenCalledTimes(1);
+    expect(e.defaultPrevented).toBe(true);
+    // Firefox clicks on keyup: that one is cancelled too.
+    const up = new KeyboardEvent('keyup', { code: 'Space', bubbles: true, cancelable: true });
+    btn.dispatchEvent(up);
+    expect(up.defaultPrevented).toBe(true);
+    expect(actions.toggle).toHaveBeenCalledTimes(1);
+    btn.remove();
+    unbind();
+  });
+
+  it('Space on a checkbox inside the quick settings pauses and is not a toggle', () => {
+    const { actions, unbind } = setup();
+    const panel = document.createElement('div');
+    panel.dataset['quickSettings'] = '';
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    panel.append(box);
+    document.body.append(panel);
+    const down = new KeyboardEvent('keydown', { code: 'Space', bubbles: true, cancelable: true });
+    box.dispatchEvent(down);
+    const up = new KeyboardEvent('keyup', { code: 'Space', bubbles: true, cancelable: true });
+    box.dispatchEvent(up);
+    expect(actions.toggle).toHaveBeenCalledTimes(1);
+    expect(down.defaultPrevented).toBe(true);
+    expect(up.defaultPrevented).toBe(true);
+    panel.remove();
+    unbind();
+  });
+
+  it('Enter on a focused button is left to the button', () => {
+    const { actions, unbind } = setup();
+    const btn = document.createElement('button');
+    document.body.append(btn);
+    const e = new KeyboardEvent('keydown', { code: 'Enter', bubbles: true, cancelable: true });
+    btn.dispatchEvent(e);
     expect(e.defaultPrevented).toBe(false);
+    expect(actions.toggle).not.toHaveBeenCalled();
     btn.remove();
     unbind();
   });

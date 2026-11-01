@@ -1,5 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
+import { resolveWorld } from '../hyperride/world-options';
 import type { FrameInput } from '../hyperride/world';
 import { useMusicDirector } from '../music/useMusicDirector';
 import { Toast, ToastStack } from '../ui/Toast';
@@ -20,7 +29,13 @@ import {
   type OverlayHudId,
 } from './overlay-layouts';
 import type { SessionConfig } from '../../domain/settings';
-import { Navigate, useNavigate } from 'react-router-dom';
+import {
+  Navigate,
+  UNSAFE_DataRouterContext,
+  useBlocker,
+  useNavigate,
+  type Blocker,
+} from 'react-router-dom';
 import { cueForTransition, type CoachCue } from '../../domain/coach';
 import type { TrackRef } from '../../domain/workout';
 import { useSettings } from '../data/useSettings';
@@ -48,6 +63,26 @@ import styles from './TrainingScreen.module.css';
 const CONTROLS_HIDE_MS = 3000;
 /** Music warnings carry instructions (open Spotify...), so they stay longer than other toasts. */
 const MUSIC_WARNING_MS = 8000;
+/** The background fell back silently: the toast explaining why must outlast the layout switch. */
+const FALLBACK_TOAST_MS = 8000;
+
+/**
+ * Asks before browser Back / Forward leaves a started ride. Only mounted under a data router
+ * (useBlocker needs one); the plain-router tests render without it.
+ */
+function LeaveGuard({
+  shouldBlock,
+  onBlocked,
+}: {
+  shouldBlock: () => boolean;
+  onBlocked: (blocker: Blocker) => void;
+}) {
+  const blocker = useBlocker(shouldBlock);
+  useEffect(() => {
+    if (blocker.state === 'blocked') onBlocked(blocker);
+  }, [blocker, onBlocked]);
+  return null;
+}
 
 /** Route /train. Redirects home when no session is loaded. */
 export function TrainingScreen() {
@@ -62,7 +97,7 @@ export function TrainingScreen() {
 function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const t = useT();
   const navigate = useNavigate();
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
   const state = useSessionStore((s) => s.state);
   const muted = useSessionStore((s) => s.muted);
   const reducedMotion = useReducedMotion() || settings.effectsIntensity === 0;
@@ -114,7 +149,11 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     [t],
   );
   const [nowPlaying, setNowPlaying] = useState<TrackRef | null>(null);
-  const musicAudible = settings.sounds && !muted;
+  // Beeps, cues and world are per ride (Setup / quick settings); Settings only supplies defaults.
+  const soundsOn = runtime.options?.sounds ?? settings.sounds;
+  const coachOn = runtime.options?.coach ?? settings.coach;
+  const worldId = runtime.options?.world ?? settings.hyperrideWorld;
+  const musicAudible = soundsOn && !muted;
   useMusicDirector(runtime, onMusicWarning, {
     volume: musicAudible ? 1 : 0,
     onPlaying: setNowPlaying,
@@ -152,8 +191,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const sound = useMemo<Sound>(() => createSound(), []);
   useEffect(() => () => sound.dispose(), [sound]);
   useEffect(() => {
-    sound.setEnabled(settings.sounds && !muted);
-  }, [sound, settings.sounds, muted]);
+    sound.setEnabled(soundsOn && !muted);
+  }, [sound, soundsOn, muted]);
 
   const view = useMemo(
     () => buildTrainingView(runtime.segments, state, settings.effortTable),
@@ -197,7 +236,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         if (!e.skipped) sound.segment();
         setFlash((n) => n + 1);
         const next = segments[e.to];
-        if (settings.coach && next) {
+        if (coachOn && next) {
           const c = cueForTransition(segments[e.from], next, {
             numericCadence: settings.equipment.showsCadence,
           });
@@ -208,7 +247,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         leave(true);
       }
     });
-  }, [runtime, sound, settings.coach, settings.equipment.showsCadence, leave]);
+  }, [runtime, sound, coachOn, settings.equipment.showsCadence, leave]);
 
   const toggle = useCallback(() => {
     sound.unlock();
@@ -238,7 +277,25 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     setConfirmEnd(true);
   }, []);
 
+  // Browser Back / Forward during a started ride opens the same exit question.
+  const dataRouter = useContext(UNSAFE_DataRouterContext) !== null;
+  const blockedNav = useRef<Blocker | null>(null);
+  const shouldBlockNav = useCallback(
+    () => !ended.current && useSessionStore.getState().state.status !== 'idle',
+    [],
+  );
+  const onNavBlocked = useCallback(
+    (blocker: Blocker) => {
+      const already = blockedNav.current !== null;
+      blockedNav.current = blocker;
+      if (!already) openEnd();
+    },
+    [openEnd],
+  );
+
   const resumeFromDialog = useCallback(() => {
+    blockedNav.current?.reset?.();
+    blockedNav.current = null;
     setConfirmEnd(false);
     if (pausedByDialog.current) useSessionStore.getState().resume();
     pausedByDialog.current = false;
@@ -286,28 +343,12 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const background = runtime.config.background;
   const youtubeUrl = youtubeUrlFor(sessionYoutubeUrl, settings.recentYoutubeUrls);
 
-  /** Applies a live background / layout choice: the session config and the saved defaults follow. */
-  const [saveFailures, setSaveFailures] = useState(0);
-  const warnSave = useCallback((err: unknown): void => {
-    console.warn('Saving the quick settings failed', err);
-    setSaveFailures((n) => n + 1);
-  }, []);
-
+  /** Applies a live background / layout choice to this ride only; saved defaults stay untouched. */
   const applyChoice = useCallback(
     (bg: SessionConfig['background'], hud: SessionConfig['hud'], url: string | undefined) => {
-      const config = withLiveChoice(runtime.config, bg, hud, url);
-      useSessionStore.getState().setConfig(config);
-      // Leaving YouTube must not forget the link that setup offers as its default.
-      const kept = config.youtubeUrl ?? settingsRef.current.lastSession?.youtubeUrl;
-      void updateSettings({
-        lastSession: {
-          ...config,
-          ...(kept ? { youtubeUrl: kept } : {}),
-          music: settingsRef.current.lastSession?.music ?? config.music,
-        },
-      }).catch(warnSave);
+      useSessionStore.getState().setConfig(withLiveChoice(runtime.config, bg, hud, url));
     },
-    [runtime.config, updateSettings, warnSave],
+    [runtime.config],
   );
 
   const changeBackground = (bg: SessionConfig['background']): void => {
@@ -416,6 +457,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           <HyperrideCanvas
             getFrameInput={getFrameInput}
             quality={settings.hyperrideQuality}
+            world={resolveWorld(worldId)}
             viewOffsetX={overlayHud === 'column' && !playersOn ? COLUMN_VIEW_OFFSET : 0}
             {...(motionOn ? { onSway } : {})}
             onUnavailable={() => setHyperrideFailed(true)}
@@ -457,14 +499,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             message={t(
               youtubeFailure === 'embed-blocked' ? 'youtube.embedBlocked' : 'youtube.unavailable',
             )}
+            durationMs={FALLBACK_TOAST_MS}
             onClose={() => setYoutubeToastDismissed(true)}
-          />
-        )}
-        {saveFailures > 0 && (
-          <Toast
-            key={saveFailures}
-            message={t('settings.saveFailed')}
-            onClose={() => setSaveFailures(0)}
           />
         )}
         {musicWarning && (
@@ -503,6 +539,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       {status === 'paused' && !confirmEnd && (
         <div role="status" className={styles.paused}>
           {t('training.paused')}
+          {/* The quick settings carry the same hint: show it in one place only. */}
+          {!quickOpen && <small className={styles.pausedHint}>{t('training.shortcutHint')}</small>}
         </div>
       )}
       {quickOpen && !confirmEnd && (
@@ -511,15 +549,18 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           youtubeAvailable={youtubeUrl !== undefined}
           hud={activeHud(background, playersOn, overlayHud)}
           hudChoices={hudChoices(background, hasPlayers, playersOn)}
-          sounds={settings.sounds}
-          coach={settings.coach}
+          world={worldId}
+          onWorld={(w) => useSessionStore.getState().setOptions({ world: w })}
+          sounds={soundsOn}
+          coach={coachOn}
           onBackground={changeBackground}
           onHud={changeHud}
-          onSounds={(on) => void updateSettings({ sounds: on }).catch(warnSave)}
-          onCoach={(on) => void updateSettings({ coach: on }).catch(warnSave)}
+          onSounds={(on) => useSessionStore.getState().setOptions({ sounds: on })}
+          onCoach={(on) => useSessionStore.getState().setOptions({ coach: on })}
           onClose={() => setQuickOpen(false)}
         />
       )}
+      {dataRouter && <LeaveGuard shouldBlock={shouldBlockNav} onBlocked={onNavBlocked} />}
       {confirmEnd && (
         <EndDialog
           onResume={resumeFromDialog}

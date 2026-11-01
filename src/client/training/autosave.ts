@@ -38,6 +38,7 @@ export function toActiveSession(
     workout: runtime.workout,
   };
   if (runtime.plan) active.plan = runtime.plan;
+  if (runtime.options) active.options = runtime.options;
   return active;
 }
 

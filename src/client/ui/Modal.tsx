@@ -26,7 +26,9 @@ export function Modal({ title, onClose, children }: ModalProps) {
       Array.from(panel.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []).filter(
         (el) => !el.hasAttribute('disabled'),
       );
-    (focusables()[0] ?? panel.current)?.focus();
+    // An element marked data-autofocus (the safe choice of a destructive dialog) wins over the first.
+    const preferred = panel.current?.querySelector<HTMLElement>('[data-autofocus]');
+    (preferred ?? focusables()[0] ?? panel.current)?.focus();
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         onCloseRef.current();

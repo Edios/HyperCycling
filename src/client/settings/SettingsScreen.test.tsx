@@ -284,6 +284,14 @@ describe('Training', () => {
     await waitFor(() => expect(db.settings?.hyperrideQuality).toBe('low'));
   });
 
+  it('saves the Hyperride world', async () => {
+    renderScreen();
+    const tr = await section('training');
+    expect(within(tr).getByRole('radio', { name: 'Neon tunnel' })).toBeChecked();
+    fireEvent.click(within(tr).getByRole('radio', { name: 'Road' }));
+    await waitFor(() => expect(db.settings?.hyperrideWorld).toBe('road'));
+  });
+
   it('saves the effects intensity as 0..1', async () => {
     renderScreen();
     const tr = await section('training');
@@ -301,6 +309,16 @@ describe('Training', () => {
     expect(db.settings?.lastSession?.playerIds).toEqual([]);
     fireEvent.click(within(tr).getByRole('radio', { name: 'Column' }));
     await waitFor(() => expect(db.settings?.lastSession?.hud).toBe('column'));
+  });
+
+  it('the music default toggle writes lastSession.music and keeps the rest', async () => {
+    renderScreen();
+    const tr = await section('training');
+    const toggle = await within(tr).findByRole('switch', { name: 'Music on by default' });
+    expect(toggle).not.toBeChecked();
+    fireEvent.click(toggle);
+    await waitFor(() => expect(db.settings?.lastSession?.music).toBe(true));
+    expect(db.settings?.lastSession).toMatchObject({ background: 'basic', playerIds: [] });
   });
 
   it('keeps the rest of an existing lastSession', async () => {
@@ -398,31 +416,66 @@ describe('Data', () => {
     expect(blob.type).toBe('application/json');
   });
 
-  it('reports a file that is not an export and leaves the data alone', async () => {
+  const validBundle = JSON.stringify({
+    app: 'spinning-tutor',
+    schemaVersion: 1,
+    exportedAt: '2026-10-31T10:00:00.000Z',
+    workouts: [],
+    players: [],
+    planProgress: [],
+    sessionLogs: [],
+    settings: null,
+  });
+
+  it('reports a file that is not an export before any confirm, and leaves the data alone', async () => {
     renderScreen();
     await pick(file('{"hello": 1}'));
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Replace' }));
     expect(await screen.findByTestId('import-result')).toHaveTextContent(
       'Import failed. The file is not a Spinning Tutor export.',
     );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(db.replaced).toBeUndefined();
   });
 
-  it('reports a file that is not JSON', async () => {
+  it('reports a file that is not JSON without asking to replace anything', async () => {
     renderScreen();
     await pick(file('nope'));
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Replace' }));
     expect(await screen.findByTestId('import-result')).toHaveTextContent('not valid JSON');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('asks before replacing and does nothing on cancel', async () => {
+  it('explains invalid data in plain words and keeps the raw detail collapsed', async () => {
     renderScreen();
-    await pick(file('{}', 'mine.json'));
-    const dialog = screen.getByRole('dialog', { name: 'Replace all data?' });
+    await pick(file(JSON.stringify({ ...JSON.parse(validBundle), players: [{ id: 5 }] })));
+    const result = await screen.findByTestId('import-result');
+    expect(result).toHaveTextContent('The file contains data the app cannot read.');
+    const details = within(result).getByTestId('import-details');
+    expect(details.tagName).toBe('DETAILS');
+    expect(details).not.toHaveAttribute('open');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('asks before replacing, focuses Cancel, and does nothing on cancel', async () => {
+    renderScreen();
+    await pick(file(validBundle, 'mine.json'));
+    const dialog = await screen.findByRole('dialog', { name: 'Replace all data?' });
     expect(dialog).toHaveTextContent('"mine.json"');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    const cancel = within(dialog).getByRole('button', { name: 'Cancel' });
+    await waitFor(() => expect(cancel).toHaveFocus());
+    fireEvent.click(cancel);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.queryByTestId('import-result')).not.toBeInTheDocument();
+    expect(db.replaced).toBeUndefined();
+  });
+
+  it('confirms an export with a toast', async () => {
+    render(
+      <MemoryRouter>
+        <DataSection download={vi.fn()} />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Export data' }));
+    expect(await screen.findByText('Data exported.')).toBeInTheDocument();
   });
 
   it('imports a valid bundle and reloads the app', async () => {
@@ -447,7 +500,9 @@ describe('Data', () => {
       fireEvent.change(screen.getByTestId('import-file'), {
         target: { files: [file(JSON.stringify(bundle))] },
       });
-      fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Replace' }));
+      fireEvent.click(
+        within(await screen.findByRole('dialog')).getByRole('button', { name: 'Replace' }),
+      );
       expect(await screen.findByText('Import finished. Reloading the app.')).toBeInTheDocument();
       expect(db.replaced?.players[0]?.name).toBe('Zed');
       await vi.advanceTimersByTimeAsync(2000);
@@ -507,5 +562,25 @@ describe('Data', () => {
     await waitFor(() => expect(db.settings?.recentYoutubeUrls).toEqual([]));
     expect(await within(data).findByText('Recent links cleared')).toBeInTheDocument();
     expect(within(data).getByRole('button', { name: 'Clear recent links' })).toBeDisabled();
+  });
+
+  it('clearing the recent links also forgets the prefilled setup link', async () => {
+    db.settings = {
+      ...DEFAULT_SETTINGS,
+      recentYoutubeUrls: ['https://youtu.be/a'],
+      lastSession: {
+        background: 'youtube',
+        hud: 'immersive',
+        playerIds: [],
+        music: false,
+        youtubeUrl: 'https://youtu.be/a',
+      },
+    };
+    renderScreen();
+    const data = await section('data');
+    fireEvent.click(await within(data).findByRole('button', { name: 'Clear recent links' }));
+    await waitFor(() => expect(db.settings?.recentYoutubeUrls).toEqual([]));
+    expect(db.settings?.lastSession?.youtubeUrl).toBeUndefined();
+    expect(db.settings?.lastSession?.background).toBe('youtube');
   });
 });

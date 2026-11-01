@@ -66,7 +66,9 @@ export function OverlayHud({
       {showPlayers && (
         <div className={styles.players} data-testid="players-list">
           <div className={styles.pHead}>
-            {t('training.playersTarget', { pct: Math.round(view.ftpPct) })}
+            {showsWatts
+              ? t('training.playersTarget', { pct: Math.round(view.ftpPct) })
+              : t('training.playersTargetEffort', { effort: Math.round(view.effort) })}
           </div>
           {players.map((p) => (
             <div key={p.id} className={styles.pRow}>

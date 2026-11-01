@@ -6,6 +6,8 @@ import {
   applyPlanSettings,
   buildConfig,
   effectiveHud,
+  initialSelection,
+  layoutHintKey,
   layoutOptions,
   parsePlanRef,
   pickPlayers,
@@ -29,6 +31,34 @@ describe('applyPlanSettings', () => {
     const w = builtinWorkouts.find((x) => x.scaling && !x.tags.includes('test'))!;
     const out = applyPlanSettings(w, { ...DEFAULT_PLAN_SETTINGS, sessionMinutes: 30 });
     expect(totalDurationSec(out)).toBeLessThan(totalDurationSec(w));
+  });
+});
+
+const rider = (id: string, isMe = false) => ({ id, name: id, ftp: 200, ...(isMe ? { isMe } : {}) });
+
+describe('initialSelection', () => {
+  it('keeps the saved riders that still exist', () => {
+    expect(initialSelection([rider('a'), rider('b')], ['b', 'gone'])).toEqual(['b']);
+  });
+  it('falls back to the me rider', () => {
+    expect(initialSelection([rider('a'), rider('b', true)], [])).toEqual(['b']);
+  });
+  it('falls back to the only rider', () => {
+    expect(initialSelection([rider('a')], undefined)).toEqual(['a']);
+  });
+  it('selects nobody when several riders and none is me', () => {
+    expect(initialSelection([rider('a'), rider('b')], [])).toEqual([]);
+  });
+});
+
+describe('layoutHintKey', () => {
+  it('explains the disabled With players on Basic', () => {
+    expect(layoutHintKey('basic', false)).toBe('setup.layoutHint.basicNoPlayers');
+    expect(layoutHintKey('basic', true)).toBeUndefined();
+  });
+  it('explains where the players column lives on Hyperride and YouTube', () => {
+    expect(layoutHintKey('hyperride', false)).toBe('setup.layoutHint.overlay');
+    expect(layoutHintKey('youtube', true)).toBe('setup.layoutHint.overlayPlayers');
   });
 });
 

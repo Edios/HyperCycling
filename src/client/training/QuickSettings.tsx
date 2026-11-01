@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
-import type { SessionConfig } from '../../domain/settings';
+import type { HyperrideWorldId, SessionConfig } from '../../domain/settings';
 import { useT, type MessageKey } from '../i18n';
+import { WORLD_CHOICES } from '../hyperride/world-options';
 import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
+import { useRestoreFocus } from '../ui/useRestoreFocus';
 import styles from './QuickSettings.module.css';
 
 type Background = SessionConfig['background'];
@@ -29,10 +31,12 @@ export interface QuickSettingsProps {
   youtubeAvailable: boolean;
   hud: Hud;
   hudChoices: readonly Hud[];
+  world: HyperrideWorldId;
   sounds: boolean;
   coach: boolean;
   onBackground(b: Background): void;
   onHud(h: Hud): void;
+  onWorld(w: HyperrideWorldId): void;
   onSounds(on: boolean): void;
   onCoach(on: boolean): void;
   onClose(): void;
@@ -41,13 +45,20 @@ export interface QuickSettingsProps {
 /** Live settings during a ride. Nothing here touches the engine: time and state carry on. */
 export function QuickSettings(p: QuickSettingsProps) {
   const t = useT();
-  const closeRef = useRef<HTMLButtonElement>(null);
+  useRestoreFocus();
+  const panelRef = useRef<HTMLElement>(null);
+  // Start on the first control (the background choice), not on Close: Space and arrows work at once.
   useEffect(() => {
-    closeRef.current?.focus();
+    const first =
+      panelRef.current?.querySelector<HTMLElement>('input:checked:not(:disabled)') ??
+      panelRef.current?.querySelector<HTMLElement>('input:not(:disabled)');
+    first?.focus();
   }, []);
   const backgrounds: Background[] = ['basic', 'hyperride', 'youtube'];
   return (
     <section
+      ref={panelRef}
+      data-quick-settings=""
       className={styles.panel}
       role="region"
       aria-label={t('training.quickSettings')}
@@ -56,7 +67,6 @@ export function QuickSettings(p: QuickSettingsProps) {
       <header className={styles.head}>
         <h2>{t('training.quickSettings')}</h2>
         <button
-          ref={closeRef}
           type="button"
           className={styles.close}
           aria-label={t('training.quickClose')}
@@ -81,6 +91,11 @@ export function QuickSettings(p: QuickSettingsProps) {
         }))}
         onChange={p.onBackground}
       />
+      {!p.youtubeAvailable && p.background !== 'youtube' && (
+        <p className={styles.hint} data-testid="quick-youtube-hint">
+          {t('training.quickYoutubeNone')}
+        </p>
+      )}
       <span className={styles.label} aria-hidden="true">
         {t('training.quickLayout')}
       </span>
@@ -90,8 +105,23 @@ export function QuickSettings(p: QuickSettingsProps) {
         options={p.hudChoices.map((h) => ({ value: h, label: t(HUD_KEY[h]) }))}
         onChange={p.onHud}
       />
+      {p.background === 'hyperride' && (
+        <>
+          <span className={styles.label} aria-hidden="true">
+            {t('training.quickWorld')}
+          </span>
+          <Segmented
+            label={t('training.quickWorld')}
+            value={p.world}
+            options={WORLD_CHOICES.map((w) => ({ value: w.value, label: t(w.labelKey) }))}
+            onChange={p.onWorld}
+          />
+        </>
+      )}
       <Toggle label={t('training.quickSounds')} checked={p.sounds} onChange={p.onSounds} />
       <Toggle label={t('training.quickCoach')} checked={p.coach} onChange={p.onCoach} />
+      <p className={styles.hint}>{t('training.quickRideOnly')}</p>
+      <p className={styles.hint}>{t('training.shortcutHint')}</p>
     </section>
   );
 }

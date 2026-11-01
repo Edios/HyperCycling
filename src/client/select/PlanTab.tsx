@@ -191,6 +191,11 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
                   : ''}
               </div>
               <div className={styles.buttons}>
+                {swapOptions.length === 0 && (
+                  <span className={styles.mut} data-testid="swap-hint">
+                    {t('plan.swapNone')}
+                  </span>
+                )}
                 <Button disabled={swapOptions.length === 0} onClick={() => setSwapping(true)}>
                   {t('plan.swap')}
                 </Button>

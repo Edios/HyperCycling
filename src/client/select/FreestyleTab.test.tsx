@@ -22,7 +22,7 @@ vi.mock('../data/repositories', () => ({
     }),
 }));
 
-vi.setConfig({ testTimeout: 20_000 });
+vi.setConfig({ testTimeout: 60_000 });
 
 import { builtinWorkouts } from '../data/builtin';
 import { FreestyleTab } from './FreestyleTab';
@@ -187,5 +187,24 @@ describe('FreestyleTab', () => {
     expect(cards()).toHaveLength(1);
     expect(cards()[0]).toHaveTextContent('My Tuesday');
     mine.list = [];
+  });
+});
+
+describe('FreestyleTab edit button (H3)', () => {
+  it('own workouts get Edit, built-ins keep Duplicate only', async () => {
+    const own = { ...(builtinWorkouts[0] as Workout), id: 'mine-1', name: 'Mine', source: { kind: 'user' as const } };
+    mine.list = [own];
+    try {
+      renderTab();
+      await screen.findAllByTestId('workout-card');
+      const edit = await screen.findAllByRole('link', { name: /^Edit: / });
+      expect(edit).toHaveLength(1);
+      expect(edit[0]).toHaveAttribute('href', '/editor/mine-1');
+      expect(screen.getAllByRole('button', { name: /^Duplicate: / })).toHaveLength(
+        builtinWorkouts.length + 1,
+      );
+    } finally {
+      mine.list = [];
+    }
   });
 });

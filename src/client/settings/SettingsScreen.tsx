@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
 import { AppBar } from '../ui/AppBar';
@@ -7,6 +7,7 @@ import { EquipmentSection } from './EquipmentSection';
 import { GeneralSection } from './GeneralSection';
 import { MusicSection } from './MusicSection';
 import { SaveProvider } from './save';
+import { pickActiveSection } from './scroll-spy';
 import { TrainingSection } from './TrainingSection';
 import { ZonesSection } from './ZonesSection';
 import styles from './Settings.module.css';
@@ -82,31 +83,38 @@ const SECTIONS: readonly {
   },
 ];
 
-/** The section nearest the top of the viewport, for the nav highlight. */
+/** The section the reader is in, for the nav highlight (scroll position, see scroll-spy). */
 function useActiveSection(ready: boolean): [string, (id: string) => void] {
   const [active, setActive] = useState(SECTIONS[0]?.id ?? 'general');
+  const lockUntil = useRef(0);
   useEffect(() => {
-    if (!ready || typeof IntersectionObserver === 'undefined') return undefined;
-    const visible = new Set<string>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          const id = e.target.id.replace('settings-section-', '');
-          if (e.isIntersecting) visible.add(id);
-          else visible.delete(id);
-        }
-        const first = SECTIONS.find((s) => visible.has(s.id));
-        if (first) setActive(first.id);
-      },
-      { rootMargin: '-10% 0px -70% 0px' },
-    );
-    for (const s of SECTIONS) {
-      const el = document.getElementById(`settings-section-${s.id}`);
-      if (el) observer.observe(el);
-    }
-    return () => observer.disconnect();
+    if (!ready) return undefined;
+    const update = (): void => {
+      // Right after a nav click the smooth scroll passes other sections: keep the clicked one.
+      if (Date.now() < lockUntil.current) return;
+      const tops = SECTIONS.flatMap((s) => {
+        const el = document.getElementById(`settings-section-${s.id}`);
+        return el ? [{ id: s.id, top: el.getBoundingClientRect().top }] : [];
+      });
+      const atBottom =
+        window.scrollY > 0 &&
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+      const id = pickActiveSection(tops, window.innerHeight, atBottom);
+      if (id) setActive(id);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
   }, [ready]);
-  return [active, setActive];
+  const choose = useCallback((id: string) => {
+    lockUntil.current = Date.now() + 800;
+    setActive(id);
+  }, []);
+  return [active, choose];
 }
 
 /** Route /settings: a section list beside (or above) the sections; every control saves at once. */

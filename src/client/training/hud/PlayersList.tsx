@@ -6,6 +6,8 @@ import styles from './PlayersList.module.css';
 export interface PlayersListProps {
   players: readonly Player[];
   ftpPct: number;
+  /** Block effort on the 1-10 scale; shown once when the bike has no watts. */
+  effort: number;
   showsWatts: boolean;
 }
 
@@ -14,12 +16,14 @@ function safeWatts(ftp: number, ftpPct: number, unit: string): string {
   return `${targetWatts(ftp, ftpPct)} ${unit}`;
 }
 
-export function PlayersList({ players, ftpPct, showsWatts }: PlayersListProps) {
+export function PlayersList({ players, ftpPct, effort, showsWatts }: PlayersListProps) {
   const t = useT();
   return (
     <div data-testid="players-list" className={styles.root}>
       <div className={styles.header}>
-        {t('training.playersTarget', { pct: Math.round(ftpPct) })}
+        {showsWatts
+          ? t('training.playersTarget', { pct: Math.round(ftpPct) })
+          : t('training.playersTargetEffort', { effort: Math.round(effort) })}
       </div>
       <ul className={styles.list}>
         {players.map((p) => (

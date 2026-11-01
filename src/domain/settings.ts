@@ -2,6 +2,11 @@ import { z } from 'zod';
 import { DEFAULT_EFFORT_TABLE, effortTableSchema, type EffortTable } from './effort';
 import { LANGS, type Lang } from './lang';
 
+/** Hyperride worlds the rider can pick; the client registry (worlds/index.ts) implements them. */
+export const HYPERRIDE_WORLD_IDS = ['neon-tunnel', 'road', 'scenes'] as const;
+export type HyperrideWorldId = (typeof HYPERRIDE_WORLD_IDS)[number];
+export const DEFAULT_HYPERRIDE_WORLD: HyperrideWorldId = 'neon-tunnel';
+
 export interface Equipment {
   showsWatts: boolean;
   showsCadence: boolean;
@@ -36,6 +41,7 @@ export interface Settings {
   /** 0..1 */
   effectsIntensity: number;
   hyperrideQuality: 'high' | 'low';
+  hyperrideWorld: HyperrideWorldId;
   activePlanId?: string;
   lastSession?: SessionConfig;
   spotify?: SpotifySettings;
@@ -74,6 +80,7 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   coach: z.boolean(),
   effectsIntensity: z.number().min(0).max(1),
   hyperrideQuality: z.enum(['high', 'low']),
+  hyperrideWorld: z.enum(HYPERRIDE_WORLD_IDS).catch(DEFAULT_HYPERRIDE_WORLD),
   activePlanId: z.string().optional(),
   lastSession: sessionConfigSchema.optional(),
   spotify: spotifySettingsSchema.optional(),
@@ -88,5 +95,11 @@ export const DEFAULT_SETTINGS: Settings = {
   coach: true,
   effectsIntensity: 1,
   hyperrideQuality: 'high',
+  hyperrideWorld: DEFAULT_HYPERRIDE_WORLD,
   recentYoutubeUrls: [],
 };
+
+/** A stored world id when this build knows it, else the default (missing or from a newer build). */
+export function parseHyperrideWorld(value: unknown): HyperrideWorldId {
+  return HYPERRIDE_WORLD_IDS.find((id) => id === value) ?? DEFAULT_HYPERRIDE_WORLD;
+}

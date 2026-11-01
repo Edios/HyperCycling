@@ -23,11 +23,8 @@ export interface ControlsBarProps {
 export function ControlsBar(p: ControlsBarProps) {
   const t = useT();
   const running = p.status === 'running' || p.status === 'countdown';
-  // Buttons give up focus after a click so Space keeps meaning "pause" instead of re-clicking.
-  const click = (fn: () => void) => (e: { currentTarget: HTMLButtonElement }) => {
-    e.currentTarget.blur();
-    fn();
-  };
+  // Buttons keep focus (dialogs give it back to them); Space is a global pause, see keyboard.ts.
+  const click = (fn: () => void) => () => fn();
   const toggleLabel = running
     ? t('training.pause')
     : p.status === 'idle'

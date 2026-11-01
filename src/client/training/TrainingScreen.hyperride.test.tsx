@@ -26,6 +26,7 @@ vi.mock('../data/repositories', () => ({
 
 interface CanvasProps {
   quality: string;
+  world?: string;
   viewOffsetX?: number;
   onSway?: (x: number, y: number) => void;
   onUnavailable?: () => void;
@@ -133,6 +134,18 @@ describe('overlay layouts', () => {
     await renderScreen();
     expect(lastCanvas().quality).toBe('low');
     expect(lastCanvas().viewOffsetX).toBe(0);
+  });
+
+  it('passes the registered world and lets the quick settings pick another one live', async () => {
+    stored = { ...DEFAULT_SETTINGS, hyperrideWorld: 'road' };
+    load('immersive');
+    await renderScreen();
+    expect(lastCanvas().world).toBe('road');
+    fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
+    expect(screen.getByRole('radio', { name: 'Road' })).toBeChecked();
+    fireEvent.click(screen.getByRole('radio', { name: 'Neon tunnel' }));
+    expect(screen.getByRole('radio', { name: 'Neon tunnel' })).toBeChecked();
+    expect(lastCanvas().world).toBe('neon-tunnel');
   });
 
   it('Column without players offsets the view by 0.11, with players it does not', async () => {

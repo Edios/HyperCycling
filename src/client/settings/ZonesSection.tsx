@@ -23,6 +23,7 @@ export function ZonesSection() {
   const table = settings.effortTable;
   const [typed, setTyped] = useState<string[] | undefined>();
   const [confirming, setConfirming] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const values = typed ?? table.map((r) => String(r.ftpPct));
   const errors = zoneErrors(values);
@@ -32,13 +33,14 @@ export function ZonesSection() {
     setTyped(next);
     const valid = applyZoneValues(table, next);
     // Invalid input is shown but never saved.
-    if (valid) void save({ effortTable: valid });
+    setSaved(false);
+    if (valid) void save({ effortTable: valid }).then(setSaved);
   };
 
   const restore = (): void => {
     setConfirming(false);
     setTyped(undefined);
-    void save({ effortTable: DEFAULT_EFFORT_TABLE });
+    void save({ effortTable: DEFAULT_EFFORT_TABLE }).then(setSaved);
   };
 
   return (
@@ -94,8 +96,11 @@ export function ZonesSection() {
           })}
         </tbody>
       </table>
-      <div>
+      <div className={styles.zonesFoot}>
         <Button onClick={() => setConfirming(true)}>{t('settings.zones.restore')}</Button>
+        <span role="status" className={styles.zonesSaved}>
+          {saved ? t('settings.zones.saved') : ''}
+        </span>
       </div>
       {confirming && (
         <Modal title={t('settings.zones.restoreTitle')} onClose={() => setConfirming(false)}>

@@ -168,3 +168,20 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+@media (max-width: 760px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    padding: 1rem;
+  }
+
+  .head {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .previews {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -66,3 +66,33 @@
   border-color: var(--act);
   color: #fff;
 }
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .dialog {
+    min-width: 0;
+    width: 88vw;
+    box-sizing: border-box;
+    padding: 5vw;
+    border-radius: 4vw;
+  }
+
+  .dialog h2 {
+    font-size: 8vw;
+  }
+
+  .dialog p {
+    font-size: 4.2vw;
+    margin-bottom: 4vw;
+  }
+
+  .actions {
+    gap: 3vw;
+  }
+
+  .actions button {
+    min-width: 0;
+    padding: 3vw;
+    font-size: 5.5vw;
+    border-radius: 3vw;
+  }
+}

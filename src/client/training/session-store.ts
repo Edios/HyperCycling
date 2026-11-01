@@ -10,7 +10,7 @@ import {
   type EngineState,
   type SessionEngine,
 } from '../../domain/session-engine';
-import type { ActiveSession } from '../../domain/session-log';
+import type { ActiveSession, SessionOptions } from '../../domain/session-log';
 import type { SessionConfig } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
 import { getRepositories } from '../data/repositories';
@@ -20,11 +20,19 @@ import { createWakeLock, type WakeLockController } from './wake-lock';
 export { createAutosave } from './autosave';
 export type { Autosave, AutosaveOptions } from './autosave';
 
+/**
+ * Choices that apply to this ride only (set on Setup, changed in the quick settings). They never
+ * write the saved Settings; a missing field falls back to the Settings default.
+ */
+export type { SessionOptions };
+
 export interface SessionRuntime {
   workout: Workout;
   /** Already flattened with the effort table from settings. */
   segments: Segment[];
   config: SessionConfig;
+  /** Session-only beeps / cues / world; see SessionOptions. */
+  options?: SessionOptions;
   players: Player[];
   plan?: { planId: string; week: number; slot: PlanSlot; cycle?: number };
 }
@@ -45,6 +53,8 @@ export interface SessionStore {
   toggleMute(): void;
   /** Swaps the session config live (background, layout...); the engine and its time are untouched. */
   setConfig(config: SessionConfig): void;
+  /** Merges session-only options (beeps, cues, world); the saved Settings are never written. */
+  setOptions(patch: SessionOptions): void;
   tick(): EngineEvent[];
 }
 
@@ -244,6 +254,14 @@ export const useSessionStore = create<SessionStore>((set, get) => {
       if (!runtime) return;
       set({ runtime: { ...runtime, config } });
       // The stored record carries the config too: keep a later resume on the same background.
+      if (engine?.canResume()) getAutosave().onEvent(get());
+    },
+
+    setOptions(patch) {
+      const runtime = get().runtime;
+      if (!runtime) return;
+      set({ runtime: { ...runtime, options: { ...runtime.options, ...patch } } });
+      // Kept in the stored record so a later resume rides with the same beeps / cues / world.
       if (engine?.canResume()) getAutosave().onEvent(get());
     },
 

@@ -40,3 +40,27 @@
   align-items: center;
   justify-content: center;
 }
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5vw;
+    padding: 4vh 3vw 0;
+  }
+
+  .tiles > :first-child,
+  .two > * {
+    grid-column: 1 / -1;
+  }
+
+  .tiles > * {
+    padding-top: 2.5vw;
+    padding-bottom: 2.5vw;
+  }
+
+  .nextRow {
+    gap: 2vh;
+    margin-top: 2.5vh;
+    padding: 0 3vw;
+  }
+}

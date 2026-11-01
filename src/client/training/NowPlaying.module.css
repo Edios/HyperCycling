@@ -62,3 +62,31 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .root {
+    left: 3vw;
+    max-width: 94vw;
+    box-sizing: border-box;
+    padding: 1.2vh 3.5vw;
+    gap: 2.5vw;
+    border-radius: 3vw;
+  }
+
+  .mute {
+    width: 5vw;
+    height: 5vw;
+  }
+
+  .icon {
+    font-size: 4.4vw;
+  }
+
+  .title {
+    font-size: 5vw;
+  }
+
+  .meta {
+    font-size: 3.8vw;
+  }
+}

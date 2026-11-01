@@ -68,6 +68,20 @@ afterEach(() => {
   configureSessionSideEffects(null);
 });
 
+describe('session-only options', () => {
+  it('setOptions merges into the runtime', () => {
+    useSessionStore.getState().load(makeRuntime());
+    useSessionStore.getState().setOptions({ sounds: false });
+    useSessionStore.getState().setOptions({ coach: false });
+    expect(useSessionStore.getState().runtime?.options).toEqual({ sounds: false, coach: false });
+  });
+
+  it('setOptions without a runtime does nothing', () => {
+    useSessionStore.getState().setOptions({ sounds: false });
+    expect(useSessionStore.getState().runtime).toBeUndefined();
+  });
+});
+
 describe('session store', () => {
   it('starts idle without runtime', () => {
     const s = useSessionStore.getState();
@@ -210,6 +224,35 @@ describe('session store', () => {
     await flush();
     expect(saved.length).toBeGreaterThanOrEqual(2);
     expect(saved.at(-1)?.snapshot.segmentIndex).toBe(1);
+  });
+});
+
+describe('session options in the autosave', () => {
+  it('persists the session-only options with the record, and again after a quick-settings change', async () => {
+    const s = useSessionStore.getState();
+    s.load({ ...makeRuntime(), options: { sounds: false, world: 'road' } });
+    s.start();
+    now = 3000;
+    s.tick();
+    s.pause();
+    await flush();
+    expect(saved.at(-1)?.options).toEqual({ sounds: false, world: 'road' });
+    s.setOptions({ coach: false });
+    s.resume();
+    s.pause();
+    await flush();
+    expect(saved.at(-1)?.options).toEqual({ sounds: false, world: 'road', coach: false });
+  });
+
+  it('omits options when none were chosen', async () => {
+    const s = useSessionStore.getState();
+    s.load(makeRuntime());
+    s.start();
+    now = 3000;
+    s.tick();
+    s.pause();
+    await flush();
+    expect(saved.at(-1)).not.toHaveProperty('options');
   });
 });
 

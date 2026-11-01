@@ -22,6 +22,14 @@
   opacity: 0;
 }
 
+.edit {
+  right: 3.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .wrap:hover .dup,
 .dup:focus-visible {
   opacity: 1;

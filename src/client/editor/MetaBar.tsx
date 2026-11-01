@@ -9,19 +9,22 @@ import styles from './MetaBar.module.css';
 /** Description (applied on blur or Enter) and tag chips from the allowed list. */
 export function MetaBar({
   workout,
+  description = workout.description,
   readOnly,
   dispatch,
 }: {
   workout: Workout;
+  /** Text shown in the field; differs from `workout.description` only for localized built-ins. */
+  description?: string;
   readOnly: boolean;
   dispatch: Dispatch<EditorAction>;
 }) {
   const t = useT();
-  const [draft, setDraft] = useState(workout.description);
-  const [seen, setSeen] = useState(workout.description);
-  if (seen !== workout.description) {
-    setSeen(workout.description);
-    setDraft(workout.description);
+  const [draft, setDraft] = useState(description);
+  const [seen, setSeen] = useState(description);
+  if (seen !== description) {
+    setSeen(description);
+    setDraft(description);
   }
   const commit = (): void => {
     if (draft !== workout.description) {

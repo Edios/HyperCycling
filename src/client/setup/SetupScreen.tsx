@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
+import type { HyperrideWorldId } from '../../domain/settings';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
 import { playerSchema, type Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
@@ -9,6 +10,7 @@ import { localizedText } from '../data/localized';
 import { useLibrary } from '../data/useLibrary';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
+import { WORLD_CHOICES } from '../hyperride/world-options';
 import { useSessionStore } from '../training/session-store';
 import { formatClock } from '../training/format';
 import { AppBar } from '../ui/AppBar';
@@ -28,6 +30,8 @@ import {
   effectiveHud,
   ENABLED_BACKGROUNDS,
   layoutOptions,
+  initialSelection,
+  layoutHintKey,
   MAX_SESSION_PLAYERS,
   parsePlanRef,
   peakEffort,
@@ -115,14 +119,17 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const [players, setPlayers] = useState(initialPlayers);
   const [background, setBackground] = useState<Background>(last?.background ?? 'basic');
   const [chosenHud, setChosenHud] = useState<Hud | undefined>(
-    last && last.hud !== 'players' ? last.hud : undefined,
+    // The Settings default layout, also with a preselected rider; only the user's own change of
+    // the selection hands the choice back to "automatic" (players layout).
+    last?.hud === 'players' ? undefined : (last?.hud ?? 'solo'),
   );
   const [selected, setSelected] = useState<string[]>(() =>
-    (last?.playerIds ?? []).filter((id) => initialPlayers.some((p) => p.id === id)),
+    initialSelection(initialPlayers, last?.playerIds),
   );
   const [beeps, setBeeps] = useState(settings.sounds);
   const [coach, setCoach] = useState(settings.coach);
   const [music, setMusic] = useState(last?.music ?? false);
+  const [world, setWorld] = useState<HyperrideWorldId>(settings.hyperrideWorld);
   const [adding, setAdding] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState(last?.youtubeUrl ?? '');
 
@@ -140,6 +147,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const text = localizedText(workout, lang);
   const hasPlayers = selected.length > 0;
   const hud = effectiveHud(background, chosenHud, hasPlayers);
+  const layoutHint = layoutHintKey(background, hasPlayers);
 
   const togglePlayer = (id: string): void => {
     setSelected((cur) => {
@@ -176,16 +184,17 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
       hasCues,
     );
     const runtime = buildRuntime(scaled, segments, config, pickPlayers(players, selected), plan);
-    // Persist the choices as the user left them (music stays on even for a workout without cues).
-    updateSettings({
-      sounds: beeps,
-      coach,
-      lastSession: { ...config, music },
-      ...(config.youtubeUrl
-        ? { recentYoutubeUrls: addRecentYoutubeUrl(settings.recentYoutubeUrls, config.youtubeUrl) }
-        : {}),
-    }).catch((err) => console.warn('Saving the session choices failed', err));
-    useSessionStore.getState().load(runtime);
+    // The choices on this screen are for this ride only (they live in the runtime); the saved
+    // defaults change in Settings. Only the list of recent links is remembered.
+    if (config.youtubeUrl) {
+      updateSettings({
+        recentYoutubeUrls: addRecentYoutubeUrl(settings.recentYoutubeUrls, config.youtubeUrl),
+      }).catch((err) => console.warn('Saving the recent links failed', err));
+    }
+    useSessionStore.getState().load({
+      ...runtime,
+      options: { sounds: beeps, coach, ...(background === 'hyperride' ? { world } : {}) },
+    });
     navigate('/train');
   };
 
@@ -209,6 +218,15 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
             </span>
           )}
           <h1>{text.name}</h1>
+          {workout.source.kind === 'user' && (
+            <Link
+              to={`/editor/${encodeURIComponent(workout.id)}`}
+              className={styles.editLink}
+              data-testid="setup-edit"
+            >
+              {t('editor.edit')}
+            </Link>
+          )}
           <div className={styles.chart}>
             <ProfileChart segments={segments} height="6.875rem" thick />
           </div>
@@ -260,6 +278,18 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
             </div>
           </section>
 
+          {background === 'hyperride' && (
+            <section>
+              <h2 className={styles.label}>{t('setup.world')}</h2>
+              <Segmented
+                label={t('setup.world')}
+                value={world}
+                options={WORLD_CHOICES.map((w) => ({ value: w.value, label: t(w.labelKey) }))}
+                onChange={setWorld}
+              />
+            </section>
+          )}
+
           {background === 'youtube' && (
             <section data-testid="youtube-section">
               <Field
@@ -309,6 +339,11 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
               }))}
               onChange={setChosenHud}
             />
+            {layoutHint && (
+              <p className={styles.note} data-testid="layout-hint">
+                {t(layoutHint)}
+              </p>
+            )}
           </section>
 
           <section>
@@ -345,8 +380,12 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
               checked={music && hasCues}
               onChange={setMusic}
               disabled={!hasCues}
-              title={hasCues ? undefined : t('setup.musicDisabled')}
             />
+            {!hasCues && (
+              <p className={styles.note} data-testid="music-hint">
+                {t('setup.musicDisabled')}
+              </p>
+            )}
           </Card>
 
           <div className={styles.startRow}>

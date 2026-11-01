@@ -18,7 +18,16 @@ import { Chip } from '../ui/Chip';
 import { Field } from '../ui/Field';
 import { ProfileChart } from '../ui/ProfileChart';
 import { Toggle } from '../ui/Toggle';
-import { countTarget, meOf, proposeFtp, setupPath, withFtp } from './model';
+import {
+  countTarget,
+  ftpFormulaParts,
+  ftpOutOfRange,
+  meOf,
+  MIN_COUNT_SEC,
+  proposeFtp,
+  setupPath,
+  withFtp,
+} from './model';
 import { saveSessionLog, syncPlanEntry } from './persist';
 import styles from './SummaryScreen.module.css';
 
@@ -84,12 +93,15 @@ function Summary({ result }: { result: LastResult }) {
 
   // Everything is saved as soon as the screen opens (a closed tab loses nothing); the toggle
   // adds or removes the plan entry, and the buttons only navigate. Both calls are idempotent.
+  // A result restored after a reload was logged and counted the first time: show it, write nothing.
+  const restored = result.restored === true;
   useEffect(() => {
-    void saveSessionLog(result);
-  }, [result]);
+    if (!restored) void saveSessionLog(result);
+  }, [result, restored]);
   useEffect(() => {
-    if (target) void syncPlanEntry(result, target, counted);
-  }, [result, target, counted]);
+    if (target && !restored) void syncPlanEntry(result, target, counted);
+  }, [result, target, counted, restored]);
+  const tooShort = result.riddenSec < MIN_COUNT_SEC && result.plan !== undefined;
 
   const leave = (to: string, clear: boolean): void => {
     navigate(to);
@@ -98,7 +110,7 @@ function Summary({ result }: { result: LastResult }) {
 
   const name = localizedText(result.workout, lang).name;
   const testKind = ftpTestKindOf(result.workout.id);
-  const showFtp = testKind !== undefined && settings.equipment.showsWatts;
+  const showFtp = testKind !== undefined && settings.equipment.showsWatts && !restored;
 
   return (
     <main data-testid="summary-screen" className={styles.page}>
@@ -111,8 +123,11 @@ function Summary({ result }: { result: LastResult }) {
             {result.completed ? t('summary.completed') : t('summary.ended')}
           </span>
         </h1>
-        <p className={styles.time} data-testid="summary-ridden" aria-label={t('summary.ridden')}>
+        <p className={styles.time} data-testid="summary-ridden">
           {formatClock(result.riddenSec, { round: 'floor' })}
+        </p>
+        <p className={styles.timeLabel} data-testid="summary-ridden-label">
+          {t('summary.ridden')}
         </p>
         <div className={styles.chart}>
           <ProfileChart segments={segments} height="5.625rem" pastSec={result.riddenSec} thick />
@@ -127,7 +142,15 @@ function Summary({ result }: { result: LastResult }) {
           </div>
         )}
 
-        {target && (
+        {tooShort && (
+          <Card className={styles.count}>
+            <p className={styles.detail} data-testid="count-short">
+              {t('summary.countTooShort')}
+            </p>
+          </Card>
+        )}
+
+        {target && !restored && (
           <Card className={styles.count}>
             <Toggle label={t('summary.countTitle')} checked={counted} onChange={setOverride} />
             <p className={styles.detail} data-testid="count-detail">
@@ -159,6 +182,12 @@ const FTP_INPUT_KEY: Record<FtpTestKind, MessageKey> = {
   twoByEight: 'settings.equipment.twoByEight.input',
 };
 
+const FTP_MEASURE_KEY: Record<FtpTestKind, MessageKey> = {
+  ramp: 'settings.equipment.ramp.measure',
+  twenty: 'settings.equipment.twenty.measure',
+  twoByEight: 'settings.equipment.twoByEight.measure',
+};
+
 /** After an FTP test: the measured power gives a proposed FTP (shared formula) for the rider. */
 function FtpCard({ kind }: { kind: FtpTestKind }) {
   const t = useT();
@@ -188,7 +217,9 @@ function FtpCard({ kind }: { kind: FtpTestKind }) {
   const me = meOf(players);
   const rider = me ?? players.find((p) => p.id === riderId);
   const proposal = proposeFtp(kind, entries);
+  const formula = ftpFormulaParts(kind, entries);
   const inputKey = FTP_INPUT_KEY[kind];
+  const measureKey = FTP_MEASURE_KEY[kind];
 
   const save = async (): Promise<void> => {
     if (!rider) {
@@ -201,7 +232,7 @@ function FtpCard({ kind }: { kind: FtpTestKind }) {
     }
     const updated = withFtp(rider, proposal);
     if (!updated) {
-      setMessage({ kind: 'error', text: t('summary.ftpError') });
+      setMessage({ kind: 'error', text: t('summary.ftpOutOfRange', { ftp: proposal }) });
       return;
     }
     try {
@@ -219,7 +250,7 @@ function FtpCard({ kind }: { kind: FtpTestKind }) {
     <Card className={styles.ftp} data-testid="ftp-card">
       <h2>{t('summary.ftpTitle')}</h2>
       {entries.map((value, i) => (
-        <Field key={i} label={t(inputKey, { n: i + 1 })}>
+        <Field key={i} label={t(inputKey, { n: i + 1 })} hint={t(measureKey)}>
           {(id) => (
             <input
               id={id}
@@ -233,9 +264,18 @@ function FtpCard({ kind }: { kind: FtpTestKind }) {
           )}
         </Field>
       ))}
-      {proposal !== undefined && (
+      {formula && (
         <p className={styles.proposal} data-testid="ftp-proposal">
-          {t('summary.ftpProposal', { ftp: proposal })}
+          {t('summary.ftpFormula', {
+            expr: formula.expr,
+            factor: formula.factor,
+            ftp: formula.ftp,
+          })}
+        </p>
+      )}
+      {formula && ftpOutOfRange(formula.ftp) && (
+        <p role="alert" className={styles.error} data-testid="ftp-range-warning">
+          {t('summary.ftpOutOfRange', { ftp: formula.ftp })}
         </p>
       )}
       {!me && players.length > 0 && (
@@ -253,7 +293,10 @@ function FtpCard({ kind }: { kind: FtpTestKind }) {
         </Field>
       )}
       {message && (
-        <p role={message.kind === 'error' ? 'alert' : 'status'} className={styles.message}>
+        <p
+          role={message.kind === 'error' ? 'alert' : 'status'}
+          className={`${styles.message} ${message.kind === 'error' ? styles.error : ''}`}
+        >
           {message.text}
         </p>
       )}

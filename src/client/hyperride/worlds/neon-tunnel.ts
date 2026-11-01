@@ -6,6 +6,8 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { TUNNEL_LENGTH } from '../../../domain/tunnel-path';
 import { glowStrength } from '../frame';
 import type { HyperrideQuality, HyperrideWorld, WorldFrame } from '../world';
+import { motionDt, prefersReducedMotion } from './motion';
+import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
 
 /**
  * "Neon Tunnel": a port of docs/design/prototypes/hyperride-prototype.html. Comfort rules
@@ -33,6 +35,8 @@ interface Streak {
 
 export interface NeonTunnelOptions {
   rand?: () => number;
+  /** Static scene (no movement); defaults to the prefers-reduced-motion media query. */
+  reducedMotion?: boolean;
 }
 
 interface Disposable {
@@ -57,25 +61,6 @@ interface Scene3D {
   unwatchDpr(): void;
 }
 
-const maxPixelRatio = (): number => Math.min(window.devicePixelRatio || 1, 2);
-
-/** Calls `onChange` whenever devicePixelRatio changes (window moved to another screen, zoom). */
-function watchDevicePixelRatio(onChange: () => void): () => void {
-  if (typeof window.matchMedia !== 'function') return () => undefined;
-  let mq: MediaQueryList | undefined;
-  const handle = (): void => {
-    onChange();
-    listen();
-  };
-  function listen(): void {
-    mq?.removeEventListener('change', handle);
-    mq = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
-    mq.addEventListener('change', handle);
-  }
-  listen();
-  return () => mq?.removeEventListener('change', handle);
-}
-
 export function createNeonTunnel(opts: NeonTunnelOptions = {}): HyperrideWorld {
   const rand = opts.rand ?? Math.random;
   let s: Scene3D | undefined;
@@ -91,6 +76,7 @@ export function createNeonTunnel(opts: NeonTunnelOptions = {}): HyperrideWorld {
   /** Taken from the first frame, so the bloom does not flash at start. */
   let glow: number | undefined;
   let appliedFov = NaN;
+  let reduced = false;
 
   const tmp = new THREE.Object3D();
   // yaw first, then pitch: the pair can never add a roll around the view axis
@@ -217,7 +203,7 @@ export function createNeonTunnel(opts: NeonTunnelOptions = {}): HyperrideWorld {
   function update(frame: WorldFrame): void {
     if (!s) return;
     const { cam, rings, rails, sPos, sData, streaks, sMat } = s;
-    const dt = frame.dtSec;
+    const dt = motionDt(frame.dtSec, reduced);
     const { curveX, curveY } = frame.path;
     const L = TUNNEL_LENGTH;
 
@@ -314,6 +300,7 @@ export function createNeonTunnel(opts: NeonTunnelOptions = {}): HyperrideWorld {
     },
 
     init(canvas: HTMLCanvasElement, quality: HyperrideQuality) {
+      reduced = opts.reducedMotion ?? prefersReducedMotion();
       width = Math.max(1, canvas.clientWidth || canvas.width);
       height = Math.max(1, canvas.clientHeight || canvas.height);
       const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });

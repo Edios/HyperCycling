@@ -86,6 +86,16 @@ describe('buildWorldFrame', () => {
     expect(f.path).toBe(path);
   });
 
+  it('passes the workout time and the segments through (scene schedule of the road)', () => {
+    const segments = workout();
+    const f = build({ workoutElapsedSec: 42 }, 20, segments);
+    expect(f.workoutSec).toBe(42);
+    expect(f.segments).toBe(segments);
+    const empty = build({ workoutElapsedSec: 3 }, 20, []);
+    expect(empty.workoutSec).toBe(3);
+    expect(empty.segments).toEqual([]);
+  });
+
   it('easy block: speed from rpm and effort, normal fov, flat road, blue', () => {
     const f = build();
     expect(f.speedTarget).toBeCloseTo(speedTarget(85, 3), 10);
@@ -182,6 +192,28 @@ describe('buildWorldFrame', () => {
     });
   });
 
+  describe('nextBlockInSec', () => {
+    it('is the time left in the current block when another block follows', () => {
+      expect(build({ workoutElapsedSec: 10, segmentElapsedSec: 10 }).nextBlockInSec).toBe(50);
+    });
+
+    it('exactly at a boundary it counts down to the block after the new one', () => {
+      // t = 60: the sprint (60..80) is current, the climb starts in 20 s
+      const f = build({ segmentIndex: 1, workoutElapsedSec: 60, segmentElapsedSec: 0 });
+      expect(f.nextBlockInSec).toBe(20);
+      expect(f.colorAtDepth(0)).toBe('#ff3d5a');
+    });
+
+    it('is null in the last block', () => {
+      const f = build({ segmentIndex: 3, workoutElapsedSec: 150, segmentElapsedSec: 10 });
+      expect(f.nextBlockInSec).toBeNull();
+    });
+
+    it('never goes negative', () => {
+      expect(build({ workoutElapsedSec: 61, segmentElapsedSec: 61 }).nextBlockInSec).toBe(0);
+    });
+  });
+
   it('empty workout yields a neutral frame', () => {
     const f = buildWorldFrame(
       { segments: [], state: state(), table: DEFAULT_EFFORT_TABLE },
@@ -189,5 +221,6 @@ describe('buildWorldFrame', () => {
     );
     expect(f.speedTarget).toBe(0);
     expect(f.colorAtDepth(10)).toBe(f.effortColor);
+    expect(f.nextBlockInSec).toBeNull();
   });
 });

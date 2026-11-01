@@ -75,3 +75,31 @@
   gap: 1rem;
   margin-top: 1rem;
 }
+
+.timeLabel {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  color: var(--mut);
+}
+
+.error {
+  color: var(--z9);
+}
+
+@media (max-width: 760px) {
+  .inner {
+    padding: 2.5rem 1rem 2rem;
+  }
+
+  .time {
+    font-size: 6rem;
+  }
+
+  .chart {
+    margin: 1.5rem 0;
+  }
+
+  .buttons {
+    flex-wrap: wrap;
+  }
+}
