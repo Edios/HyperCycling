@@ -8,3 +8,22 @@ playwright-report
 .DS_Store
 npm-debug.log*
 .playwright-mcp/
+
+# Local-only agent notes, plans and design material (also kept out via .git/info/exclude)
+.superpowers/
+docs/superpowers/
+docs/design/
+PROGRESS.md
+tools/local/
+.claude/worktrees/
+task-*-report.md
+shots/
+
+# Secrets and local databases
+.env
+.env.*
+!.env.example
+*.db
+*.db-wal
+*.db-shm
+*.db-journal

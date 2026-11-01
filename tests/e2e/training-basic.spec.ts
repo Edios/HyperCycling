@@ -72,12 +72,12 @@ test('Escape asks before ending and goes to the summary', async ({ page }) => {
   await page.keyboard.press('Escape');
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('End workout?');
-  await dialog.getByRole('button', { name: 'Resume' }).click();
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
   await expect(dialog).toBeHidden();
   await expect(status(page)).toHaveAttribute('data-status', 'running');
 
   await page.keyboard.press('Escape');
-  await page.getByRole('dialog').getByRole('button', { name: 'End' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'End and see summary' }).click();
   await expect(page.getByTestId('summary-status')).toHaveText('Ended early');
   await expect(page.getByTestId('summary-ridden')).toHaveText('0:05');
 });
@@ -183,3 +183,47 @@ for (const size of [
     }
   }
 }
+
+test('pause, switch background in quick settings, resume: the time carries on', async ({
+  page,
+}) => {
+  await openTraining(page, 'Ride');
+  await page.keyboard.press('Space');
+  await page.clock.runFor(3100 + 5000);
+  await page.keyboard.press('Space');
+  await expect(status(page)).toHaveAttribute('data-status', 'paused');
+  const frozen = (await page.getByTestId('block-timer').textContent()) ?? '';
+
+  await page.getByRole('button', { name: 'Quick settings' }).click();
+  await expect(page.getByTestId('quick-settings')).toBeVisible();
+  await page.getByRole('radio', { name: 'Hyperride' }).check({ force: true });
+  // Without WebGL the screen falls back to Basic; the choice itself is applied either way.
+  await expect(page.getByRole('radio', { name: 'Hyperride' })).toBeChecked();
+  await expect(status(page)).toHaveAttribute('data-status', 'paused');
+  await expect(page.getByTestId('block-timer')).toHaveText(frozen);
+  // Back to Basic: the software WebGL renderer of headless Chrome would slow the clock-driven run.
+  await page.getByRole('radio', { name: 'Basic' }).check({ force: true });
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-background', 'basic');
+  await expect(page.getByTestId('block-timer')).toHaveText(frozen);
+
+  await page.keyboard.press('Escape'); // closes the panel first
+  await expect(page.getByTestId('quick-settings')).toBeHidden();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.keyboard.press('Space');
+  await expect(status(page)).toHaveAttribute('data-status', 'running');
+  await page.clock.runFor(3000);
+  await expect(page.getByTestId('block-timer')).not.toHaveText(frozen);
+  await expect(page.getByTestId('block-timer')).toContainText('block 1 of');
+});
+
+test('Menu: leave without saving goes home and forgets the ride', async ({ page }) => {
+  await openTraining(page, 'Ride');
+  await page.keyboard.press('Space');
+  await page.clock.runFor(5000);
+  await page.mouse.move(600, 300); // the controls fade out while idle
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Leave without saving' }).click();
+  await expect(page.getByTestId('training-screen')).toBeHidden();
+  await expect(page.getByTestId('summary-screen')).toBeHidden();
+  await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible();
+});

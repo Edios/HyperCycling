@@ -83,6 +83,23 @@ beforeEach(() => {
 });
 
 describe('ResumePrompt', () => {
+  it('gives focus back to the element that had it before the dialog opened', async () => {
+    db.active = active();
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <button type="button">Opener</button>
+        <ResumePrompt />
+      </MemoryRouter>,
+    );
+    const opener = screen.getByRole('button', { name: 'Opener' });
+    opener.focus();
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(opener).toHaveFocus();
+  });
+
   it('shows nothing without an interrupted session', async () => {
     renderApp();
     await screen.findByTestId('where');
@@ -197,6 +214,19 @@ describe('ResumePrompt', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('keeps Tab inside the dialog', async () => {
+    db.active = active();
+    renderApp();
+    await screen.findByRole('dialog');
+    const resume = screen.getByRole('button', { name: 'Resume' });
+    const discard = screen.getByRole('button', { name: 'Discard' });
+    resume.focus();
+    fireEvent.keyDown(document.body, { key: 'Tab' });
+    expect(discard).toHaveFocus();
+    fireEvent.keyDown(document.body, { key: 'Tab', shiftKey: true });
+    expect(resume).toHaveFocus();
+  });
+
   it('hides when a session starts while it is open', async () => {
     db.active = active();
     renderApp();
@@ -205,6 +235,20 @@ describe('ResumePrompt', () => {
       useSessionStore.setState({
         runtime: { workout, segments: [], config: active().config, players: [] },
       });
+    });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+  it('does not come back when that session is later cleared (leave without saving)', async () => {
+    db.active = active();
+    renderApp();
+    await screen.findByRole('dialog');
+    act(() => {
+      useSessionStore.setState({
+        runtime: { workout, segments: [], config: active().config, players: [] },
+      });
+    });
+    act(() => {
+      useSessionStore.setState({ runtime: undefined });
     });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });

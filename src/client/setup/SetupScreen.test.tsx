@@ -250,6 +250,33 @@ describe('SetupScreen', () => {
     expect(db.puts[0]).toMatchObject({ name: 'Kasia', ftp: 220 });
   });
 
+  it('a double submit saves the rider once', async () => {
+    renderSetup(`/setup/${scalable.id}`);
+    fireEvent.click(await screen.findByRole('button', { name: '+ Add' }));
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Kasia' } });
+    fireEvent.change(screen.getByLabelText('FTP (W)'), { target: { value: '220' } });
+    const form = screen.getByTestId('add-player-form');
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    await screen.findByRole('button', { name: /Kasia/ });
+    expect(db.puts).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /Kasia/ })).toHaveLength(1);
+  });
+
+  it('after a failed save the form can be submitted again', async () => {
+    db.failPut = true;
+    renderSetup(`/setup/${scalable.id}`);
+    fireEvent.click(await screen.findByRole('button', { name: '+ Add' }));
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Kasia' } });
+    fireEvent.change(screen.getByLabelText('FTP (W)'), { target: { value: '220' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add rider' }));
+    await screen.findByText('The rider could not be saved. Try again.');
+    db.failPut = false;
+    fireEvent.click(screen.getByRole('button', { name: 'Add rider' }));
+    await screen.findByRole('button', { name: /Kasia/ });
+    expect(db.puts).toHaveLength(1);
+  });
+
   it('a failed save shows an error and does not add or select the rider', async () => {
     db.failPut = true;
     renderSetup(`/setup/${scalable.id}`);

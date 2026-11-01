@@ -9,7 +9,7 @@ export function AppBar() {
     `${styles.tab} ${isActive ? styles.on : ''}`;
   return (
     <header className={styles.bar}>
-      <Link to="/" className={styles.logo}>
+      <Link to="/" className={styles.logo} title={t('nav.mainMenu')}>
         <i aria-hidden="true" />
         {t('app.title')}
       </Link>

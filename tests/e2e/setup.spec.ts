@@ -116,7 +116,7 @@ test('Ride opens setup; Start rides it; reload mid-session offers Resume at the 
 
   // Ending the workout forgets the stored session, so later tests start clean.
   await page.keyboard.press('Escape');
-  await page.getByRole('dialog').getByRole('button', { name: 'End' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'End and see summary' }).click();
   await expect(page.getByTestId('summary-screen')).toBeVisible();
   await expect.poll(() => hasActiveSession(page, info)).toBe(false);
   expect(errors).toEqual([]);

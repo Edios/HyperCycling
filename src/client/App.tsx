@@ -1,6 +1,7 @@
 import { createHashRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
 import { EditorScreen } from './editor/EditorScreen';
 import { DevHome } from './screens/DevHome';
+import { SettingsEffects } from './settings/SettingsEffects';
 import { SettingsScreen } from './settings/SettingsScreen';
 import { PlayersScreen } from './players/PlayersScreen';
 import { ResumePrompt } from './setup/ResumePrompt';
@@ -22,6 +23,7 @@ const DEV_ROUTE =
 function Root() {
   return (
     <>
+      <SettingsEffects />
       <ResumePrompt />
       <Outlet />
     </>

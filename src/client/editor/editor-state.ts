@@ -201,6 +201,11 @@ function fail(state: EditorState, key: string): EditorState {
   return { ...state, errors: [key] };
 }
 
+/** An action that changes nothing still supersedes the error of the previous failed action. */
+function noop(state: EditorState): EditorState {
+  return state.errors.length === 0 ? state : { ...state, errors: [] };
+}
+
 /** Clones the workout, runs `fn` on the clone, validates, and records history on success. */
 function apply(state: EditorState, fn: (w: Workout, nextId: () => string) => Outcome): EditorState {
   const draft = structuredClone(state.workout);
@@ -235,7 +240,7 @@ function cloneWithNewIds(b: Block, nextId: () => string): Block {
 export function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case 'select':
-      if (action.id !== undefined && !locate(state.workout, action.id)) return state;
+      if (action.id !== undefined && !locate(state.workout, action.id)) return noop(state);
       return { ...state, selectedId: action.id };
 
     case 'markSaved':
@@ -243,7 +248,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
     case 'undo': {
       const prev = state.past.at(-1);
-      if (!prev) return state;
+      if (!prev) return noop(state);
       return {
         ...state,
         workout: prev.workout,
@@ -257,7 +262,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
     case 'redo': {
       const next = state.future.at(-1);
-      if (!next) return state;
+      if (!next) return noop(state);
       return {
         ...state,
         workout: next.workout,
@@ -285,7 +290,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         action.from >= 0 &&
         action.from < state.workout.blocks.length
       ) {
-        return state;
+        return noop(state);
       }
       return apply(state, (w) => {
         const n = w.blocks.length;

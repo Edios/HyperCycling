@@ -2,7 +2,10 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { expect, it } from 'vitest';
-import { buildServer } from './app';
+import { buildTestServer as buildServer } from './test-support';
+import { warmUpServer } from './test-warmup';
+
+await warmUpServer();
 
 it('GET /api/health returns ok', async () => {
   const app = await buildServer({ dbPath: ':memory:' });
@@ -10,6 +13,7 @@ it('GET /api/health returns ok', async () => {
   expect(res.statusCode).toBe(200);
   expect(res.json()).toMatchObject({ ok: true });
   expect(typeof res.json<{ version: unknown }>().version).toBe('string');
+  expect(res.json()).not.toHaveProperty('dbPath');
   await app.close();
 });
 

@@ -131,6 +131,9 @@ const QUICK_BOOST_RANGE: [number, number] = [1500, 2400];
 const DURATION_EXCEPTIONS: Record<string, [number, number]> = {
   // Ramp test: warm-up + 25 one-minute steps + cool-down, a measurement and not a 45 minute session.
   'ramp-test': [2000, 2400],
+  // 20-minute FTP test: warm-up with a hard opener, long rest, 20 min effort and cool-down.
+  // Tests are never scaled to the session length, so they get their own window.
+  'ftp-test-20': [3000, 3300],
   // Design: "Tempo z kadencją ... (35 min)".
   'tempo-cadence-3x6': [2000, 2300],
   // Seiler 4 x 8 format is a 55 minute session by design.
@@ -538,5 +541,17 @@ describe('built-in workouts', () => {
     expect(segs.every((s) => s.durationSec === 60)).toBe(true);
     expect(segs[12]?.ftpPctStart).toBe(122);
     expect(segs[12]?.cue).toBe('@goUntilFail');
+  });
+  it('sprint-steps: each of the five sprints (the last one included) is followed by 3 min easy', () => {
+    const blocks = get('sprint-steps').blocks;
+    const sprints = blocks.flatMap((b, i) => (b.id.startsWith('ssx-s') ? [i] : []));
+    expect(sprints).toHaveLength(5);
+    for (const i of sprints) {
+      const next = blocks[i + 1];
+      expect(next?.kind, `after ${blocks[i]?.id}`).toBe('steady');
+      expect(next?.kind === 'steady' ? next.durationSec : undefined, `after ${blocks[i]?.id}`).toBe(
+        180,
+      );
+    }
   });
 });

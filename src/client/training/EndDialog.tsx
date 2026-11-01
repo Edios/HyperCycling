@@ -3,18 +3,25 @@ import { useT } from '../i18n';
 import styles from './EndDialog.module.css';
 
 export interface EndDialogProps {
+  /** Cancel: back to the workout. */
   onResume(): void;
+  /** End the ride and open the summary. */
   onEnd(): void;
+  /** Drop the ride and go back to the main menu without a summary. */
+  onLeave(): void;
 }
 
-/** Custom modal (not window.confirm): Escape resumes, Tab stays inside the dialog. */
-export function EndDialog({ onResume, onEnd }: EndDialogProps) {
+/** Custom modal (not window.confirm): Escape cancels, Tab stays inside the dialog. */
+export function EndDialog({ onResume, onEnd, onLeave }: EndDialogProps) {
   const t = useT();
-  const resumeRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
   const endRef = useRef<HTMLButtonElement>(null);
+  const leaveRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    resumeRef.current?.focus();
+    const opener = document.activeElement as HTMLElement | null;
+    cancelRef.current?.focus();
+    return () => opener?.focus?.(); // back to where the rider was (the Menu button, or nowhere)
   }, []);
 
   const onKeyDown = (e: React.KeyboardEvent): void => {
@@ -24,8 +31,10 @@ export function EndDialog({ onResume, onEnd }: EndDialogProps) {
       onResume();
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      const active = document.activeElement;
-      (active === resumeRef.current ? endRef.current : resumeRef.current)?.focus();
+      const order = [endRef.current, leaveRef.current, cancelRef.current];
+      const i = order.indexOf(document.activeElement as HTMLButtonElement | null);
+      const step = e.shiftKey ? order.length - 1 : 1;
+      order[(Math.max(i, 0) + step) % order.length]?.focus();
     } else if (e.code === 'Space') {
       e.stopPropagation(); // keep Space as "activate button" inside the dialog
     }
@@ -44,11 +53,14 @@ export function EndDialog({ onResume, onEnd }: EndDialogProps) {
         <h2 id="end-title">{t('training.endTitle')}</h2>
         <p id="end-body">{t('training.endBody')}</p>
         <div className={styles.actions}>
-          <button ref={resumeRef} type="button" className={styles.primary} onClick={onResume}>
-            {t('training.endResume')}
-          </button>
-          <button ref={endRef} type="button" onClick={onEnd}>
+          <button ref={endRef} type="button" className={styles.primary} onClick={onEnd}>
             {t('training.endConfirm')}
+          </button>
+          <button ref={leaveRef} type="button" className={styles.danger} onClick={onLeave}>
+            {t('training.endLeave')}
+          </button>
+          <button ref={cancelRef} type="button" onClick={onResume}>
+            {t('training.endResume')}
           </button>
         </div>
       </div>

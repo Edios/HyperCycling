@@ -3,7 +3,9 @@ import path from 'node:path';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { createSqliteRepositories, type SqliteRepositories } from '../storage/sqlite';
+import { serverConfig } from './config';
 import { registerDataRoutes } from './routes/data';
+import { registerSecurity } from './security';
 
 export interface BuildServerOptions {
   /** SQLite file path, or ':memory:'. */
@@ -13,6 +15,12 @@ export interface BuildServerOptions {
   logger?: boolean;
   /** Test seam: use these repositories instead of opening `dbPath`. */
   repositories?: SqliteRepositories;
+  /** Port the server listens on (for the Host allowlist). Defaults to the configured port. */
+  port?: number;
+  /** Extra accepted `Host` values (`name:port`) beyond loopback on `port`. */
+  extraAllowedHosts?: readonly string[];
+  /** Extra accepted `Origin` values for state-changing requests. */
+  extraAllowedOrigins?: readonly string[];
 }
 
 function readVersion(): string {
@@ -30,6 +38,15 @@ export async function buildServer(opts: BuildServerOptions): Promise<FastifyInst
   });
   const version = readVersion();
 
+  // Registered first so the Host/CSRF guards run before any route or the static handler.
+  registerSecurity(app, {
+    port: opts.port ?? serverConfig.port,
+    // the Vite dev server (proxying /api) is only in play when we do not serve the build ourselves
+    trustDevClient: !opts.staticDir,
+    ...(opts.extraAllowedHosts ? { extraAllowedHosts: opts.extraAllowedHosts } : {}),
+    ...(opts.extraAllowedOrigins ? { extraAllowedOrigins: opts.extraAllowedOrigins } : {}),
+  });
+
   const repos = opts.repositories ?? createSqliteRepositories(opts.dbPath);
   app.addHook('onClose', () => {
     repos.close();
@@ -44,7 +61,10 @@ export async function buildServer(opts: BuildServerOptions): Promise<FastifyInst
       .send({ error: status >= 500 ? 'Internal server error' : err.message });
   });
 
+  const dbLocation = opts.dbPath === ':memory:' ? opts.dbPath : path.resolve(opts.dbPath);
   app.get('/api/health', async () => ({ ok: true, version }));
+  // The absolute path contains the OS user name, so it is not part of the health probe.
+  app.get('/api/location', async () => ({ dbPath: dbLocation }));
   registerDataRoutes(app, repos, {
     // in-memory databases have nothing to back up
     backup:

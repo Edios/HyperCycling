@@ -50,3 +50,44 @@ body {
 html {
   font-size: clamp(12px, min(calc(100vw / 90), calc(100vh / 50.625)), 28px);
 }
+
+/*
+ * Accessibility baseline. A visible keyboard focus ring for every interactive control; the
+ * :where() wrapper keeps specificity at zero so component styles can still refine it.
+ */
+:root {
+  --focus: var(--act);
+}
+
+:where(
+  a[href],
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [tabindex]:not([tabindex='-1'])
+):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  :where(a[href], button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+/* Text for assistive technology only (live regions, extra context). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

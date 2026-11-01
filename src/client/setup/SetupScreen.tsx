@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
 import { playerSchema, type Player } from '../../domain/player';
@@ -11,6 +11,7 @@ import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
 import { useSessionStore } from '../training/session-store';
 import { formatClock } from '../training/format';
+import { AppBar } from '../ui/AppBar';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
@@ -112,9 +113,9 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const last = settings.lastSession;
 
   const [players, setPlayers] = useState(initialPlayers);
-  const [background, setBackground] = useState<Background>('basic');
+  const [background, setBackground] = useState<Background>(last?.background ?? 'basic');
   const [chosenHud, setChosenHud] = useState<Hud | undefined>(
-    last?.background === 'basic' && last.hud === 'solo' ? 'solo' : undefined,
+    last && last.hud !== 'players' ? last.hud : undefined,
   );
   const [selected, setSelected] = useState<string[]>(() =>
     (last?.playerIds ?? []).filter((id) => initialPlayers.some((p) => p.id === id)),
@@ -183,9 +184,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
       ...(config.youtubeUrl
         ? { recentYoutubeUrls: addRecentYoutubeUrl(settings.recentYoutubeUrls, config.youtubeUrl) }
         : {}),
-    }).catch((err) =>
-      console.warn('Saving the session choices failed', err),
-    );
+    }).catch((err) => console.warn('Saving the session choices failed', err));
     useSessionStore.getState().load(runtime);
     navigate('/train');
   };
@@ -194,15 +193,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
 
   return (
     <div data-testid="setup-screen" className={styles.page}>
-      <header className={styles.bar}>
-        <Link to="/" className={styles.logo}>
-          <i aria-hidden="true" />
-          {t('app.title')}
-        </Link>
-        <Link to={plan ? '/' : '/freestyle'} className={styles.back}>
-          ‹ {t(plan ? 'nav.plan' : 'nav.freestyle')}
-        </Link>
-      </header>
+      <AppBar />
 
       <div className={styles.grid}>
         <Card className={styles.summary}>
@@ -381,9 +372,13 @@ function AddPlayerForm({
   const [name, setName] = useState('');
   const [ftp, setFtp] = useState('');
   const [errors, setErrors] = useState<{ name?: string; ftp?: string; save?: string }>({});
+  const [saving, setSaving] = useState(false);
+  // A ref, not just state: a second submit can arrive before React re-renders with saving=true.
+  const inFlight = useRef(false);
 
   const submit = (e: FormEvent): void => {
     e.preventDefault();
+    if (inFlight.current) return;
     const trimmed = ftp.trim();
     const parsed = playerSchema.safeParse({
       id: newId(),
@@ -399,10 +394,17 @@ function AddPlayerForm({
       return;
     }
     setErrors({});
-    onAdd(parsed.data).catch((err) => {
-      console.warn('Saving the new player failed', err);
-      setErrors({ save: t('setup.saveError') });
-    });
+    inFlight.current = true;
+    setSaving(true);
+    onAdd(parsed.data)
+      .catch((err) => {
+        console.warn('Saving the new player failed', err);
+        setErrors({ save: t('setup.saveError') });
+      })
+      .finally(() => {
+        inFlight.current = false;
+        setSaving(false);
+      });
   };
 
   return (
@@ -430,7 +432,7 @@ function AddPlayerForm({
       )}
       <div className={styles.addButtons}>
         <Button onClick={onCancel}>{t('setup.playerCancel')}</Button>
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" disabled={saving}>
           {t('setup.playerSave')}
         </Button>
       </div>

@@ -19,6 +19,7 @@ import {
   nextOverlayHud,
   type OverlayHudId,
 } from './overlay-layouts';
+import type { SessionConfig } from '../../domain/settings';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { cueForTransition, type CoachCue } from '../../domain/coach';
 import type { TrackRef } from '../../domain/workout';
@@ -27,6 +28,8 @@ import { useT } from '../i18n';
 import { ControlsBar } from './ControlsBar';
 import { EndDialog } from './EndDialog';
 import { NowPlaying } from './NowPlaying';
+import { QuickSettings } from './QuickSettings';
+import { activeHud, hudChoices, withLiveChoice, youtubeUrlFor } from './quick-settings';
 import { CoachOverlay } from './hud/CoachOverlay';
 import { Countdown } from './hud/Countdown';
 import { EdgeFlash } from './hud/EdgeFlash';
@@ -59,7 +62,7 @@ export function TrainingScreen() {
 function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const t = useT();
   const navigate = useNavigate();
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const state = useSessionStore((s) => s.state);
   const muted = useSessionStore((s) => s.muted);
   const reducedMotion = useReducedMotion() || settings.effectsIntensity === 0;
@@ -124,6 +127,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const [flash, setFlash] = useState(0);
   const [cue, setCue] = useState<{ cue: CoachCue | null; key: number }>({ cue: null, key: 0 });
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [sessionYoutubeUrl, setSessionYoutubeUrl] = useState(runtime.config.youtubeUrl);
   const pausedByDialog = useRef(false);
   const ended = useRef(false);
   const startedAt = useRef<string | undefined>(undefined);
@@ -175,6 +180,12 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     },
     [navigate],
   );
+
+  /** Leave for the main menu: no summary, and the unmount cleanup drops the session. */
+  const leaveWithoutSaving = useCallback(() => {
+    ended.current = true;
+    navigate('/');
+  }, [navigate]);
 
   // Engine events: beeps, edge flash, coach cue, finish.
   useEffect(() => {
@@ -271,6 +282,58 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     rootRef.current?.style.removeProperty('--sy');
   }, [motionOn]);
 
+  const playersOn = showPlayers && hasPlayers;
+  const background = runtime.config.background;
+  const youtubeUrl = youtubeUrlFor(sessionYoutubeUrl, settings.recentYoutubeUrls);
+
+  /** Applies a live background / layout choice: the session config and the saved defaults follow. */
+  const [saveFailures, setSaveFailures] = useState(0);
+  const warnSave = useCallback((err: unknown): void => {
+    console.warn('Saving the quick settings failed', err);
+    setSaveFailures((n) => n + 1);
+  }, []);
+
+  const applyChoice = useCallback(
+    (bg: SessionConfig['background'], hud: SessionConfig['hud'], url: string | undefined) => {
+      const config = withLiveChoice(runtime.config, bg, hud, url);
+      useSessionStore.getState().setConfig(config);
+      // Leaving YouTube must not forget the link that setup offers as its default.
+      const kept = config.youtubeUrl ?? settingsRef.current.lastSession?.youtubeUrl;
+      void updateSettings({
+        lastSession: {
+          ...config,
+          ...(kept ? { youtubeUrl: kept } : {}),
+          music: settingsRef.current.lastSession?.music ?? config.music,
+        },
+      }).catch(warnSave);
+    },
+    [runtime.config, updateSettings, warnSave],
+  );
+
+  const changeBackground = (bg: SessionConfig['background']): void => {
+    if (bg === background) return;
+    const url = bg === 'youtube' ? youtubeUrl : undefined;
+    if (bg === 'youtube' && !url) return;
+    // A fresh choice gets a fresh try: earlier failures belonged to the previous background.
+    setHyperrideFailed(false);
+    setUnavailableDismissed(false);
+    setYoutubeFailure(undefined);
+    setYoutubeToastDismissed(false);
+    let hud = activeHud(bg, playersOn, overlayHud);
+    if (bg !== 'basic' && !hudChoices(bg, hasPlayers, playersOn).includes(overlayHud)) {
+      hud = 'immersive';
+      setOverlayHud('immersive');
+    }
+    if (url) setSessionYoutubeUrl(url);
+    applyChoice(bg, hud, url);
+  };
+
+  const changeHud = (hud: SessionConfig['hud']): void => {
+    if (hud === 'solo' || hud === 'players') setShowPlayers(hud === 'players');
+    else setOverlayHud(hud);
+    applyChoice(background, hud, background === 'youtube' ? youtubeUrl : undefined);
+  };
+
   useEffect(() => {
     if (confirmEnd) return;
     const store = useSessionStore.getState;
@@ -282,9 +345,10 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       cycleLayout,
       fullscreen: toggleFullscreen,
       mute: () => store().toggleMute(),
-      escape: openEnd,
+      // Esc closes the quick settings first; with nothing open it asks how to leave.
+      escape: quickOpen ? () => setQuickOpen(false) : openEnd,
     });
-  }, [confirmEnd, toggle, togglePlayers, cycleLayout, toggleFullscreen, openEnd]);
+  }, [confirmEnd, quickOpen, toggle, togglePlayers, cycleLayout, toggleFullscreen, openEnd]);
 
   if (!view) return null;
 
@@ -308,12 +372,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       onMute={() => useSessionStore.getState().toggleMute()}
       onFullscreen={toggleFullscreen}
       onPlayers={togglePlayers}
+      onMenu={openEnd}
+      quickOpen={quickOpen}
+      onQuick={() => setQuickOpen((v) => !v)}
     />
   );
   const coach = (
     <CoachOverlay cue={cue.cue} cueKey={cue.key} color={view.color} reducedMotion={reducedMotion} />
   );
-  const playersOn = showPlayers && hasPlayers;
   const Layout = playersOn ? BasicPlayers : BasicSolo;
   const Overlay = {
     immersive: Immersive,
@@ -364,6 +430,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             videoId={youtube.videoId}
             startSec={youtube.startSec}
             paused={status === 'paused'}
+            reducedMotion={reducedMotion}
             onFail={onYoutubeFail}
           />
           <div className={`${styles.layout} ${styles.overlayLayer}`}>
@@ -391,6 +458,13 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
               youtubeFailure === 'embed-blocked' ? 'youtube.embedBlocked' : 'youtube.unavailable',
             )}
             onClose={() => setYoutubeToastDismissed(true)}
+          />
+        )}
+        {saveFailures > 0 && (
+          <Toast
+            key={saveFailures}
+            message={t('settings.saveFailed')}
+            onClose={() => setSaveFailures(0)}
           />
         )}
         {musicWarning && (
@@ -431,7 +505,28 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           {t('training.paused')}
         </div>
       )}
-      {confirmEnd && <EndDialog onResume={resumeFromDialog} onEnd={() => leave(false)} />}
+      {quickOpen && !confirmEnd && (
+        <QuickSettings
+          background={background}
+          youtubeAvailable={youtubeUrl !== undefined}
+          hud={activeHud(background, playersOn, overlayHud)}
+          hudChoices={hudChoices(background, hasPlayers, playersOn)}
+          sounds={settings.sounds}
+          coach={settings.coach}
+          onBackground={changeBackground}
+          onHud={changeHud}
+          onSounds={(on) => void updateSettings({ sounds: on }).catch(warnSave)}
+          onCoach={(on) => void updateSettings({ coach: on }).catch(warnSave)}
+          onClose={() => setQuickOpen(false)}
+        />
+      )}
+      {confirmEnd && (
+        <EndDialog
+          onResume={resumeFromDialog}
+          onEnd={() => leave(false)}
+          onLeave={leaveWithoutSaving}
+        />
+      )}
     </div>
   );
 }

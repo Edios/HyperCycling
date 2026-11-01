@@ -35,10 +35,16 @@
   display: flex;
   gap: 2vh;
   justify-content: center;
+  flex-direction: column;
+}
+
+.actions .danger {
+  border-color: var(--z9);
+  color: var(--z9);
 }
 
 .actions button {
-  min-width: 14vh;
+  min-width: 36vh;
   padding: 1.4vh 3vh;
   font-family: var(--font-display);
   font-weight: 700;

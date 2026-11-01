@@ -72,16 +72,14 @@ export function stripSecrets(bundle: ExportBundle): ExportBundle {
   return { ...bundle, settings: { ...bundle.settings, spotify: safe } };
 }
 
-export function parseExportBundle(json: unknown): ParseExportResult {
-  let data: unknown = json;
-  if (typeof json === 'string') {
-    try {
-      data = JSON.parse(json);
-    } catch {
-      return { ok: false, reason: 'notJson' };
-    }
+/**
+ * Validates an already-parsed bundle. Strings are refused: a server route must never be tricked
+ * into running `JSON.parse` on a body it did not expect (use `parseExportBundle` for file text).
+ */
+export function parseExportBundleObject(data: unknown): ParseExportResult {
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+    return { ok: false, reason: 'wrongApp' };
   }
-  if (typeof data !== 'object' || data === null) return { ok: false, reason: 'wrongApp' };
   const rec = data as Record<string, unknown>;
   if (rec.app !== 'spinning-tutor') return { ok: false, reason: 'wrongApp' };
   if (rec.schemaVersion !== 1) return { ok: false, reason: 'unsupportedVersion' };
@@ -96,4 +94,16 @@ export function parseExportBundle(json: unknown): ParseExportResult {
   }
   // A file must never plant credentials: tokens exist only in the local settings.
   return { ok: true, bundle: stripSecrets(r.data) };
+}
+
+/** Parses the text of an export file (client side); a non-string is validated as is. */
+export function parseExportBundle(json: unknown): ParseExportResult {
+  if (typeof json !== 'string') return parseExportBundleObject(json);
+  let data: unknown;
+  try {
+    data = JSON.parse(json);
+  } catch {
+    return { ok: false, reason: 'notJson' };
+  }
+  return parseExportBundleObject(data);
 }
