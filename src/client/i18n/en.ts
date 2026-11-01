@@ -439,7 +439,7 @@ export const en = {
       title: 'About',
       name: 'HyperCycling',
       version: 'Version {version}',
-      tagline: 'Structured indoor cycling with an effort scale you can feel.',
+      tagline: 'Indoor cycling guided by a 1–10 effort scale.',
       fonts: 'Fonts: Barlow and Barlow Condensed, SIL Open Font License 1.1.',
     },
     general: {
