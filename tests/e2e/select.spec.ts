@@ -78,6 +78,7 @@ test('freestyle tab filters and searches', async ({ page }) => {
   await page.getByRole('searchbox').fill('tabata');
   await expect(cards.first()).toContainText(/tabata/i);
   await cards.first().click();
+  await page.getByTestId('workout-ride').click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();

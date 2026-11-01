@@ -47,6 +47,7 @@ test('editor: new workout, palette blocks, keyboard resize, save, then ride it',
 
   const card = await openMine(page, name);
   await card.click();
+  await page.getByTestId('workout-ride').click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
@@ -143,7 +144,7 @@ test('import: a .zwo file opens in the editor and can be saved', async ({ page }
 
 test('built-in workouts open read-only and can be duplicated to edit', async ({ page }) => {
   await page.goto('./#/freestyle');
-  const first = page.getByTestId('workout-card').first();
+  const first = page.getByTestId('workout-ride');
   const href = await first.getAttribute('href');
   const id = href?.split('/').pop();
   await page.goto(`./#/editor/${id}`);

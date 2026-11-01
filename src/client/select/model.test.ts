@@ -1,7 +1,8 @@
+import type { Segment } from '../../domain/segments';
 import { describe, expect, it } from 'vitest';
 import type { Workout } from '../../domain/workout';
 import { builtinWorkouts } from '../data/builtin';
-import { filterLibrary, normalizeText, primaryTag } from './model';
+import { difficultyOf, filterLibrary, normalizeText, primaryTag } from './model';
 
 const base = builtinWorkouts[0] as Workout;
 const make = (over: Partial<Workout>): Workout => ({ ...base, ...over });
@@ -64,5 +65,18 @@ describe('primaryTag', () => {
     expect(primaryTag(make({ category: 'progres', tags: ['hiit'] }))).toBe('progres');
     expect(primaryTag(make({ category: 'freestyle', tags: ['hiit'] }))).toBe('hiit');
     expect(primaryTag(make({ category: 'freestyle', tags: [] }))).toBe('freestyle');
+  });
+});
+
+describe('difficultyOf', () => {
+  const seg = (durationSec: number, e: number) =>
+    ({ durationSec, effortStart: e, effortEnd: e }) as unknown as Segment;
+  it('is 1 for nothing and for easy riding', () => {
+    expect(difficultyOf([])).toBe(1);
+    expect(difficultyOf([seg(600, 1)])).toBe(1);
+  });
+  it('blends mean and peak effort, capped at 10', () => {
+    expect(difficultyOf([seg(600, 4), seg(600, 8)])).toBe(7);
+    expect(difficultyOf([seg(60, 10)])).toBe(10);
   });
 });

@@ -76,14 +76,40 @@ describe('FreestyleTab', () => {
     await screen.findAllByTestId('workout-card');
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'zzzzqqq' } });
     expect(screen.queryAllByTestId('workout-card')).toHaveLength(0);
-    expect(screen.getByText('No workouts match.')).toBeInTheDocument();
+    expect(screen.getByText('Nothing matches “zzzzqqq”')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }));
+    expect(cards()).toHaveLength(builtinWorkouts.length);
   });
 
-  it('cards link to setup', async () => {
+  it('the first row is selected and the preview Ride button links to setup', async () => {
     renderTab();
     await screen.findAllByTestId('workout-card');
-    const first = cards()[0] as HTMLElement;
-    expect(first.getAttribute('href')).toMatch(/^\/setup\/.+/);
+    expect(cards()[0]).toHaveAttribute('aria-selected', 'true');
+    const ride = screen.getByTestId('workout-ride');
+    expect(ride.getAttribute('href')).toMatch(/^\/setup\/.+/);
+    expect(ride).toHaveTextContent('Ride');
+  });
+
+  it('clicking a row moves the preview; arrows move the selection and Enter rides', async () => {
+    renderTab();
+    await screen.findAllByTestId('workout-card');
+    const list = screen.getByRole('listbox');
+    fireEvent.click(cards()[2] as HTMLElement);
+    expect(cards()[2]).toHaveAttribute('aria-selected', 'true');
+    fireEvent.keyDown(list, { key: 'ArrowUp' });
+    expect(cards()[1]).toHaveAttribute('aria-selected', 'true');
+    expect(list.getAttribute('aria-activedescendant')).toBe(cards()[1]?.id);
+    fireEvent.keyDown(list, { key: 'ArrowDown' });
+    fireEvent.keyDown(list, { key: 'ArrowDown' });
+    expect(cards()[3]).toHaveAttribute('aria-selected', 'true');
+    fireEvent.keyDown(list, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByTestId('at')).toHaveTextContent(/^\/setup\//));
+  });
+
+  it('shows the difficulty ticks on each row', async () => {
+    renderTab();
+    await screen.findAllByTestId('workout-card');
+    expect(within(cards()[0] as HTMLElement).getByRole('img', { name: /^Difficulty \d+\/10$/ }));
   });
 
   it('New workout opens the editor draft', async () => {
@@ -161,12 +187,12 @@ describe('FreestyleTab', () => {
     expect(list).not.toHaveTextContent('zero-length block dropped');
   });
 
-  it('every card has a Duplicate button that saves a copy and opens it', async () => {
+  it('the preview has a Duplicate button that saves a copy and opens it', async () => {
     renderTab();
     await screen.findAllByTestId('workout-card');
     const first = builtinWorkouts[0] as Workout;
     const buttons = screen.getAllByRole('button', { name: /^Duplicate:/ });
-    expect(buttons).toHaveLength(builtinWorkouts.length);
+    expect(buttons).toHaveLength(1);
     fireEvent.click(buttons[0] as HTMLElement);
     await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
     const copy = put.mock.calls[0]?.[0] as Workout;
@@ -186,12 +212,13 @@ describe('FreestyleTab', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Mine' }));
     expect(cards()).toHaveLength(1);
     expect(cards()[0]).toHaveTextContent('My Tuesday');
+    expect(within(cards()[0] as HTMLElement).getByTestId('mine-badge')).toHaveTextContent('Mine');
     mine.list = [];
   });
 });
 
 describe('FreestyleTab edit button (H3)', () => {
-  it('own workouts get Edit, built-ins keep Duplicate only', async () => {
+  it('a selected own workout gets Edit, built-ins only Duplicate', async () => {
     const own = {
       ...(builtinWorkouts[0] as Workout),
       id: 'mine-1',
@@ -201,15 +228,42 @@ describe('FreestyleTab edit button (H3)', () => {
     mine.list = [own];
     try {
       renderTab();
-      await screen.findAllByTestId('workout-card');
+      await screen.findByText('Mine');
+      expect(screen.queryByRole('link', { name: /^Edit: / })).toBeNull();
+      fireEvent.click(
+        cards().find(
+          (c) => c.textContent?.includes('Mine') && c.querySelector('[data-testid=mine-badge]'),
+        ) as HTMLElement,
+      );
       const edit = await screen.findAllByRole('link', { name: /^Edit: / });
       expect(edit).toHaveLength(1);
       expect(edit[0]).toHaveAttribute('href', '/editor/mine-1');
-      expect(screen.getAllByRole('button', { name: /^Duplicate: / })).toHaveLength(
-        builtinWorkouts.length + 1,
-      );
+      expect(screen.getAllByRole('button', { name: /^Duplicate: / })).toHaveLength(1);
     } finally {
       mine.list = [];
+    }
+  });
+});
+
+describe('FreestyleTab on a phone', () => {
+  it('opens the preview as a sheet on tap and closes it with Escape', async () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((q: string) => ({
+      matches: true,
+      media: q,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    })) as unknown as typeof window.matchMedia;
+    try {
+      renderTab();
+      await screen.findAllByTestId('workout-card');
+      expect(screen.queryByTestId('preview-sheet')).toBeNull();
+      fireEvent.click(cards()[1] as HTMLElement);
+      expect(screen.getByTestId('preview-sheet')).toBeInTheDocument();
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(screen.queryByTestId('preview-sheet')).toBeNull();
+    } finally {
+      window.matchMedia = original;
     }
   });
 });
