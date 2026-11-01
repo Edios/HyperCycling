@@ -1,0 +1,353 @@
+{
+  "id": "thirty-fifteen-2x10",
+  "name": "Thirty-Fifteen 2 x 10",
+  "description": "Two sets of ten rounds of 30 seconds hard and 15 seconds easy.",
+  "localized": {
+    "en": {
+      "name": "Thirty-Fifteen 2 x 10",
+      "description": "Two sets of ten rounds of 30 seconds hard and 15 seconds easy."
+    },
+    "pl": {
+      "name": "Trzydzieści/piętnaście 2 × 10",
+      "description": "Dwie serie po dziesięć razy 30 sekund mocno i 15 sekund luzu."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["hiit", "vo2"],
+  "source": {
+    "kind": "builtin",
+    "file": "thirty-fifteen-2x10.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "tf2-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "tf2-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tf2-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tf2-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tf2-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tf2-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "tf2-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "ramp",
+      "id": "tf2-1",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 65
+      },
+      "to": {
+        "ftpPct": 80
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "repeat",
+      "id": "tf2-2",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "tf2-3",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 118
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-4",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-5",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 118
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-6",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-7",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 118
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-8",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-9",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 118
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-10",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-11",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 118
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-12",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-13",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 118
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-14",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-15",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 118
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-16",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-17",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 118
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-18",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-19",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 118
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-20",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-21",
+          "durationSec": 30,
+          "intensity": {
+            "ftpPct": 118
+          },
+          "rpm": 105,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-22",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "tf2-23",
+          "durationSec": 240,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "tf2-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "tf2-wu",
+    "cooldownBlockId": "tf2-cd",
+    "flexRepeatId": "tf2-2",
+    "minTimes": 2,
+    "maxTimes": 3
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

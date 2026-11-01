@@ -1,0 +1,219 @@
+{
+  "id": "ladder-down",
+  "name": "Ladder Down 5-4-3-2-1",
+  "description": "Five efforts that get shorter and sharper: from five minutes down to one, two minutes of rest between.",
+  "localized": {
+    "en": {
+      "name": "Ladder Down 5-4-3-2-1",
+      "description": "Five efforts that get shorter and sharper: from five minutes down to one, two minutes of rest between."
+    },
+    "pl": {
+      "name": "Drabina w dół 5-4-3-2-1",
+      "description": "Pięć wysiłków, które się skracają i są coraz mocniejsze: od pięciu minut do jednej, między nimi dwie minuty przerwy."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["threshold", "vo2"],
+  "source": {
+    "kind": "builtin",
+    "file": "ladder-down.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "ldx-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-l5",
+      "durationSec": 300,
+      "intensity": {
+        "ftpPct": 98
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-r1",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-l4",
+      "durationSec": 240,
+      "intensity": {
+        "ftpPct": 101
+      },
+      "rpm": 92,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-r2",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-l3",
+      "durationSec": 180,
+      "intensity": {
+        "ftpPct": 104
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-r3",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-l2",
+      "durationSec": 120,
+      "intensity": {
+        "ftpPct": 108
+      },
+      "rpm": 98,
+      "position": "seated",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-r4",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "ldx-l1",
+      "durationSec": 60,
+      "intensity": {
+        "ftpPct": 114
+      },
+      "rpm": 100,
+      "position": "seated",
+      "label": "@interval",
+      "cue": "@lastOne"
+    },
+    {
+      "kind": "ramp",
+      "id": "ldx-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "ldx-wu",
+    "cooldownBlockId": "ldx-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

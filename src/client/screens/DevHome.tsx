@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { flattenWorkout } from '../../domain/segments';
 import type { Player } from '../../domain/player';
@@ -20,6 +21,13 @@ export function DevHome() {
   const [lang] = useLang();
   const navigate = useNavigate();
   const { settings, loaded } = useSettings();
+  const [extra, setExtra] = useState<Workout[]>([]);
+  useEffect(() => {
+    // Inline condition so Vite folds it away (and drops the chunk) in production builds.
+    if (import.meta.env.DEV || import.meta.env.VITE_E2E === '1') {
+      void import('./dev-fixtures').then((m) => setExtra(m.longBlockWorkouts));
+    }
+  }, []);
 
   const ride = (workout: Workout, withPlayers: boolean): void => {
     const players = withPlayers ? DEMO_PLAYERS : [];
@@ -43,7 +51,7 @@ export function DevHome() {
       <h1>{t('app.title')}</h1>
       <h2>{t('dev.title')}</h2>
       <ul>
-        {builtinWorkouts.map((w) => (
+        {[...builtinWorkouts, ...extra].map((w) => (
           <li key={w.id} data-testid="workout-row">
             <span>{w.localized?.[lang]?.name ?? w.name}</span>{' '}
             <span>{formatClock(totalDurationSec(w))}</span>{' '}

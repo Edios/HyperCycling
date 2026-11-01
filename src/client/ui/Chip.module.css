@@ -1,0 +1,30 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 2.25rem;
+  padding: 0 0.875rem;
+  border-radius: 1.125rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--mut);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.chip:hover {
+  color: var(--fg);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+}
+
+.on,
+.on:hover {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}

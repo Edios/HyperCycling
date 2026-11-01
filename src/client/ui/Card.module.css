@@ -1,0 +1,13 @@
+.card {
+  background: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+
+.hero {
+  background: linear-gradient(160deg, #14203a, #0f1524 60%);
+}
+
+[data-theme='light'] .hero {
+  background: linear-gradient(160deg, #eaf1ff, var(--s1) 60%);
+}

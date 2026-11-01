@@ -26,7 +26,7 @@ export interface SessionRuntime {
   segments: Segment[];
   config: SessionConfig;
   players: Player[];
-  plan?: { planId: string; week: number; slot: PlanSlot };
+  plan?: { planId: string; week: number; slot: PlanSlot; cycle?: number };
 }
 
 export interface SessionStore {

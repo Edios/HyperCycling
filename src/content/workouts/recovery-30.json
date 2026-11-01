@@ -1,0 +1,99 @@
+{
+  "id": "recovery-30",
+  "name": "Recovery 30",
+  "description": "A very light spin to loosen the legs after hard days.",
+  "localized": {
+    "en": {
+      "name": "Recovery 30",
+      "description": "A very light spin to loosen the legs after hard days."
+    },
+    "pl": {
+      "name": "Regeneracja 30",
+      "description": "Bardzo lekka jazda na rozkręcenie nóg po ciężkich dniach."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["recovery"],
+  "source": {
+    "kind": "builtin",
+    "file": "recovery-30.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "r3-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 55
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "r3-1",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "r3-2",
+      "times": 3,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "r3-3",
+          "durationSec": 240,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 90,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "r3-4",
+          "durationSec": 60,
+          "intensity": {
+            "ftpPct": 60
+          },
+          "rpm": 90,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "r3-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 55
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "r3-wu",
+    "cooldownBlockId": "r3-cd",
+    "flexRepeatId": "r3-2",
+    "minTimes": 2,
+    "maxTimes": 8
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

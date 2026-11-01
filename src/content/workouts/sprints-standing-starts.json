@@ -1,0 +1,164 @@
+{
+  "id": "sprints-standing-starts",
+  "name": "Standing Starts",
+  "description": "Stand and accelerate for ten seconds, then sit and keep the speed for twenty. Full recovery in between.",
+  "localized": {
+    "en": {
+      "name": "Standing Starts",
+      "description": "Stand and accelerate for ten seconds, then sit and keep the speed for twenty. Full recovery in between."
+    },
+    "pl": {
+      "name": "Starty ze stania",
+      "description": "Wstajesz i przyspieszasz przez dziesięć sekund, potem siadasz i utrzymujesz prędkość przez dwadzieścia. Pełna przerwa między startami."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["sprint"],
+  "source": {
+    "kind": "builtin",
+    "file": "sprints-standing-starts.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "sssx-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "sssx-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "sssx-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "sssx-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "sssx-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "sssx-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "sssx-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "sssx-s",
+      "times": 6,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "sssx-st",
+          "durationSec": 10,
+          "intensity": {
+            "ftpPct": 160
+          },
+          "rpm": 72,
+          "position": "standing",
+          "label": "@sprint",
+          "cue": "@standUp"
+        },
+        {
+          "kind": "steady",
+          "id": "sssx-sit",
+          "durationSec": 20,
+          "intensity": {
+            "ftpPct": 140
+          },
+          "rpm": 100,
+          "position": "seated",
+          "label": "@sprint",
+          "cue": "@sitDown"
+        },
+        {
+          "kind": "steady",
+          "id": "sssx-off",
+          "durationSec": 270,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 85,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "sssx-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "sssx-wu",
+    "cooldownBlockId": "sssx-cd",
+    "flexRepeatId": "sssx-s",
+    "minTimes": 4,
+    "maxTimes": 8
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

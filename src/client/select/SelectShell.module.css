@@ -1,0 +1,8 @@
+.shell {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 70% -20%, #13203a 0%, var(--bg) 55%);
+}
+
+[data-theme='light'] .shell {
+  background: var(--bg);
+}

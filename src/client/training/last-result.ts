@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import type { PlanSlot } from '../../domain/plan';
+import type { Player } from '../../domain/player';
 import type { SessionConfig } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
 
@@ -7,6 +9,9 @@ export interface LastResult {
   riddenSec: number;
   completed: boolean;
   config: SessionConfig;
+  players: Player[];
+  startedAt: string;
+  plan?: { planId: string; week: number; slot: PlanSlot; cycle?: number };
 }
 
 interface LastResultStore {

@@ -40,14 +40,20 @@ function load(): Promise<void> {
   return loading;
 }
 
+/** Applies the patch immediately and persists it; on failure rolls back and rejects. */
 async function updateSettings(patch: Partial<Settings>): Promise<void> {
-  const next = { ...useSettingsStore.getState().settings, ...patch };
+  const previous = useSettingsStore.getState().settings;
+  const next = { ...previous, ...patch };
   useSettingsStore.setState({ settings: next });
   try {
     const repos = await getRepositories();
     await repos.settings.put(next);
   } catch (err) {
-    console.warn('Saving settings failed', err);
+    // Only undo our own write: a newer update may already have replaced it.
+    if (useSettingsStore.getState().settings === next) {
+      useSettingsStore.setState({ settings: previous });
+    }
+    throw err;
   }
 }
 

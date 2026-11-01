@@ -1,0 +1,157 @@
+{
+  "id": "rolling-ramps",
+  "name": "Rolling Hills",
+  "description": "Rolling terrain in ramps: a four-minute drag uphill, a two-minute fall back. Six hills in a row.",
+  "localized": {
+    "en": {
+      "name": "Rolling Hills",
+      "description": "Rolling terrain in ramps: a four-minute drag uphill, a two-minute fall back. Six hills in a row."
+    },
+    "pl": {
+      "name": "Pofalowany teren",
+      "description": "Falujący teren w rampach: cztery minuty podjazdu, dwie minuty zjazdu. Sześć pagórków z rzędu."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["tempo", "climb"],
+  "source": {
+    "kind": "builtin",
+    "file": "rolling-ramps.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "rrx-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "rrx-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rrx-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rrx-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rrx-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rrx-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "rrx-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "rrx-r",
+      "times": 6,
+      "blocks": [
+        {
+          "kind": "ramp",
+          "id": "rrx-up",
+          "durationSec": 240,
+          "from": {
+            "ftpPct": 62
+          },
+          "to": {
+            "ftpPct": 90
+          },
+          "rpm": 85,
+          "position": "seated",
+          "label": "@climb"
+        },
+        {
+          "kind": "ramp",
+          "id": "rrx-dn",
+          "durationSec": 120,
+          "from": {
+            "ftpPct": 90
+          },
+          "to": {
+            "ftpPct": 55
+          },
+          "rpm": 90,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "rrx-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "rrx-wu",
+    "cooldownBlockId": "rrx-cd",
+    "flexRepeatId": "rrx-r",
+    "minTimes": 4,
+    "maxTimes": 8
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

@@ -1,0 +1,41 @@
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 100%;
+}
+
+.bar {
+  position: relative;
+  flex-basis: 0;
+  min-width: 1px;
+  filter: drop-shadow(0 -1px 0.375rem color-mix(in srgb, var(--c) 45%, transparent));
+}
+
+.fill,
+.edge {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.fill {
+  background: linear-gradient(to top, transparent, color-mix(in srgb, var(--c) 22%, transparent));
+}
+
+.edge {
+  background: var(--c);
+}
+
+.past {
+  opacity: 0.35;
+  filter: none;
+}
+
+[data-theme='light'] .fill {
+  background: linear-gradient(to top, transparent, color-mix(in srgb, var(--c) 30%, transparent));
+}
+
+[data-theme='light'] .bar {
+  filter: none;
+}

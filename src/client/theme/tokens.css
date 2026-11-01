@@ -6,6 +6,7 @@
   --fg: #eef1f7;
   --mut: #8d97ab;
   --muted: var(--mut);
+  --dim: #5d6679;
   --act: #3d8bff;
   --glass: rgb(16 22 36 / 0.72);
 
@@ -43,4 +44,9 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-body);
+}
+
+/* Select, setup and other chrome screens size in rem; 16px at the 1440x810 mockup size. */
+html {
+  font-size: clamp(12px, min(calc(100vw / 90), calc(100vh / 50.625)), 28px);
 }

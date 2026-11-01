@@ -1,4 +1,8 @@
-/* Shared tile chrome and value sizes (vh so the HUD scales with the screen). */
+/*
+ * Shared tile chrome and value sizes. Each value is min(size cap in vh, --fit in cqw): the cap
+ * scales the HUD with screen height, --fit (set per character count, see fit.ts) keeps long values
+ * such as "59:59" or "1:00:00" inside the tile width. Without --fit (overlay) only the cap applies.
+ */
 .tile {
   background: var(--s1);
   border: 1px solid var(--line);
@@ -6,6 +10,7 @@
   text-align: center;
   padding: 2.4vh 1.5vh 2vh;
   font-family: var(--font-display);
+  container-type: inline-size;
 }
 
 .label {
@@ -21,6 +26,13 @@
   line-height: 0.9;
   font-variant-numeric: tabular-nums;
   color: var(--fg);
+  font-size: min(var(--cap), calc(var(--fit, 1000) * 1cqw));
+  white-space: nowrap;
+  /* Fixed box, digits sit on its bottom edge: every big number in a row shares one bottom edge. */
+  height: calc(var(--cap) * 0.9);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .sub {
@@ -29,12 +41,12 @@
   color: var(--mut);
 }
 
-.xl .value {
-  font-size: 31vh;
+.xl {
+  --cap: 24vh;
 }
-.lg .value {
-  font-size: 21vh;
+.lg {
+  --cap: 19vh;
 }
-.md .value {
-  font-size: 13vh;
+.md {
+  --cap: 13vh;
 }

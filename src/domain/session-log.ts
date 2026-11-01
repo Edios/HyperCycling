@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { PlanSlot } from './plan';
 import type { EngineSnapshot } from './session-engine';
 import { sessionConfigSchema, type SessionConfig } from './settings';
+import { workoutSchema, type Workout } from './workout';
 
 export interface SessionLog {
   id: string;
@@ -19,7 +20,9 @@ export interface ActiveSession {
   config: SessionConfig;
   snapshot: EngineSnapshot;
   savedAt: string;
-  plan?: { planId: string; week: number; slot: PlanSlot };
+  plan?: { planId: string; week: number; slot: PlanSlot; cycle?: number };
+  /** The exact (scaled) workout that was ridden, so a resume never depends on current settings. */
+  workout?: Workout;
 }
 
 export const sessionLogSchema: z.ZodType<SessionLog> = z.object({
@@ -47,8 +50,10 @@ export const activeSessionSchema: z.ZodType<ActiveSession> = z.object({
       planId: z.string().min(1),
       week: z.number().int().min(1),
       slot: z.enum(['progres', 'freestyle']),
+      cycle: z.number().int().min(1).optional(),
     })
     .optional(),
+  workout: workoutSchema.optional(),
 }) as unknown as z.ZodType<ActiveSession>; // optional-field inference caveat
 
 /** True when the saved session is at most `maxAgeMs` old; unparsable dates count as stale. */

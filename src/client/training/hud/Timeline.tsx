@@ -3,6 +3,7 @@ import { effortRow } from '../../../domain/effort';
 import type { Segment } from '../../../domain/segments';
 import { useT } from '../../i18n';
 import { formatClock } from '../format';
+import { slopePolygons } from '../../ui/ProfileChart';
 import styles from './Timeline.module.css';
 
 export interface TimelineProps {
@@ -11,19 +12,6 @@ export interface TimelineProps {
 }
 
 const MAX_EFFORT = 10;
-const EDGE = '3px';
-
-/** Clip a bar (full height = its taller end) to the slope from `from` to `to` (efforts 1..10). */
-function slopePolygons(from: number, to: number): { fill: string; edge: string } {
-  const top = Math.max(from, to);
-  const yFrom = (1 - from / top) * 100;
-  const yTo = (1 - to / top) * 100;
-  return {
-    fill: `polygon(0 ${yFrom}%, 100% ${yTo}%, 100% 100%, 0 100%)`,
-    edge: `polygon(0 ${yFrom}%, 100% ${yTo}%, 100% calc(${yTo}% + ${EDGE}), 0 calc(${yFrom}% + ${EDGE}))`,
-  };
-}
-
 type BarState = 'past' | 'current' | 'future';
 
 export function Timeline({ segments, elapsedSec }: TimelineProps) {

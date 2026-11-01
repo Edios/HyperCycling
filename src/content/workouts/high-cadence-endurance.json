@@ -1,0 +1,151 @@
+{
+  "id": "high-cadence-endurance",
+  "name": "High Cadence Endurance",
+  "description": "Five four-minute blocks at a light gear and 100 rpm, with easy spinning between. Calm legs, quick feet.",
+  "localized": {
+    "en": {
+      "name": "High Cadence Endurance",
+      "description": "Five four-minute blocks at a light gear and 100 rpm, with easy spinning between. Calm legs, quick feet."
+    },
+    "pl": {
+      "name": "Wytrzymałość na wysokiej kadencji",
+      "description": "Pięć czterominutowych odcinków na lekkim przełożeniu przy 100 obr./min, między nimi lekkie kręcenie. Spokojne nogi, szybkie stopy."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["cadence", "endurance"],
+  "source": {
+    "kind": "builtin",
+    "file": "high-cadence-endurance.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "hcex-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "hcex-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hcex-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hcex-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hcex-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hcex-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "hcex-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "hcex-h",
+      "times": 5,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "hcex-on",
+          "durationSec": 240,
+          "intensity": {
+            "ftpPct": 62
+          },
+          "rpm": 100,
+          "position": "seated",
+          "label": "@steady"
+        },
+        {
+          "kind": "steady",
+          "id": "hcex-off",
+          "durationSec": 120,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 85,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "hcex-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "hcex-wu",
+    "cooldownBlockId": "hcex-cd",
+    "flexRepeatId": "hcex-h",
+    "minTimes": 3,
+    "maxTimes": 6
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

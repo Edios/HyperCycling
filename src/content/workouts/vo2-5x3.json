@@ -1,0 +1,149 @@
+{
+  "id": "vo2-5x3",
+  "name": "VO2 5 x 3",
+  "description": "Five three-minute blocks aimed at your maximal oxygen uptake.",
+  "localized": {
+    "en": {
+      "name": "VO2 5 x 3",
+      "description": "Five three-minute blocks aimed at your maximal oxygen uptake."
+    },
+    "pl": {
+      "name": "VO2 5 × 3",
+      "description": "Pięć trzyminutowych odcinków na maksymalny pobór tlenu."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["vo2"],
+  "source": {
+    "kind": "builtin",
+    "file": "vo2-5x3.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "v5-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "v5-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "v5-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "v5-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "v5-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "v5-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "v5-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "v5-1",
+      "times": 5,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "v5-2",
+          "durationSec": 180,
+          "intensity": {
+            "ftpPct": 112
+          },
+          "rpm": 100,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "v5-3",
+          "durationSec": 180,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "v5-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "v5-wu",
+    "cooldownBlockId": "v5-cd",
+    "flexRepeatId": "v5-1",
+    "minTimes": 3,
+    "maxTimes": 7
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

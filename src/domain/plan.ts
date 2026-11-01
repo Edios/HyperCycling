@@ -139,7 +139,7 @@ function sessionOf(plan: Plan, week: number, slot: PlanSlot): string | undefined
  * Workout served by a slot. In `doubleProgres` the `freestyle` slot is served by the week's
  * `progresAlt` (fallback: the week's progres workout), so the slot name stays 'freestyle'.
  */
-function workoutOf(
+export function workoutOf(
   plan: Plan,
   week: number,
   slot: PlanSlot,
@@ -230,6 +230,20 @@ export function recordEntry(p: PlanProgress, e: ProgressEntry): PlanProgress {
     (x) => !(cycleOf(x) === cycleOf(e) && x.week === e.week && x.slot === e.slot),
   );
   return { ...p, entries: [...kept, e] };
+}
+
+/** Drops the entry for the same cycle, week and slot (if any). Does not mutate the input. */
+export function removeEntry(
+  p: PlanProgress,
+  key: { week: number; slot: PlanSlot; cycle?: number },
+): PlanProgress {
+  const cycle = key.cycle ?? 1;
+  return {
+    ...p,
+    entries: p.entries.filter(
+      (x) => !(cycleOf(x) === cycle && x.week === key.week && x.slot === key.slot),
+    ),
+  };
 }
 
 /** Current week if its freestyle slot is open and really freestyle (not doubleProgres). */

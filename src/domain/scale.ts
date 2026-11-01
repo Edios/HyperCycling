@@ -118,3 +118,15 @@ export function scaleWorkout(
 
   return workoutSchema.parse(out);
 }
+
+/** Plan session length and difficulty applied to a workout. Tests (tag `test`) are never scaled. */
+export function scaleForPlan(
+  w: Workout,
+  settings: { sessionMinutes: 30 | 45 | 60; difficulty: -5 | 0 | 5 },
+): Workout {
+  if (w.tags.includes('test')) return w;
+  return scaleWorkout(w, {
+    targetMinutes: settings.sessionMinutes,
+    difficultyPct: settings.difficulty,
+  });
+}

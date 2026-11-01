@@ -1,0 +1,103 @@
+{
+  "id": "back-to-form",
+  "name": "Back to Form",
+  "description": "Six gentle weeks for beginners and returning riders: habit, cadence skills, first sweet spot and short efforts.",
+  "localized": {
+    "en": {
+      "name": "Back to Form",
+      "description": "Six gentle weeks for beginners and returning riders: habit, cadence skills, first sweet spot and short efforts."
+    },
+    "pl": {
+      "name": "Powrót do formy",
+      "description": "Sześć łagodnych tygodni dla początkujących i wracających do jazdy: nawyk, kadencja, pierwszy sweet spot i krótkie wysiłki."
+    }
+  },
+  "level": "beginner",
+  "loop": false,
+  "weeks": [
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "first-rhythm"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "cadence-warmup"
+        }
+      ],
+      "progresAlt": "first-rhythm"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "sweet-spot-3x6"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "first-climbs"
+        }
+      ],
+      "progresAlt": "sweet-spot-3x6"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "sweet-spot-2x8"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "micro-attacks"
+        }
+      ],
+      "progresAlt": "sweet-spot-2x8"
+    },
+    {
+      "light": true,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "tempo-cadence-3x6"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "music-mayday"
+        }
+      ],
+      "progresAlt": "tempo-cadence-3x6"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "sweet-spot-3x8-90"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "first-over-unders"
+        }
+      ],
+      "progresAlt": "sweet-spot-3x8-90"
+    },
+    {
+      "light": false,
+      "sessions": [
+        {
+          "slot": "progres",
+          "workoutId": "ramp-test"
+        },
+        {
+          "slot": "freestyle",
+          "workoutId": "finale-music"
+        }
+      ],
+      "progresAlt": "sweet-spot-2x12-90"
+    }
+  ]
+}

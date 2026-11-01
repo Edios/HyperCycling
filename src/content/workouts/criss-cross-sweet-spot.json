@@ -1,0 +1,168 @@
+{
+  "id": "criss-cross-sweet-spot",
+  "name": "Criss-Cross Sweet Spot",
+  "description": "Long ramps that weave across the sweet spot zone: a gentle way to practise changing pace without panic.",
+  "localized": {
+    "en": {
+      "name": "Criss-Cross Sweet Spot",
+      "description": "Long ramps that weave across the sweet spot zone: a gentle way to practise changing pace without panic."
+    },
+    "pl": {
+      "name": "Criss-cross w sweet spot",
+      "description": "Długie rampy przecinające strefę sweet spot: łagodny sposób na ćwiczenie zmian tempa bez paniki."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["sweetspot"],
+  "source": {
+    "kind": "builtin",
+    "file": "criss-cross-sweet-spot.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "ccssx-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "ccssx-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ccssx-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ccssx-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ccssx-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ccssx-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ccssx-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "ccssx-c",
+      "times": 4,
+      "blocks": [
+        {
+          "kind": "ramp",
+          "id": "ccssx-up",
+          "durationSec": 180,
+          "from": {
+            "ftpPct": 82
+          },
+          "to": {
+            "ftpPct": 96
+          },
+          "rpm": 90,
+          "position": "seated",
+          "label": "@steady"
+        },
+        {
+          "kind": "ramp",
+          "id": "ccssx-dn",
+          "durationSec": 180,
+          "from": {
+            "ftpPct": 96
+          },
+          "to": {
+            "ftpPct": 82
+          },
+          "rpm": 90,
+          "position": "seated",
+          "label": "@steady"
+        },
+        {
+          "kind": "steady",
+          "id": "ccssx-r",
+          "durationSec": 150,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 85,
+          "position": "seated",
+          "label": "@recovery"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "ccssx-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "ccssx-wu",
+    "cooldownBlockId": "ccssx-cd",
+    "flexRepeatId": "ccssx-c",
+    "minTimes": 3,
+    "maxTimes": 5
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

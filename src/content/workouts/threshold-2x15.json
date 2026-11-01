@@ -1,0 +1,149 @@
+{
+  "id": "threshold-2x15",
+  "name": "Threshold 2 x 15",
+  "description": "Two fifteen-minute blocks just under threshold.",
+  "localized": {
+    "en": {
+      "name": "Threshold 2 x 15",
+      "description": "Two fifteen-minute blocks just under threshold."
+    },
+    "pl": {
+      "name": "Próg 2 × 15",
+      "description": "Dwa piętnastominutowe odcinki tuż pod progiem."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["threshold"],
+  "source": {
+    "kind": "builtin",
+    "file": "threshold-2x15.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "t2-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "t2-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t2-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t2-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t2-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t2-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "t2-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "t2-1",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "t2-2",
+          "durationSec": 900,
+          "intensity": {
+            "ftpPct": 95
+          },
+          "rpm": 90,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "t2-3",
+          "durationSec": 180,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 88,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "t2-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "t2-wu",
+    "cooldownBlockId": "t2-cd",
+    "flexRepeatId": "t2-1",
+    "minTimes": 2,
+    "maxTimes": 3
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

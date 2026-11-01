@@ -1,0 +1,149 @@
+{
+  "id": "leg-strength",
+  "name": "Leg Strength",
+  "description": "Four five-minute blocks at low cadence and heavy resistance.",
+  "localized": {
+    "en": {
+      "name": "Leg Strength",
+      "description": "Four five-minute blocks at low cadence and heavy resistance."
+    },
+    "pl": {
+      "name": "Siła w nogach",
+      "description": "Cztery pięciominutowe odcinki na niskiej kadencji i mocnym oporze."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["climb"],
+  "source": {
+    "kind": "builtin",
+    "file": "leg-strength.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "ls-wu",
+      "durationSec": 300,
+      "from": {
+        "ftpPct": 40
+      },
+      "to": {
+        "ftpPct": 75
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "ls-wu1",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 95
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ls-wu2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ls-wu3",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 105
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ls-wu4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ls-wu5",
+      "durationSec": 30,
+      "intensity": {
+        "ftpPct": 115
+      },
+      "rpm": 110,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ls-wu6",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "repeat",
+      "id": "ls-1",
+      "times": 4,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "ls-2",
+          "durationSec": 300,
+          "intensity": {
+            "ftpPct": 85
+          },
+          "rpm": 62,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "ls-3",
+          "durationSec": 180,
+          "intensity": {
+            "effort": 2
+          },
+          "rpm": 90,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "ls-cd",
+      "durationSec": 240,
+      "from": {
+        "ftpPct": 70
+      },
+      "to": {
+        "ftpPct": 45
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "scaling": {
+    "warmupBlockId": "ls-wu",
+    "cooldownBlockId": "ls-cd",
+    "flexRepeatId": "ls-1",
+    "minTimes": 2,
+    "maxTimes": 5
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30T00:00:00.000Z"
+}

@@ -10,7 +10,9 @@
   "scripts": {
     "dev": "concurrently -n server,client \"tsx watch src/server/main.ts\" \"vite\"",
     "build": "cross-env VITE_STORAGE=http vite build --outDir dist/client --emptyOutDir",
+    "build:e2e": "cross-env VITE_STORAGE=http VITE_E2E=1 vite build --outDir dist/e2e --emptyOutDir",
     "build:pages": "cross-env VITE_STORAGE=indexeddb VITE_BASE=/Spinning-Tutor/ vite build --outDir dist/pages --emptyOutDir",
+    "build:pages:e2e": "cross-env VITE_STORAGE=indexeddb VITE_BASE=/Spinning-Tutor/ VITE_E2E=1 vite build --outDir dist/e2e-pages --emptyOutDir",
     "start": "tsx scripts/start.ts",
     "test": "vitest run --coverage",
     "test:e2e": "playwright test",
@@ -23,6 +25,7 @@
   "dependencies": {
     "@fastify/static": "10.1.8",
     "better-sqlite3": "13.0.3",
+    "fast-xml-parser": "5.11.2",
     "fastify": "5.12.7",
     "idb": "8.0.4",
     "open": "11.0.4",

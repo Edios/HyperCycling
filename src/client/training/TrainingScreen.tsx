@@ -48,6 +48,12 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const [confirmEnd, setConfirmEnd] = useState(false);
   const pausedByDialog = useRef(false);
   const ended = useRef(false);
+  const startedAt = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (startedAt.current === undefined && state.status !== 'idle') {
+      startedAt.current = new Date().toISOString();
+    }
+  }, [state.status]);
 
   // The store is emptied only once the screen is gone, so leaving never bounces through "/".
   useEffect(
@@ -82,6 +88,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         riddenSec: completed ? total : Math.min(s.state.workoutElapsedSec, total),
         completed,
         config: rt.config,
+        players: rt.players,
+        startedAt: startedAt.current ?? new Date().toISOString(),
+        ...(rt.plan ? { plan: rt.plan } : {}),
       });
       ended.current = true;
       navigate('/summary');
