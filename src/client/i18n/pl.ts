@@ -2,7 +2,7 @@ import type { Messages } from './en';
 
 export const pl: Messages = {
   app: { title: 'HyperCycling' },
-  intro: { skip: 'Kliknij lub naciśnij Esc, aby pominąć' },
+  intro: { skip: 'Kliknij lub naciśnij dowolny klawisz, aby pominąć' },
   nav: {
     plan: 'Plan',
     freestyle: 'Freestyle',
