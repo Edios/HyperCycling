@@ -56,14 +56,14 @@ afterEach(() => {
 });
 
 describe('HyperrideCanvas automatic quality', () => {
-  it('starts on high and drops to low once when a 5 s window runs under 45 fps', async () => {
+  it('starts on high and drops to low once after two 5 s windows under 45 fps (past the warm-up)', async () => {
     const lowered = vi.fn();
     render(<HyperrideCanvas getFrameInput={() => input} quality="auto" onAutoLowered={lowered} />);
     await waitFor(() => expect(log.events).toEqual(['init:high']));
-    frames(40, 0, 6000); // 25 fps
+    frames(40, 0, 12_500); // 25 fps
     await waitFor(() => expect(log.events).toEqual(['init:high', 'init:low']));
     expect(lowered).toHaveBeenCalledTimes(1);
-    frames(40, 7000, 30_000);
+    frames(40, 13_000, 40_000);
     expect(lowered).toHaveBeenCalledTimes(1);
     expect(log.events).toEqual(['init:high', 'init:low']);
   });
