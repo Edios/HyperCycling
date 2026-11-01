@@ -82,6 +82,7 @@ test('Ride opens setup; Start rides it; reload mid-session offers Resume at the 
   const training = page.getByTestId('training-screen');
   await expect(training).toHaveAttribute('data-status', 'idle');
   await page.keyboard.press('Space');
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'countdown');
   await page.clock.runFor(3200);
   await expect(training).toHaveAttribute('data-status', 'running');
   await page.keyboard.press('ArrowRight');
@@ -118,6 +119,7 @@ test('Discard on the resume prompt forgets the session', async ({ page }, info) 
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'idle');
   await page.keyboard.press('Space');
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'countdown');
   await page.clock.runFor(3200);
   await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running');
   await page.keyboard.press('Space');
@@ -145,6 +147,7 @@ test('plan ride to the summary counts toward the plan; the Plan tab shows it don
   const training = page.getByTestId('training-screen');
   await expect(training).toHaveAttribute('data-status', 'idle');
   await page.keyboard.press('Space');
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'countdown');
   await page.clock.runFor(3200);
   await expect(training).toHaveAttribute('data-status', 'running');
   await page.clock.fastForward(4 * 3_600_000);
