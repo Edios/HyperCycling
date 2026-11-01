@@ -1,0 +1,42 @@
+.root {
+  border-color: color-mix(in srgb, var(--c) 45%, var(--line));
+}
+
+.overlay {
+  text-align: center;
+  font-family: var(--font-display);
+}
+
+.number {
+  color: var(--c);
+  text-shadow: 0 0 2.4vh color-mix(in srgb, var(--c) 55%, transparent);
+}
+
+[data-theme='light'] .number {
+  color: color-mix(in srgb, var(--c) 65%, #000);
+  text-shadow: none;
+}
+
+.scale {
+  font-size: 0.3em;
+  color: var(--mut);
+  text-shadow: none;
+  margin-left: 0.15em;
+}
+
+.flip {
+  animation: flip 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes flip {
+  0% {
+    transform: translateY(-40%) scale(0.9);
+    opacity: 0;
+    filter: blur(4px);
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+    filter: none;
+  }
+}

@@ -1,0 +1,40 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 1.6vh;
+  transition: opacity 0.3s;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bar button {
+  width: 6.8vh;
+  height: 6.8vh;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--s2);
+  color: var(--mut);
+  font-size: 2.6vh;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.bar button:hover,
+.bar button:focus-visible {
+  color: var(--fg);
+  border-color: var(--act);
+}
+
+.bar button:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+}
+
+.bar .main {
+  width: 8vh;
+  height: 8vh;
+  font-size: 3.2vh;
+}

@@ -1,0 +1,62 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.55);
+  z-index: 20;
+}
+
+.dialog {
+  min-width: 44vh;
+  padding: 4vh 5vh;
+  background: var(--s1);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 2vh;
+  font-family: var(--font-display);
+  text-align: center;
+}
+
+.dialog h2 {
+  margin: 0 0 1vh;
+  font-size: 5vh;
+  font-weight: 800;
+}
+
+.dialog p {
+  margin: 0 0 3vh;
+  font-family: var(--font-body);
+  font-size: 2.4vh;
+  color: var(--mut);
+}
+
+.actions {
+  display: flex;
+  gap: 2vh;
+  justify-content: center;
+}
+
+.actions button {
+  min-width: 14vh;
+  padding: 1.4vh 3vh;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 3vh;
+  border-radius: 1.4vh;
+  border: 1px solid var(--line);
+  background: var(--s2);
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.actions button:focus-visible {
+  outline: 3px solid var(--act);
+  outline-offset: 2px;
+}
+
+.actions .primary {
+  background: var(--act);
+  border-color: var(--act);
+  color: #fff;
+}

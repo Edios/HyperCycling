@@ -1,0 +1,37 @@
+/* Lives in the free centre area; the layout positions its container. */
+.root {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 9vh;
+  letter-spacing: 0.02em;
+  color: var(--c);
+  text-shadow: 0 0 3vh color-mix(in srgb, var(--c) 60%, transparent);
+  pointer-events: none;
+}
+
+.animated {
+  animation: cue 2.5s ease-out both;
+}
+
+@keyframes cue {
+  0% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+  12% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-2vh);
+  }
+}
+
+.live {
+  display: contents;
+}

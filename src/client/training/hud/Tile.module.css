@@ -1,0 +1,40 @@
+/* Shared tile chrome and value sizes (vh so the HUD scales with the screen). */
+.tile {
+  background: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: 2vh;
+  text-align: center;
+  padding: 2.4vh 1.5vh 2vh;
+  font-family: var(--font-display);
+}
+
+.label {
+  font-weight: 600;
+  font-size: 2.7vh;
+  color: var(--mut);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.value {
+  font-weight: 800;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+
+.sub {
+  font-family: var(--font-body);
+  font-size: 2.7vh;
+  color: var(--mut);
+}
+
+.xl .value {
+  font-size: 31vh;
+}
+.lg .value {
+  font-size: 21vh;
+}
+.md .value {
+  font-size: 13vh;
+}

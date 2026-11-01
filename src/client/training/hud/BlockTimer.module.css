@@ -1,0 +1,29 @@
+.clock {
+  display: inline-block;
+}
+
+.pulse .clock {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.bar {
+  height: 1.2vh;
+  border-radius: 0.6vh;
+  background: color-mix(in srgb, var(--fg) 12%, transparent);
+  overflow: hidden;
+  margin: 1.6vh auto 1.2vh;
+  width: 80%;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: 0.6vh;
+  background: var(--zone);
+}

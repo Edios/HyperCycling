@@ -1,0 +1,40 @@
+.card {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2.4vh;
+  padding: 1.8vh 3vh;
+  background: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: 1.6vh;
+  font-family: var(--font-display);
+}
+
+.caption {
+  font-weight: 600;
+  font-size: 2.2vh;
+  letter-spacing: 0.08em;
+  color: var(--mut);
+  text-transform: uppercase;
+}
+
+.facts {
+  font-weight: 800;
+  font-size: 3.4vh;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.effort {
+  font-weight: 800;
+  color: var(--c);
+}
+
+[data-theme='light'] .effort {
+  color: color-mix(in srgb, var(--c) 65%, #000);
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: 2.4vh;
+  color: var(--mut);
+}
