@@ -64,7 +64,10 @@ test('solo: countdown, running, block change, pause, skip, finish, summary', asy
 
 test('Escape asks before ending and goes to the summary', async ({ page }) => {
   await openTraining(page, 'Ride');
-  await page.keyboard.press('Space');
+  await expect(async () => {
+    await page.keyboard.press('Space');
+    await expect(status(page)).toHaveAttribute('data-status', 'countdown', { timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
   await page.clock.runFor(8000);
   await page.keyboard.press('Escape');
   const dialog = page.getByRole('dialog');
