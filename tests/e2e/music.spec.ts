@@ -100,6 +100,7 @@ async function rideIt(page: Page, name: string): Promise<void> {
   await page.goto('./#/freestyle');
   await page.getByRole('button', { name: 'Mine', exact: true }).click();
   await page.getByTestId('workout-card').filter({ hasText: name }).click();
+  await page.getByTestId('workout-ride').click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
   const music = page.getByRole('switch', { name: 'Music' });
   if (!(await music.isChecked())) await music.check({ force: true });
@@ -111,6 +112,7 @@ async function rideWithRider(page: Page, name: string, hyperride: boolean): Prom
   await page.goto('./#/freestyle');
   await page.getByRole('button', { name: 'Mine', exact: true }).click();
   await page.getByTestId('workout-card').filter({ hasText: name }).click();
+  await page.getByTestId('workout-ride').click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
   if (hyperride) await page.getByRole('button', { name: /^World/ }).click();
   await page.getByRole('button', { name: '+ Add' }).click();

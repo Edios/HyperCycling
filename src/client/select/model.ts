@@ -1,4 +1,5 @@
 import type { Lang } from '../../domain/lang';
+import type { Segment } from '../../domain/segments';
 import { totalDurationSec, type Workout } from '../../domain/workout';
 import { localizedText } from '../data/localized';
 import type { MessageKey } from '../i18n';
@@ -81,4 +82,28 @@ export function tagKey(tag: PrimaryTag): MessageKey {
 
 export function minutesOf(w: Workout): number {
   return Math.round(totalDurationSec(w) / 60);
+}
+
+/**
+ * Difficulty 1..10 derived from the effort profile: the mean of the time-weighted average effort
+ * and the peak effort, so a long easy ride with one hard block still reads above a pure endurance one.
+ */
+export function difficultyOf(segments: readonly Segment[]): number {
+  let total = 0;
+  let weighted = 0;
+  let peak = 1;
+  for (const s of segments) {
+    total += s.durationSec;
+    weighted += ((s.effortStart + s.effortEnd) / 2) * s.durationSec;
+    peak = Math.max(peak, s.effortStart, s.effortEnd);
+  }
+  if (total === 0) return 1;
+  return Math.min(10, Math.max(1, Math.round((weighted / total + peak) / 2)));
+}
+
+/** Distinct, non-empty "what to look for" music hints of a workout. */
+export function musicHintsOf(w: Workout): string[] {
+  return [...new Set(Object.values(w.musicHints ?? {}).map((h) => h.trim()))].filter(
+    (h) => h !== '',
+  );
 }
