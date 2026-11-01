@@ -1,6 +1,6 @@
 name: Pages
 
-# Publishes the static (IndexedDB) build at https://<owner>.github.io/Spinning-Tutor/.
+# Publishes the static (IndexedDB) build at https://<owner>.github.io/HyperCycling/.
 # The e2e suite already runs against this same build in ci.yml (Playwright project "pages").
 # One-time setup in the repository: Settings > Pages > Source = "GitHub Actions".
 on:
