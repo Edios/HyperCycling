@@ -62,7 +62,7 @@
 .bar div {
   height: 100%;
   border-radius: 0.25rem;
-  background: var(--act);
+  background: var(--acc);
 }
 
 .next {
@@ -275,13 +275,12 @@
   height: 3rem;
   padding: 0 1.5rem;
   border-radius: 0.75rem;
-  background: var(--act);
-  color: #04101f;
+  background: var(--acc);
+  color: var(--on-acc);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.3125rem;
   text-decoration: none;
-  box-shadow: 0 0 1.5rem rgb(61 139 255 / 0.35);
 }
 
 @media (max-width: 760px) {

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { readCompat, removeCompat } from '../data/storage-compat';
 import type { PlanSlot } from '../../domain/plan';
 import type { Player } from '../../domain/player';
 import type { SessionConfig } from '../../domain/settings';
@@ -22,7 +23,7 @@ interface LastResultStore {
   clear(): void;
 }
 
-const STORAGE_KEY = 'spinning-tutor.lastResult';
+const STORAGE_KEY = 'hypercycling.lastResult';
 
 function isStored(v: unknown): v is LastResult {
   if (typeof v !== 'object' || v === null) return false;
@@ -42,7 +43,7 @@ function isStored(v: unknown): v is LastResult {
 /** The result a reload would otherwise lose; undefined when nothing valid is stored. */
 export function loadStoredResult(): LastResult | undefined {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = readCompat(sessionStorage, STORAGE_KEY);
     if (!raw) return undefined;
     const parsed: unknown = JSON.parse(raw);
     return isStored(parsed) ? { ...parsed, restored: true } : undefined;
@@ -63,7 +64,7 @@ function storeResult(r: LastResult): void {
 
 export function clearStoredResult(): void {
   try {
-    sessionStorage.removeItem(STORAGE_KEY);
+    removeCompat(sessionStorage, STORAGE_KEY);
   } catch {
     // Storage may be blocked; the summary then simply does not survive a reload.
   }

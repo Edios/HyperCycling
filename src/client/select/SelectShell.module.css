@@ -1,3 +1,7 @@
+.shell[data-mode='free'] {
+  --acc: var(--free);
+}
+
 .shell {
   min-height: 100vh;
   background: radial-gradient(ellipse at 70% -20%, #13203a 0%, var(--bg) 55%);

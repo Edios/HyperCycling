@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import { APP_ID } from '../../domain/export-bundle';
 import type { CollectionRepo, Repositories, SingletonRepo } from '../../domain/repositories';
 import type { ActiveSession } from '../../domain/session-log';
 import type { Settings } from '../../domain/settings';
@@ -147,7 +148,7 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
       const rows = <T extends { id: string }>(x: unknown[]): T[] =>
         x.map((row) => parseRow<T>(row)).sort(byId);
       return {
-        app: 'spinning-tutor',
+        app: APP_ID,
         schemaVersion: 1,
         exportedAt: now(),
         workouts: rows(r.workouts),

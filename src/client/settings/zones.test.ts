@@ -27,7 +27,7 @@ describe('applyZoneValues', () => {
   it('returns the new table for valid values', () => {
     const t = applyZoneValues(DEFAULT_EFFORT_TABLE, withRow(0, '40'));
     expect(t?.[0]?.ftpPct).toBe(40);
-    expect(t?.[0]?.color).toBe('#8fa3b8');
+    expect(t?.[0]?.color).toBe('#8fdcff');
   });
   it('returns undefined for invalid values', () => {
     expect(applyZoneValues(DEFAULT_EFFORT_TABLE, withRow(4, '70'))).toBeUndefined();

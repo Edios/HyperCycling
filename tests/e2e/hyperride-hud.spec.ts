@@ -15,7 +15,7 @@ async function requireWebgl(page: Page): Promise<void> {
 
 async function startHyperride(page: Page, withPlayer: boolean): Promise<void> {
   await page.goto('./#/setup/demo-mixed');
-  await page.getByRole('button', { name: /Hyperride/ }).click();
+  await page.getByRole('button', { name: /^World/ }).click();
   await expect(page.getByRole('radio', { name: 'Corners' })).toBeChecked();
   if (withPlayer) {
     await page.getByRole('button', { name: '+ Add' }).click();

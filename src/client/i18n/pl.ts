@@ -1,10 +1,13 @@
 import type { Messages } from './en';
 
 export const pl: Messages = {
-  app: { title: 'Spinning Tutor' },
+  app: { title: 'HyperCycling' },
+  intro: { skip: 'Kliknij lub naciśnij Esc, aby pominąć' },
   nav: {
     plan: 'Plan',
     freestyle: 'Freestyle',
+    world: 'World',
+    coach: 'Coach',
     players: 'Gracze',
     settings: 'Ustawienia',
     mainMenu: 'Menu główne',
@@ -88,7 +91,7 @@ export const pl: Messages = {
     background: 'Tło',
     world: 'Świat',
     backgroundBasic: 'Basic',
-    backgroundHyperride: 'Hyperride',
+    backgroundHyperride: 'World',
     backgroundYoutube: 'Film z YouTube',
     youtubeUrl: 'Link do YouTube',
     youtubeHint: 'Link watch, youtu.be, Shorts lub embed. Czas startu (t=1m30s) jest uwzględniany.',
@@ -415,8 +418,16 @@ export const pl: Messages = {
       music: 'Muzyka',
       data: 'Dane',
       diagnostics: 'Diagnostyka',
+      about: 'O aplikacji',
     },
     saveFailed: 'Nie udało się zapisać ustawienia. Spróbuj ponownie.',
+    about: {
+      title: 'O aplikacji',
+      name: 'HyperCycling',
+      version: 'Wersja {version}',
+      tagline: 'Trening na rowerze stacjonarnym z odczuwalną skalą wysiłku.',
+      fonts: 'Czcionki: Barlow i Barlow Condensed, licencja SIL Open Font License 1.1.',
+    },
     general: {
       title: 'Ogólne',
       language: 'Język',
@@ -506,8 +517,8 @@ export const pl: Messages = {
       coach: 'Komunikaty trenera',
       effects: 'Intensywność efektów',
       effectsValue: '{pct}%',
-      hyperrideWorld: 'Świat Hyperride',
-      quality: 'Jakość Hyperride',
+      hyperrideWorld: 'Scena World',
+      quality: 'Jakość World',
       qualityHigh: 'Wysoka',
       qualityLow: 'Niska',
       qualityAuto: 'Automatyczna',
@@ -555,7 +566,7 @@ export const pl: Messages = {
       importFailed: 'Import nie powiódł się.',
       reason: {
         notJson: 'Plik nie jest poprawnym JSON-em.',
-        wrongApp: 'To nie jest eksport z Spinning Tutor.',
+        wrongApp: 'To nie jest eksport z HyperCycling.',
         unsupportedVersion: 'Plik pochodzi z innej wersji aplikacji.',
         invalid: 'Plik zawiera dane, których aplikacja nie potrafi odczytać.',
         failed: 'Nie udało się zastąpić danych.',
@@ -656,7 +667,7 @@ export const pl: Messages = {
     },
     test: {
       title: 'Test wydajności',
-      hint: 'Uruchamia Hyperride na ok. 10 sekund w każdym świecie, w jakości wysokiej i niskiej.',
+      hint: 'Uruchamia World na ok. 10 sekund w każdym świecie, w jakości wysokiej i niskiej.',
       start: 'Uruchom test',
       modalTitle: 'Test wydajności',
       step: 'Krok {n} z {total}: {world}, jakość {quality}',
@@ -687,7 +698,7 @@ export const pl: Messages = {
     copyFailed: 'Nie udało się skopiować. Użyj Zapisz raport.',
     saved: 'Zapisano raport',
     report: {
-      title: 'Raport diagnostyczny Spinning Tutor',
+      title: 'Raport diagnostyczny HyperCycling',
       version: 'Wersja aplikacji',
       date: 'Data',
       device: 'Urządzenie',
@@ -712,7 +723,7 @@ export const pl: Messages = {
     prev: 'Poprzedni blok',
     next: 'Następny blok',
     togglePlayers: 'Pokaż lub ukryj graczy',
-    cycleLayout: 'Następny układ (Hyperride)',
+    cycleLayout: 'Następny układ (World)',
     fullscreen: 'Pełny ekran',
     mute: 'Wycisz lub włącz dźwięki',
     escape: 'Pauza i pytanie o zakończenie treningu',

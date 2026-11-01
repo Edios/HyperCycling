@@ -112,7 +112,7 @@ async function rideWithRider(page: Page, name: string, hyperride: boolean): Prom
   await page.getByRole('button', { name: 'Mine', exact: true }).click();
   await page.getByTestId('workout-card').filter({ hasText: name }).click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
-  if (hyperride) await page.getByRole('button', { name: /Hyperride/ }).click();
+  if (hyperride) await page.getByRole('button', { name: /^World/ }).click();
   await page.getByRole('button', { name: '+ Add' }).click();
   const form = page.getByTestId('add-player-form');
   await form.getByLabel('Name').fill('Mirek');

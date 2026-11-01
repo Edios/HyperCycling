@@ -48,7 +48,7 @@ test('diagnostics: device card, performance test table and copy report', async (
   await page.getByRole('button', { name: 'Copy report' }).click();
   await expect(page.getByText('Report copied')).toBeVisible();
   const copied = await page.evaluate(() => navigator.clipboard.readText());
-  expect(copied).toContain('Spinning Tutor diagnostics report');
+  expect(copied).toContain('HyperCycling diagnostics report');
   expect(copied).toContain('neon-tunnel / high');
   expect(errors).toEqual([]);
 });

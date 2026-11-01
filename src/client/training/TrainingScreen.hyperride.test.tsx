@@ -270,7 +270,7 @@ describe('diagnostics and automatic quality', () => {
     const overlay = screen.getByTestId('diagnostics-overlay');
     expect(overlay).toHaveAttribute('aria-hidden', 'true');
     expect(overlay).toHaveTextContent('low');
-    expect(overlay).toHaveTextContent('Hyperride / neon-tunnel');
+    expect(overlay).toHaveTextContent('World / neon-tunnel');
   });
 
   it('passes automatic quality through and toasts once when it lowers', async () => {

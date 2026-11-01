@@ -19,7 +19,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-const PENDING_KEY = 'spinning-tutor.spotify.login';
+const PENDING_KEY = 'hypercycling.spotify.login';
 const NOW = 1_700_000_000_000;
 
 beforeEach(() => sessionStorage.clear());

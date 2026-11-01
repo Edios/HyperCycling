@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { DashLine } from '../brand';
 import { localizedText } from '../data/localized';
 import { builtinPlans } from '../data/builtin';
 import { useSettings } from '../data/useSettings';
@@ -44,6 +45,7 @@ export function PlanGallery() {
           ))}
         </div>
       </div>
+      <DashLine className={styles.dash} />
       <p className={styles.intro}>{t('plans.intro')}</p>
 
       <div className={styles.grid}>

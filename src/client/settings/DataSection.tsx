@@ -201,7 +201,9 @@ export function DataSection({
         </span>
       </div>
 
-      {exported && <Toast message={t('settings.data.exported')} onClose={() => setExported(false)} />}
+      {exported && (
+        <Toast message={t('settings.data.exported')} onClose={() => setExported(false)} />
+      )}
 
       {pending && (
         <Modal title={t('settings.data.importConfirmTitle')} onClose={() => setPending(undefined)}>

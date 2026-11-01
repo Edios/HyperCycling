@@ -5,8 +5,14 @@ import { sessionLogSchema, type SessionLog } from './session-log';
 import { settingsSchema, type Settings } from './settings';
 import { workoutSchema, type Workout } from './workout';
 
+/** Id written into new exports. */
+export const APP_ID = 'hypercycling';
+/** Ids accepted on import: the current one and the pre-rebrand one. */
+export const ACCEPTED_APP_IDS = ['hypercycling', 'spinning-tutor'] as const;
+export type AppId = (typeof ACCEPTED_APP_IDS)[number];
+
 export interface ExportBundle {
-  app: 'spinning-tutor';
+  app: AppId;
   schemaVersion: 1;
   exportedAt: string;
   workouts: Workout[];
@@ -26,7 +32,7 @@ export type ParseExportResult =
 
 export const exportBundleSchema: z.ZodType<ExportBundle> = z
   .object({
-    app: z.literal('spinning-tutor'),
+    app: z.enum(ACCEPTED_APP_IDS),
     schemaVersion: z.literal(1),
     exportedAt: z.iso.datetime({ offset: true }),
     workouts: z.array(workoutSchema),
@@ -81,7 +87,7 @@ export function parseExportBundleObject(data: unknown): ParseExportResult {
     return { ok: false, reason: 'wrongApp' };
   }
   const rec = data as Record<string, unknown>;
-  if (rec.app !== 'spinning-tutor') return { ok: false, reason: 'wrongApp' };
+  if (!ACCEPTED_APP_IDS.includes(rec.app as AppId)) return { ok: false, reason: 'wrongApp' };
   if (rec.schemaVersion !== 1) return { ok: false, reason: 'unsupportedVersion' };
   const r = exportBundleSchema.safeParse(data);
   if (!r.success) {

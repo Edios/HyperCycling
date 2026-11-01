@@ -84,7 +84,7 @@ test('Ride opens setup; Start rides it; reload mid-session offers Resume at the 
   await expect(setup.getByRole('heading', { level: 1 })).toBeVisible();
   await expect(page.getByTestId('setup-badge')).toContainText('Progres · week 1');
   await expect(page.getByRole('radio', { name: 'Classic' })).toBeChecked();
-  await expect(page.getByRole('button', { name: /Hyperride/ })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /^World/ })).toBeEnabled();
   await expect(page.getByRole('button', { name: /YouTube/ })).toBeEnabled();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
 

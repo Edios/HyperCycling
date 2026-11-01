@@ -1,0 +1,53 @@
+.ring {
+  position: relative;
+  display: inline-block;
+  flex: none;
+}
+
+.ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-style: italic;
+  line-height: 1;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.hyper {
+  font-weight: 600;
+  color: var(--mut);
+}
+
+.cycling {
+  font-weight: 800;
+  color: var(--fg);
+}
+
+/* Grey rectangular dashes: colour + mask tile (15x4 with a 10x4 dash, radius 1). */
+.dash {
+  height: 4px;
+  background: color-mix(in srgb, var(--line2) 80%, transparent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='4'%3E%3Crect width='10' height='4' rx='1'/%3E%3C/svg%3E")
+    left center / 15px 4px repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='4'%3E%3Crect width='10' height='4' rx='1'/%3E%3C/svg%3E")
+    left center / 15px 4px repeat-x;
+}

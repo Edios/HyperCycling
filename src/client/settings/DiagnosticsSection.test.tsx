@@ -130,7 +130,7 @@ describe('DiagnosticsSection', () => {
     await enable();
     fireEvent.click(await screen.findByRole('button', { name: 'Copy report' }));
     await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
-    expect(String(writeText.mock.calls[0]?.[0])).toContain('Spinning Tutor diagnostics report');
+    expect(String(writeText.mock.calls[0]?.[0])).toContain('HyperCycling diagnostics report');
     expect(await screen.findByText('Report copied')).toBeInTheDocument();
   });
 
@@ -153,7 +153,7 @@ describe('DiagnosticsSection', () => {
     });
     expect(download).toHaveBeenCalledTimes(1);
     const [blob, name] = download.mock.calls[0] as [Blob, string];
-    expect(name).toMatch(/^spinning-tutor-diagnostics-.*\.txt$/);
+    expect(name).toMatch(/^hypercycling-diagnostics-.*\.txt$/);
     expect(blob.type).toContain('text/plain');
     expect(await screen.findByText('Report saved')).toBeInTheDocument();
   });

@@ -69,7 +69,7 @@ export function DiagnosticsSection({ download = triggerDownload }: DiagnosticsSe
   const saveFile = async (): Promise<void> => {
     const blob = new Blob([report()], { type: 'text/plain;charset=utf-8' });
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    await download(blob, `spinning-tutor-diagnostics-${stamp}.txt`);
+    await download(blob, `hypercycling-diagnostics-${stamp}.txt`);
     say('saved');
   };
 

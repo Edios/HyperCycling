@@ -86,11 +86,11 @@ test('settings: zones reject a non-increasing table and keep valid edits after a
 
 test('settings: the default background is preselected on the setup screen', async ({ page }) => {
   await page.goto('./#/settings');
-  await page.getByTestId('settings-training').getByRole('radio', { name: 'Hyperride' }).check({
+  await page.getByTestId('settings-training').getByRole('radio', { name: 'World' }).check({
     force: true,
   });
   await expect(
-    page.getByTestId('settings-training').getByRole('radio', { name: 'Hyperride' }),
+    page.getByTestId('settings-training').getByRole('radio', { name: 'World' }),
   ).toBeChecked();
   await page.reload();
   await page.goto('./#/setup/ramp-test');

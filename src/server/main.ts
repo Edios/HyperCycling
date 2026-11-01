@@ -18,7 +18,7 @@ try {
   await app.listen(serverConfig);
 } catch (err) {
   if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') {
-    console.error(`Port ${serverConfig.port} is busy — is Spinning Tutor already running?`);
+    console.error(`Port ${serverConfig.port} is busy — is HyperCycling already running?`);
   } else {
     console.error(err);
   }

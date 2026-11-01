@@ -21,7 +21,7 @@ describe('effort table', () => {
   });
   it('effortRow returns the row', () => {
     expect(effortRow(9).labelKey).toBe('veryHard');
-    expect(effortRow(10).color).toBe('#ff3d5a');
+    expect(effortRow(10).color).toBe('#ff4d4d');
   });
   it('throws on non-finite ftpPct', () => expect(() => ftpPctToEffort(NaN)).toThrow());
   it('uses a custom table', () => {

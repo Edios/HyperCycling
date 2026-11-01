@@ -75,7 +75,7 @@ async function startRoad(
 ): Promise<void> {
   await seedSettings(page, info, { ...DEFAULT_SETTINGS, hyperrideQuality: quality });
   await page.goto('./#/setup/demo-mixed');
-  await page.getByRole('button', { name: /Hyperride/ }).click();
+  await page.getByRole('button', { name: /^World/ }).click();
   await page.getByRole('radio', { name: world }).click();
   await expect(page.getByRole('radio', { name: world })).toBeChecked();
   await page.getByRole('button', { name: 'Start', exact: true }).click();

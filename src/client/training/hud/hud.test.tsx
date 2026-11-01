@@ -131,7 +131,7 @@ describe('NextBlock', () => {
       rpm: 85,
       label: 'Recovery',
     });
-    render(<NextBlock next={next} effortColor="#3d8bff" />);
+    render(<NextBlock next={next} effortColor="#2f6bff" />);
     const root = screen.getByTestId('next-block');
     expect(root).toHaveTextContent('Next');
     expect(root).toHaveTextContent('3');

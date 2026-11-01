@@ -196,9 +196,9 @@ test('pause, switch background in quick settings, resume: the time carries on', 
 
   await page.getByRole('button', { name: 'Quick settings' }).click();
   await expect(page.getByTestId('quick-settings')).toBeVisible();
-  await page.getByRole('radio', { name: 'Hyperride' }).check({ force: true });
+  await page.getByRole('radio', { name: 'World' }).check({ force: true });
   // Without WebGL the screen falls back to Basic; the choice itself is applied either way.
-  await expect(page.getByRole('radio', { name: 'Hyperride' })).toBeChecked();
+  await expect(page.getByRole('radio', { name: 'World' })).toBeChecked();
   await expect(status(page)).toHaveAttribute('data-status', 'paused');
   await expect(page.getByTestId('block-timer')).toHaveText(frozen);
   // Back to Basic: the software WebGL renderer of headless Chrome would slow the clock-driven run.

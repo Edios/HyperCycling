@@ -192,7 +192,12 @@ describe('FreestyleTab', () => {
 
 describe('FreestyleTab edit button (H3)', () => {
   it('own workouts get Edit, built-ins keep Duplicate only', async () => {
-    const own = { ...(builtinWorkouts[0] as Workout), id: 'mine-1', name: 'Mine', source: { kind: 'user' as const } };
+    const own = {
+      ...(builtinWorkouts[0] as Workout),
+      id: 'mine-1',
+      name: 'Mine',
+      source: { kind: 'user' as const },
+    };
     mine.list = [own];
     try {
       renderTab();

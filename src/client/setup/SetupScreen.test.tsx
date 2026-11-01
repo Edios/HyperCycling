@@ -164,7 +164,7 @@ describe('SetupScreen', () => {
     renderSetup(`/setup/${scalable.id}`);
     expect(await screen.findByTestId('layout-hint')).toHaveTextContent(/Select a rider/);
     expect(screen.getByRole('switch', { name: 'Show riders' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: /Hyperride/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^World/ }));
     expect(screen.getByTestId('layout-hint')).toHaveTextContent(/Select a rider/);
     fireEvent.click(screen.getByRole('button', { name: /Mirek/ }));
     expect(screen.queryByTestId('layout-hint')).toBeNull();
@@ -259,16 +259,16 @@ describe('SetupScreen', () => {
 
   it('Hyperride, YouTube and Basic are all selectable', async () => {
     renderSetup(`/setup/${scalable.id}`);
-    expect(await screen.findByRole('button', { name: /Hyperride/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^World/ })).toBeEnabled();
     expect(screen.getByRole('button', { name: /YouTube/ })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Basic/ })).toBeEnabled();
   });
 
   it('offers the world only for Hyperride and saves the choice on start', async () => {
     renderSetup(`/setup/${scalable.id}`);
-    await screen.findByRole('button', { name: /Hyperride/ });
+    await screen.findByRole('button', { name: /^World/ });
     expect(screen.queryByRole('radio', { name: 'Road' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /Hyperride/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^World/ }));
     expect(screen.getByRole('radio', { name: 'Neon tunnel' })).toBeChecked();
     fireEvent.click(screen.getByRole('radio', { name: 'Road' }));
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
@@ -280,7 +280,7 @@ describe('SetupScreen', () => {
 
   it('Hyperride offers every layout (Corners by default), with or without riders', async () => {
     renderSetup(`/setup/${scalable.id}`);
-    fireEvent.click(await screen.findByRole('button', { name: /Hyperride/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /^World/ }));
     expect(screen.getByRole('radio', { name: 'Corners' })).toBeChecked();
     expect(screen.queryByRole('radio', { name: 'Classic' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /Mirek/ }));
