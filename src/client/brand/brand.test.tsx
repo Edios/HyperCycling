@@ -28,10 +28,10 @@ describe('ZONE_COLORS', () => {
     expect([...ZONE_COLORS]).toEqual([
       '#8fdcff',
       '#8fdcff',
-      '#2f6bff',
-      '#2f6bff',
       '#35d07f',
       '#35d07f',
+      '#2f6bff',
+      '#2f6bff',
       '#ffd23f',
       '#ff8c2a',
       '#ff4d4d',
