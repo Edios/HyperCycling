@@ -32,7 +32,7 @@ First time: `npx playwright install chromium`. The e2e `local` project uses a th
 - Music and YouTube failures must never pause or change the workout.
 - Built-in workouts and plans are original content. Do not copy content or parsers from services with restrictive terms.
 - The local server binds to `127.0.0.1` and the app is opened on `127.0.0.1`, never `localhost` (Spotify rule).
-- Router is a hash router; the Pages build needs `VITE_BASE=/HyperCycling/`.
+- Router is a hash router; the Pages build needs `VITE_BASE=/` (custom domain https://hypercycling.app/).
 
 ## Workflow
 

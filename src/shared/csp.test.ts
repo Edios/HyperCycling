@@ -29,7 +29,8 @@ describe('injectCspMeta', () => {
 /** Documentation-only or navigation-only URLs: never fetched, framed or loaded as script. */
 const NOT_FETCHED = new Set([
   'https://youtu.be', // link shown to the user
-  'https://edios.github.io', // Spotify redirect URI hint text
+  'https://hypercycling.app', // Spotify redirect URI hint text
+  'https://edios.github.io', // old Pages address, kept in the redirect URI hint
 ]);
 
 function sourceFiles(dir: string): string[] {

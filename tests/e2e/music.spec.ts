@@ -164,7 +164,7 @@ test('Spotify: connect, pick a device, search in the editor, play with a now-pla
   await expect(device.locator('option')).toHaveCount(3);
   await device.selectOption('D-KITCHEN');
   await expect(page.getByTestId('redirect-uri').first()).toHaveText(
-    'http://127.0.0.1:5176/HyperCycling/',
+    'http://127.0.0.1:5176/',
   );
   await shot(page, 'settings-music');
 
