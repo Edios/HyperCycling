@@ -257,14 +257,14 @@ describe('SetupScreen', () => {
     });
   });
 
-  it('Hyperride, YouTube and Basic are all selectable', async () => {
+  it('World, YouTube and Basic are all selectable', async () => {
     renderSetup(`/setup/${scalable.id}`);
     expect(await screen.findByRole('button', { name: /^World/ })).toBeEnabled();
     expect(screen.getByRole('button', { name: /YouTube/ })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Basic/ })).toBeEnabled();
   });
 
-  it('offers the world only for Hyperride and saves the choice on start', async () => {
+  it('offers the world only for World and saves the choice on start', async () => {
     renderSetup(`/setup/${scalable.id}`);
     await screen.findByRole('button', { name: /^World/ });
     expect(screen.queryByRole('radio', { name: 'Road' })).toBeNull();
@@ -278,7 +278,7 @@ describe('SetupScreen', () => {
     expect(saved).toEqual([]);
   });
 
-  it('Hyperride offers every layout (Corners by default), with or without riders', async () => {
+  it('World offers every layout (Corners by default), with or without riders', async () => {
     renderSetup(`/setup/${scalable.id}`);
     fireEvent.click(await screen.findByRole('button', { name: /^World/ }));
     expect(screen.getByRole('radio', { name: 'Corners' })).toBeChecked();

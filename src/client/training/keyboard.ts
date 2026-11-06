@@ -6,7 +6,7 @@ export interface TrainingKeyActions {
   prev(): void;
   next(): void;
   togglePlayers(): void;
-  /** Next overlay layout (Hyperride only; ignored elsewhere). */
+  /** Next overlay layout (World only; ignored elsewhere). */
   cycleLayout?(): void;
   fullscreen(): void;
   mute(): void;

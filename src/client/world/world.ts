@@ -2,7 +2,7 @@ import type { EffortTable } from '../../domain/effort';
 import type { Segment } from '../../domain/segments';
 import type { EngineState } from '../../domain/session-engine';
 
-export type HyperrideQuality = 'high' | 'low';
+export type WorldQuality = 'high' | 'low';
 
 /** Read-only view of the tunnel centre line. All values are in world units along the path. */
 export interface PathModel {
@@ -43,8 +43,8 @@ export interface WorldFrame {
   segments: readonly Segment[];
 }
 
-export interface HyperrideWorld {
-  init(canvas: HTMLCanvasElement, quality: HyperrideQuality): void;
+export interface WorldRenderer {
+  init(canvas: HTMLCanvasElement, quality: WorldQuality): void;
   update(frame: WorldFrame): void;
   resize(width: number, height: number): void;
   /** Horizontal view offset as a fraction of the width (Column HUD without players: 0.11). */

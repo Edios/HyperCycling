@@ -98,7 +98,7 @@ test('Road world: starts from Setup, renders, and switches to Neon tunnel in qui
   await requireWebgl(page);
 
   await startRoad(page, info, 'high');
-  const canvas = page.getByTestId('hyperride-canvas');
+  const canvas = page.getByTestId('world-canvas');
   await expect(canvas).toBeVisible();
   await expect
     .poll(() => canvas.evaluate((c: HTMLCanvasElement) => c.width), { timeout: 15_000 })
@@ -113,8 +113,8 @@ test('Road world: starts from Setup, renders, and switches to Neon tunnel in qui
   await expect(page.getByRole('radio', { name: 'Road' })).toBeChecked();
   await page.getByRole('radio', { name: 'Neon tunnel' }).click();
   await expect(page.getByRole('radio', { name: 'Neon tunnel' })).toBeChecked();
-  await expect(page.locator('[data-testid="hyperride-canvas"][data-probe="road"]')).toHaveCount(0);
-  const next = page.getByTestId('hyperride-canvas');
+  await expect(page.locator('[data-testid="world-canvas"][data-probe="road"]')).toHaveCount(0);
+  const next = page.getByTestId('world-canvas');
   await expect(next).toHaveCount(1);
   await expect
     .poll(() => next.evaluate((c: HTMLCanvasElement) => c.width), { timeout: 15_000 })
@@ -140,7 +140,7 @@ test('Scenes world: starts from Setup and renders without console errors', async
   await requireWebgl(page);
 
   await startRoad(page, info, 'high', 'Scenes');
-  const canvas = page.getByTestId('hyperride-canvas');
+  const canvas = page.getByTestId('world-canvas');
   await expect(canvas).toBeVisible();
   await expect
     .poll(() => canvas.evaluate((c: HTMLCanvasElement) => c.width), { timeout: 15_000 })
@@ -153,7 +153,7 @@ test('Scenes world: starts from Setup and renders without console errors', async
   }
 });
 
-// Screenshots for the owner (opt-in): SHOTS_DIR=<dir> npx playwright test hyperride-road ...
+// Screenshots for the owner (opt-in): SHOTS_DIR=<dir> npx playwright test world-road ...
 const shotsDir = process.env.SHOTS_DIR;
 for (const quality of ['high', 'low'] as const) {
   for (const size of [
@@ -170,7 +170,7 @@ for (const quality of ['high', 'low'] as const) {
       await startRoad(page, info, quality);
       await expect
         .poll(
-          () => page.getByTestId('hyperride-canvas').evaluate((c: HTMLCanvasElement) => c.width),
+          () => page.getByTestId('world-canvas').evaluate((c: HTMLCanvasElement) => c.width),
           {
             timeout: 15_000,
           },

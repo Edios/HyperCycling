@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('dev Hyperride renders the Neon Tunnel without console errors', async ({ page }) => {
+test('dev World renders the Neon Tunnel without console errors', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(msg.text());
@@ -14,8 +14,8 @@ test('dev Hyperride renders the Neon Tunnel without console errors', async ({ pa
   });
   test.skip(!webgl, 'WebGL is not available in this headless browser');
 
-  await page.goto('./#/dev/hyperride?t=150');
-  const canvas = page.getByTestId('hyperride-canvas');
+  await page.goto('./#/dev/world?t=150');
+  const canvas = page.getByTestId('world-canvas');
   await expect(canvas).toBeVisible();
   // the world draws into the canvas: wait until it has a backing buffer of the page size
   await expect

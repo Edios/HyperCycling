@@ -77,7 +77,7 @@ async function main(): Promise<void> {
     });
     const page = await context.newPage();
     await page.clock.install({ time: FIXED_TIME });
-    // Hyperride draws its tunnel with Math.random; a seeded PRNG keeps the PNGs stable.
+    // World draws its tunnel with Math.random; a seeded PRNG keeps the PNGs stable.
     await page.addInitScript(SEEDED_RANDOM);
     page.on('pageerror', (err) => console.warn('page error:', err.message));
 
@@ -128,7 +128,7 @@ async function main(): Promise<void> {
     // One jump instead of ~6000 animation frames; the engine derives its state from the clock.
     await page.clock.fastForward(95_000);
     await page.clock.runFor(300);
-    await shot(page, 'training-hyperride');
+    await shot(page, 'training-world');
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Leave without saving' }).click();
 

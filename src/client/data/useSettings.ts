@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import { DEFAULT_SETTINGS, parseHyperrideWorld, type Settings } from '../../domain/settings';
+import { DEFAULT_SETTINGS, parseWorldSetting, type Settings } from '../../domain/settings';
 import { getRepositories } from './repositories';
 
 interface SettingsStore {
@@ -22,7 +22,7 @@ function mergeSettings(stored: Partial<Settings>): Settings {
     ...stored,
     equipment: { ...DEFAULT_SETTINGS.equipment, ...stored.equipment },
     // A world id this build does not know (e.g. written by a newer version) shows the default.
-    hyperrideWorld: parseHyperrideWorld(stored.hyperrideWorld),
+    hyperrideWorld: parseWorldSetting(stored.hyperrideWorld),
   };
 }
 

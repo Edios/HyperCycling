@@ -1,13 +1,13 @@
 import { render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
-import { HyperrideCanvas } from './HyperrideCanvas';
-import type { FrameInput, HyperrideWorld } from './world';
+import { WorldCanvas } from './WorldCanvas';
+import type { FrameInput, WorldRenderer } from './world';
 
 const log = vi.hoisted(() => ({ events: [] as string[] }));
 
 vi.mock('./worlds', () => {
-  const fakeWorld = (name: string): HyperrideWorld => ({
+  const fakeWorld = (name: string): WorldRenderer => ({
     init: () => void log.events.push(`init:${name}`),
     update: () => undefined,
     resize: () => undefined,
@@ -44,13 +44,13 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('HyperrideCanvas world switch', () => {
+describe('WorldCanvas world switch', () => {
   it('disposes the first world before initialising the second', async () => {
     const view = render(
-      <HyperrideCanvas getFrameInput={() => input} quality="high" world="neon-tunnel" />,
+      <WorldCanvas getFrameInput={() => input} quality="high" world="neon-tunnel" />,
     );
     await waitFor(() => expect(log.events).toContain('init:neon-tunnel'));
-    view.rerender(<HyperrideCanvas getFrameInput={() => input} quality="high" world="road" />);
+    view.rerender(<WorldCanvas getFrameInput={() => input} quality="high" world="road" />);
     await waitFor(() => expect(log.events).toContain('init:road'));
     expect(log.events).toEqual(['init:neon-tunnel', 'dispose:neon-tunnel', 'init:road']);
     view.unmount();

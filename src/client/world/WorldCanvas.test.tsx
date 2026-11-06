@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
 import type { Segment } from '../../domain/segments';
-import { HyperrideCanvas } from './HyperrideCanvas';
+import { WorldCanvas } from './WorldCanvas';
 import type { FrameInput } from './world';
 
 /** Minimal stand-in for the parts of three the Neon Tunnel touches; records disposal. */
@@ -254,12 +254,12 @@ function mockWebgl(): void {
   );
 }
 
-describe('HyperrideCanvas', () => {
+describe('WorldCanvas', () => {
   it('reports unavailable when WebGL context creation fails', async () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     const onUnavailable = vi.fn();
     render(
-      <HyperrideCanvas getFrameInput={() => input} quality="high" onUnavailable={onUnavailable} />,
+      <WorldCanvas getFrameInput={() => input} quality="high" onUnavailable={onUnavailable} />,
     );
     await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
     expect(fake.log.renderers).toHaveLength(0);
@@ -271,7 +271,7 @@ describe('HyperrideCanvas', () => {
     const onUnavailable = vi.fn();
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     render(
-      <HyperrideCanvas getFrameInput={() => input} quality="high" onUnavailable={onUnavailable} />,
+      <WorldCanvas getFrameInput={() => input} quality="high" onUnavailable={onUnavailable} />,
     );
     await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
     expect(fake.log.disposed).toEqual([]);
@@ -283,7 +283,7 @@ describe('HyperrideCanvas', () => {
     const onUnavailable = vi.fn();
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     render(
-      <HyperrideCanvas getFrameInput={() => input} quality="high" onUnavailable={onUnavailable} />,
+      <WorldCanvas getFrameInput={() => input} quality="high" onUnavailable={onUnavailable} />,
     );
     await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
     expect(fake.log.disposed).toEqual(
@@ -294,7 +294,7 @@ describe('HyperrideCanvas', () => {
 
   it('first frame: glow starts at its target, no needless projection updates, colors cached', async () => {
     mockWebgl();
-    render(<HyperrideCanvas getFrameInput={() => input} quality="high" />);
+    render(<WorldCanvas getFrameInput={() => input} quality="high" />);
     await waitFor(() => expect(frames.length).toBeGreaterThan(0));
     frames.shift()?.(16);
     // effort 3 → 0.25 + 0.075·3
@@ -318,7 +318,7 @@ describe('HyperrideCanvas', () => {
       })),
     );
     vi.stubGlobal('devicePixelRatio', 1);
-    const { unmount } = render(<HyperrideCanvas getFrameInput={() => input} quality="high" />);
+    const { unmount } = render(<WorldCanvas getFrameInput={() => input} quality="high" />);
     await waitFor(() => expect(frames.length).toBeGreaterThan(0));
     expect(fake.log.pixelRatios).toEqual([1]);
     vi.stubGlobal('devicePixelRatio', 1.5);
@@ -330,7 +330,7 @@ describe('HyperrideCanvas', () => {
   it('renders frames from getFrameInput and disposes everything on unmount', async () => {
     mockWebgl();
     const getFrameInput = vi.fn(() => input);
-    const { unmount } = render(<HyperrideCanvas getFrameInput={getFrameInput} quality="high" />);
+    const { unmount } = render(<WorldCanvas getFrameInput={getFrameInput} quality="high" />);
     await waitFor(() => expect(frames.length).toBeGreaterThan(0));
     frames.shift()?.(16);
     expect(getFrameInput).toHaveBeenCalled();
@@ -358,7 +358,7 @@ describe('HyperrideCanvas', () => {
 
   it("quality 'low' renders without bloom", async () => {
     mockWebgl();
-    const { unmount } = render(<HyperrideCanvas getFrameInput={() => input} quality="low" />);
+    const { unmount } = render(<WorldCanvas getFrameInput={() => input} quality="low" />);
     await waitFor(() => expect(frames.length).toBeGreaterThan(0));
     frames.shift()?.(16);
     expect(fake.log.renders).toBe(1);

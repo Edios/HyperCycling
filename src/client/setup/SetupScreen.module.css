@@ -143,12 +143,12 @@
   color: var(--z7);
 }
 
-.thumb_hyperride {
+.thumb_world {
   background: radial-gradient(circle, #000 20%, #0a1b3d 60%, #000);
   position: relative;
 }
 
-.thumb_hyperride::before {
+.thumb_world::before {
   content: '';
   position: absolute;
   inset: 1.125rem 3.75rem;

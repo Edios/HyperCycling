@@ -13,7 +13,7 @@ async function requireWebgl(page: Page): Promise<void> {
   test.skip(!webgl, 'WebGL is not available in this headless browser');
 }
 
-async function startHyperride(page: Page, withPlayer: boolean): Promise<void> {
+async function startWorld(page: Page, withPlayer: boolean): Promise<void> {
   await page.goto('./#/setup/demo-mixed');
   await page.getByRole('button', { name: /^World/ }).click();
   await expect(page.getByRole('radio', { name: 'Corners' })).toBeChecked();
@@ -32,7 +32,7 @@ async function startHyperride(page: Page, withPlayer: boolean): Promise<void> {
   await expect(page.getByTestId('training-screen')).toBeVisible();
 }
 
-test('Hyperride: canvas renders under the HUD, H cycles layouts, G toggles players', async ({
+test('World: canvas renders under the HUD, H cycles layouts, G toggles players', async ({
   page,
 }, info) => {
   test.skip(info.project.name !== 'pages', 'runs on the pages build only');
@@ -45,8 +45,8 @@ test('Hyperride: canvas renders under the HUD, H cycles layouts, G toggles playe
   await requireWebgl(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
 
-  await startHyperride(page, true);
-  const canvas = page.getByTestId('hyperride-canvas');
+  await startWorld(page, true);
+  const canvas = page.getByTestId('world-canvas');
   await expect(canvas).toBeVisible();
   await expect
     .poll(() => canvas.evaluate((c: HTMLCanvasElement) => c.width), { timeout: 15_000 })

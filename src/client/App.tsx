@@ -14,7 +14,7 @@ import { PlanWizard } from './plans/PlanWizard';
 import { FreestyleTab } from './select/FreestyleTab';
 import { PlanTab } from './select/PlanTab';
 import { SelectShell } from './select/SelectShell';
-import { DevHyperride } from './screens/DevHyperride';
+import { DevWorld } from './screens/DevWorld';
 import { TrainingScreen } from './training/TrainingScreen';
 
 /** The demo list is for development and e2e only: dev builds, or any build opened with ?dev. */
@@ -54,7 +54,7 @@ function routes(): RouteObject[] {
           ),
         },
         { path: '/setup/:workoutId', element: <SetupScreen /> },
-        { path: '/dev/hyperride', element: <DevHyperride /> },
+        { path: '/dev/world', element: <DevWorld /> },
         { path: '/train', element: <TrainingScreen /> },
         { path: '/summary', element: <SummaryScreen /> },
         { path: '/players', element: <PlayersScreen /> },

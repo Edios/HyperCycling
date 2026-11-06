@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { SessionConfig } from '../../domain/settings';
 import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
-import { WORLD_CHOICES } from '../hyperride/world-options';
+import { WORLD_CHOICES } from '../world/world-options';
 import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
 import { effectiveHud, layoutOptions, type Background } from '../setup/model';
@@ -19,7 +19,7 @@ const FALLBACK_SESSION: SessionConfig = {
 
 const BACKGROUNDS: readonly { value: Background; labelKey: MessageKey }[] = [
   { value: 'basic', labelKey: 'setup.backgroundBasic' },
-  { value: 'hyperride', labelKey: 'setup.backgroundHyperride' },
+  { value: 'hyperride', labelKey: 'setup.backgroundWorld' },
   { value: 'youtube', labelKey: 'setup.backgroundYoutube' },
 ];
 
