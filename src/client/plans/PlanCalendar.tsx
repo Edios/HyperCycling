@@ -6,8 +6,9 @@ import { scaleForPlan } from '../../domain/scale';
 import { getWorkout } from '../data/builtin';
 import { localizedText } from '../data/localized';
 import { useLang, useT } from '../i18n';
+import { weekdayNames } from './DayPicker';
 import { effectiveSession } from './effective-session';
-import { sessionsPerWeek, workoutPeakLevel } from './model';
+import { rideDays, workoutPeakLevel } from './model';
 import styles from './PlanCalendar.module.css';
 
 export interface PlanCalendarProps {
@@ -16,14 +17,7 @@ export interface PlanCalendarProps {
   equipment: Equipment;
 }
 
-/** Weekday columns (0 = Monday) that carry rides: Mon/Wed/Fri for three a week, Mon/Thu for two. */
-const DAYS_3 = [0, 2, 4] as const;
-const DAYS_2 = [0, 3] as const;
 const SLOTS: readonly PlanSlot[] = ['progres', 'freestyle'];
-/** 2024-01-01 is a Monday; weekday names come from Intl so they follow the UI language. */
-const MONDAY = Date.UTC(2024, 0, 1);
-const DAY_MS = 86_400_000;
-
 interface Cell {
   kind: 'rest' | 'session' | 'test' | 'free';
   level?: number;
@@ -38,22 +32,17 @@ const LEGEND = [
   { color: 'var(--z9)', key: 'plans.calendar.legendMax' },
 ] as const;
 
-function weekdayNames(lang: string, weekday: 'short' | 'long'): string[] {
-  const fmt = new Intl.DateTimeFormat(lang, { weekday, timeZone: 'UTC' });
-  return Array.from({ length: 7 }, (_, i) => fmt.format(MONDAY + i * DAY_MS));
-}
-
 /** Weeks x weekdays grid; each ride is coloured by the intensity of the workout actually served. */
 export function PlanCalendar({ plan, settings, equipment }: PlanCalendarProps) {
   const t = useT();
   const [lang] = useLang();
-  const { layout, skipFirstTest } = settings;
+  const { layout, skipFirstTest, trainingDays } = settings;
 
   const shortDays = useMemo(() => weekdayNames(lang, 'short'), [lang]);
   const longDays = useMemo(() => weekdayNames(lang, 'long'), [lang]);
 
   const rows = useMemo<Cell[][]>(() => {
-    const days = sessionsPerWeek(layout) === 3 ? DAYS_3 : DAYS_2;
+    const days = rideDays(layout, trainingDays);
     return plan.weeks.map((_, w) => {
       const cells: Cell[] = Array.from({ length: 7 }, () => ({ kind: 'rest' }));
       days.forEach((day, i) => {
@@ -82,7 +71,7 @@ export function PlanCalendar({ plan, settings, equipment }: PlanCalendarProps) {
       });
       return cells;
     });
-  }, [plan, settings, equipment, layout, skipFirstTest, lang]);
+  }, [plan, settings, equipment, layout, skipFirstTest, trainingDays, lang]);
 
   return (
     <div className={styles.cal} data-testid="plan-calendar">

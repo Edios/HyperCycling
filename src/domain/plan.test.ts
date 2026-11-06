@@ -298,3 +298,16 @@ describe('schemas', () => {
     expect(schema.safeParse(progress({}, [entry(3, 'progres')])).success).toBe(false);
   });
 });
+
+describe('planSettingsSchema trainingDays', () => {
+  const base = { sessionMinutes: 45, difficulty: 0, layout: 'progresFreestyle', startWeek: 1 };
+  it('is optional so stored plans stay valid', () => {
+    expect(planSettingsSchema.safeParse(base).success).toBe(true);
+  });
+  it('accepts weekdays 0..6 and rejects bad values', () => {
+    expect(planSettingsSchema.safeParse({ ...base, trainingDays: [0, 3] }).success).toBe(true);
+    expect(planSettingsSchema.safeParse({ ...base, trainingDays: [7] }).success).toBe(false);
+    expect(planSettingsSchema.safeParse({ ...base, trainingDays: [1.5] }).success).toBe(false);
+    expect(planSettingsSchema.safeParse({ ...base, trainingDays: 'mon' }).success).toBe(false);
+  });
+});
