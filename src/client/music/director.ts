@@ -5,6 +5,8 @@ import type { MusicCue, TrackRef } from '../../domain/workout';
 import type { MusicProvider, TrackInfo } from './types';
 
 export const FADE_OUT_MS = 1500;
+/** Fade used between two songs in a session: short, so the gap stays well under a second. */
+export const SWITCH_FADE_MS = 300;
 export const RETRY_DELAY_MS = 3000;
 export const POLL_MS = 1000;
 /** A provider call that has not settled by then counts as a rejection. */
@@ -32,6 +34,11 @@ export interface MusicDirectorOptions {
   /** Volume 0..1 applied to every provider; 1 by default. */
   volume?: number;
   fadeMs?: number;
+  /**
+   * Fade length when one track is replaced by another (a cue cut or a seek). Shorter than `fadeMs`
+   * keeps the silence between songs small; defaults to `fadeMs`.
+   */
+  switchFadeMs?: number;
   retryMs?: number;
   pollMs?: number;
 }
@@ -112,6 +119,7 @@ function bounded(
  */
 export function createMusicDirector(options: MusicDirectorOptions): MusicDirector {
   const fadeMs = options.fadeMs ?? FADE_OUT_MS;
+  const switchFadeMs = options.switchFadeMs ?? fadeMs;
   const retryMs = options.retryMs ?? RETRY_DELAY_MS;
   const pollMs = options.pollMs ?? POLL_MS;
 
@@ -260,8 +268,8 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     }
   }
 
-  const fade = (playing: Playing): Promise<void> =>
-    quietly('fade out', () => playing.provider.fadeOut(fadeMs), fadeMs + FADE_SLACK_MS);
+  const fade = (playing: Playing, ms: number = fadeMs): Promise<void> =>
+    quietly('fade out', () => playing.provider.fadeOut(ms), ms + FADE_SLACK_MS);
 
   /** One decision. Returns true when it did something, so the loop looks again. */
   async function step(): Promise<boolean> {
@@ -303,7 +311,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       const playing = current;
       current = null;
       announce(null);
-      if (!playing.halted) await fade(playing);
+      if (!playing.halted) await fade(playing, switchFadeMs);
       return true;
     }
 
