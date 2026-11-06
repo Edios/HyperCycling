@@ -38,7 +38,7 @@ Persisted shapes are zod schemas (workouts and the export bundle carry a `schema
 ## Client
 
 - Screens are routes in `App.tsx` (select, setup, training, summary, players, plans, editor, settings). The `/dev` route exists only in dev builds, or in any build opened with `?dev`.
-- Training: `useSessionLoop` runs the engine on animation frames; `session-store` holds the runtime; `autosave` writes an active session every 5 s so it can be resumed. Layouts are in `training/layouts` (Basic) and `hyperride/` (three.js worlds, shown as World). The corner (stored id `immersive`), Column, Cockpit, Minimal (`tunnelTime`) and Focus overlays work on every background; the Focus visibility rule is the pure `training/focus-visibility.ts`. YouTube is an iframe background.
+- Training: `useSessionLoop` runs the engine on animation frames; `session-store` holds the runtime; `autosave` writes an active session every 5 s so it can be resumed. Layouts are in `training/layouts` (Basic) and `world/` (three.js worlds, shown as World). The corner (stored id `immersive`), Column, Cockpit, Minimal (`tunnelTime`) and Focus overlays work on every background; the Focus visibility rule is the pure `training/focus-visibility.ts`. YouTube is an iframe background.
 - Music (`music/`): a `director` schedules provider calls from the workout's music cues; providers are Spotify (PKCE, Web API) and YouTube (iframe). Provider errors become one toast and never touch the engine.
 - i18n: `i18n/en.ts` and `i18n/pl.ts`, same keys (a test checks it). No hard-coded UI text in components.
 

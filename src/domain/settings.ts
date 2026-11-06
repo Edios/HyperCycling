@@ -2,10 +2,10 @@ import { z } from 'zod';
 import { DEFAULT_EFFORT_TABLE, effortTableSchema, type EffortTable } from './effort';
 import { LANGS, type Lang } from './lang';
 
-/** Hyperride worlds the rider can pick; the client registry (worlds/index.ts) implements them. */
-export const HYPERRIDE_WORLD_IDS = ['neon-tunnel', 'road', 'scenes'] as const;
-export type HyperrideWorldId = (typeof HYPERRIDE_WORLD_IDS)[number];
-export const DEFAULT_HYPERRIDE_WORLD: HyperrideWorldId = 'neon-tunnel';
+/** World worlds the rider can pick; the client registry (worlds/index.ts) implements them. */
+export const WORLD_SETTING_IDS = ['neon-tunnel', 'road', 'scenes'] as const;
+export type WorldSettingId = (typeof WORLD_SETTING_IDS)[number];
+export const DEFAULT_WORLD_SETTING: WorldSettingId = 'neon-tunnel';
 
 export interface Equipment {
   showsWatts: boolean;
@@ -14,6 +14,7 @@ export interface Equipment {
 }
 
 export interface SessionConfig {
+  /** 'hyperride' is the stored id of the World background (kept so saved data keeps loading). */
   background: 'basic' | 'hyperride' | 'youtube';
   youtubeUrl?: string;
   hud: 'solo' | 'players' | 'immersive' | 'column' | 'cockpit' | 'tunnelTime' | 'focus';
@@ -42,8 +43,9 @@ export interface Settings {
   coach: boolean;
   /** 0..1 */
   effectsIntensity: number;
+  /** Stored key names (hyperride*) are kept for saved data; the feature is called World. */
   hyperrideQuality: 'high' | 'low' | 'auto';
-  hyperrideWorld: HyperrideWorldId;
+  hyperrideWorld: WorldSettingId;
   /** Diagnostics mode: live FPS overlay while training, device info and performance test. */
   diagnostics?: boolean;
   activePlanId?: string;
@@ -85,7 +87,7 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   coach: z.boolean(),
   effectsIntensity: z.number().min(0).max(1),
   hyperrideQuality: z.enum(['high', 'low', 'auto']),
-  hyperrideWorld: z.enum(HYPERRIDE_WORLD_IDS).catch(DEFAULT_HYPERRIDE_WORLD),
+  hyperrideWorld: z.enum(WORLD_SETTING_IDS).catch(DEFAULT_WORLD_SETTING),
   diagnostics: z.boolean().optional(),
   activePlanId: z.string().optional(),
   lastSession: sessionConfigSchema.optional(),
@@ -101,11 +103,11 @@ export const DEFAULT_SETTINGS: Settings = {
   coach: true,
   effectsIntensity: 1,
   hyperrideQuality: 'high',
-  hyperrideWorld: DEFAULT_HYPERRIDE_WORLD,
+  hyperrideWorld: DEFAULT_WORLD_SETTING,
   recentYoutubeUrls: [],
 };
 
 /** A stored world id when this build knows it, else the default (missing or from a newer build). */
-export function parseHyperrideWorld(value: unknown): HyperrideWorldId {
-  return HYPERRIDE_WORLD_IDS.find((id) => id === value) ?? DEFAULT_HYPERRIDE_WORLD;
+export function parseWorldSetting(value: unknown): WorldSettingId {
+  return WORLD_SETTING_IDS.find((id) => id === value) ?? DEFAULT_WORLD_SETTING;
 }

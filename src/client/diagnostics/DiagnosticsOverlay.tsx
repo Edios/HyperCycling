@@ -3,13 +3,13 @@ import { useFrameMeter } from './useFrameMeter';
 import styles from './DiagnosticsOverlay.module.css';
 
 export interface DiagnosticsOverlayProps {
-  /** What is drawn behind the HUD, e.g. "Hyperride / road" or "Basic". */
+  /** What is drawn behind the HUD, e.g. "World / road" or "Basic". */
   scene: string;
-  /** Effective Hyperride quality; omitted when no canvas is running. */
+  /** Effective World quality; omitted when no canvas is running. */
   quality?: string | undefined;
 }
 
-const CANVAS = '[data-testid="hyperride-canvas"]';
+const CANVAS = '[data-testid="world-canvas"]';
 
 /** Small live readout (top-left, monospace) for judging how the app runs on this hardware. */
 export function DiagnosticsOverlay({ scene, quality }: DiagnosticsOverlayProps) {

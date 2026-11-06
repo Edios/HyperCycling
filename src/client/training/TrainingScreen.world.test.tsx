@@ -33,11 +33,11 @@ interface CanvasProps {
   onAutoLowered?: () => void;
 }
 const canvas = vi.hoisted(() => ({ last: undefined as unknown, mounts: 0 }));
-vi.mock('../hyperride/HyperrideCanvas', () => ({
-  HyperrideCanvas: (props: CanvasProps) => {
+vi.mock('../world/WorldCanvas', () => ({
+  WorldCanvas: (props: CanvasProps) => {
     canvas.last = props;
     canvas.mounts += 1;
-    return <canvas data-testid="hyperride-canvas" />;
+    return <canvas data-testid="world-canvas" />;
   },
 }));
 const lastCanvas = (): CanvasProps => canvas.last as CanvasProps;
@@ -119,7 +119,7 @@ describe('overlay layouts', () => {
   it.each(layouts)('%s shows the canvas and the HUD pieces', async (hud, testId) => {
     load(hud);
     await renderScreen();
-    expect(screen.getByTestId('hyperride-canvas')).toBeInTheDocument();
+    expect(screen.getByTestId('world-canvas')).toBeInTheDocument();
     const layout = screen.getByTestId(testId);
     for (const id of ['effort-value', 'rpm-value', 'block-timer', 'next-block', 'timeline']) {
       expect(layout.querySelector(`[data-testid="${id}"]`), id).not.toBeNull();
@@ -234,7 +234,7 @@ describe('overlay layouts', () => {
     load('immersive');
     await renderScreen();
     act(() => lastCanvas().onUnavailable?.());
-    expect(screen.queryByTestId('hyperride-canvas')).toBeNull();
+    expect(screen.queryByTestId('world-canvas')).toBeNull();
     expect(screen.getByTestId('layout-solo')).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('WebGL');
     expect(screen.getByTestId('training-screen').dataset['theme']).toBe('dark');

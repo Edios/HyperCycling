@@ -4,9 +4,9 @@ import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
 import { flattenWorkout } from '../../domain/segments';
 import { restoreSessionEngine } from '../../domain/session-engine';
 import { getWorkout } from '../data/builtin';
-import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
-import type { FrameInput } from '../hyperride/world';
-import { DEFAULT_WORLD, WORLDS, type WorldId } from '../hyperride/worlds';
+import { WorldCanvas } from '../world/WorldCanvas';
+import type { FrameInput } from '../world/world';
+import { DEFAULT_WORLD, WORLDS, type WorldId } from '../world/worlds';
 import { useT } from '../i18n';
 
 const num = (v: string | null, fallback: number): number => {
@@ -21,11 +21,11 @@ function scaledClock(rate: number): () => number {
 }
 
 /**
- * Developer page: a Hyperride world driven by a running engine over the built-in demo-mixed workout.
+ * Developer page: a World world driven by a running engine over the built-in demo-mixed workout.
  * Query: `t` start second, `rate` time multiplier, `quality` high|low, `offset` view offset (0..1),
  * `world` world id (default neon-tunnel), `workout` built-in workout id (default demo-mixed).
  */
-export function DevHyperride() {
+export function DevWorld() {
   const t = useT();
   const [params] = useSearchParams();
   const startSec = Math.max(0, num(params.get('t'), 0));
@@ -61,15 +61,15 @@ export function DevHyperride() {
 
   return (
     <main
-      data-testid="dev-hyperride"
+      data-testid="dev-world"
       style={{ position: 'fixed', inset: 0, background: '#020308', overflow: 'hidden' }}
     >
       {unavailable ? (
         <p role="status" style={{ color: '#ccd', padding: '2vh' }}>
-          {t('hyperride.unavailable')}
+          {t('world.unavailable')}
         </p>
       ) : (
-        <HyperrideCanvas
+        <WorldCanvas
           getFrameInput={getFrameInput}
           quality={quality}
           world={world}

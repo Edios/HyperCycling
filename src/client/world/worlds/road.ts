@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { HyperrideQuality, HyperrideWorld, WorldFrame } from '../world';
+import type { WorldQuality, WorldRenderer, WorldFrame } from '../world';
 import { prefersReducedMotion } from './motion';
 import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
 import { BASE_VFOV_DEG, baseVerticalFov, dashOffset, gateDepth, hash01 } from './road-model';
@@ -438,7 +438,7 @@ function rampTexture(kind: 'vertical' | 'soft'): THREE.CanvasTexture | null {
 
 // ---------------------------------------------------------------------------------------------
 
-export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
+export function createRoad(opts: RoadOptions = {}): WorldRenderer {
   let s: Scene3D | undefined;
   let width = 1;
   let height = 1;
@@ -906,7 +906,7 @@ export function createRoad(opts: RoadOptions = {}): HyperrideWorld {
       return dist;
     },
 
-    init(canvas: HTMLCanvasElement, quality: HyperrideQuality) {
+    init(canvas: HTMLCanvasElement, quality: WorldQuality) {
       reduced = opts.reducedMotion ?? prefersReducedMotion();
       width = Math.max(1, canvas.clientWidth || canvas.width);
       height = Math.max(1, canvas.clientHeight || canvas.height);

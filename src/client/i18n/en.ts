@@ -92,7 +92,7 @@ export const en = {
     background: 'Background',
     world: 'World',
     backgroundBasic: 'Basic',
-    backgroundHyperride: 'World',
+    backgroundWorld: 'World',
     backgroundYoutube: 'YouTube video',
     youtubeUrl: 'YouTube link',
     youtubeHint: 'A watch, youtu.be, Shorts or embed link. A start time (t=1m30s) is respected.',
@@ -653,9 +653,6 @@ export const en = {
     embedBlocked: 'This video cannot be embedded. Using the Basic background.',
     unavailable: 'The video cannot be played. Using the Basic background.',
   },
-  hyperride: {
-    unavailable: 'WebGL is not available on this computer. Using the Basic background.',
-  },
   diagnostics: {
     title: 'Diagnostics',
     enable: 'Diagnostics mode',
@@ -743,6 +740,7 @@ export const en = {
     escape: 'Pause and ask to end the workout',
   },
   world: {
+    unavailable: 'WebGL is not available on this computer. Using the Basic background.',
     neonTunnel: 'Neon tunnel',
     road: 'Road',
     scenes: 'Scenes',

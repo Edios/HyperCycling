@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { HYPERRIDE_WORLD_IDS } from '../../domain/settings';
-import { HyperrideCanvas, webglAvailable } from '../hyperride/HyperrideCanvas';
-import { WORLD_CHOICES } from '../hyperride/world-options';
+import { WORLD_SETTING_IDS } from '../../domain/settings';
+import { WorldCanvas, webglAvailable } from '../world/WorldCanvas';
+import { WORLD_CHOICES } from '../world/world-options';
 import { useT } from '../i18n';
 import { Button } from '../ui/Button';
 import { useDemoFrameInput } from './demo-frame-input';
@@ -26,7 +26,7 @@ export function testDurationMs(params: URLSearchParams, allowOverride: boolean):
     : DEFAULT_STEP_MS;
 }
 
-const STEPS = HYPERRIDE_WORLD_IDS.flatMap((world) =>
+const STEPS = WORLD_SETTING_IDS.flatMap((world) =>
   (['high', 'low'] as const).map((quality) => ({ world, quality })),
 );
 
@@ -124,7 +124,7 @@ export function PerformanceTestModal({
       data-testid="performance-test"
     >
       {!blocked && current && (
-        <HyperrideCanvas
+        <WorldCanvas
           getFrameInput={getFrameInput}
           quality={current.quality}
           world={current.world}

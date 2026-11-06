@@ -69,7 +69,7 @@ The control bar hides after a few idle seconds. It repeats the keys, plus **Quic
 
 ![End workout dialog](images/end-dialog.png)
 
-![World with the Immersive layout](images/training-hyperride.png)
+![World with the Immersive layout](images/training-world.png)
 
 The **summary** shows time ridden and whether you completed the workout. After an FTP test it proposes a new FTP.
 

@@ -3,15 +3,15 @@ import { createAutoQuality } from '../diagnostics/auto-quality';
 import { buildWorldFrame } from './frame';
 import { createPathModel } from './path-model';
 import { createSway } from './sway';
-import type { FrameInput, HyperrideQuality, HyperrideWorld } from './world';
+import type { FrameInput, WorldQuality, WorldRenderer } from './world';
 import { DEFAULT_WORLD, WORLDS, type WorldId } from './worlds';
-import styles from './HyperrideCanvas.module.css';
+import styles from './WorldCanvas.module.css';
 
-export interface HyperrideCanvasProps {
+export interface WorldCanvasProps {
   /** Read every animation frame (engine state, segments, effort table). No store coupling. */
   getFrameInput(): FrameInput;
   /** 'auto' starts on high and drops to low once if a 5 s window averages under 45 fps. */
-  quality: HyperrideQuality | 'auto';
+  quality: WorldQuality | 'auto';
   /** Which world to show (default Neon Tunnel). */
   world?: WorldId;
   /** Horizontal view offset as a fraction of the width (0.11 for Column HUD without players). */
@@ -39,14 +39,14 @@ export function webglAvailable(): boolean {
   }
 }
 
-export function HyperrideCanvas(props: HyperrideCanvasProps) {
+export function WorldCanvas(props: WorldCanvasProps) {
   const { viewOffsetX = 0, world: worldId = DEFAULT_WORLD } = props;
   const [lowered, setLowered] = useState(false);
   const auto = props.quality === 'auto';
-  const quality: HyperrideQuality =
+  const quality: WorldQuality =
     props.quality === 'auto' ? (lowered ? 'low' : 'high') : props.quality;
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const worldRef = useRef<HyperrideWorld | null>(null);
+  const worldRef = useRef<WorldRenderer | null>(null);
   const latest = useRef(props);
   const offsetRef = useRef(viewOffsetX);
 
@@ -64,7 +64,7 @@ export function HyperrideCanvas(props: HyperrideCanvasProps) {
     if (!canvas) return;
     let cancelled = false;
     let raf = 0;
-    let world: HyperrideWorld | undefined;
+    let world: WorldRenderer | undefined;
     let observer: ResizeObserver | undefined;
     const unavailable = (): void => latest.current.onUnavailable?.();
 
@@ -74,13 +74,13 @@ export function HyperrideCanvas(props: HyperrideCanvasProps) {
     }
 
     const start = async (): Promise<void> => {
-      // three is only fetched here, when a Hyperride session actually starts
+      // three is only fetched here, when a World session actually starts
       const w = await WORLDS[worldId]();
       if (cancelled) return;
       try {
         w.init(canvas, quality);
       } catch (err) {
-        console.warn('Hyperride: WebGL world failed to start', err);
+        console.warn('World: WebGL world failed to start', err);
         w.dispose();
         unavailable();
         return;
@@ -127,7 +127,7 @@ export function HyperrideCanvas(props: HyperrideCanvasProps) {
             onSway(o.x, o.y);
           }
         } catch (err) {
-          if (!reported) console.error('Hyperride frame failed', err);
+          if (!reported) console.error('World frame failed', err);
           reported = true;
         }
       };
@@ -136,7 +136,7 @@ export function HyperrideCanvas(props: HyperrideCanvasProps) {
 
     start().catch((err: unknown) => {
       if (cancelled) return;
-      console.warn('Hyperride: world could not be loaded', err);
+      console.warn('World: world could not be loaded', err);
       unavailable();
     });
 
@@ -157,7 +157,7 @@ export function HyperrideCanvas(props: HyperrideCanvasProps) {
       key={`${worldId}:${quality}`}
       ref={canvasRef}
       className={styles.canvas}
-      data-testid="hyperride-canvas"
+      data-testid="world-canvas"
       aria-hidden="true"
     />
   );

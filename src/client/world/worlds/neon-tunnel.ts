@@ -5,12 +5,12 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { TUNNEL_LENGTH } from '../../../domain/tunnel-path';
 import { glowStrength } from '../frame';
-import type { HyperrideQuality, HyperrideWorld, WorldFrame } from '../world';
+import type { WorldQuality, WorldRenderer, WorldFrame } from '../world';
 import { motionDt, prefersReducedMotion } from './motion';
 import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
 
 /**
- * "Neon Tunnel": a port of docs/design/prototypes/hyperride-prototype.html. Comfort rules
+ * "Neon Tunnel": a port of docs/design/prototypes/world-prototype.html. Comfort rules
  * (spec 4.8): no camera roll and no ring rotation around the view axis, sparse rings, near rings
  * fade out, fog hides the far end, moderate bloom.
  */
@@ -61,7 +61,7 @@ interface Scene3D {
   unwatchDpr(): void;
 }
 
-export function createNeonTunnel(opts: NeonTunnelOptions = {}): HyperrideWorld {
+export function createNeonTunnel(opts: NeonTunnelOptions = {}): WorldRenderer {
   const rand = opts.rand ?? Math.random;
   let s: Scene3D | undefined;
   let width = 1;
@@ -299,7 +299,7 @@ export function createNeonTunnel(opts: NeonTunnelOptions = {}): HyperrideWorld {
       return dist;
     },
 
-    init(canvas: HTMLCanvasElement, quality: HyperrideQuality) {
+    init(canvas: HTMLCanvasElement, quality: WorldQuality) {
       reduced = opts.reducedMotion ?? prefersReducedMotion();
       width = Math.max(1, canvas.clientWidth || canvas.width);
       height = Math.max(1, canvas.clientHeight || canvas.height);

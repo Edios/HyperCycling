@@ -7,10 +7,10 @@ afterEach(() => vi.useRealTimers());
 
 describe('DiagnosticsOverlay', () => {
   it('is hidden from assistive tech and shows scene and quality', () => {
-    render(<DiagnosticsOverlay scene="Hyperride / road" quality="low" />);
+    render(<DiagnosticsOverlay scene="World / road" quality="low" />);
     const el = screen.getByTestId('diagnostics-overlay');
     expect(el).toHaveAttribute('aria-hidden', 'true');
-    expect(el).toHaveTextContent('Hyperride / road');
+    expect(el).toHaveTextContent('World / road');
     expect(el).toHaveTextContent('low');
   });
 
@@ -18,9 +18,9 @@ describe('DiagnosticsOverlay', () => {
     const canvas = document.createElement('canvas');
     canvas.width = 1280;
     canvas.height = 720;
-    canvas.dataset.testid = 'hyperride-canvas';
+    canvas.dataset.testid = 'world-canvas';
     document.body.appendChild(canvas);
-    render(<DiagnosticsOverlay scene="Hyperride / road" quality="high" />);
+    render(<DiagnosticsOverlay scene="World / road" quality="high" />);
     act(() => {
       vi.advanceTimersByTime(1200);
     });

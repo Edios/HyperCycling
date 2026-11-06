@@ -2,9 +2,9 @@ import { z } from 'zod';
 import type { PlanSlot } from './plan';
 import type { EngineSnapshot } from './session-engine';
 import {
-  HYPERRIDE_WORLD_IDS,
+  WORLD_SETTING_IDS,
   sessionConfigSchema,
-  type HyperrideWorldId,
+  type WorldSettingId,
   type SessionConfig,
 } from './settings';
 import { workoutSchema, type Workout } from './workout';
@@ -16,7 +16,7 @@ import { workoutSchema, type Workout } from './workout';
 export interface SessionOptions {
   sounds?: boolean;
   coach?: boolean;
-  world?: HyperrideWorldId;
+  world?: WorldSettingId;
 }
 
 export interface SessionLog {
@@ -65,7 +65,7 @@ export const activeSessionSchema: z.ZodType<ActiveSession> = z.object({
     .object({
       sounds: z.boolean().optional(),
       coach: z.boolean().optional(),
-      world: z.enum(HYPERRIDE_WORLD_IDS).optional(),
+      world: z.enum(WORLD_SETTING_IDS).optional(),
     })
     .optional(),
   savedAt: z.iso.datetime({ offset: true }),

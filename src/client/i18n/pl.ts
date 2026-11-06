@@ -94,7 +94,7 @@ export const pl: Messages = {
     background: 'Tło',
     world: 'Świat',
     backgroundBasic: 'Basic',
-    backgroundHyperride: 'World',
+    backgroundWorld: 'World',
     backgroundYoutube: 'Film z YouTube',
     youtubeUrl: 'Link do YouTube',
     youtubeHint: 'Link watch, youtu.be, Shorts lub embed. Czas startu (t=1m30s) jest uwzględniany.',
@@ -654,9 +654,6 @@ export const pl: Messages = {
     embedBlocked: 'Tego filmu nie można osadzić. Używam tła Basic.',
     unavailable: 'Nie można odtworzyć filmu. Używam tła Basic.',
   },
-  hyperride: {
-    unavailable: 'Ten komputer nie obsługuje WebGL. Używam tła Basic.',
-  },
   diagnostics: {
     title: 'Diagnostyka',
     enable: 'Tryb diagnostyczny',
@@ -744,6 +741,7 @@ export const pl: Messages = {
     escape: 'Pauza i pytanie o zakończenie treningu',
   },
   world: {
+    unavailable: 'Ten komputer nie obsługuje WebGL. Używam tła Basic.',
     neonTunnel: 'Neonowy tunel',
     road: 'Droga',
     scenes: 'Sceny',

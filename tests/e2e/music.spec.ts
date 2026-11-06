@@ -108,13 +108,13 @@ async function rideIt(page: Page, name: string): Promise<void> {
   await expect(page.getByTestId('training-screen')).toBeVisible();
 }
 
-async function rideWithRider(page: Page, name: string, hyperride: boolean): Promise<void> {
+async function rideWithRider(page: Page, name: string, world: boolean): Promise<void> {
   await page.goto('./#/freestyle');
   await page.getByRole('button', { name: 'Mine', exact: true }).click();
   await page.getByTestId('workout-card').filter({ hasText: name }).click();
   await page.getByTestId('workout-ride').click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
-  if (hyperride) await page.getByRole('button', { name: /^World/ }).click();
+  if (world) await page.getByRole('button', { name: /^World/ }).click();
   await page.getByRole('button', { name: '+ Add' }).click();
   const form = page.getByTestId('add-player-form');
   await form.getByLabel('Name').fill('Mirek');
@@ -271,7 +271,7 @@ test('now-playing corner: lays out clear of the HUD in the players, Immersive an
     [1280, 720],
   ] as const) {
     await page.setViewportSize({ width: w, height: h });
-    // Basic-style layouts first would need a restart; the three Hyperride layouts cycle with H.
+    // Basic-style layouts first would need a restart; the three World layouts cycle with H.
     for (const layout of ['immersive', 'column'] as const) {
       while ((await page.getByTestId(`layout-${layout}`).count()) === 0) {
         await page.keyboard.press('h');

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
-import type { HyperrideWorldId } from '../../domain/settings';
+import type { WorldSettingId } from '../../domain/settings';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
 import { playerSchema, type Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
@@ -10,7 +10,7 @@ import { localizedText } from '../data/localized';
 import { useLibrary } from '../data/useLibrary';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
-import { WORLD_CHOICES } from '../hyperride/world-options';
+import { WORLD_CHOICES } from '../world/world-options';
 import { useSessionStore } from '../training/session-store';
 import { formatClock } from '../training/format';
 import { AppBar } from '../ui/AppBar';
@@ -45,7 +45,7 @@ import styles from './SetupScreen.module.css';
 
 const BACKGROUNDS: readonly { value: Background; labelKey: MessageKey }[] = [
   { value: 'basic', labelKey: 'setup.backgroundBasic' },
-  { value: 'hyperride', labelKey: 'setup.backgroundHyperride' },
+  { value: 'hyperride', labelKey: 'setup.backgroundWorld' },
   { value: 'youtube', labelKey: 'setup.backgroundYoutube' },
 ];
 
@@ -132,7 +132,7 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const [beeps, setBeeps] = useState(settings.sounds);
   const [coach, setCoach] = useState(settings.coach);
   const [music, setMusic] = useState(last?.music ?? false);
-  const [world, setWorld] = useState<HyperrideWorldId>(settings.hyperrideWorld);
+  const [world, setWorld] = useState<WorldSettingId>(settings.hyperrideWorld);
   const [adding, setAdding] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState(last?.youtubeUrl ?? '');
 
