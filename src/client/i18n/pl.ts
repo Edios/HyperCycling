@@ -657,6 +657,17 @@ export const pl: Messages = {
   hyperride: {
     unavailable: 'Ten komputer nie obsługuje WebGL. Używam tła Basic.',
   },
+  welcome: {
+    title: 'Witaj w HyperCycling',
+    lead: 'Jak chcesz dziś jechać?',
+    buildBody: 'Odpowiedz na trzy pytania i dostaniesz plan tygodniowy z kalendarzem.',
+    browse: 'Wybierz plan',
+    browseBody: 'Przejrzyj gotowe plany i zacznij ten, który Ci pasuje.',
+    ride: 'Po prostu jedź',
+    rideBody: 'Wybierz pojedynczy trening i ruszaj od razu.',
+    experience: 'Experience',
+    experienceBody: 'Trening z własną muzyką i światem. Wkrótce.',
+  },
   diagnostics: {
     title: 'Diagnostyka',
     enable: 'Tryb diagnostyczny',

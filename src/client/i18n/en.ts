@@ -656,6 +656,17 @@ export const en = {
   hyperride: {
     unavailable: 'WebGL is not available on this computer. Using the Basic background.',
   },
+  welcome: {
+    title: 'Welcome to HyperCycling',
+    lead: 'How do you want to ride today?',
+    buildBody: 'Answer three questions and get a weekly plan with a calendar.',
+    browse: 'Pick a plan',
+    browseBody: 'Browse ready-made plans and start the one you like.',
+    ride: 'Just ride',
+    rideBody: 'Choose a single workout and start right away.',
+    experience: 'Experience',
+    experienceBody: 'A workout with its own music and world. Coming soon.',
+  },
   diagnostics: {
     title: 'Diagnostics',
     enable: 'Diagnostics mode',

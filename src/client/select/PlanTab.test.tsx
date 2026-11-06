@@ -87,11 +87,16 @@ beforeEach(() => {
 });
 
 describe('PlanTab', () => {
-  it('without an active plan offers to choose one', async () => {
+  it('without an active plan shows a welcome screen with three ways to start', async () => {
     renderTab();
-    const build = await screen.findByRole('link', { name: 'Build my plan' });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Welcome to HyperCycling' }),
+    ).toBeInTheDocument();
+    const build = screen.getByRole('link', { name: /Build my plan/ });
     expect(build).toHaveAttribute('href', '/plans/wizard');
-    expect(screen.getByRole('link', { name: 'Browse plans' })).toHaveAttribute('href', '/plans');
+    expect(screen.getByRole('link', { name: /Pick a plan/ })).toHaveAttribute('href', '/plans');
+    expect(screen.getByRole('link', { name: /Just ride/ })).toHaveAttribute('href', '/freestyle');
+    expect(screen.getByTestId('welcome-experience')).toHaveTextContent(/soon/i);
     expect(screen.queryByRole('button', { name: 'Ride' })).not.toBeInTheDocument();
   });
 
