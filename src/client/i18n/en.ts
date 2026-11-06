@@ -361,6 +361,11 @@ export const en = {
     layoutProgresFreestyle: 'Progres + Freestyle',
     layoutDoubleProgres: '2 × Progres',
     layoutPlusFreestyle: '+ 3rd Freestyle',
+    trainingDays: 'Training days (optional)',
+    trainingDaysNone: 'No fixed days. The calendar spreads {n} rides across the week.',
+    trainingDaysSet: 'Your rides land on these days.',
+    trainingDaysMismatch:
+      'This plan has {n} rides a week. Extra days are ignored, missing ones are filled in.',
     startFrom: 'Start from',
     startFirst: 'Week 1',
     startPick: 'Pick a week',

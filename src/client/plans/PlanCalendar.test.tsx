@@ -94,3 +94,14 @@ describe('workoutPeakLevel', () => {
     expect(workoutPeakLevel(hard!)).toBeGreaterThanOrEqual(workoutPeakLevel(easy!));
   });
 });
+
+describe('PlanCalendar training days', () => {
+  it('puts the rides on the chosen weekdays', () => {
+    renderCal({ layout: 'progresFreestyle', trainingDays: [1, 5] });
+    const first = screen.getAllByTestId('calendar-week')[0] as HTMLElement;
+    const cells = within(first).getAllByRole('cell');
+    // cells[0..6] are Mon..Sun
+    const filled = cells.map((c) => c.getAttribute('data-testid') !== null);
+    expect(filled).toEqual([false, true, false, false, false, true, false]);
+  });
+});

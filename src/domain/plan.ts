@@ -30,6 +30,8 @@ export interface PlanSettings {
   startWeek: number;
   /** Replace the week-1 FTP test with the week's no-test session (FTP already known). */
   skipFirstTest?: boolean;
+  /** Optional fixed riding weekdays, 0 = Monday .. 6 = Sunday. Absent or empty = default days. */
+  trainingDays?: number[];
 }
 
 export const DEFAULT_PLAN_SETTINGS: PlanSettings = {
@@ -92,6 +94,7 @@ export const planSettingsSchema: z.ZodType<PlanSettings> = z.object({
   layout: z.enum(['progresFreestyle', 'doubleProgres', 'plusFreestyle']),
   startWeek: z.number().int().min(1),
   skipFirstTest: z.boolean().optional(),
+  trainingDays: z.array(z.number().int().min(0).max(6)).max(7).optional(),
 }) as unknown as z.ZodType<PlanSettings>; // same optional-field inference caveat as planSchema
 
 const progressEntrySchema = z.object({

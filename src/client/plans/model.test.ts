@@ -8,6 +8,7 @@ import {
   loadHeightPct,
   matchesFilter,
   planLoad,
+  rideDays,
   testWeeks,
 } from './model';
 
@@ -62,5 +63,27 @@ describe('plans model', () => {
     const weeks = testWeeks(buildForm, DEFAULT_SETTINGS.equipment, 'progresFreestyle', true);
     expect(weeks).not.toContain(1);
     expect(weeks).toContain(buildForm.weeks.length);
+  });
+});
+
+describe('rideDays', () => {
+  it('uses the classic Mon/Wed/Fri and Mon/Thu when no days are chosen', () => {
+    expect(rideDays('plusFreestyle')).toEqual([0, 2, 4]);
+    expect(rideDays('progresFreestyle', [])).toEqual([0, 3]);
+    expect(rideDays('doubleProgres', undefined)).toEqual([0, 3]);
+  });
+
+  it('uses the chosen weekdays, sorted and de-duplicated', () => {
+    expect(rideDays('progresFreestyle', [5, 1])).toEqual([1, 5]);
+    expect(rideDays('plusFreestyle', [6, 2, 2, 4])).toEqual([2, 4, 6]);
+  });
+
+  it('keeps only the first sessions-per-week days when more are chosen', () => {
+    expect(rideDays('progresFreestyle', [1, 3, 5])).toEqual([1, 3]);
+  });
+
+  it('tops up missing days from the defaults without clashing', () => {
+    expect(rideDays('plusFreestyle', [0, 5])).toEqual([0, 2, 5]);
+    expect(rideDays('progresFreestyle', [3])).toEqual([0, 3]);
   });
 });

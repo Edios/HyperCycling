@@ -362,6 +362,11 @@ export const pl: Messages = {
     layout: 'Sesje w tygodniu',
     layoutProgresFreestyle: 'Progres + Freestyle',
     layoutDoubleProgres: '2 × Progres',
+    trainingDays: 'Dni treningowe (opcjonalnie)',
+    trainingDaysNone: 'Bez stałych dni. Kalendarz rozłoży {n} jazdy w tygodniu.',
+    trainingDaysSet: 'Jazdy wypadną w te dni.',
+    trainingDaysMismatch:
+      'Plan ma {n} jazdy w tygodniu. Nadmiarowe dni pomijamy, brakujące uzupełniamy.',
     layoutPlusFreestyle: '+ 3. Freestyle',
     startFrom: 'Zacznij od',
     startFirst: 'Tygodnia 1',
