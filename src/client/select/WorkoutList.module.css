@@ -130,8 +130,22 @@
     bottom: 0.5rem;
   }
 
+  /* Phones: fewer fields, bigger type. The profile and difficulty live in the bottom sheet. */
+  .row {
+    min-height: 4.25rem;
+    row-gap: 0;
+    padding: 0.75rem 0;
+  }
+
   .name {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
+    line-height: 1.1;
+    color: var(--fg);
+  }
+
+  .cat {
+    margin-top: 0.125rem;
+    font-size: 1.0625rem;
   }
 
   .head {
@@ -139,18 +153,19 @@
     grid-row: 1;
   }
 
-  .strip {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  .ticks {
-    grid-column: 2;
-    grid-row: 2;
+  .row .strip,
+  .row .ticks {
+    display: none;
   }
 
   .dur {
     grid-column: 2;
     grid-row: 1;
+    font-size: 1.25rem;
+  }
+
+  .badge {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
   }
 }

@@ -91,3 +91,31 @@ test('known FTP: no test in week 1 and the "me" player gets the FTP', async ({ p
   await expect(page.getByTestId('players-screen')).toBeVisible();
   await expect(page.getByTestId('player-row').filter({ hasText: '230' }).first()).toBeVisible();
 });
+
+test('optional training days: chosen weekdays shape the calendar, none keeps the default', async ({
+  page,
+}) => {
+  await page.goto('./#/plans');
+  await page.getByRole('link', { name: 'Plan wizard' }).click();
+  await page.getByRole('radio', { name: /Build Form/ }).check({ force: true });
+  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await page.getByRole('radio', { name: '2 days' }).check({ force: true });
+  // Skipping the picker is allowed.
+  await expect(page.getByTestId('day-picker')).toContainText('No fixed days');
+  await page.getByRole('button', { name: 'Tuesday' }).click();
+  await page.getByRole('button', { name: 'Saturday' }).click();
+  await expect(page.getByRole('button', { name: 'Tuesday' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await page.getByRole('radio', { name: /I don.t know it/ }).check({ force: true });
+  await page.getByRole('button', { name: 'Next', exact: true }).click();
+
+  const week = page.getByTestId('calendar-week').first();
+  const cells = week.getByRole('cell');
+  // Mon..Sun: rides on Tuesday (1) and Saturday (5)
+  await expect(cells.nth(1)).not.toHaveAttribute('class', /rest/);
+  await expect(cells.nth(5)).not.toHaveAttribute('class', /rest/);
+  await expect(cells.nth(0)).toHaveAttribute('class', /rest/);
+});

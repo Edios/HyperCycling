@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import type { Plan, PlanProgress } from '../../domain/plan';
+import type { Plan, PlanProgress, PlanSettings } from '../../domain/plan';
 import type { Player } from '../../domain/player';
 import {
   GOAL_PLAN,
@@ -19,6 +19,7 @@ import { Modal } from '../ui/Modal';
 import { Toast } from '../ui/Toast';
 import { activatePlan } from './activate-plan';
 import { LoadBars } from './LoadBars';
+import { DayPicker } from './DayPicker';
 import { PlanCalendar } from './PlanCalendar';
 import { planLoad, typicalMinutes } from './model';
 import { useWeeksLabel } from './useWeeksLabel';
@@ -75,6 +76,11 @@ export function PlanWizard() {
   return <Wizard me={me} />;
 }
 
+/** Adds the optional fixed weekdays to a recommendation; nothing is added when none are chosen. */
+function withDays<R extends { settings: PlanSettings }>(rec: R, trainingDays: number[]): R {
+  return trainingDays.length === 0 ? rec : { ...rec, settings: { ...rec.settings, trainingDays } };
+}
+
 function Wizard({ me }: { me: Player | undefined }) {
   const t = useT();
   const [lang] = useLang();
@@ -86,6 +92,7 @@ function Wizard({ me }: { me: Player | undefined }) {
   const [goal, setGoal] = useState<WizardGoal | undefined>();
   const [days, setDays] = useState<2 | 3>(3);
   const [minutes, setMinutes] = useState<30 | 45 | 60>(45);
+  const [trainingDays, setTrainingDays] = useState<number[]>([]);
   const [pickedKind, setPickedKind] = useState<FtpKind | undefined>();
   const [ftpText, setFtpText] = useState(me ? String(me.ftp) : '');
   const [confirming, setConfirming] = useState<false | 'choose' | 'reset'>(false);
@@ -110,11 +117,14 @@ function Wizard({ me }: { me: Player | undefined }) {
   const rec = useMemo(
     () =>
       goal
-        ? recommendPlan({ goal, daysPerWeek: days, minutes, ftp: ftpAnswer }, builtinPlans)
+        ? withDays(
+            recommendPlan({ goal, daysPerWeek: days, minutes, ftp: ftpAnswer }, builtinPlans),
+            trainingDays,
+          )
         : undefined,
     // ftpAnswer is rebuilt each render from these two primitives.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [goal, days, minutes, ftpKind, ftpValue],
+    [goal, days, minutes, trainingDays, ftpKind, ftpValue],
   );
   const plan = rec ? builtinPlans.find((p) => p.id === rec.planId) : undefined;
   const planName = plan ? localizedText(plan, lang).name : '';
@@ -286,6 +296,10 @@ function Wizard({ me }: { me: Player | undefined }) {
                   <small>{t('wizard.time.daysUnit')}</small>
                 </Choice>
               ))}
+            </div>
+            <h3 className={styles.q}>{t('plans.trainingDays')}</h3>
+            <div className={styles.dayPick}>
+              <DayPicker value={trainingDays} onChange={setTrainingDays} sessions={days} />
             </div>
             <h3 className={styles.q}>{t('wizard.time.minutesTitle')}</h3>
             <p className={styles.hint}>{t('wizard.time.minutesHint')}</p>

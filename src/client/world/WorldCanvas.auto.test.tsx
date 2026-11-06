@@ -1,15 +1,15 @@
 import { act, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
-import { HyperrideCanvas } from './HyperrideCanvas';
-import type { FrameInput, HyperrideWorld } from './world';
+import { WorldCanvas } from './WorldCanvas';
+import type { FrameInput, WorldRenderer } from './world';
 
 const log = vi.hoisted(() => ({ events: [] as string[] }));
 
 vi.mock('./worlds', () => ({
   DEFAULT_WORLD: 'neon-tunnel',
   WORLDS: {
-    'neon-tunnel': async (): Promise<HyperrideWorld> => ({
+    'neon-tunnel': async (): Promise<WorldRenderer> => ({
       init: (_canvas, quality) => void log.events.push(`init:${quality}`),
       update: () => undefined,
       resize: () => undefined,
@@ -55,10 +55,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('HyperrideCanvas automatic quality', () => {
+describe('WorldCanvas automatic quality', () => {
   it('starts on high and drops to low once after two 5 s windows under 45 fps (past the warm-up)', async () => {
     const lowered = vi.fn();
-    render(<HyperrideCanvas getFrameInput={() => input} quality="auto" onAutoLowered={lowered} />);
+    render(<WorldCanvas getFrameInput={() => input} quality="auto" onAutoLowered={lowered} />);
     await waitFor(() => expect(log.events).toEqual(['init:high']));
     frames(40, 0, 12_500); // 25 fps
     await waitFor(() => expect(log.events).toEqual(['init:high', 'init:low']));
@@ -70,7 +70,7 @@ describe('HyperrideCanvas automatic quality', () => {
 
   it('stays on high at 60 fps', async () => {
     const lowered = vi.fn();
-    render(<HyperrideCanvas getFrameInput={() => input} quality="auto" onAutoLowered={lowered} />);
+    render(<WorldCanvas getFrameInput={() => input} quality="auto" onAutoLowered={lowered} />);
     await waitFor(() => expect(log.events).toEqual(['init:high']));
     frames(1000 / 60, 0, 20_000);
     expect(lowered).not.toHaveBeenCalled();
@@ -79,7 +79,7 @@ describe('HyperrideCanvas automatic quality', () => {
 
   it('never switches a fixed quality', async () => {
     const lowered = vi.fn();
-    render(<HyperrideCanvas getFrameInput={() => input} quality="high" onAutoLowered={lowered} />);
+    render(<WorldCanvas getFrameInput={() => input} quality="high" onAutoLowered={lowered} />);
     await waitFor(() => expect(log.events).toEqual(['init:high']));
     frames(40, 0, 20_000);
     expect(lowered).not.toHaveBeenCalled();

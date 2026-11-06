@@ -30,8 +30,8 @@ vi.mock('../data/repositories', () => ({
       },
     }),
 }));
-vi.mock('../hyperride/HyperrideCanvas', () => ({
-  HyperrideCanvas: () => <canvas data-testid="hyperride-canvas" />,
+vi.mock('../world/WorldCanvas', () => ({
+  WorldCanvas: () => <canvas data-testid="world-canvas" />,
 }));
 vi.mock('../youtube/YouTubeBackground', () => ({
   YouTubeBackground: () => <div data-testid="youtube-background" />,
@@ -202,7 +202,7 @@ describe('quick settings', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
     fireEvent.click(screen.getByRole('radio', { name: 'World' }));
     expect(bgOf()).toBe('hyperride');
-    expect(screen.getByTestId('hyperride-canvas')).toBeInTheDocument();
+    expect(screen.getByTestId('world-canvas')).toBeInTheDocument();
     expect(useSessionStore.getState().state).toEqual(before);
     expect(useSessionStore.getState().state.workoutElapsedSec).toBeGreaterThan(9);
     expect(useSessionStore.getState().runtime?.config.background).toBe('hyperride');

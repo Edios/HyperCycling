@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import type { HyperrideWorldId, SessionConfig } from '../../domain/settings';
+import type { WorldSettingId, SessionConfig } from '../../domain/settings';
 import { useT, type MessageKey } from '../i18n';
 import { layoutLabelKey } from '../setup/model';
 import type { LayoutKind } from './overlay-layouts';
-import { WORLD_CHOICES } from '../hyperride/world-options';
+import { WORLD_CHOICES } from '../world/world-options';
 import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
 import { useRestoreFocus } from '../ui/useRestoreFocus';
@@ -13,7 +13,7 @@ type Background = SessionConfig['background'];
 
 const BACKGROUND_KEY: Record<Background, MessageKey> = {
   basic: 'setup.backgroundBasic',
-  hyperride: 'setup.backgroundHyperride',
+  hyperride: 'setup.backgroundWorld',
   youtube: 'setup.backgroundYoutube',
 };
 
@@ -26,13 +26,13 @@ export interface QuickSettingsProps {
   /** The "Show riders" switch: on / off, and whether it can be used (with the reason if not). */
   riders: boolean;
   ridersHint?: MessageKey | undefined;
-  world: HyperrideWorldId;
+  world: WorldSettingId;
   sounds: boolean;
   coach: boolean;
   onBackground(b: Background): void;
   onLayout(l: LayoutKind): void;
   onRiders(on: boolean): void;
-  onWorld(w: HyperrideWorldId): void;
+  onWorld(w: WorldSettingId): void;
   onSounds(on: boolean): void;
   onCoach(on: boolean): void;
   onClose(): void;

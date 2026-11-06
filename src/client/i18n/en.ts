@@ -92,7 +92,7 @@ export const en = {
     background: 'Background',
     world: 'World',
     backgroundBasic: 'Basic',
-    backgroundHyperride: 'World',
+    backgroundWorld: 'World',
     backgroundYoutube: 'YouTube video',
     youtubeUrl: 'YouTube link',
     youtubeHint: 'A watch, youtu.be, Shorts or embed link. A start time (t=1m30s) is respected.',
@@ -361,6 +361,11 @@ export const en = {
     layoutProgresFreestyle: 'Progres + Freestyle',
     layoutDoubleProgres: '2 × Progres',
     layoutPlusFreestyle: '+ 3rd Freestyle',
+    trainingDays: 'Training days (optional)',
+    trainingDaysNone: 'No fixed days. The calendar spreads {n} rides across the week.',
+    trainingDaysSet: 'Your rides land on these days.',
+    trainingDaysMismatch:
+      'This plan has {n} rides a week. Extra days are ignored, missing ones are filled in.',
     startFrom: 'Start from',
     startFirst: 'Week 1',
     startPick: 'Pick a week',
@@ -653,9 +658,6 @@ export const en = {
     embedBlocked: 'This video cannot be embedded. Using the Basic background.',
     unavailable: 'The video cannot be played. Using the Basic background.',
   },
-  hyperride: {
-    unavailable: 'WebGL is not available on this computer. Using the Basic background.',
-  },
   welcome: {
     title: 'Welcome to HyperCycling',
     lead: 'How do you want to ride today?',
@@ -754,6 +756,7 @@ export const en = {
     escape: 'Pause and ask to end the workout',
   },
   world: {
+    unavailable: 'WebGL is not available on this computer. Using the Basic background.',
     neonTunnel: 'Neon tunnel',
     road: 'Road',
     scenes: 'Scenes',

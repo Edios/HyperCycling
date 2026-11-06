@@ -3,10 +3,10 @@ import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
 import { flattenWorkout } from '../../domain/segments';
 import { restoreSessionEngine } from '../../domain/session-engine';
 import { getWorkout } from '../data/builtin';
-import type { FrameInput } from '../hyperride/world';
+import type { FrameInput } from '../world/world';
 
 /**
- * Frame input for the Hyperride canvas from a running engine over the built-in demo-mixed workout
+ * Frame input for the World canvas from a running engine over the built-in demo-mixed workout
  * (the same source as the dev page), so a performance test sees a realistic mix of efforts.
  */
 export function useDemoFrameInput(): () => FrameInput {

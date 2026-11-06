@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { Segment } from '../../../domain/segments';
 import { FOV_NORMAL } from '../frame';
-import type { HyperrideQuality, HyperrideWorld, WorldFrame } from '../world';
+import type { WorldQuality, WorldRenderer, WorldFrame } from '../world';
 import { prefersReducedMotion } from './motion';
 import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
 import { buildExtra, type Disposable, type SceneExtra } from './scenes-extras';
@@ -174,7 +174,7 @@ function stripIndex(segments: number, columns = 2): number[] {
   return idx;
 }
 
-export function createScenes(opts: ScenesOptions = {}): HyperrideWorld {
+export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
   let s: Scene3D | undefined;
   let width = 1;
   let height = 1;
@@ -765,7 +765,7 @@ export function createScenes(opts: ScenesOptions = {}): HyperrideWorld {
       return dist;
     },
 
-    init(canvas: HTMLCanvasElement, quality: HyperrideQuality) {
+    init(canvas: HTMLCanvasElement, quality: WorldQuality) {
       reduced = opts.reducedMotion ?? prefersReducedMotion();
       width = Math.max(1, canvas.clientWidth || canvas.width);
       height = Math.max(1, canvas.clientHeight || canvas.height);

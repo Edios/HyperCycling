@@ -45,6 +45,24 @@ export function sessionsPerWeek(layout: PlanLayout): number {
   return layout === 'plusFreestyle' ? 3 : 2;
 }
 
+/** Weekday columns (0 = Monday) used when the rider has not chosen fixed days. */
+const DEFAULT_DAYS_3 = [0, 2, 4];
+const DEFAULT_DAYS_2 = [0, 3];
+
+/**
+ * Weekdays (0 = Monday) the sessions of a week land on. Without chosen days: Mon/Wed/Fri or
+ * Mon/Thu. Chosen days are used in order; extra ones are dropped, missing ones topped up from the defaults.
+ */
+export function rideDays(layout: PlanLayout, chosen?: readonly number[]): number[] {
+  const n = sessionsPerWeek(layout);
+  const defaults = n === 3 ? DEFAULT_DAYS_3 : DEFAULT_DAYS_2;
+  const picked = [...new Set(chosen ?? [])].filter((d) => d >= 0 && d <= 6).sort((a, b) => a - b);
+  if (picked.length === 0) return [...defaults];
+  const days = picked.slice(0, n);
+  for (const d of defaults) if (days.length < n && !days.includes(d)) days.push(d);
+  return days.sort((a, b) => a - b);
+}
+
 /** Rough riding hours in a week, rounded to half an hour. */
 export function hoursPerWeek(minutes: number, layout: PlanLayout): number {
   return Math.round(((minutes * sessionsPerWeek(layout)) / 60) * 2) / 2;

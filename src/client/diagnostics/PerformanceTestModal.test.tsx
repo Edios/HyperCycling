@@ -6,11 +6,11 @@ const canvasMock = vi.hoisted(() => ({
   available: true,
   props: [] as { quality: string; world?: string }[],
 }));
-vi.mock('../hyperride/HyperrideCanvas', () => ({
+vi.mock('../world/WorldCanvas', () => ({
   webglAvailable: () => canvasMock.available,
-  HyperrideCanvas: (props: { quality: string; world?: string }) => {
+  WorldCanvas: (props: { quality: string; world?: string }) => {
     canvasMock.props.push(props);
-    return <canvas data-testid="hyperride-canvas" width={640} height={360} />;
+    return <canvas data-testid="world-canvas" width={640} height={360} />;
   },
 }));
 

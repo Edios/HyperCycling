@@ -7,7 +7,7 @@ import { PerformanceTestModal, testDurationMs } from '../diagnostics/Performance
 import { recommendQuality, type TestResult } from '../diagnostics/recommendation';
 import { buildReport } from '../diagnostics/report';
 import { useTestResults } from '../diagnostics/results-store';
-import { WORLD_CHOICES } from '../hyperride/world-options';
+import { WORLD_CHOICES } from '../world/world-options';
 import { useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
 import { Toast } from '../ui/Toast';

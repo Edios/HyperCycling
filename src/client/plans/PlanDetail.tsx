@@ -31,7 +31,8 @@ import { activatePlan } from './activate-plan';
 import { effectiveSession } from './effective-session';
 import { LoadBars } from './LoadBars';
 import { PlanCalendar } from './PlanCalendar';
-import { hoursPerWeek, planLoad, testWeeks } from './model';
+import { DayPicker } from './DayPicker';
+import { hoursPerWeek, planLoad, sessionsPerWeek, testWeeks } from './model';
 import { useWeeksLabel } from './useWeeksLabel';
 import styles from './PlanDetail.module.css';
 
@@ -321,6 +322,15 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
             value={cfg.layout}
             options={LAYOUTS.map((l) => ({ value: l, label: t(LAYOUT_KEY[l]) }))}
             onChange={(layout) => set({ layout })}
+          />
+        </div>
+
+        <div className={styles.group}>
+          <span className={styles.lbl}>{t('plans.trainingDays')}</span>
+          <DayPicker
+            value={cfg.trainingDays ?? []}
+            onChange={(trainingDays) => set({ trainingDays })}
+            sessions={sessionsPerWeek(cfg.layout)}
           />
         </div>
 

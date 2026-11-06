@@ -8,9 +8,9 @@ import {
   type CSSProperties,
 } from 'react';
 import { DiagnosticsOverlay } from '../diagnostics/DiagnosticsOverlay';
-import { HyperrideCanvas } from '../hyperride/HyperrideCanvas';
-import { resolveWorld } from '../hyperride/world-options';
-import type { FrameInput } from '../hyperride/world';
+import { WorldCanvas } from '../world/WorldCanvas';
+import { resolveWorld } from '../world/world-options';
+import type { FrameInput } from '../world/world';
 import { useMusicDirector } from '../music/useMusicDirector';
 import { Toast, ToastStack } from '../ui/Toast';
 import { getSettingsSnapshot } from '../data/useSettings';
@@ -114,11 +114,11 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const lastInputMs = useLastInput(FOCUS_INPUT_HOLD_MS);
 
   const hasPlayers = runtime.players.length > 0;
-  const wantsHyperride = runtime.config.background === 'hyperride';
+  const wantsWorld = runtime.config.background === 'hyperride';
   // WebGL missing or the world failed to start: Basic (dark) for the rest of the session.
-  const [hyperrideFailed, setHyperrideFailed] = useState(false);
+  const [worldFailed, setWorldFailed] = useState(false);
   const [unavailableDismissed, setUnavailableDismissed] = useState(false);
-  const hyperride = wantsHyperride && !hyperrideFailed;
+  const world = wantsWorld && !worldFailed;
   // Automatic quality switched to low for this session (the canvas reports it once).
   const [autoLowered, setAutoLowered] = useState(false);
   const [autoToastDismissed, setAutoToastDismissed] = useState(false);
@@ -140,8 +140,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const [youtubeFailure, setYoutubeFailure] = useState<YoutubeFailure | undefined>();
   const [youtubeToastDismissed, setYoutubeToastDismissed] = useState(false);
   const youtube = youtubeFailure === undefined ? youtubeTarget : null;
-  const wantsOverlay = wantsHyperride || wantsYoutube;
-  const overlay = hyperride || youtube !== null;
+  const wantsOverlay = wantsWorld || wantsYoutube;
+  const overlay = world || youtube !== null;
   const onYoutubeFail = useCallback((reason: YoutubeFailure) => setYoutubeFailure(reason), []);
   const [kind, setKind] = useState<LayoutKind>(() =>
     layoutKindOf(runtime.config.hud, runtime.config.background),
@@ -380,7 +380,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     const url = bg === 'youtube' ? youtubeUrl : undefined;
     if (bg === 'youtube' && !url) return;
     // A fresh choice gets a fresh try: earlier failures belonged to the previous background.
-    setHyperrideFailed(false);
+    setWorldFailed(false);
     setUnavailableDismissed(false);
     setYoutubeFailure(undefined);
     setYoutubeToastDismissed(false);
@@ -515,22 +515,22 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       data-testid="training-screen"
       data-theme={wantsOverlay || !tiled ? 'dark' : settings.basicTheme}
       data-status={status}
-      data-background={hyperride ? 'hyperride' : youtube !== null ? 'youtube' : 'basic'}
+      data-background={world ? 'hyperride' : youtube !== null ? 'youtube' : 'basic'}
       data-material={overlay ? 'glass' : 'solid'}
       data-cursor-hidden={hideControls}
       className={`${styles.root} ${hideControls ? styles.noCursor : ''}`}
       style={rootStyle}
     >
-      {hyperride ? (
+      {world ? (
         <>
-          <HyperrideCanvas
+          <WorldCanvas
             getFrameInput={getFrameInput}
             quality={settings.hyperrideQuality}
             onAutoLowered={() => setAutoLowered(true)}
             world={resolveWorld(worldId)}
             viewOffsetX={renderKind === 'column' && !playersOn ? COLUMN_VIEW_OFFSET : 0}
             {...(motionOn ? { onSway } : {})}
-            onUnavailable={() => setHyperrideFailed(true)}
+            onUnavailable={() => setWorldFailed(true)}
           />
           {focusOn && <FocusBadge view={view} active={!hudShown} reducedMotion={reducedMotion} />}
           {hudLayer}
@@ -560,9 +560,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         </>
       )}
       <ToastStack>
-        {wantsHyperride && hyperrideFailed && !unavailableDismissed && (
+        {wantsWorld && worldFailed && !unavailableDismissed && (
           <Toast
-            message={t('hyperride.unavailable')}
+            message={t('world.unavailable')}
             onClose={() => setUnavailableDismissed(true)}
           />
         )}
@@ -596,11 +596,11 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       {settings.diagnostics === true && (
         <DiagnosticsOverlay
           scene={
-            hyperride
-              ? `${t('setup.backgroundHyperride')} / ${resolveWorld(worldId)}`
+            world
+              ? `${t('setup.backgroundWorld')} / ${resolveWorld(worldId)}`
               : t(youtube !== null ? 'setup.backgroundYoutube' : 'setup.backgroundBasic')
           }
-          quality={hyperride ? effectiveQuality : undefined}
+          quality={world ? effectiveQuality : undefined}
         />
       )}
       <EdgeFlash trigger={flash} color={view.color} reducedMotion={reducedMotion} />

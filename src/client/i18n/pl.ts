@@ -94,7 +94,7 @@ export const pl: Messages = {
     background: 'Tło',
     world: 'Świat',
     backgroundBasic: 'Basic',
-    backgroundHyperride: 'World',
+    backgroundWorld: 'World',
     backgroundYoutube: 'Film z YouTube',
     youtubeUrl: 'Link do YouTube',
     youtubeHint: 'Link watch, youtu.be, Shorts lub embed. Czas startu (t=1m30s) jest uwzględniany.',
@@ -362,6 +362,11 @@ export const pl: Messages = {
     layout: 'Sesje w tygodniu',
     layoutProgresFreestyle: 'Progres + Freestyle',
     layoutDoubleProgres: '2 × Progres',
+    trainingDays: 'Dni treningowe (opcjonalnie)',
+    trainingDaysNone: 'Bez stałych dni. Kalendarz rozłoży {n} jazdy w tygodniu.',
+    trainingDaysSet: 'Jazdy wypadną w te dni.',
+    trainingDaysMismatch:
+      'Plan ma {n} jazdy w tygodniu. Nadmiarowe dni pomijamy, brakujące uzupełniamy.',
     layoutPlusFreestyle: '+ 3. Freestyle',
     startFrom: 'Zacznij od',
     startFirst: 'Tygodnia 1',
@@ -654,9 +659,6 @@ export const pl: Messages = {
     embedBlocked: 'Tego filmu nie można osadzić. Używam tła Basic.',
     unavailable: 'Nie można odtworzyć filmu. Używam tła Basic.',
   },
-  hyperride: {
-    unavailable: 'Ten komputer nie obsługuje WebGL. Używam tła Basic.',
-  },
   welcome: {
     title: 'Witaj w HyperCycling',
     lead: 'Jak chcesz dziś jechać?',
@@ -755,6 +757,7 @@ export const pl: Messages = {
     escape: 'Pauza i pytanie o zakończenie treningu',
   },
   world: {
+    unavailable: 'Ten komputer nie obsługuje WebGL. Używam tła Basic.',
     neonTunnel: 'Neonowy tunel',
     road: 'Droga',
     scenes: 'Sceny',

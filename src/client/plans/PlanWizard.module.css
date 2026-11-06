@@ -523,3 +523,7 @@
     min-width: 0;
   }
 }
+
+.dayPick {
+  margin-top: 0.875rem;
+}

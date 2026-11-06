@@ -289,7 +289,7 @@ describe('FTP test guide', () => {
 });
 
 describe('Training', () => {
-  it('saves sounds, coach and Hyperride quality', async () => {
+  it('saves sounds, coach and World quality', async () => {
     renderScreen();
     const tr = await section('training');
     fireEvent.click(within(tr).getByRole('switch', { name: 'Sounds' }));
@@ -302,7 +302,7 @@ describe('Training', () => {
     await waitFor(() => expect(db.settings?.hyperrideQuality).toBe('auto'));
   });
 
-  it('saves the Hyperride world', async () => {
+  it('saves the World world', async () => {
     renderScreen();
     const tr = await section('training');
     expect(within(tr).getByRole('radio', { name: 'Neon tunnel' })).toBeChecked();
