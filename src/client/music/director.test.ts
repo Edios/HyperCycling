@@ -236,6 +236,21 @@ describe('music director: cue cuts', () => {
   });
 });
 
+describe('music director: gap between songs', () => {
+  it('uses the short switch fade between two songs', async () => {
+    const quick = createFakeMusicProvider({ fadeDurationMs: 300 });
+    make({
+      cues: [cue('a', track('A')), cue('b', track('B'))],
+      getProvider: () => quick,
+      switchFadeMs: 300,
+    }).start();
+    await runAt(0);
+    await runAt(100);
+    await advance(300);
+    expect(quick.log).toEqual(['play:A@0', 'fadeOut:300', 'play:B@0']);
+  });
+});
+
 describe('music director: pause, resume and seek', () => {
   it('pauses with the engine and resumes the same track', async () => {
     make({ cues: [cue('a', track('A'))] }).start();
