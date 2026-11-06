@@ -357,3 +357,85 @@
   outline: 2px solid var(--act);
   outline-offset: 2px;
 }
+
+.welcome {
+  grid-column: 1 / -1;
+  max-width: 40rem;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+.welcome h1 {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.welcomeLead {
+  margin: 0 0 1.5rem;
+  color: var(--mut);
+  font-size: 1.25rem;
+}
+
+.paths {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.path {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--s2);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.path b {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.path span {
+  color: var(--mut);
+  font-size: 1.0625rem;
+  line-height: 1.35;
+}
+
+.pathMain {
+  border-color: var(--acc);
+  background: var(--acc);
+  color: var(--on-acc);
+}
+
+.pathMain span {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.pathSoon {
+  border-style: dashed;
+  background: transparent;
+  opacity: 0.7;
+}
+
+a.path:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .welcome {
+    margin: 1.5rem auto;
+  }
+
+  .welcome h1 {
+    font-size: 2.25rem;
+  }
+}

@@ -41,30 +41,48 @@ function setupUrl(
 export function PlanTab() {
   const active = useActivePlan();
   if (active.state === 'loading') return <div className={styles.page} aria-busy="true" />;
-  if (active.state === 'none') return <EmptyState kind="none" />;
+  if (active.state === 'none') return <Welcome />;
   return <ActivePlanView plan={active.plan} progress={active.progress} />;
 }
 
-function EmptyState({ kind }: { kind: 'none' | 'complete' }) {
+/** First-run screen: three ways to start instead of an empty plan. */
+function Welcome() {
   const t = useT();
   return (
-    <div className={styles.empty} data-testid={kind === 'none' ? 'plan-empty' : 'plan-complete'}>
-      <h1>{kind === 'none' ? t('plan.noPlanTitle') : t('plan.complete')}</h1>
-      <p>{kind === 'none' ? t('plan.noPlanBody') : t('plan.completeBody')}</p>
-      {kind === 'none' ? (
-        <div className={styles.ctas}>
-          <Link to="/plans/wizard" className={styles.cta}>
-            {t('plan.build')}
-          </Link>
-          <Link to="/plans" className={styles.ctaSecondary}>
-            {t('plan.browse')}
-          </Link>
-        </div>
-      ) : (
-        <Link to="/plans" className={styles.cta}>
-          {t('plan.choose')}
+    <div className={styles.welcome} data-testid="plan-empty">
+      <h1>{t('welcome.title')}</h1>
+      <p className={styles.welcomeLead}>{t('welcome.lead')}</p>
+      <div className={styles.paths}>
+        <Link to="/plans/wizard" className={`${styles.path} ${styles.pathMain}`}>
+          <b>{t('plan.build')}</b>
+          <span>{t('welcome.buildBody')}</span>
         </Link>
-      )}
+        <Link to="/plans" className={styles.path}>
+          <b>{t('welcome.browse')}</b>
+          <span>{t('welcome.browseBody')}</span>
+        </Link>
+        <Link to="/freestyle" className={styles.path}>
+          <b>{t('welcome.ride')}</b>
+          <span>{t('welcome.rideBody')}</span>
+        </Link>
+        <div className={`${styles.path} ${styles.pathSoon}`} data-testid="welcome-experience">
+          <b>{t('welcome.experience')}</b>
+          <span>{t('welcome.experienceBody')}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  const t = useT();
+  return (
+    <div className={styles.empty} data-testid="plan-complete">
+      <h1>{t('plan.complete')}</h1>
+      <p>{t('plan.completeBody')}</p>
+      <Link to="/plans" className={styles.cta}>
+        {t('plan.choose')}
+      </Link>
     </div>
   );
 }
@@ -179,7 +197,7 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
         </div>
 
         {next === null ? (
-          <EmptyState kind="complete" />
+          <EmptyState />
         ) : (
           <Card hero className={styles.next} data-testid="next-session">
             <div className={styles.mut}>{t('plan.next', { week: next.week })}</div>
