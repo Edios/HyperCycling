@@ -102,7 +102,7 @@ describe('buildWorldFrame', () => {
     expect(f.fovTarget).toBe(70);
     expect(f.slopeTarget).toBe(0);
     expect(f.effortGlow).toBeCloseTo(0.3, 10);
-    expect(f.effortColor).toBe('#2f6bff');
+    expect(f.effortColor).toBe('#35d07f');
   });
 
   it('sprint (rpm ≥105 and effort ≥8) widens the field of view', () => {
@@ -130,7 +130,7 @@ describe('buildWorldFrame', () => {
     for (const status of ['idle', 'countdown', 'paused', 'finished'] as const) {
       const f = build({ status });
       expect(f.speedTarget).toBe(0);
-      expect(f.effortColor).toBe('#2f6bff');
+      expect(f.effortColor).toBe('#35d07f');
     }
   });
 
@@ -162,16 +162,16 @@ describe('buildWorldFrame', () => {
       // t = 10, speed 20: depth 0 → t 10 (blue); depth 1000 → t 60 (sprint red);
       // depth 1600 → t 90 (climb orange); far beyond the end → last block (green)
       const f = build({}, 20);
-      expect(f.colorAtDepth(0)).toBe('#2f6bff');
-      expect(f.colorAtDepth(999)).toBe('#2f6bff');
+      expect(f.colorAtDepth(0)).toBe('#35d07f');
+      expect(f.colorAtDepth(999)).toBe('#35d07f');
       expect(f.colorAtDepth(1000)).toBe('#ff4d4d');
       expect(f.colorAtDepth(1600)).toBe('#ff8c2a');
-      expect(f.colorAtDepth(100000)).toBe('#35d07f');
+      expect(f.colorAtDepth(100000)).toBe('#2f6bff');
     });
 
     it('when (nearly) stopped every ring shows the current block', () => {
       const f = build({}, 0.4);
-      expect(f.colorAtDepth(280)).toBe('#2f6bff');
+      expect(f.colorAtDepth(280)).toBe('#35d07f');
     });
 
     it('a ramp ahead is colored by its effort at arrival', () => {

@@ -4,10 +4,10 @@
 export const ZONE_COLORS: readonly string[] = [
   '#8fdcff',
   '#8fdcff',
-  '#2f6bff',
-  '#2f6bff',
   '#35d07f',
   '#35d07f',
+  '#2f6bff',
+  '#2f6bff',
   '#ffd23f',
   '#ff8c2a',
   '#ff4d4d',
