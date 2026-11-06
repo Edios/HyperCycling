@@ -141,3 +141,37 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* In the bottom sheet on phones: larger, easier-to-read stats. */
+@media (max-width: 760px) {
+  .nm {
+    font-size: 2rem;
+  }
+
+  .meta {
+    gap: 1.125rem;
+    font-size: 1.1875rem;
+    color: var(--fg);
+  }
+
+  .big {
+    height: 11rem;
+  }
+
+  .axis {
+    font-size: 0.9375rem;
+  }
+
+  .desc {
+    font-size: 1.125rem;
+  }
+
+  .music {
+    font-size: 1.0625rem;
+  }
+
+  .ride {
+    height: 3.5rem;
+    font-size: 1.3125rem;
+  }
+}
