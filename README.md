@@ -8,7 +8,7 @@
 [![Pages](https://github.com/Edios/HyperCycling/actions/workflows/pages.yml/badge.svg)](https://github.com/Edios/HyperCycling/actions/workflows/pages.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-### [Open the app](https://edios.github.io/HyperCycling/) &nbsp;|&nbsp; [User guide](docs/user-guide.md)
+### [Open the app](https://hypercycling.app/) &nbsp;|&nbsp; [User guide](docs/user-guide.md)
 
 <img src="docs/images/intro.gif" alt="HyperCycling intro" width="720">
 
@@ -34,7 +34,7 @@ No account, no install, no power meter. Pick a workout, press play, and ride.
 
 ## Run it in 30 seconds
 
-- **Browser:** open https://edios.github.io/HyperCycling/ and ride.
+- **Browser:** open https://hypercycling.app/ and ride.
 - **Locally** (Node 24+): `npm ci`, then `npm start`, then open http://127.0.0.1:5175 (use `127.0.0.1`, not `localhost`).
 
 ## Your data stays yours

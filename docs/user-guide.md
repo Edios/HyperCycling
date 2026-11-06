@@ -5,7 +5,7 @@ HyperCycling runs indoor-bike workouts on a screen in front of your bike: effort
 Two ways to run it, same app:
 
 - **Local**: `npm start` opens `http://127.0.0.1:5175`. Data lives in `data/spinning-tutor.db`, with a backup before each import.
-- **Browser**: https://edios.github.io/HyperCycling/. Data lives in the browser (IndexedDB); use Settings, Data to export it.
+- **Browser**: https://hypercycling.app/. Data lives in the browser (IndexedDB); use Settings, Data to export it.
 
 Best on 1920x1080 (minimum 1280x720).
 
