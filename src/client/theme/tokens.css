@@ -56,6 +56,8 @@
   --on-acc: #0b1206;
   --fg: #0d1424;
   --mut: #5d6679;
+  /* Quiet text on white: 5.8:1 (the dark-theme value is only 3.1:1 here). */
+  --dim: #5d6679;
   --glass: rgb(255 255 255 / 0.78);
 }
 
@@ -69,6 +71,26 @@ body {
 /* Select, setup and other chrome screens size in rem; 16px at the 1440x810 mockup size. */
 html {
   font-size: clamp(12px, min(calc(100vw / 90), calc(100vh / 50.625)), 28px);
+}
+
+/* Phones: the rem floor is 14px (not 12px) so body copy and meta stay readable. */
+@media (max-width: 760px) {
+  html {
+    font-size: max(14px, min(calc(100vw / 90), calc(100vh / 50.625)));
+  }
+}
+
+/* Touch: at least 44px tall for the controls that are tapped (WCAG 2.5.8 asks 24, guidance 44). */
+@media (pointer: coarse), (max-width: 760px) {
+  :where(
+    button,
+    select,
+    summary,
+    [role='tab'],
+    input:not([type='checkbox'], [type='radio'], [type='range'])
+  ) {
+    min-height: 44px;
+  }
 }
 
 /*

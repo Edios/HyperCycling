@@ -18,9 +18,8 @@ async function startRide(page: Page, background: RegExp): Promise<void> {
 /** Gap in px between the bottom of the effort name and the top of the badge (negative = overlap). */
 async function nameToBadgeGap(page: Page): Promise<number | null> {
   return page.evaluate(() => {
-    const box = document.querySelector('[data-testid="effort-ring-box"]');
     const badge = document.querySelector('[data-testid="position-badge"]');
-    const name = box?.nextElementSibling as HTMLElement | null;
+    const name = document.querySelector<HTMLElement>('[data-testid="effort-name"]');
     if (!name || !badge) return null;
     return badge.getBoundingClientRect().top - name.getBoundingClientRect().bottom;
   });

@@ -1,6 +1,6 @@
 import { resolveResistanceMode } from '../../domain/settings';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PLAN_SETTINGS, type Plan, type PlanProgress } from '../../domain/plan';
 import { FTP_TESTS, ftpTestKindOf, type FtpTestKind } from '../../domain/ftp-test';
 import type { Player } from '../../domain/player';
@@ -12,6 +12,7 @@ import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
 import { formatClock } from '../training/format';
 import { useLastResult, type LastResult } from '../training/last-result';
+import { NoticePage } from '../screens/NoticePage';
 import { AppBar } from '../ui/AppBar';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -35,7 +36,9 @@ import styles from './SummaryScreen.module.css';
 /** Route /summary. Redirects home when there is no finished session to show. */
 export function SummaryScreen() {
   const result = useLastResult((s) => s.result);
-  if (!result) return <Navigate to="/" replace />;
+  if (!result) {
+    return <NoticePage titleKey="notice.noResultTitle" bodyKey="notice.noResultBody" />;
+  }
   return <Summary result={result} />;
 }
 

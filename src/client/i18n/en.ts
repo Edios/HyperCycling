@@ -30,6 +30,7 @@ export const en = {
     blockOf: 'block {n} of {total}',
     cadenceCue: 'Cadence {rpm}!',
     ftpApprox: '~{pct}% FTP',
+    ftpHint: 'FTP = Functional Threshold Power, the power you can hold for about an hour',
     targetFromPlan: 'target from plan',
     finish: 'Finish',
     elapsedOf: '{elapsed} / {total}',
@@ -58,7 +59,7 @@ export const en = {
     endBody: 'Choose what happens with this ride.',
     endConfirm: 'End and see summary',
     endLeave: 'Leave without saving',
-    endResume: 'Cancel',
+    endResume: 'Back to workout',
     menu: 'Menu',
     quickSettings: 'Quick settings',
     quickClose: 'Close',
@@ -239,7 +240,8 @@ export const en = {
   },
   players: {
     title: 'Players',
-    subtitle: 'FTP is used to compute target watts. Update it after a test.',
+    subtitle:
+      'FTP is the power you can hold for about an hour; it sets the target watts. Update it after a test.',
     wattsHidden: 'Watts are hidden for your equipment, so FTP is optional.',
     add: '+ Add player',
     addSubmit: 'Add',
@@ -277,7 +279,8 @@ export const en = {
       ageUnit: 'years',
       inputPlaceholder: 'e.g. 185',
       agePlaceholder: 'e.g. 35',
-      ageHelp: "Don't know your max heart rate? Enter your age and we'll suggest one (age is not stored).",
+      ageHelp:
+        "Don't know your max heart rate? Enter your age and we'll suggest one (age is not stored).",
       fromAge: 'Suggest from age',
       skipHint: 'No monitor? Leave it empty and go on.',
     },
@@ -713,6 +716,14 @@ export const en = {
         'Controlling playback needs Spotify Premium and the Spotify app open on a device. Music never pauses the workout.',
     },
   },
+  notice: {
+    home: 'Back to the start page',
+    notFoundTitle: 'Page not found',
+    notFoundBody:
+      'This address does not lead to any screen. Go back to the start page and pick a workout.',
+    noResultTitle: 'No finished ride yet',
+    noResultBody: 'The summary appears after you finish a workout.',
+  },
   placeholder: { body: 'This screen arrives in a later update.', plans: 'Plans' },
   youtube: {
     embedBlocked: 'This video cannot be embedded. Using the Basic background.',
@@ -828,13 +839,13 @@ export const en = {
     autoLowered: 'Lowered quality for smoothness',
   },
   shortcuts: {
-    title: 'Controls - shortcuts',
+    title: 'Keyboard shortcuts',
     hint: 'Keys that work on the training screen.',
     toggle: 'Start, pause or resume',
     prev: 'Previous block',
     next: 'Next block',
     togglePlayers: 'Show or hide the players',
-    cycleLayout: 'Next layout (World)',
+    cycleLayout: 'Change screen layout',
     fullscreen: 'Full screen',
     mute: 'Mute or unmute sounds',
     escape: 'Pause and ask to end the workout',
@@ -920,8 +931,10 @@ export const en = {
         noKey: 'Add a GetSongBPM API key in Settings.',
         unauthorized: 'GetSongBPM rejected the API key. Check it in Settings.',
         rateLimited: 'GetSongBPM request limit reached. Try again later.',
-        forbidden: 'GetSongBPM refused the key or the account (403). Check the key in Settings; a new key is tried at once.',
-        blocked: 'GetSongBPM is not answering this key for now (up to an hour, or until you change the key). Type or tap the tempo meanwhile.',
+        forbidden:
+          'GetSongBPM refused the key or the account (403). Check the key in Settings; a new key is tried at once.',
+        blocked:
+          'GetSongBPM is not answering this key for now (up to an hour, or until you change the key). Type or tap the tempo meanwhile.',
         network: 'Cannot reach GetSongBPM.',
         badResponse: 'GetSongBPM sent an unexpected answer.',
       },

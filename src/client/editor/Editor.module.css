@@ -38,6 +38,17 @@
   white-space: nowrap;
 }
 
+.back {
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (pointer: coarse), (max-width: 760px) {
+  .back {
+    min-height: 44px;
+  }
+}
+
 .back:hover {
   color: var(--fg);
 }
@@ -85,6 +96,7 @@
 .icoBtn {
   width: 2.5rem;
   height: 2.5rem;
+  min-width: 44px;
   border: 0;
   background: transparent;
   color: var(--mut);

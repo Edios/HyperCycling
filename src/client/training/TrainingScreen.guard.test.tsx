@@ -100,7 +100,7 @@ describe('browser Back during a ride (QA F8)', () => {
     await act(async () => {
       await router.navigate(-1);
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Back to workout' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(router.state.location.pathname).toBe('/train');
     expect(useSessionStore.getState().state.status).toBe('running');

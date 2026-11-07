@@ -72,7 +72,7 @@ test('Escape asks before ending and goes to the summary', async ({ page }) => {
   await page.keyboard.press('Escape');
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('End workout?');
-  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await dialog.getByRole('button', { name: 'Back to workout' }).click();
   await expect(dialog).toBeHidden();
   await expect(status(page)).toHaveAttribute('data-status', 'running');
 

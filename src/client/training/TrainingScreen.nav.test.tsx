@@ -142,8 +142,8 @@ describe('exit dialog', () => {
       within(dialog)
         .getAllByRole('button')
         .map((b) => b.textContent),
-    ).toEqual(['End and see summary', 'Leave without saving', 'Cancel']);
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    ).toEqual(['End and see summary', 'Leave without saving', 'Back to workout']);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Back to workout' }));
     expect(useSessionStore.getState().state.status).toBe('running');
   });
 
@@ -165,7 +165,7 @@ describe('exit dialog', () => {
     await renderScreen();
     key('Escape');
     const dialog = screen.getByRole('dialog');
-    const names = ['Cancel', 'End and see summary', 'Leave without saving'];
+    const names = ['Back to workout', 'End and see summary', 'Leave without saving'];
     expect(document.activeElement).toHaveTextContent(names[0] as string);
     fireEvent.keyDown(dialog, { key: 'Tab' });
     expect(document.activeElement).toHaveTextContent(names[1] as string);
@@ -300,7 +300,7 @@ describe('focus and Space (QA F2, F3)', () => {
     const menu = screen.getByRole('button', { name: 'Menu' });
     menu.focus();
     fireEvent.click(menu);
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Back to workout' }));
     expect(menu).toHaveFocus();
   });
 

@@ -65,6 +65,11 @@
   font-size: 2.2vh;
 }
 
+/* Light Basic: the card sits on the dark scrim, so its text needs the full-strength colour. */
+:global([data-theme='light']) .prompt {
+  color: var(--fg);
+}
+
 .startButton {
   padding: 1.6vh 7vh;
   font-family: var(--font-display);

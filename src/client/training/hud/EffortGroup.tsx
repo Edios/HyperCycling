@@ -103,15 +103,19 @@ export function EffortGroup({
             </span>
           )}
         </div>
-        <div className={`${hud.lbl} ${styles.name}${wordInside ? ` ${styles.nameLow}` : ''}`}>
-          {label} · {t('training.ftpApprox', { pct: Math.round(ftpPct) })}
-        </div>
-        {hr && <div className={styles.hr}>{hr}</div>}
         {!wordInside && (
           <div className={`${hud.lbl} ${styles.caption}`} data-testid="effort-caption">
             {t('training.effort')}
           </div>
         )}
+        <div
+          data-testid="effort-name"
+          title={t('training.ftpHint')}
+          className={`${hud.lbl} ${styles.name}${wordInside ? ` ${styles.nameLow}` : ''}`}
+        >
+          {label} · {t('training.ftpApprox', { pct: Math.round(ftpPct) })}
+        </div>
+        {hr && <div className={styles.hr}>{hr}</div>}
         <div className={styles.posRow}>
           <PositionBadge position={position} />
           {step && step.count > 1 && (
