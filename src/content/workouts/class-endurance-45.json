@@ -1,0 +1,311 @@
+{
+  "id": "class-endurance-45",
+  "name": "Class: Endurance 45",
+  "description": "Seated tempo songs with small resistance steps and short standing breaks.",
+  "localized": {
+    "en": {
+      "name": "Class: Endurance 45",
+      "description": "Seated tempo songs with small resistance steps and short standing breaks."
+    },
+    "pl": {
+      "name": "Zajęcia: wytrzymałość 45",
+      "description": "Piosenki tempo na siedząco z małymi krokami oporu i krótkimi przerwami na stojąco."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "endurance", "tempo"],
+  "source": {
+    "kind": "builtin",
+    "file": "class-endurance-45.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "e-wu",
+      "durationSec": 360,
+      "from": {
+        "effort": 2
+      },
+      "to": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t1a",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t1b",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t1c",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 70,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t1d",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t2a",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 92,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t2b",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t2c",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 70,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t2d",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t3a",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t3b",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 88,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t3c",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 70,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t3d",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 88,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "steady",
+      "id": "e-r",
+      "durationSec": 180,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "ramp",
+      "id": "e-rl",
+      "durationSec": 360,
+      "from": {
+        "effort": 5
+      },
+      "to": {
+        "effort": 7
+      },
+      "rpm": 88,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t4a",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 92,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t4b",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t4c",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 70,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t4d",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "ramp",
+      "id": "e-cd",
+      "durationSec": 300,
+      "from": {
+        "effort": 4
+      },
+      "to": {
+        "effort": 1
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "format": "songs",
+  "songs": [
+    {
+      "id": "class-endurance-45-s1",
+      "firstBlockId": "e-wu",
+      "lastBlockId": "e-wu",
+      "hint": "Easy warm-up song, 115-125 BPM, about 6 min.",
+      "bpm": [115, 125]
+    },
+    {
+      "id": "class-endurance-45-s2",
+      "firstBlockId": "e-t1a",
+      "lastBlockId": "e-t1d",
+      "hint": "Mid-tempo song, 90-100 BPM, steady groove for a seated tempo.",
+      "bpm": [90, 100]
+    },
+    {
+      "id": "class-endurance-45-s3",
+      "firstBlockId": "e-t2a",
+      "lastBlockId": "e-t2d",
+      "hint": "Mid-tempo song, 90-100 BPM, keep the beat even.",
+      "bpm": [90, 100]
+    },
+    {
+      "id": "class-endurance-45-s4",
+      "firstBlockId": "e-t3a",
+      "lastBlockId": "e-t3d",
+      "hint": "Song with a lift in the second half, 90-100 BPM, push a little harder.",
+      "bpm": [90, 100]
+    },
+    {
+      "id": "class-endurance-45-s5",
+      "firstBlockId": "e-r",
+      "lastBlockId": "e-r",
+      "hint": "Light, spinning song, 100-110 BPM, to recover.",
+      "bpm": [100, 110]
+    },
+    {
+      "id": "class-endurance-45-s6",
+      "firstBlockId": "e-rl",
+      "lastBlockId": "e-rl",
+      "hint": "Rolling song, 90-100 BPM; resistance builds slowly across 6 min.",
+      "bpm": [90, 100]
+    },
+    {
+      "id": "class-endurance-45-s7",
+      "firstBlockId": "e-t4a",
+      "lastBlockId": "e-t4d",
+      "hint": "Familiar song, 90-100 BPM, the last tempo effort.",
+      "bpm": [90, 100]
+    },
+    {
+      "id": "class-endurance-45-s8",
+      "firstBlockId": "e-cd",
+      "lastBlockId": "e-cd",
+      "hint": "Slow cool-down song, 80-95 BPM, about 5 min.",
+      "bpm": [80, 95]
+    }
+  ],
+  "scaling": {
+    "warmupBlockId": "e-wu",
+    "cooldownBlockId": "e-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-07T00:00:00.000Z"
+}

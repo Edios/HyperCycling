@@ -1,0 +1,273 @@
+{
+  "id": "class-hills-45",
+  "name": "Class: Hills 45",
+  "description": "Steady incline, rolling hills, switchbacks and a long climb. Standing stays under 7 minutes.",
+  "localized": {
+    "en": {
+      "name": "Class: Hills 45",
+      "description": "Steady incline, rolling hills, switchbacks and a long climb. Standing stays under 7 minutes."
+    },
+    "pl": {
+      "name": "Zajęcia: podjazdy 45",
+      "description": "Podjazd stały, pagórki, serpentyny i długa wspinaczka. Stanie poniżej 7 minut."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "climb", "tempo"],
+  "source": {
+    "kind": "builtin",
+    "file": "class-hills-45.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "l-wu",
+      "durationSec": 420,
+      "from": {
+        "effort": 2
+      },
+      "to": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "ramp",
+      "id": "l-s1",
+      "durationSec": 150,
+      "from": {
+        "effort": 5
+      },
+      "to": {
+        "effort": 6
+      },
+      "rpm": 75,
+      "position": "seated",
+      "label": "@climb"
+    },
+    {
+      "kind": "ramp",
+      "id": "l-s2",
+      "durationSec": 150,
+      "from": {
+        "effort": 6
+      },
+      "to": {
+        "effort": 7
+      },
+      "rpm": 72,
+      "position": "seated",
+      "label": "@climb"
+    },
+    {
+      "kind": "repeat",
+      "id": "l-rh",
+      "times": 4,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "l-rha",
+          "durationSec": 45,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 70,
+          "position": "standing",
+          "cue": "@standUp"
+        },
+        {
+          "kind": "steady",
+          "id": "l-rhb",
+          "durationSec": 45,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 80,
+          "position": "seated",
+          "cue": "@sitDown"
+        }
+      ]
+    },
+    {
+      "kind": "repeat",
+      "id": "l-sw",
+      "times": 5,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "l-swa",
+          "durationSec": 45,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 75,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "l-swb",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 8
+          },
+          "rpm": 70,
+          "position": "standing",
+          "cue": "@attack"
+        },
+        {
+          "kind": "steady",
+          "id": "l-swc",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 4
+          },
+          "rpm": 95,
+          "position": "seated",
+          "cue": "@sitDown"
+        }
+      ]
+    },
+    {
+      "kind": "steady",
+      "id": "l-rf",
+      "durationSec": 240,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "l-c1",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 72,
+      "position": "seated",
+      "label": "@climb"
+    },
+    {
+      "kind": "steady",
+      "id": "l-c2",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 65,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "l-c3",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 72,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "steady",
+      "id": "l-c4",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 8
+      },
+      "rpm": 65,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "l-c5",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 8
+      },
+      "rpm": 70,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "ramp",
+      "id": "l-cd",
+      "durationSec": 300,
+      "from": {
+        "effort": 4
+      },
+      "to": {
+        "effort": 1
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "format": "songs",
+  "songs": [
+    {
+      "id": "class-hills-45-s1",
+      "firstBlockId": "l-wu",
+      "lastBlockId": "l-wu",
+      "hint": "Easy warm-up song, 115-125 BPM, about 7 min.",
+      "bpm": [115, 125]
+    },
+    {
+      "id": "class-hills-45-s2",
+      "firstBlockId": "l-s1",
+      "lastBlockId": "l-s2",
+      "hint": "Slow heavy song, 70-85 BPM; one pedal stroke per two beats on the incline.",
+      "bpm": [70, 85]
+    },
+    {
+      "id": "class-hills-45-s3",
+      "firstBlockId": "l-rh",
+      "lastBlockId": "l-rh",
+      "hint": "Song with a strong beat, 130-140 BPM; stand for 45 s, sit for 45 s.",
+      "bpm": [130, 140]
+    },
+    {
+      "id": "class-hills-45-s4",
+      "firstBlockId": "l-sw",
+      "lastBlockId": "l-sw",
+      "hint": "Song with a punchy chorus, 130-140 BPM; attack on the chorus.",
+      "bpm": [130, 140]
+    },
+    {
+      "id": "class-hills-45-s5",
+      "firstBlockId": "l-rf",
+      "lastBlockId": "l-rf",
+      "hint": "Light song, 100-110 BPM, to recover.",
+      "bpm": [100, 110]
+    },
+    {
+      "id": "class-hills-45-s6",
+      "firstBlockId": "l-c1",
+      "lastBlockId": "l-c5",
+      "hint": "Long build song, 70-85 BPM, the climb of the class, about 8 min.",
+      "bpm": [70, 85]
+    },
+    {
+      "id": "class-hills-45-s7",
+      "firstBlockId": "l-cd",
+      "lastBlockId": "l-cd",
+      "hint": "Slow cool-down song, 80-95 BPM, about 5 min.",
+      "bpm": [80, 95]
+    }
+  ],
+  "scaling": {
+    "warmupBlockId": "l-wu",
+    "cooldownBlockId": "l-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-07T00:00:00.000Z"
+}
