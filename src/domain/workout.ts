@@ -107,6 +107,8 @@ export interface Workout {
   songs?: SongSlot[];
   /** Background lane (M19c): a track of its own that takes over at the cooldown block. */
   cooldownTrack?: TrackRef;
+  /** Closing silence: the music fades out this many seconds before the end (announced by the coach). */
+  silenceLastSec?: number;
   scaling?: WorkoutScaling;
   schemaVersion: 1;
   updatedAt: string;
@@ -212,6 +214,7 @@ export const workoutSchema: z.ZodType<Workout> = z
     format: z.enum(['classic', 'songs']).optional(),
     songs: z.array(songSlotSchema).optional(),
     cooldownTrack: trackRefSchema.optional(),
+    silenceLastSec: z.number().int().min(10).max(180).optional(),
     scaling: z
       .object({
         warmupBlockId: z.string().min(1),
