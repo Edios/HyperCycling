@@ -55,6 +55,10 @@ export interface Settings {
    * (resolveResistanceMode gives 'smart'); fresh profiles start with 'knob'.
    */
   resistanceMode?: ResistanceMode;
+  /** True once the "your bike" step was finished or skipped; it is not offered again. */
+  bikeSetupDone?: boolean;
+  /** Knob positions the rider uses for S1..S5 (five ascending whole numbers); see domain/bike. */
+  knobSteps?: number[];
   /** Diagnostics mode: live FPS overlay while training, device info and performance test. */
   diagnostics?: boolean;
   /** Show heart-rate zones; undefined = on when the "me" player has an HRmax. */
@@ -102,6 +106,8 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   hyperrideQuality: z.enum(['high', 'low', 'auto']),
   hyperrideWorld: z.enum(WORLD_SETTING_IDS).catch(DEFAULT_WORLD_SETTING),
   resistanceMode: z.enum(RESISTANCE_MODES).optional().catch(undefined),
+  bikeSetupDone: z.boolean().optional(),
+  knobSteps: z.array(z.number().int().min(1).max(99)).length(5).optional().catch(undefined),
   diagnostics: z.boolean().optional(),
   showHrZones: z.boolean().optional(),
   activePlanId: z.string().optional(),
