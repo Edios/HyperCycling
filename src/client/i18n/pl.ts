@@ -772,6 +772,8 @@ export const pl: Messages = {
   coach: {
     attack: 'ATAK!',
     standUp: 'Wstań!',
+    addResistance: 'Za {s} s: dodaj opór → wysiłek {effort}',
+    reduceResistance: 'Za {s} s: zmniejsz opór → wysiłek {effort}',
     sitDown: 'Usiądź',
     cadenceUp: 'Szybciej!',
     cadenceDown: 'Wolniej',

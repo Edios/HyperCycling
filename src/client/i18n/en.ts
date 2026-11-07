@@ -772,6 +772,8 @@ export const en = {
     attack: 'ATTACK!',
     standUp: 'Stand up!',
     sitDown: 'Sit down',
+    addResistance: 'In {s} s: add resistance → effort {effort}',
+    reduceResistance: 'In {s} s: reduce resistance → effort {effort}',
     cadenceUp: 'Faster!',
     cadenceDown: 'Slower',
     sprint: 'Sprint!',

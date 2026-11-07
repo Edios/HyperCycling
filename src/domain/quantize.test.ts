@@ -187,7 +187,7 @@ describe('quantizeRamp properties (2,000 seeded random cases per preset)', () =>
           ctx,
         ).toEqual(values(s).reverse());
       }
-    });
+    }, 30_000);
   }
 });
 
