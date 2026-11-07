@@ -47,6 +47,25 @@ describe('exportToFile', () => {
 });
 
 describe('importFromFile', () => {
+  it('keeps the GetSongBPM key typed on this device (exports leave it out)', async () => {
+    const repos = await makeRepos();
+    await repos.replaceAll({
+      ...bundle(),
+      settings: { ...DEFAULT_SETTINGS, getSongBpmKey: 'LOCAL-KEY' },
+    });
+    const exported = await exportToFile(repos);
+    expect(await readBlobText(exported)).not.toContain('LOCAL-KEY');
+    const r = await importFromFile(repos, exported, { download: vi.fn() });
+    expect(r.ok).toBe(true);
+    expect((await repos.settings.get())?.getSongBpmKey).toBe('LOCAL-KEY');
+  });
+  it('does not invent a key when there is none', async () => {
+    const repos = await makeRepos();
+    await repos.replaceAll({ ...bundle(), settings: DEFAULT_SETTINGS });
+    const exported = await exportToFile(repos);
+    await importFromFile(repos, exported, { download: vi.fn() });
+    expect((await repos.settings.get())?.getSongBpmKey).toBeUndefined();
+  });
   it('rejects bad files with a reason, leaves data untouched, downloads nothing', async () => {
     const repos = await makeRepos();
     await repos.players.put({ id: 'old', name: 'Old', ftp: 200 });

@@ -1,13 +1,25 @@
 import type { TrackRef } from '../../../domain/workout';
 import type { BpmQuery } from './client';
 
-/** Brackets and "official video"-style noise that YouTube titles carry. */
-function clean(text: string): string {
-  return text
-    .replace(/[([{][^)\]}]*[)\]}]/g, ' ')
-    .replace(/\b(official|video|audio|lyrics?|hd|4k|remaster(ed)?)\b/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+/** Words that make a bracketed part or a "- suffix" a release note rather than part of the title. */
+const NOTE =
+  /\b(official|video|audio|lyrics?|hd|4k|remaster(ed)?|mono|stereo|visuali[sz]er|feat\.?|ft\.?|featuring|version|edit)\b/i;
+/** "- Remastered 2011", "- 2011 Remaster", "- Official Audio", "- Radio Edit", "- Single Version". */
+const NOTE_SUFFIX =
+  /^(\d{4}\s+)?(remaster(ed)?|official|lyrics?|audio|video|mono|stereo|single|radio|live)\b.*$/i;
+
+/**
+ * A song title without release notes: bracketed notes ("(Official Video)", "[HD]", "(feat. X)"),
+ * a trailing "- Remastered 2011" style suffix and a trailing "feat. X". Words are never cut from
+ * the middle of a title ("Video Killed the Radio Star" stays whole).
+ */
+export function cleanTitle(raw: string): string {
+  let title = raw.replace(/[([{][^)\]}]*[)\]}]/g, (group) => (NOTE.test(group) ? ' ' : group));
+  const dash = title.split(/\s[-–—]\s/);
+  while (dash.length > 1 && NOTE_SUFFIX.test((dash[dash.length - 1] as string).trim())) dash.pop();
+  title = dash.join(' - ');
+  title = title.replace(/\s+(feat\.?|ft\.?|featuring)\s.*$/i, '');
+  return title.replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -21,14 +33,17 @@ export function trackQuery(
   const raw = track.title.trim();
   if (!raw) return undefined;
   if (track.provider === 'spotify') {
-    return { title: raw, ...(track.artist ? { artist: track.artist.split(',')[0]?.trim() } : {}) };
+    const title = cleanTitle(raw);
+    if (!title) return undefined;
+    const artist = track.artist?.split(',')[0]?.trim();
+    return { title, ...(artist ? { artist } : {}) };
   }
-  const dash = raw.split(/\s[-–—]\s/);
-  if (dash.length >= 2) {
-    const artist = clean(dash[0] as string);
-    const title = clean(dash.slice(1).join(' - '));
+  const parts = raw.split(/\s[-–—]\s/);
+  if (parts.length >= 2) {
+    const artist = (parts[0] as string).trim();
+    const title = cleanTitle(parts.slice(1).join(' - '));
     if (title) return { title, ...(artist ? { artist } : {}) };
   }
-  const title = clean(raw);
+  const title = cleanTitle(raw);
   return title ? { title } : undefined;
 }

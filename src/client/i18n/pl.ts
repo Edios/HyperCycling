@@ -885,6 +885,7 @@ export const pl: Messages = {
       needKeyLink: 'Dodaj go w Ustawieniach',
       suggest: 'Znajdź pasujące utwory',
       suggesting: 'Szukam…',
+      newTab: 'otwiera się w nowej karcie',
       suggestNone: 'Nie znaleziono utworów w tym tempie.',
       suggestGroup: 'Ok. {bpm} BPM ({kind})',
       kind: {
@@ -896,7 +897,8 @@ export const pl: Messages = {
         noKey: 'Dodaj klucz API GetSongBPM w Ustawieniach.',
         unauthorized: 'GetSongBPM odrzucił klucz API. Sprawdź go w Ustawieniach.',
         rateLimited: 'Osiągnięto limit zapytań GetSongBPM. Spróbuj później.',
-        blocked: 'GetSongBPM chwilowo blokuje zapytania (ok. godziny). Na razie wpisz lub wystukaj tempo.',
+        forbidden: 'GetSongBPM odrzucił klucz lub konto (403). Sprawdź klucz w Ustawieniach; nowy klucz zadziała od razu.',
+        blocked: 'GetSongBPM chwilowo nie odpowiada na ten klucz (do godziny albo do zmiany klucza). Na razie wpisz lub wystukaj tempo.',
         network: 'Nie można połączyć się z GetSongBPM.',
         badResponse: 'GetSongBPM zwrócił nieoczekiwaną odpowiedź.',
       },

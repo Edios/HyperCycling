@@ -5,7 +5,7 @@ import {
   normalizeForMatch,
   type KeyValueStorage,
 } from './client';
-import { trackQuery } from './query';
+import { cleanTitle, trackQuery } from './query';
 
 function memoryStorage(): KeyValueStorage & { data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -228,9 +228,9 @@ describe('errors and limits', () => {
     expect(await kindOf(client.lookupBpm({ title: 'c' }))).toBe('ok');
   });
 
-  it('treats 403 as a block', async () => {
+  it('treats 403 as refused, then pauses', async () => {
     const { client, fetchMock } = setup(() => new Response('', { status: 403 }));
-    expect(await kindOf(client.lookupBpm({ title: 'a' }))).toBe('blocked');
+    expect(await kindOf(client.lookupBpm({ title: 'a' }))).toBe('forbidden');
     expect(await kindOf(client.lookupBpm({ title: 'b' }))).toBe('blocked');
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -297,5 +297,135 @@ describe('trackQuery', () => {
   });
   it('gives nothing for an untitled track', () => {
     expect(trackQuery({ provider: 'youtube', title: '' })).toBeUndefined();
+  });
+});
+
+describe('review fixes', () => {
+  const CACHE = 'hypercycling.getsongbpm.cache';
+  const kindOf = async (p: Promise<unknown>): Promise<string> =>
+    p.then(
+      () => 'ok',
+      (e: unknown) => (e instanceof GetSongBpmError ? e.kind : 'other'),
+    );
+
+  it('B1: a pause belongs to the refused key; another key is not blocked', async () => {
+    const storage = memoryStorage();
+    let status = 403;
+    const respond = () =>
+      Promise.resolve(status === 403 ? new Response('', { status }) : json({ search: [SONG] }));
+    const make = (apiKey: string) =>
+      createGetSongBpmClient({ apiKey, storage, fetch: respond as unknown as typeof fetch });
+    const bad = make('BAD-KEY');
+    expect(await kindOf(bad.lookupBpm({ title: 'Master of Puppets' }))).toBe('forbidden');
+    expect(await kindOf(bad.lookupBpm({ title: 'Master of Puppets' }))).toBe('blocked');
+    // the same key in a new client (reload) stays paused
+    expect(await kindOf(make('BAD-KEY').lookupBpm({ title: 'x' }))).toBe('blocked');
+    // a corrected key tries at once
+    status = 200;
+    expect(await kindOf(make('GOOD-KEY').lookupBpm({ title: 'Master of Puppets' }))).toBe('ok');
+    // the stored pause does not contain the key
+    expect(storage.data.get(CACHE)).not.toContain('BAD-KEY');
+  });
+
+  it('B1: 401 does not start a pause', async () => {
+    const { client, fetchMock } = setup(() => new Response('', { status: 401 }));
+    expect(await kindOf(client.lookupBpm({ title: 'a' }))).toBe('unauthorized');
+    expect(await kindOf(client.lookupBpm({ title: 'b' }))).toBe('unauthorized');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('B2: titles in other scripts and special letters do not share a cache entry', async () => {
+    const hits = (title: string, tempo: string) => ({
+      search: [{ ...SONG, title, tempo }],
+    });
+    const { client, fetchMock } = setup((url) => {
+      const lookup = url.searchParams.get('lookup') ?? '';
+      if (lookup.includes('Группа')) return json(hits('Группа крови', '120'));
+      if (lookup.includes('Кино')) return json(hits('Кино', '150'));
+      if (lookup.includes('Straße')) return json(hits('Straße', '100'));
+      return json({ search: { error: 'no result' } });
+    });
+    expect((await client.lookupBpm({ title: 'Группа крови' }))?.bpm).toBe(120);
+    expect((await client.lookupBpm({ title: 'Кино' }))?.bpm).toBe(150);
+    expect((await client.lookupBpm({ title: 'Straße' }))?.bpm).toBe(100);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(normalizeForMatch('Группа крови')).not.toBe(normalizeForMatch('Кино'));
+    expect(normalizeForMatch('Ørnen ß Đorđe Æon')).toBe('ornen ss dorde aeon');
+    expect(normalizeForMatch('東京事変')).toBe('東京事変');
+    expect(normalizeForMatch('Ελληνικά')).toBe('ελληνικα');
+  });
+
+  it('B3: no result with the same title means "not found", not another song', async () => {
+    const other = { ...SONG, title: 'Master of Puppets (Orchestral Cover)', tempo: '90' };
+    const { client } = setup(() => json({ search: [other] }));
+    expect(await client.lookupBpm({ title: 'Master of Puppets' })).toBeUndefined();
+  });
+
+  it('W5: damaged cache entries are ignored and asked again', async () => {
+    const storage = memoryStorage();
+    storage.setItem(
+      CACHE,
+      JSON.stringify({
+        entries: {
+          's:master of puppets|': {
+            at: Date.now(),
+            ttl: 1e12,
+            v: { title: 'x', bpm: 120, url: 'javascript:alert(1)' },
+          },
+          't:180:10': { at: Date.now(), ttl: 1e12, v: 'not a list' },
+          's:junk|': 42,
+        },
+      }),
+    );
+    const fetchMock = vi.fn(() => Promise.resolve(json({ search: [SONG], tempo: [] })));
+    const client = createGetSongBpmClient({
+      apiKey: 'k',
+      storage,
+      fetch: fetchMock as unknown as typeof fetch,
+    });
+    expect((await client.lookupBpm({ title: 'Master of Puppets' }))?.url).toBe(SONG.uri);
+    expect(await client.findByBpm(180, 10)).toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('W5: unparseable cache text is treated as empty', async () => {
+    const storage = memoryStorage();
+    storage.setItem(CACHE, '{not json');
+    const { client } = setup(() => json({ search: [SONG] }));
+    expect((await client.lookupBpm({ title: 'Master of Puppets' }))?.bpm).toBe(220);
+    const own = createGetSongBpmClient({
+      apiKey: 'k',
+      storage,
+      fetch: (() => Promise.resolve(json({ search: [SONG] }))) as unknown as typeof fetch,
+    });
+    expect((await own.lookupBpm({ title: 'Master of Puppets' }))?.bpm).toBe(220);
+  });
+});
+
+describe('cleanTitle / trackQuery (W1)', () => {
+  it('keeps words that are part of the title', () => {
+    expect(cleanTitle('Video Killed the Radio Star')).toBe('Video Killed the Radio Star');
+    expect(cleanTitle('HD Version of Me')).toBe('HD Version of Me');
+    expect(cleanTitle('Live and Let Die')).toBe('Live and Let Die');
+    expect(cleanTitle('Official Secrets')).toBe('Official Secrets');
+  });
+  it('drops release notes only where they are notes', () => {
+    expect(cleanTitle('Zombie (Official Video HD)')).toBe('Zombie');
+    expect(cleanTitle('Song [4K Remastered]')).toBe('Song');
+    expect(cleanTitle('Song - Remastered 2011')).toBe('Song');
+    expect(cleanTitle('Song - 2011 Remaster')).toBe('Song');
+    expect(cleanTitle('Song (feat. Someone)')).toBe('Song');
+    expect(cleanTitle('Song feat. Someone Else')).toBe('Song');
+    expect(cleanTitle('Song (Live at Wembley)')).toBe('Song (Live at Wembley)');
+    expect(cleanTitle('Song - Radio Edit')).toBe('Song');
+  });
+  it('cleans Spotify titles too and keeps the first artist', () => {
+    expect(
+      trackQuery({
+        provider: 'spotify',
+        title: 'Video Killed the Radio Star - Remastered 2011',
+        artist: 'The Buggles, Other',
+      }),
+    ).toEqual({ title: 'Video Killed the Radio Star', artist: 'The Buggles' });
   });
 });

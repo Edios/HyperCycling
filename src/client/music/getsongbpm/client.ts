@@ -11,7 +11,7 @@ export const GETSONGBPM_BASE = 'https://api.getsong.co';
 export const GETSONGBPM_SITE = 'https://getsongbpm.com';
 
 export type GetSongBpmErrorKind =
-  'no-key' | 'unauthorized' | 'rate-limited' | 'blocked' | 'network' | 'bad-response';
+  'no-key' | 'unauthorized' | 'rate-limited' | 'forbidden' | 'blocked' | 'network' | 'bad-response';
 
 export class GetSongBpmError extends Error {
   constructor(readonly kind: GetSongBpmErrorKind) {
@@ -72,8 +72,10 @@ interface CacheEntry {
 }
 interface CacheFile {
   entries: Record<string, CacheEntry>;
-  /** The API refused us; no requests before this time. */
+  /** The API refused us; no requests before this time (only for the key named in blockedFor). */
   blockedUntil?: number;
+  /** Fingerprint of the key that was refused; another key is not blocked. Not the key itself. */
+  blockedFor?: string;
 }
 
 function defaultStorage(): KeyValueStorage | undefined {
@@ -84,14 +86,30 @@ function defaultStorage(): KeyValueStorage | undefined {
   }
 }
 
+/** Lowercase letters and digits of any script; accents folded; letters NFKD cannot split mapped. */
 export function normalizeForMatch(text: string): string {
   return text
     .toLowerCase()
-    .replace(/ł/g, 'l')
+    .replace(
+      /[łøđðþßæœ]/g,
+      (c) => ({ ł: 'l', ø: 'o', đ: 'd', ð: 'd', þ: 'th', ß: 'ss', æ: 'ae', œ: 'oe' })[c] ?? c,
+    )
     .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\p{M}+/gu, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
+}
+
+/** Cache identity of a text: its normal form, or the lowercased text when nothing letter-like is left. */
+function identity(text: string): string {
+  return normalizeForMatch(text) || text.trim().toLowerCase();
+}
+
+/** Short non-reversible fingerprint (not a secret store): tells keys apart without keeping one. */
+function fingerprint(key: string): string {
+  let h = 5381;
+  for (let i = 0; i < key.length; i++) h = ((h << 5) + h + key.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
 }
 
 function asRecord(v: unknown): Record<string, unknown> | undefined {
@@ -127,15 +145,36 @@ function toHit(item: unknown, kind: 'search' | 'tempo'): BpmHit | undefined {
   return { title, ...(artist ? { artist } : {}), bpm, url };
 }
 
-/** Prefers the result whose title (and artist) equals the query; else the first usable one. */
+/**
+ * The result with the same title as the query (artist breaks ties). A different title is a
+ * different song (cover, medley): no match is better than somebody else's tempo.
+ */
 function pickBest(hits: BpmHit[], query: BpmQuery): BpmHit | undefined {
-  const title = normalizeForMatch(query.title);
-  const artist = query.artist ? normalizeForMatch(query.artist) : undefined;
-  const sameTitle = hits.filter((h) => normalizeForMatch(h.title) === title);
+  const title = identity(query.title);
+  const artist = query.artist ? identity(query.artist) : undefined;
+  const sameTitle = hits.filter((h) => identity(h.title) === title);
   const exact = sameTitle.find(
-    (h) => artist !== undefined && h.artist && normalizeForMatch(h.artist) === artist,
+    (h) => artist !== undefined && h.artist && identity(h.artist) === artist,
   );
-  return exact ?? sameTitle[0] ?? hits[0];
+  return exact ?? sameTitle[0];
+}
+
+function validHit(v: unknown): v is BpmHit {
+  const o = asRecord(v);
+  return (
+    o !== undefined &&
+    typeof o.title === 'string' &&
+    o.title !== '' &&
+    (o.artist === undefined || typeof o.artist === 'string') &&
+    parseTempo(o.bpm) === o.bpm &&
+    safeUrl(o.url) === o.url
+  );
+}
+
+/** A cached value is used only when it has the shape its key promises (single hit/miss or a list). */
+function validCached(key: string, v: unknown): boolean {
+  if (key.startsWith('t:')) return Array.isArray(v) && v.every(validHit);
+  return v === null || validHit(v);
 }
 
 export function createGetSongBpmClient(opts: ClientOptions): GetSongBpmClient {
@@ -146,16 +185,31 @@ export function createGetSongBpmClient(opts: ClientOptions): GetSongBpmClient {
   const timeoutMs = opts.timeoutMs ?? 8_000;
   const apiKey = opts.apiKey.trim();
   const sent: number[] = [];
+  const keyId = fingerprint(apiKey);
 
   const readFile = (): CacheFile => {
     try {
       const raw = storage?.getItem(CACHE_KEY);
-      const parsed = raw ? (JSON.parse(raw) as unknown) : undefined;
-      const entries = asRecord(asRecord(parsed)?.entries);
-      const blockedUntil = asRecord(parsed)?.blockedUntil;
+      const parsed = asRecord(raw ? (JSON.parse(raw) as unknown) : undefined);
+      const entries: Record<string, CacheEntry> = {};
+      for (const [k, e] of Object.entries(asRecord(parsed?.entries) ?? {})) {
+        const o = asRecord(e);
+        if (
+          o &&
+          typeof o.at === 'number' &&
+          typeof o.ttl === 'number' &&
+          'v' in o &&
+          validCached(k, o.v)
+        ) {
+          entries[k] = { at: o.at, ttl: o.ttl, v: o.v };
+        }
+      }
+      const { blockedUntil, blockedFor } = parsed ?? {};
       return {
-        entries: (entries ?? {}) as Record<string, CacheEntry>,
-        ...(typeof blockedUntil === 'number' ? { blockedUntil } : {}),
+        entries,
+        ...(typeof blockedUntil === 'number' && typeof blockedFor === 'string'
+          ? { blockedUntil, blockedFor }
+          : {}),
       };
     } catch {
       return { entries: {} };
@@ -187,13 +241,17 @@ export function createGetSongBpmClient(opts: ClientOptions): GetSongBpmClient {
   const block = (): void => {
     const file = readFile();
     file.blockedUntil = now() + HOUR_MS;
+    file.blockedFor = keyId;
     writeFile(file);
   };
 
   async function request(path: string, params: Record<string, string>): Promise<unknown> {
     if (!apiKey) throw new GetSongBpmError('no-key');
-    const blockedUntil = readFile().blockedUntil;
-    if (blockedUntil !== undefined && now() < blockedUntil) throw new GetSongBpmError('blocked');
+    const file = readFile();
+    // A pause belongs to the key that was refused: a different or newly typed key may try at once.
+    if (file.blockedFor === keyId && file.blockedUntil !== undefined && now() < file.blockedUntil) {
+      throw new GetSongBpmError('blocked');
+    }
     const t = now();
     while (sent.length > 0 && t - (sent[0] as number) >= HOUR_MS) sent.shift();
     if (sent.length >= maxPerHour) throw new GetSongBpmError('rate-limited');
@@ -211,7 +269,7 @@ export function createGetSongBpmClient(opts: ClientOptions): GetSongBpmClient {
       if (res.status === 401) throw new GetSongBpmError('unauthorized');
       if (res.status === 429 || res.status === 403) {
         block();
-        throw new GetSongBpmError(res.status === 429 ? 'rate-limited' : 'blocked');
+        throw new GetSongBpmError(res.status === 429 ? 'rate-limited' : 'forbidden');
       }
       if (!res.ok) throw new GetSongBpmError('bad-response');
       try {
@@ -232,7 +290,7 @@ export function createGetSongBpmClient(opts: ClientOptions): GetSongBpmClient {
       const title = query.title.trim();
       if (!title) return undefined;
       const artist = query.artist?.trim();
-      const key = `s:${normalizeForMatch(title)}|${normalizeForMatch(artist ?? '')}`;
+      const key = `s:${identity(title)}|${identity(artist ?? '')}`;
       const hit = cached(key);
       if (hit) return hit.v === null ? undefined : (hit.v as BpmHit);
       const body = await request('/search/', {

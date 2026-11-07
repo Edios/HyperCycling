@@ -37,6 +37,7 @@ type SuggestState =
 
 const ERROR_KEY = {
   'no-key': 'editor.bpm.err.noKey',
+  forbidden: 'editor.bpm.err.forbidden',
   unauthorized: 'editor.bpm.err.unauthorized',
   'rate-limited': 'editor.bpm.err.rateLimited',
   blocked: 'editor.bpm.err.blocked',
@@ -68,8 +69,14 @@ export function BpmField({
   const client = useGetSongBpmClient();
   const [text, setText] = useState(track?.bpm === undefined ? '' : String(track.bpm));
   const [touched, setTouched] = useState(false);
-  const [lookup, setLookup] = useState<LookupState>({ status: 'idle' });
-  const [suggest, setSuggest] = useState<SuggestState>({ status: 'idle' });
+  const [lookupRaw, setLookup] = useState<LookupState>({ status: 'idle' });
+  const [suggestRaw, setSuggest] = useState<SuggestState>({ status: 'idle' });
+  const [lookupFor, setLookupFor] = useState<string>();
+  const [suggestFor, setSuggestFor] = useState<number>();
+  // Results belong to the track and cadence they were asked for; others show nothing.
+  const trackId = track ? `${track.provider}:${track.id}` : undefined;
+  const lookup: LookupState = lookupFor === trackId ? lookupRaw : { status: 'idle' };
+  const suggest: SuggestState = suggestFor === rpm ? suggestRaw : { status: 'idle' };
   const taps = useRef<number[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const committed = useRef(track?.bpm);
@@ -135,12 +142,19 @@ export function BpmField({
   const fetchBpm = async (): Promise<void> => {
     if (!client || !query || !track) return;
     const forId = `${track.provider}:${track.id}`;
+    const typedBefore = textRef.current;
+    setLookupFor(forId);
     setLookup({ status: 'loading' });
     try {
       const hit = await client.lookupBpm(query);
       if (!alive.current) return;
       const now = trackRef.current;
       if (!now || `${now.provider}:${now.id}` !== forId) return;
+      // The rider typed or tapped a value while we waited: theirs wins.
+      if (textRef.current !== typedBefore) {
+        setLookup({ status: 'idle' });
+        return;
+      }
       if (!hit) {
         setLookup({ status: 'notFound' });
         return;
@@ -177,11 +191,12 @@ export function BpmField({
 
   const findSongs = async (): Promise<void> => {
     if (!client) return;
+    setSuggestFor(rpm);
     setSuggest({ status: 'loading' });
     try {
       const groups: { kind: MatchKind; bpm: number; hits: BpmHit[] }[] = [];
       for (const target of targets) {
-        const hits = await client.findByBpm(target.bpm, 20);
+        const hits = await client.findByBpm(target.bpm, 10);
         groups.push({ ...target, hits: hits.slice(0, SUGGESTIONS_PER_GROUP) });
       }
       if (alive.current) setSuggest({ status: 'done', groups });
@@ -198,7 +213,12 @@ export function BpmField({
   const attribution = (
     <small className={styles.caption} data-testid="bpm-attribution">
       {t('editor.bpm.dataFrom')}{' '}
-      <a href={GETSONGBPM_SITE} target="_blank" rel="noopener noreferrer">
+      <a
+        href={GETSONGBPM_SITE}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${BRAND} (${t('editor.bpm.newTab')})`}
+      >
         {BRAND}
       </a>
     </small>
@@ -257,11 +277,6 @@ export function BpmField({
           {t('editor.bpm.error', { min: String(BPM_MIN), max: String(BPM_MAX) })}
         </small>
       )}
-      {track && lookup.status === 'notFound' && (
-        <small className={styles.caption} data-testid="bpm-fetch-notfound">
-          {t('editor.bpm.notFound')}
-        </small>
-      )}
       {track && lookup.status === 'error' && (
         <small role="alert" className={styles.error} data-testid="bpm-fetch-error">
           {t(ERROR_KEY[lookup.kind])}
@@ -300,35 +315,52 @@ export function BpmField({
           {t(ERROR_KEY[suggest.kind])}
         </small>
       )}
-      {suggest.status === 'done' && (
-        <div data-testid="bpm-suggestions">
-          {suggest.groups.every((g) => g.hits.length === 0) && (
-            <small className={styles.caption}>{t('editor.bpm.suggestNone')}</small>
-          )}
-          {suggest.groups
-            .filter((g) => g.hits.length > 0)
-            .map((g) => (
-              <div key={g.kind}>
-                <small className={styles.groupLabel}>
-                  {t('editor.bpm.suggestGroup', {
-                    bpm: String(g.bpm),
-                    kind: t(`editor.bpm.kind.${g.kind}`),
-                  })}
-                </small>
-                <ul className={styles.suggestList}>
-                  {g.hits.map((h) => (
-                    <li key={h.url}>
-                      <a href={h.url} target="_blank" rel="noopener noreferrer">
-                        {h.title}
-                      </a>
-                      {`${h.artist ? ` – ${h.artist}` : ''} · ${h.bpm} BPM`}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-        </div>
-      )}
+      <div aria-live="polite" data-testid="bpm-status">
+        {(lookup.status === 'loading' || suggest.status === 'loading') && (
+          <small className={styles.caption}>
+            {lookup.status === 'loading' ? t('editor.bpm.fetching') : t('editor.bpm.suggesting')}
+          </small>
+        )}
+        {track && lookup.status === 'notFound' && (
+          <small className={styles.caption} data-testid="bpm-fetch-notfound">
+            {t('editor.bpm.notFound')}
+          </small>
+        )}
+        {suggest.status === 'done' && (
+          <div data-testid="bpm-suggestions">
+            {suggest.groups.every((g) => g.hits.length === 0) && (
+              <small className={styles.caption}>{t('editor.bpm.suggestNone')}</small>
+            )}
+            {suggest.groups
+              .filter((g) => g.hits.length > 0)
+              .map((g) => (
+                <div key={g.kind}>
+                  <small className={styles.groupLabel}>
+                    {t('editor.bpm.suggestGroup', {
+                      bpm: String(g.bpm),
+                      kind: t(`editor.bpm.kind.${g.kind}`),
+                    })}
+                  </small>
+                  <ul className={styles.suggestList}>
+                    {g.hits.map((h) => (
+                      <li key={h.url}>
+                        <a
+                          href={h.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`${h.title} (${t('editor.bpm.newTab')})`}
+                        >
+                          {h.title}
+                        </a>
+                        {`${h.artist ? ` – ${h.artist}` : ''} · ${h.bpm} BPM`}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
 
       {!client && (track || rpm !== undefined) && (
         <small className={styles.caption} data-testid="bpm-needs-key">

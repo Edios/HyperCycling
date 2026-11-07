@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -174,7 +174,7 @@ describe('GetSongBPM lookup', () => {
     expect(screen.getByTestId('bpm-source')).toHaveTextContent('Source: GetSongBPM');
     expect(screen.getByTestId('bpm-match')).toHaveTextContent('Fits the cadence');
     const link = within(screen.getByTestId('bpm-attribution')).getByRole('link', {
-      name: 'GetSongBPM',
+      name: /GetSongBPM/,
     });
     expect(link).toHaveAttribute('href', 'https://getsongbpm.com');
     expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
@@ -210,6 +210,7 @@ describe('GetSongBPM lookup', () => {
 
   it.each([
     [401, 'rejected the API key'],
+    [403, 'refused the key'],
     [429, 'request limit'],
     [500, 'unexpected answer'],
   ])('shows a readable error for HTTP %i', async (status, text) => {
@@ -224,6 +225,72 @@ describe('GetSongBPM lookup', () => {
     await pinTrack();
     fireEvent.click(await screen.findByTestId('bpm-fetch'));
     expect(await screen.findByTestId('bpm-fetch-error')).toHaveTextContent('Cannot reach');
+  });
+});
+
+describe('GetSongBPM lookup: races and a11y', () => {
+  beforeEach(() => {
+    repo.settings = withKey;
+    mockYoutube();
+  });
+
+  it('N2: a value typed while the lookup is pending is not overwritten', async () => {
+    server.use(
+      http.get('https://api.getsong.co/search/', async () => {
+        await delay(150);
+        return HttpResponse.json({ search: [SEARCH_HIT] });
+      }),
+    );
+    const bpm = await pinTrack();
+    fireEvent.click(await screen.findByTestId('bpm-fetch'));
+    fireEvent.change(bpm, { target: { value: '176' } });
+    fireEvent.blur(bpm);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 400));
+    });
+    expect(bpm).toHaveValue('176');
+    expect(screen.queryByTestId('bpm-source')).not.toBeInTheDocument();
+    expect((await stored())?.bpm).toBe(176);
+  });
+
+  it('N1: results are announced through a polite live region', async () => {
+    server.use(
+      http.get('https://api.getsong.co/search/', () =>
+        HttpResponse.json({ search: { error: 'no result' } }),
+      ),
+    );
+    await pinTrack();
+    const region = screen.getByTestId('bpm-status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    fireEvent.click(await screen.findByTestId('bpm-fetch'));
+    await waitFor(() =>
+      expect(within(region).getByTestId('bpm-fetch-notfound')).toBeInTheDocument(),
+    );
+  });
+
+  it('N1: suggestions are cleared when the cadence changes', async () => {
+    server.use(
+      http.get('https://api.getsong.co/tempo/', () =>
+        HttpResponse.json({
+          tempo: [
+            {
+              song_id: 'a',
+              song_title: 'Song A',
+              song_uri: 'https://getsongbpm.com/song/a/a',
+              tempo: '180',
+            },
+          ],
+        }),
+      ),
+    );
+    await openEditor();
+    fireEvent.click(await screen.findByTestId('bpm-suggest'));
+    const list = await screen.findByTestId('bpm-suggestions');
+    expect(within(list).getAllByRole('link', { name: /opens in a new tab/ })).not.toHaveLength(0);
+    const rpm = screen.getByTestId('block-rpm');
+    fireEvent.change(rpm, { target: { value: '70' } });
+    fireEvent.blur(rpm);
+    await waitFor(() => expect(screen.queryByTestId('bpm-suggestions')).not.toBeInTheDocument());
   });
 });
 
@@ -258,7 +325,7 @@ describe('GetSongBPM suggestions', () => {
     expect(list).toHaveTextContent('Song x180');
     expect(list).toHaveTextContent('Band x180');
     expect(list).toHaveTextContent('half time');
-    expect(within(list).getByRole('link', { name: 'Song x180' })).toHaveAttribute(
+    expect(within(list).getByRole('link', { name: /Song x180/ })).toHaveAttribute(
       'href',
       'https://getsongbpm.com/song/song-x180/x180',
     );

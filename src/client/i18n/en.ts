@@ -885,6 +885,7 @@ export const en = {
       needKeyLink: 'Add it in Settings',
       suggest: 'Find matching songs',
       suggesting: 'Searching…',
+      newTab: 'opens in a new tab',
       suggestNone: 'No songs found at this tempo.',
       suggestGroup: 'About {bpm} BPM ({kind})',
       kind: {
@@ -896,7 +897,8 @@ export const en = {
         noKey: 'Add a GetSongBPM API key in Settings.',
         unauthorized: 'GetSongBPM rejected the API key. Check it in Settings.',
         rateLimited: 'GetSongBPM request limit reached. Try again later.',
-        blocked: 'GetSongBPM is blocking requests for now (about an hour). Type or tap the tempo meanwhile.',
+        forbidden: 'GetSongBPM refused the key or the account (403). Check the key in Settings; a new key is tried at once.',
+        blocked: 'GetSongBPM is not answering this key for now (up to an hour, or until you change the key). Type or tap the tempo meanwhile.',
         network: 'Cannot reach GetSongBPM.',
         badResponse: 'GetSongBPM sent an unexpected answer.',
       },
