@@ -1,3 +1,4 @@
+import { PositionBadge } from '../hud/PositionBadge';
 import type { CSSProperties } from 'react';
 import { EffortRing } from '../../brand';
 import { useT } from '../../i18n';
@@ -45,6 +46,7 @@ export function FocusRest({ view, active, reducedMotion }: FocusRestProps) {
             numberTestId="focus-rest-effort"
           />
           <div className={styles.name}>{label}</div>
+          <PositionBadge position={view.position} />
         </div>
         <div className={styles.timeBox}>
           <div className={styles.caption}>{t('training.timeLeft')}</div>

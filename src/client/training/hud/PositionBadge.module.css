@@ -1,0 +1,39 @@
+/* Position badge: icon + word. Sizes follow the HUD unit (--u) like the other groups. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(1.2 * var(--u, 8px));
+  padding: calc(0.7 * var(--u, 8px)) calc(1.8 * var(--u, 8px));
+  border-radius: 999px;
+  border: 2px solid var(--sub, #a4aec0);
+  color: var(--sub, #a4aec0);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--lbl, clamp(13px, calc(2.6 * var(--u, 8px)), 40px));
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.icon {
+  width: 1.5em;
+  height: 1.5em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon circle {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* Standing: the rider must act, so the badge is filled and bright. */
+.badge[data-position='standing'] {
+  background: #f4f6fa;
+  border-color: #f4f6fa;
+  color: #0b0e14;
+}

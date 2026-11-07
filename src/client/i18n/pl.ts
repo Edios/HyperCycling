@@ -20,6 +20,8 @@ export const pl: Messages = {
     rpm: 'obr/min',
     seated: 'Siedząc',
     standing: 'Stojąc',
+    position: 'Pozycja',
+    step: 'Krok {n}/{total}',
     blockOf: 'blok {n} z {total}',
     cadenceCue: 'Kadencja {rpm}!',
     ftpApprox: '~{pct}% FTP',

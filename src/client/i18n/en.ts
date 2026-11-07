@@ -18,6 +18,8 @@ export const en = {
     rpm: 'rpm',
     seated: 'Seated',
     standing: 'Standing',
+    position: 'Position',
+    step: 'Step {n}/{total}',
     blockOf: 'block {n} of {total}',
     cadenceCue: 'Cadence {rpm}!',
     ftpApprox: '~{pct}% FTP',

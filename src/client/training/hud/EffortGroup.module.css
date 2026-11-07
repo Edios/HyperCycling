@@ -46,6 +46,26 @@
   margin-top: calc(0.4 * var(--u));
 }
 
+.posRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: calc(1.2 * var(--u)) calc(1.8 * var(--u));
+}
+
+.step {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.nextPos {
+  grid-area: pos;
+  margin-top: calc(0.4 * var(--u));
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .dash {
   width: 100%;
 }
@@ -55,6 +75,7 @@
   grid-template-areas:
     'ring label'
     'ring time'
+    'ring pos'
     'ring desc';
   grid-template-columns: auto auto;
   align-items: center;

@@ -1,5 +1,4 @@
 import type { CSSProperties } from 'react';
-import type { Position } from '../../../domain/workout';
 import { useT } from '../../i18n';
 import { fitStyle } from './fit';
 import hud from './hud.module.css';
@@ -7,7 +6,6 @@ import styles from './MeasuresGroup.module.css';
 
 export interface MeasuresGroupProps {
   rpm?: number;
-  position?: Position;
   /** True when the bike does not measure cadence: the number is the plan's target. */
   isTarget: boolean;
   /** Fit the value to the width of a Classic tile. */
@@ -28,7 +26,6 @@ export interface MeasuresGroupProps {
  */
 export function MeasuresGroup({
   rpm,
-  position,
   isTarget,
   fit = false,
   section = false,
@@ -39,7 +36,6 @@ export function MeasuresGroup({
   const t = useT();
   const value = rpm === undefined ? '—' : String(Math.round(rpm));
   const notes: string[] = [];
-  if (position) notes.push(t(position === 'standing' ? 'training.standing' : 'training.seated'));
   if (isTarget && rpm !== undefined) notes.push(t('training.targetFromPlan'));
   const valueStyle: CSSProperties | undefined = fit ? fitStyle(value.length) : undefined;
   const classes = [
