@@ -437,7 +437,15 @@ describe('built-in workouts', () => {
       // Warm-up spin-up steady blocks are not part of the music script.
       const spin = new Set(w.blocks.filter((b) => b.id.includes('-wu')).map((b) => b.id));
       for (const id of ids.filter((x) => !spin.has(x))) {
-        expect(w.musicHints?.[id], `${w.id} block ${id}`).toMatch(/BPM/);
+        const slot = w.songs?.find((song) => {
+          const topIds = w.blocks.map((b) => b.id);
+          const owner = w.blocks.find(
+            (b) => b.id === id || (b.kind === 'repeat' && b.blocks.some((c) => c.id === id)),
+          );
+          const at = owner ? topIds.indexOf(owner.id) : -1;
+          return at >= topIds.indexOf(song.firstBlockId) && at <= topIds.indexOf(song.lastBlockId);
+        });
+        expect(w.musicHints?.[id] ?? slot?.hint, `${w.id} block ${id}`).toMatch(/BPM/);
       }
     }
   });
@@ -552,6 +560,51 @@ describe('built-in workouts', () => {
       expect(next?.kind === 'steady' ? next.durationSec : undefined, `after ${blocks[i]?.id}`).toBe(
         180,
       );
+    }
+  });
+});
+
+describe('class-format workouts', () => {
+  const classes = builtinWorkouts.filter((w) => w.format === 'songs');
+
+  it('ships at least four class workouts with slots covering every main block', () => {
+    expect(classes.length).toBeGreaterThanOrEqual(4);
+    for (const w of classes) {
+      expect(w.id.startsWith('class-'), w.id).toBe(true);
+      expect(w.songs?.length, w.id).toBeGreaterThanOrEqual(3);
+      expect(w.songs?.[0]?.firstBlockId, w.id).toBe(w.blocks[0]?.id);
+      expect(w.songs?.[w.songs.length - 1]?.lastBlockId, w.id).toBe(
+        w.blocks[w.blocks.length - 1]?.id,
+      );
+    }
+  });
+
+  it('states a position on every block and keeps standing within limits', () => {
+    for (const w of classes) {
+      let standing = 0;
+      for (const seg of flattenWorkout(w)) {
+        if (seg.position === 'standing') standing += seg.durationSec;
+      }
+      for (const b of w.blocks) {
+        for (const c of b.kind === 'repeat' ? b.blocks : [b]) {
+          expect(c.position, `${w.id} ${c.id}`).toBeDefined();
+          if (c.position === 'standing')
+            expect(c.durationSec, `${w.id} ${c.id}`).toBeLessThanOrEqual(60);
+        }
+      }
+      expect(standing, w.id).toBeLessThanOrEqual(7 * 60);
+    }
+  });
+
+  it('slot ranges are ordered and contiguous over all blocks', () => {
+    for (const w of classes) {
+      const order = w.blocks.map((b) => b.id);
+      let next = 0;
+      for (const song of w.songs ?? []) {
+        expect(order.indexOf(song.firstBlockId), `${w.id} ${song.id}`).toBe(next);
+        next = order.indexOf(song.lastBlockId) + 1;
+      }
+      expect(next, w.id).toBe(order.length);
     }
   });
 });

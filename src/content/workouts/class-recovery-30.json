@@ -1,0 +1,217 @@
+{
+  "id": "class-recovery-30",
+  "name": "Class: Recovery 30",
+  "description": "An easy seated ride: four calm songs with gentle cadence changes, no standing.",
+  "localized": {
+    "en": {
+      "name": "Class: Recovery 30",
+      "description": "An easy seated ride: four calm songs with gentle cadence changes, no standing."
+    },
+    "pl": {
+      "name": "Zajęcia: regeneracja 30",
+      "description": "Lekka jazda na siedząco: cztery spokojne piosenki z łagodnymi zmianami kadencji, bez stania."
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "recovery"],
+  "source": {
+    "kind": "builtin",
+    "file": "class-recovery-30.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "r-wu",
+      "durationSec": 300,
+      "from": {
+        "effort": 1
+      },
+      "to": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "r-1a",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-1b",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 100,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-1c",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-1d",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 100,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-2a",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-2b",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-2c",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-2d",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-3a",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-3b",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 100,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-3c",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "r-3d",
+      "durationSec": 100,
+      "intensity": {
+        "effort": 2
+      },
+      "rpm": 100,
+      "position": "seated"
+    },
+    {
+      "kind": "ramp",
+      "id": "r-cd",
+      "durationSec": 300,
+      "from": {
+        "effort": 2
+      },
+      "to": {
+        "effort": 1
+      },
+      "rpm": 80,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "format": "songs",
+  "songs": [
+    {
+      "id": "class-recovery-30-s1",
+      "firstBlockId": "r-wu",
+      "lastBlockId": "r-wu",
+      "hint": "Calm warm-up song, 90-100 BPM, about 5 min.",
+      "bpm": [90, 100]
+    },
+    {
+      "id": "class-recovery-30-s2",
+      "firstBlockId": "r-1a",
+      "lastBlockId": "r-1d",
+      "hint": "Relaxed groove, 90-105 BPM; the beat sets the cadence, up and down 10 rpm.",
+      "bpm": [90, 105]
+    },
+    {
+      "id": "class-recovery-30-s3",
+      "firstBlockId": "r-2a",
+      "lastBlockId": "r-2d",
+      "hint": "Soft mid-tempo song, 90-100 BPM, even and easy.",
+      "bpm": [90, 100]
+    },
+    {
+      "id": "class-recovery-30-s4",
+      "firstBlockId": "r-3a",
+      "lastBlockId": "r-3d",
+      "hint": "Relaxed groove, 90-105 BPM, same cadence waves as before.",
+      "bpm": [90, 105]
+    },
+    {
+      "id": "class-recovery-30-s5",
+      "firstBlockId": "r-cd",
+      "lastBlockId": "r-cd",
+      "hint": "Slow, quiet cool-down song, 70-90 BPM, about 5 min.",
+      "bpm": [70, 90]
+    }
+  ],
+  "scaling": {
+    "warmupBlockId": "r-wu",
+    "cooldownBlockId": "r-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-07T00:00:00.000Z"
+}
