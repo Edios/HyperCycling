@@ -1,3 +1,4 @@
+import { resolveResistanceMode } from '../../domain/settings';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { flattenWorkout } from '../../domain/segments';
@@ -35,8 +36,8 @@ export function WorkoutPreview({
   const [busy, setBusy] = useState(false);
   const { name, description } = localizedText(workout, lang);
   const segments = useMemo(
-    () => flattenWorkout(workout, settings.effortTable),
-    [workout, settings.effortTable],
+    () => flattenWorkout(workout, settings.effortTable, resolveResistanceMode(settings)),
+    [workout, settings],
   );
   const minutes = minutesOf(workout);
   const hints = musicHintsOf(workout);

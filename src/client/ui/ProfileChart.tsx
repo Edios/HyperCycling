@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { effortRow } from '../../domain/effort';
+import { effortRow, type EffortLevel } from '../../domain/effort';
 import type { Segment } from '../../domain/segments';
 import styles from './ProfileChart.module.css';
 
@@ -30,6 +30,26 @@ export function slopePolygons(
   };
 }
 
+/** Staircase for a stepped ramp: one horizontal run per step (efforts 1..10, bar height = `top`). */
+export function stairPolygons(
+  steps: readonly { offsetSec: number; durationSec: number; effort: number }[],
+  durationSec: number,
+  top: number,
+  edge = '3px',
+): { fill: string; edge: string } {
+  const pct = (v: number): string => `${Math.round(v * 1000) / 1000}%`;
+  const upper: [string, string][] = [];
+  for (const st of steps) {
+    const y = pct((1 - st.effort / top) * 100);
+    upper.push([pct((st.offsetSec / durationSec) * 100), y]);
+    upper.push([pct(((st.offsetSec + st.durationSec) / durationSec) * 100), y]);
+  }
+  const fillPts = [...upper, ['100%', '100%'], ['0%', '100%']].map(([x, y]) => `${x} ${y}`);
+  const back = [...upper].reverse().map(([x, y]) => `${x} calc(${y} + ${edge})`);
+  const edgePts = [...upper.map(([x, y]) => `${x} ${y}`), ...back];
+  return { fill: `polygon(${fillPts.join(', ')})`, edge: `polygon(${edgePts.join(', ')})` };
+}
+
 /** Contour profile of a workout: one glowing bar per segment, colored by its top effort. */
 export function ProfileChart({ segments, height, pastSec = 0, thick = false }: ProfileChartProps) {
   const edgeSize = thick ? '3px' : '2px';
@@ -41,11 +61,24 @@ export function ProfileChart({ segments, height, pastSec = 0, thick = false }: P
       style={{ height: typeof height === 'number' ? `${height}px` : height }}
     >
       {segments.map((s) => {
-        const topLevel = s.effortStart >= s.effortEnd ? s.effortStart : s.effortEnd;
-        const poly = slopePolygons(s.effortStart, s.effortEnd, edgeSize);
+        const topLevel =
+          s.steps && s.steps.length > 0
+            ? Math.max(...s.steps.map((x) => x.effort))
+            : s.effortStart >= s.effortEnd
+              ? s.effortStart
+              : s.effortEnd;
+        const poly =
+          s.steps && s.steps.length > 1
+            ? stairPolygons(
+                s.steps,
+                s.durationSec,
+                Math.max(...s.steps.map((x) => x.effort)),
+                edgeSize,
+              )
+            : slopePolygons(s.effortStart, s.effortEnd, edgeSize);
         const past = s.startSec + s.durationSec <= pastSec;
         const style: CSSProperties & Record<'--c', string> = {
-          '--c': effortRow(topLevel).color,
+          '--c': effortRow(topLevel as EffortLevel).color,
           flexGrow: s.durationSec,
           height: `${(topLevel / MAX_EFFORT) * 100}%`,
         };
