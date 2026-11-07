@@ -501,6 +501,14 @@ export const pl: Messages = {
       version: 'Wersja {version}',
       tagline: 'Trening na rowerze według skali wysiłku 1–10.',
       fonts: 'Czcionki: Barlow i Barlow Condensed, licencja SIL Open Font License 1.1.',
+      personalTitle: 'Tryb osobisty',
+      personal:
+        'HyperCycling służy do użytku osobistego. Muzyka gra przez Spotify lub YouTube na ich zasadach. Odtwarzanie jej dla grupy wymaga własnej licencji lokalu, a klucze i licencje Spotify ponosisz Ty.',
+      privacyTitle: 'Prywatność',
+      privacy:
+        'Twoje dane zostają w tej przeglądarce: bez kont, bez analityki, a tętno i FTP nigdy nigdzie nie są wysyłane. Dopiero gdy z nich korzystasz: Spotify dostaje polecenia odtwarzania, YouTube ładuje swój odtwarzacz, a Deezer i GetSongBPM dostają wpisany artystę i tytuł.',
+      trademarkTitle: 'Licencja i nazwa',
+      trademark: 'Kod jest na licencji MIT. Nazwa i logo HyperCycling nie są objęte tą licencją.',
     },
     general: {
       title: 'Ogólne',

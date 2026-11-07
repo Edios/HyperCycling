@@ -19,6 +19,14 @@ export function AboutSection() {
         </p>
         <p className={styles.note}>{t('settings.about.fonts')}</p>
       </div>
+      <div className={styles.aboutLegal} data-testid="about-legal">
+        <h3 className={styles.aboutLegalTitle}>{t('settings.about.personalTitle')}</h3>
+        <p className={styles.note}>{t('settings.about.personal')}</p>
+        <h3 className={styles.aboutLegalTitle}>{t('settings.about.privacyTitle')}</h3>
+        <p className={styles.note}>{t('settings.about.privacy')}</p>
+        <h3 className={styles.aboutLegalTitle}>{t('settings.about.trademarkTitle')}</h3>
+        <p className={styles.note}>{t('settings.about.trademark')}</p>
+      </div>
     </div>
   );
 }
