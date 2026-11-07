@@ -77,8 +77,11 @@ export function layoutLabelKey(kind: LayoutKind): MessageKey {
 }
 
 /** Every layout works on every background; only Basic's own tiles (Classic) stay on Basic. */
-export function layoutOptions(background: Background): LayoutOption[] {
-  return layoutChoices(background).map((value) => ({ value, labelKey: LAYOUT_LABEL[value] }));
+export function layoutOptions(background: Background, experience = false): LayoutOption[] {
+  return layoutChoices(background, experience).map((value) => ({
+    value,
+    labelKey: LAYOUT_LABEL[value],
+  }));
 }
 
 /** Whether the riders panel can be on: needs a selected rider and a layout with room for it. */
@@ -112,9 +115,12 @@ export function initialSelection(
 export function effectiveLayout(
   background: Background,
   chosen: LayoutKind | undefined,
+  experience = false,
 ): LayoutKind {
-  const fallback: LayoutKind = background === 'basic' ? 'classic' : 'immersive';
-  return chosen !== undefined && layoutChoices(background).includes(chosen) ? chosen : fallback;
+  const fallback: LayoutKind = background === 'basic' && !experience ? 'classic' : 'immersive';
+  return chosen !== undefined && layoutChoices(background, experience).includes(chosen)
+    ? chosen
+    : fallback;
 }
 
 /** The layout id to store; a layout without room for riders never stores a riders panel. */

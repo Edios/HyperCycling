@@ -88,3 +88,22 @@
     padding: 4vw;
   }
 }
+
+/* The panel sits over the corner HUD panels: while it is open they step back, so nothing reads
+   through it or competes with it. */
+:global(body:has([data-quick-settings])) :global([data-g]) {
+  opacity: 0.18;
+  transition: opacity 0.15s;
+}
+
+/* Short landscape phone: a compact panel (the keyboard hints are no use on a touch screen). */
+@media (orientation: landscape) and (max-height: 450px) {
+  .panel {
+    padding: 0.75rem 1rem 1rem;
+    gap: 0.25rem;
+  }
+
+  .hint:last-of-type {
+    display: none;
+  }
+}

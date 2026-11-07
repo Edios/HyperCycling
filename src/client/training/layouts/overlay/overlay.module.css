@@ -305,14 +305,18 @@
     --pad: calc(1.6 * var(--u)) calc(2 * var(--u));
   }
 
-  .root[data-layout='immersive'] > [data-g='W'] {
+  .root[data-layout='immersive'] > [data-g='W'],
+  .root[data-layout='cockpit'] > [data-g='W'],
+  .root[data-layout='tunnel'] > [data-g='W'] {
+    /* The fixed wing width of tall screens is too narrow for ring + NEXT side by side. */
     width: auto;
+    max-width: calc(100vw - 2 * var(--mx));
   }
 
   .root[data-layout='column'] .col {
     overflow-y: auto;
     gap: calc(0.8 * var(--u));
-    width: calc(46 * var(--u));
+    width: calc(50 * var(--u));
   }
 
   .root[data-layout='column'] .col > [data-g='W'] {

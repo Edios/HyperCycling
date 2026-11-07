@@ -830,6 +830,8 @@ export const pl: Messages = {
     start: 'Start',
     showScenario: 'Pokaż scenariusz',
     hideScenario: 'Ukryj scenariusz',
+    lite: 'Lite / bez wizualizacji',
+    liteHint: 'Zapas dla słabszego urządzenia: zwykły ekran, ten sam trening i muzyka.',
     setupBadge: 'Experience: {title}. Świat i jego sceny są już ustawione.',
     kicker: 'Experience',
     seeScenario: 'Zobacz scenariusz',

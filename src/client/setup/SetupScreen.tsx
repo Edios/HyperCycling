@@ -161,7 +161,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   const hasCues = cueCount > 0;
   const text = localizedText(workout, lang);
   const hasPlayers = selected.length > 0;
-  const layout = effectiveLayout(background, chosenHud);
+  const layout = effectiveLayout(background, chosenHud, experience !== undefined);
   const ridersOk = ridersAvailable(layout, hasPlayers);
   const ridersHint = ridersHintKey(layout, hasPlayers);
 
@@ -192,7 +192,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
     const config = buildConfig(
       {
         background,
-        hud: chosenHud,
+        hud: experience ? layout : chosenHud,
         showRiders,
         playerIds: selected,
         music,
@@ -280,35 +280,48 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
 
         <div className={styles.options}>
           <BikeCard onSkipRide={start} />
-          <section>
-            <h2 className={styles.label}>{t('setup.background')}</h2>
-            <div className={styles.tiles}>
-              {BACKGROUNDS.map((b) => {
-                const enabled = ENABLED_BACKGROUNDS.includes(b.value);
-                return (
-                  <button
-                    key={b.value}
-                    type="button"
-                    disabled={!enabled}
-                    aria-pressed={background === b.value}
-                    onClick={() => setBackground(b.value)}
-                    className={`${styles.tile} ${background === b.value ? styles.tileOn : ''}`}
-                  >
-                    <span className={`${styles.thumb} ${styles[`thumb_${b.value}`] ?? ''}`}>
-                      {b.value === 'basic' && <b>{peak}</b>}
-                      {b.value === 'youtube' && <span aria-hidden="true">▶</span>}
-                    </span>
-                    <span className={styles.tileName}>
-                      {t(b.labelKey)}
-                      {!enabled && <small> · {t('setup.soon')}</small>}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
+          {experience && (
+            <section>
+              <Toggle
+                label={t('experience.lite')}
+                checked={background === 'basic'}
+                onChange={(on) => setBackground(on ? 'basic' : 'hyperride')}
+              />
+              <p className={styles.note}>{t('experience.liteHint')}</p>
+            </section>
+          )}
 
-          {background === 'hyperride' && (
+          {!experience && (
+            <section>
+              <h2 className={styles.label}>{t('setup.background')}</h2>
+              <div className={styles.tiles}>
+                {BACKGROUNDS.map((b) => {
+                  const enabled = ENABLED_BACKGROUNDS.includes(b.value);
+                  return (
+                    <button
+                      key={b.value}
+                      type="button"
+                      disabled={!enabled}
+                      aria-pressed={background === b.value}
+                      onClick={() => setBackground(b.value)}
+                      className={`${styles.tile} ${background === b.value ? styles.tileOn : ''}`}
+                    >
+                      <span className={`${styles.thumb} ${styles[`thumb_${b.value}`] ?? ''}`}>
+                        {b.value === 'basic' && <b>{peak}</b>}
+                        {b.value === 'youtube' && <span aria-hidden="true">▶</span>}
+                      </span>
+                      <span className={styles.tileName}>
+                        {t(b.labelKey)}
+                        {!enabled && <small> · {t('setup.soon')}</small>}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {!experience && background === 'hyperride' && (
             <section>
               <h2 className={styles.label}>{t('setup.world')}</h2>
               <Segmented
@@ -320,7 +333,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
             </section>
           )}
 
-          {background === 'youtube' && (
+          {!experience && background === 'youtube' && (
             <section data-testid="youtube-section">
               <Field
                 label={t('setup.youtubeUrl')}
@@ -362,7 +375,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
             <Segmented
               label={t('setup.layout')}
               value={layout}
-              options={layoutOptions(background).map((o) => ({
+              options={layoutOptions(background, experience !== undefined).map((o) => ({
                 value: o.value,
                 label: t(o.labelKey),
               }))}

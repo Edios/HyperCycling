@@ -21,6 +21,8 @@ export interface QuickSettingsProps {
   background: Background;
   /** False when there is no link to play (none in the session, none recent). */
   youtubeAvailable: boolean;
+  /** An Experience brings its own background: only the layout and "Lite" are offered. */
+  experience?: boolean;
   layout: LayoutKind;
   layoutChoices: readonly LayoutKind[];
   /** The "Show riders" switch: on / off, and whether it can be used (with the reason if not). */
@@ -51,6 +53,46 @@ export function QuickSettings(p: QuickSettingsProps) {
     first?.focus();
   }, []);
   const backgrounds: Background[] = ['basic', 'hyperride', 'youtube'];
+  if (p.experience) {
+    return (
+      <section
+        ref={panelRef}
+        data-quick-settings=""
+        className={styles.panel}
+        role="region"
+        aria-label={t('training.quickSettings')}
+        data-testid="quick-settings"
+      >
+        <header className={styles.head}>
+          <h2>{t('training.quickSettings')}</h2>
+          <button
+            type="button"
+            className={styles.close}
+            aria-label={t('training.quickClose')}
+            onClick={p.onClose}
+          >
+            <span aria-hidden="true">✕</span>
+          </button>
+        </header>
+        <span className={styles.label} aria-hidden="true">
+          {t('training.quickLayout')}
+        </span>
+        <Segmented
+          label={t('training.quickLayout')}
+          value={p.layout}
+          options={p.layoutChoices.map((l) => ({ value: l, label: t(layoutLabelKey(l)) }))}
+          onChange={p.onLayout}
+        />
+        <Toggle
+          label={t('experience.lite')}
+          checked={p.background === 'basic'}
+          onChange={(on) => p.onBackground(on ? 'basic' : 'hyperride')}
+        />
+        <p className={styles.hint}>{t('experience.liteHint')}</p>
+        <p className={styles.hint}>{t('training.shortcutHint')}</p>
+      </section>
+    );
+  }
   return (
     <section
       ref={panelRef}
