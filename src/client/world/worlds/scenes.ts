@@ -3,7 +3,7 @@ import type { Segment } from '../../../domain/segments';
 import { FOV_NORMAL } from '../frame';
 import type { WorldQuality, WorldRenderer, WorldFrame } from '../world';
 import { prefersReducedMotion } from './motion';
-import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
+import { renderPixelRatio, watchDevicePixelRatio, wantsAntialias } from './pixel-ratio';
 import { buildExtra, type Disposable, type SceneExtra } from './scenes-extras';
 import { BASE_VFOV_DEG, baseVerticalFov, dashOffset, gateDepth, hash01 } from './road-model';
 import { approach, terrainHeight, type TerrainShape } from './scenes-model';
@@ -248,7 +248,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
   }
 
   function build(renderer: THREE.WebGLRenderer, high: boolean, created: Disposable[]): Scene3D {
-    renderer.setPixelRatio(high ? maxPixelRatio() : 1);
+    renderer.setPixelRatio(renderPixelRatio(width, height, high));
     renderer.setSize(width, height, false);
     renderer.autoClear = false;
 
@@ -504,7 +504,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     if (glow) out.glow = glow;
     if (high) {
       out.unwatchDpr = watchDevicePixelRatio(() => {
-        renderer.setPixelRatio(maxPixelRatio());
+        renderer.setPixelRatio(renderPixelRatio(width, height, true));
         renderer.setSize(width, height, false);
       });
     }
@@ -769,7 +769,10 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       reduced = opts.reducedMotion ?? prefersReducedMotion();
       width = Math.max(1, canvas.clientWidth || canvas.width);
       height = Math.max(1, canvas.clientHeight || canvas.height);
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: wantsAntialias(renderPixelRatio(width, height, quality === 'high')),
+      });
       const created: Disposable[] = [];
       try {
         s = build(renderer, quality === 'high', created);
@@ -793,6 +796,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       width = nw;
       height = nh;
       if (!s) return;
+      s.renderer.setPixelRatio(renderPixelRatio(width, height, s.high));
       s.renderer.setSize(width, height, false);
       applyProjection();
     },
