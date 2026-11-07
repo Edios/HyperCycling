@@ -48,7 +48,8 @@ import {
 import { cueForTransition, stepPreCue, type CoachCue } from '../../domain/coach';
 import type { TrackRef } from '../../domain/workout';
 import { useSettings } from '../data/useSettings';
-import { useT } from '../i18n';
+import { useLang, useT } from '../i18n';
+import { localizedText } from '../data/localized';
 import { ControlsBar } from './ControlsBar';
 import { EndDialog } from './EndDialog';
 import { NowPlaying } from './NowPlaying';
@@ -103,8 +104,14 @@ export function TrainingScreen() {
   return <ActiveTraining runtime={runtime} />;
 }
 
+/** True on a touch-first device (no fine pointer): no keyboard, so no Space hint. */
+function isTouch(): boolean {
+  return typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
+}
+
 function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const t = useT();
+  const [lang] = useLang();
   const navigate = useNavigate();
   const { settings } = useSettings();
   const state = useSessionStore((s) => s.state);
@@ -496,7 +503,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     hideRpmTile: settings.equipment.hideRpmTile,
     reducedMotion,
     glass: overlay,
-    workoutName: runtime.workout.name,
+    workoutName: localizedText(runtime.workout, lang).name,
     controls,
     coach,
   };
@@ -629,7 +636,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
             >
               {t('training.start')}
             </button>
-            <span>{t('training.pressToStart')}</span>
+            <span>{t(isTouch() ? 'training.tapToStart' : 'training.pressToStart')}</span>
           </div>
         </div>
       )}

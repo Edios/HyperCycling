@@ -234,6 +234,26 @@ describe('Timeline', () => {
     const bars = screen.getByTestId('timeline').querySelectorAll('[data-state]');
     expect(bars[1]?.querySelector<HTMLElement>('[data-fill]')?.style.clipPath).toContain('polygon');
   });
+  it('draws a stepped ramp as stairs, not a slope', () => {
+    const stepped = [
+      seg({
+        index: 0,
+        startSec: 0,
+        durationSec: 120,
+        kind: 'ramp',
+        effortStart: 3,
+        effortEnd: 6,
+        steps: [
+          { offsetSec: 0, durationSec: 60, ftpPct: 60, effort: 3 },
+          { offsetSec: 60, durationSec: 60, ftpPct: 80, effort: 6 },
+        ],
+      }),
+    ];
+    render(<Timeline segments={stepped} elapsedSec={0} />);
+    const fill = screen.getByTestId('timeline').querySelector<HTMLElement>('[data-fill]');
+    // A staircase has a vertical riser at the step boundary: two points share the x of 50%.
+    expect(fill?.style.clipPath.match(/50% /g)?.length).toBeGreaterThanOrEqual(2);
+  });
   it('shows elapsed / total and remaining', () => {
     render(<Timeline segments={segments} elapsedSec={90} />);
     const root = screen.getByTestId('timeline');

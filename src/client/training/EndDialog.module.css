@@ -64,7 +64,7 @@
 .actions .primary {
   background: var(--act);
   border-color: var(--act);
-  color: #fff;
+  color: var(--on-acc);
 }
 
 @media (max-width: 760px) and (orientation: portrait) {

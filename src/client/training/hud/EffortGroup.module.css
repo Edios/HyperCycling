@@ -53,7 +53,7 @@
   justify-content: center;
   /* Compact: the badge tucks under the ring name and adds as little height as possible. */
   gap: calc(1.2 * var(--u));
-  margin-top: calc(-1.2 * var(--u));
+  margin-top: calc(0.8 * var(--u));
   --lbl: clamp(11px, calc(2 * var(--u)), 30px);
 }
 

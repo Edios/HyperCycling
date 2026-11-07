@@ -30,6 +30,13 @@
   cursor: not-allowed;
 }
 
+.pri:disabled {
+  background: var(--s2);
+  border-color: var(--line2);
+  color: var(--mut);
+  opacity: 1;
+}
+
 .pri {
   background: var(--acc);
   border-color: var(--acc);

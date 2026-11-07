@@ -200,7 +200,7 @@
 
 .meta {
   color: var(--dim);
-  font-size: 0.8125rem;
+  font-size: max(var(--fs-min), 0.8125rem);
 }
 
 .mini {
@@ -347,7 +347,7 @@
 .err {
   display: block;
   margin: 0.4375rem 0 0 2.25rem;
-  font-size: 0.8125rem;
+  font-size: max(var(--fs-min), 0.8125rem);
 }
 
 .note {
@@ -467,6 +467,17 @@
   height: 3.5rem;
   font-size: 1.375rem;
   white-space: nowrap;
+}
+
+.pickHint {
+  position: absolute;
+  left: 1.25rem;
+  right: 1.25rem;
+  bottom: 100%;
+  margin: 0;
+  text-align: center;
+  color: var(--mut);
+  font-size: max(var(--fs-min), 0.875rem);
 }
 
 .grow {

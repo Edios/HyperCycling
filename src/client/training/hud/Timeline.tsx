@@ -1,9 +1,9 @@
 import type { CSSProperties } from 'react';
-import { effortRow } from '../../../domain/effort';
+import { effortRow, type EffortLevel } from '../../../domain/effort';
 import type { Segment } from '../../../domain/segments';
 import { useT } from '../../i18n';
 import { formatClock } from '../format';
-import { slopePolygons } from '../../ui/ProfileChart';
+import { slopePolygons, stairPolygons } from '../../ui/ProfileChart';
 import hud from './hud.module.css';
 import styles from './Timeline.module.css';
 
@@ -78,9 +78,16 @@ export function Timeline({
             const end = s.startSec + s.durationSec;
             const state: BarState =
               end <= safeElapsed ? 'past' : s.startSec <= safeElapsed ? 'current' : 'future';
-            const topLevel = s.effortStart >= s.effortEnd ? s.effortStart : s.effortEnd;
-            const poly = slopePolygons(s.effortStart, s.effortEnd);
-            const zone = effortRow(topLevel).color;
+            const stepped = s.steps && s.steps.length > 1 ? s.steps : undefined;
+            const topLevel = stepped
+              ? Math.max(...stepped.map((x) => x.effort))
+              : s.effortStart >= s.effortEnd
+                ? s.effortStart
+                : s.effortEnd;
+            const poly = stepped
+              ? stairPolygons(stepped, s.durationSec, topLevel)
+              : slopePolygons(s.effortStart, s.effortEnd);
+            const zone = effortRow(topLevel as EffortLevel).color;
             const style: CSSProperties & Record<'--c', string> = {
               '--c': zone,
               flexGrow: s.durationSec,
