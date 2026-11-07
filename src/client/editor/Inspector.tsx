@@ -1,13 +1,4 @@
 import { useEffect, useId, useRef, useState, type Dispatch } from 'react';
-import {
-  BPM_MAX,
-  BPM_MIN,
-  genresForRpm,
-  matchBpm,
-  parseBpmInput,
-  tapTempoBpm,
-  targetBpms,
-} from '../../domain/bpm-match';
 import { effortRow, effortToFtpPct, type EffortLevel, type EffortTable } from '../../domain/effort';
 import type { Block, Intensity, Position, TrackRef, Workout } from '../../domain/workout';
 import { parseClock, parseTrackUrl } from '../music/parse-track-url';
@@ -16,6 +7,7 @@ import { lookupSpotifyTrack } from '../music/spotify/track-info';
 import { applyYoutubeCheck, checkYoutubeEmbeddable } from '../music/youtube-check';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Segmented';
+import { BpmField } from './BpmField';
 import { SpotifySearch } from './SpotifySearch';
 import { formatClock } from '../training/format';
 import type { EditorAction } from './editor-state';
@@ -570,6 +562,7 @@ function TrackField({
       ...(same && cue.artist ? { artist: cue.artist } : {}),
       ...(same && cue.notEmbeddable ? { notEmbeddable: true } : {}),
       ...(same && cue.bpm !== undefined ? { bpm: cue.bpm } : {}),
+      ...(same && cue.bpmSource ? { bpmSource: cue.bpmSource } : {}),
       startAtSec: startSec,
     });
   };
@@ -646,16 +639,19 @@ function TrackField({
       <BpmField
         rpm={rpm}
         track={cue}
-        onChange={(bpm) => {
+        onChange={(bpm, source) => {
           const now = getCue();
           if (!now) return;
-          const { bpm: _old, ...rest } = now;
-          void _old;
+          // A typed, tapped or cleared value drops the lookup source; a looked-up one sets it.
+          const { bpm: _bpm, bpmSource: _source, ...rest } = now;
+          void _bpm;
+          void _source;
           dispatch({
             type: 'setCue',
             blockId,
             rep: 1,
-            track: bpm === undefined ? rest : { ...rest, bpm },
+            track:
+              bpm === undefined ? rest : { ...rest, bpm, ...(source ? { bpmSource: source } : {}) },
           });
         }}
       />
@@ -664,148 +660,6 @@ function TrackField({
           place({ ...track, startAtSec: startSec ?? 0 });
         }}
       />
-    </div>
-  );
-}
-
-/**
- * Manual tempo of the pinned track (Spotify gives new apps no audio features) and how well it fits
- * the block's cadence: 2 BPM = 1 RPM, half and double time also count. Without a pinned track it
- * only tells which tempo and genres to look for.
- */
-function BpmField({
-  rpm,
-  track,
-  onChange,
-}: {
-  rpm: number | undefined;
-  track: TrackRef | undefined;
-  onChange: (bpm: number | undefined) => void;
-}) {
-  const t = useT();
-  const bpmId = useId();
-  const [text, setText] = useState(track?.bpm === undefined ? '' : String(track.bpm));
-  const [touched, setTouched] = useState(false);
-  const taps = useRef<number[]>([]);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const committed = useRef(track?.bpm);
-  const textRef = useRef(text);
-  const onChangeRef = useRef(onChange);
-  useEffect(() => {
-    textRef.current = text;
-    onChangeRef.current = onChange;
-  });
-
-  const empty = text.trim() === '';
-  const value = empty ? undefined : parseBpmInput(text);
-  const invalid = !empty && value === undefined;
-
-  // One undo step per change: the value is stored on blur/Enter, and taps after a short pause.
-  const flush = (): void => {
-    clearTimeout(timer.current);
-    timer.current = undefined;
-    const raw = textRef.current;
-    const next = raw.trim() === '' ? undefined : parseBpmInput(raw);
-    if (raw.trim() !== '' && next === undefined) return;
-    if (next === committed.current) return;
-    committed.current = next;
-    onChangeRef.current(next);
-  };
-  const flushRef = useRef(flush);
-  useEffect(() => {
-    flushRef.current = flush;
-  });
-  // A pending tap result is not lost when the field goes away.
-  useEffect(() => () => flushRef.current(), []);
-  // Undo/redo changes the stored value: show it.
-  useEffect(() => {
-    if (track?.bpm === committed.current) return;
-    committed.current = track?.bpm;
-    setText(track?.bpm === undefined ? '' : String(track.bpm));
-  }, [track?.bpm]);
-
-  const tap = (): void => {
-    const now = performance.now();
-    const last = taps.current[taps.current.length - 1];
-    // A pause longer than 2 s starts a new measurement.
-    taps.current = last !== undefined && now - last > 2000 ? [now] : [...taps.current, now];
-    const bpm = tapTempoBpm(taps.current);
-    if (bpm === undefined) return;
-    setText(String(bpm));
-    textRef.current = String(bpm);
-    setTouched(false);
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => flushRef.current(), 800);
-  };
-
-  const match = value !== undefined && rpm !== undefined ? matchBpm(value, rpm) : undefined;
-  const targets = rpm === undefined ? [] : targetBpms(rpm);
-  const exact = targets.find((x) => x.kind === 'exact')?.bpm;
-  const half = targets.find((x) => x.kind === 'half')?.bpm;
-  const genres = rpm === undefined ? [] : genresForRpm(rpm);
-  const hint =
-    exact !== undefined && half !== undefined
-      ? t('editor.bpm.target', { rpm: String(rpm), bpm: String(exact), half: String(half) })
-      : exact !== undefined
-        ? t('editor.bpm.targetNoHalf', { rpm: String(rpm), bpm: String(exact) })
-        : half !== undefined
-          ? t('editor.bpm.targetHalfOnly', { rpm: String(rpm), bpm: String(half) })
-          : undefined;
-  return (
-    <div className={styles.group} data-testid="bpm-field">
-      {hint && (
-        <small className={styles.caption} data-testid="bpm-target">
-          {hint}
-          {genres.length > 0 &&
-            ` ${t('editor.bpm.genres', { list: genres.map((g) => t(`bpm.genre.${g.id}`)).join(', ') })}`}
-        </small>
-      )}
-      {track && (
-        <div className={styles.row}>
-          <label className={styles.inline} htmlFor={bpmId}>
-            <span>{t('editor.bpm.label')}</span>
-            <input
-              id={bpmId}
-              data-testid="track-bpm"
-              inputMode="numeric"
-              value={text}
-              aria-invalid={touched && invalid ? true : undefined}
-              onChange={(e) => {
-                setText(e.target.value);
-                textRef.current = e.target.value;
-                setTouched(false);
-              }}
-              onBlur={() => {
-                setTouched(true);
-                flush();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setTouched(true);
-                  flush();
-                }
-              }}
-            />
-          </label>
-          <Button onClick={tap}>{t('editor.bpm.tap')}</Button>
-        </div>
-      )}
-      {track && touched && invalid && (
-        <small role="alert" className={styles.error}>
-          {t('editor.bpm.error', { min: String(BPM_MIN), max: String(BPM_MAX) })}
-        </small>
-      )}
-      {track && match && (
-        <small className={styles.caption} data-testid="bpm-match" data-fit={match.fit}>
-          {t(`editor.bpm.match.${match.kind}`)}
-          {match.fit === 'close' ? ` · ${t('editor.bpm.close')}` : ''}
-        </small>
-      )}
-      {track && value !== undefined && rpm !== undefined && !match && (
-        <small className={styles.caption} data-testid="bpm-nomatch">
-          {t('editor.bpm.noMatch')}
-        </small>
-      )}
     </div>
   );
 }

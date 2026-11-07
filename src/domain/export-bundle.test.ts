@@ -166,6 +166,17 @@ describe('stripSecrets', () => {
     expect(stripped.settings?.spotify).toEqual({ clientId: 'cid', deviceId: 'dev' });
     expect(JSON.stringify(stripped)).not.toContain('secret');
   });
+  it('removes the GetSongBPM key', () => {
+    const bundle = exportBundleSchema.parse({
+      ...good(),
+      settings: { ...DEFAULT_SETTINGS, getSongBpmKey: 'gsb-secret' },
+    });
+    expect(bundle.settings?.getSongBpmKey).toBe('gsb-secret');
+    const stripped = stripSecrets(bundle);
+    expect(stripped.settings?.getSongBpmKey).toBeUndefined();
+    expect(JSON.stringify(stripped)).not.toContain('gsb-secret');
+    expect(bundle.settings?.getSongBpmKey).toBe('gsb-secret');
+  });
   it('does not mutate its input', () => {
     const original = withSpotify();
     stripSecrets(original);

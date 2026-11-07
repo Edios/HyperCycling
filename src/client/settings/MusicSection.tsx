@@ -2,6 +2,8 @@ import { useCallback, useEffect, useId, useState } from 'react';
 import type { SpotifySettings } from '../../domain/settings';
 import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
+import { GETSONGBPM_SITE } from '../music/getsongbpm/client';
+import { useSave } from './save';
 import {
   beginLogin,
   getLastSpotifyCallbackResult,
@@ -100,6 +102,9 @@ export function MusicSection() {
   const cfg = settings.spotify;
   const connected = hasCredentials(cfg);
   const envDefault = resolveClientId(undefined);
+  const save_ = useSave();
+  const gsbpmFieldId = useId();
+  const [gsbpmKey, setGsbpmKey] = useState(settings.getSongBpmKey ?? '');
   const clientIdFieldId = useId();
   const deviceFieldId = useId();
   const [clientId, setClientId] = useState(cfg?.clientId ?? '');
@@ -127,6 +132,12 @@ export function MusicSection() {
     const value = clientId.trim();
     if (value === (cfg?.clientId ?? '')) return true;
     return save({ ...current(), clientId: value });
+  };
+
+  const commitGsbpmKey = (): void => {
+    const value = gsbpmKey.trim();
+    if (value === (settings.getSongBpmKey ?? '')) return;
+    void save_({ getSongBpmKey: value === '' ? undefined : value });
   };
 
   const connect = async (): Promise<void> => {
@@ -283,6 +294,34 @@ export function MusicSection() {
           )}
         </div>
       )}
+
+      <div className={styles.field}>
+        <label htmlFor={gsbpmFieldId}>{t('settings.music.gsbpm.key')}</label>
+        <input
+          id={gsbpmFieldId}
+          data-testid="getsongbpm-key"
+          type="password"
+          value={gsbpmKey}
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={t('settings.music.gsbpm.placeholder')}
+          onChange={(e) => setGsbpmKey(e.target.value)}
+          onBlur={commitGsbpmKey}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commitGsbpmKey();
+          }}
+        />
+        <small className={styles.note}>
+          {t('settings.music.gsbpm.hint')}{' '}
+          <a href={`${GETSONGBPM_SITE}/api`} target="_blank" rel="noopener noreferrer">
+            {t('settings.music.gsbpm.get')}
+          </a>
+          {' · '}
+          <a href={GETSONGBPM_SITE} target="_blank" rel="noopener noreferrer">
+            {t('settings.music.gsbpm.link')}
+          </a>
+        </small>
+      </div>
 
       <div className={styles.setup}>
         <h3 className={styles.subTitle}>{t('settings.music.setupTitle')}</h3>

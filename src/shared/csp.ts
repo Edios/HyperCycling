@@ -9,6 +9,7 @@
  *  - api.spotify.com / accounts.spotify.com in connect-src: Web API calls and the PKCE token
  *    exchange. (The authorize step is a top-level navigation, which CSP does not govern.)
  *  - open.spotify.com in connect-src: the oEmbed track-title lookup (works without a login).
+ *  - api.getsong.co in connect-src: the optional GetSongBPM tempo lookup (allows browser requests).
  * Styles are external files only: React's `style` props go through CSSOM, which CSP allows.
  */
 export const CSP_DIRECTIVES: Record<string, string[]> = {
@@ -21,6 +22,7 @@ export const CSP_DIRECTIVES: Record<string, string[]> = {
     'https://accounts.spotify.com',
     'https://www.youtube.com',
     'https://open.spotify.com',
+    'https://api.getsong.co',
   ],
   'img-src': ["'self'", 'data:'],
   'style-src': ["'self'"],
