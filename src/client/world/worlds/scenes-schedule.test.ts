@@ -201,6 +201,14 @@ describe('sceneChangeAllowed', () => {
     expect(sceneChangeAllowed(all, 370)).toBe(false);
     expect(sceneChangeAllowed(all, 10_000)).toBe(true);
   });
+  it('allows a change exactly at a block boundary, also into effort 9+ or a sprint (rest to work)', () => {
+    const hard = { ...blocks([60], 9)[0]!, startSec: 300 };
+    const sprint = { ...blocks([30], 6)[0]!, startSec: 360, rpm: 106 };
+    const all = [...blocks([300], 5), hard, sprint];
+    expect(sceneChangeAllowed(all, 300)).toBe(true);
+    expect(sceneChangeAllowed(all, 360)).toBe(true);
+    expect(sceneChangeAllowed(all, 301.5)).toBe(false);
+  });
 });
 
 describe('buildSceneSchedule with boundaries', () => {
@@ -213,7 +221,7 @@ describe('buildSceneSchedule with boundaries', () => {
   });
   it('skips boundaries inside a hard block', () => {
     const segs = [...blocks([300], 5), { ...blocks([300], 9)[0]!, startSec: 300 }];
-    const out = buildSceneSchedule(segs, { ...opts, boundaries: [300] }).filter(
+    const out = buildSceneSchedule(segs, { ...opts, boundaries: [330] }).filter(
       (e) => e.kind === 'scene',
     );
     expect(out.every((e) => e.startSec !== 300)).toBe(true);

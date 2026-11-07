@@ -44,10 +44,19 @@ export const NO_CHANGE_EFFORT = 9;
 /** A cadence at or above this is a sprint (same limit as the world frame). */
 const SPRINT_RPM_LIMIT = 105;
 
-/** Whether a scene may change at workout second `t` (design doc 4.1: not into a sprint or effort 9+). */
+/** A change this close after a block start counts as AT the block boundary. */
+const BOUNDARY_TOLERANCE_SEC = 1;
+
+/**
+ * Whether a scene may change at workout second `t`. A block boundary is always fine, including
+ * rest → hard work: that is the dramatic moment, the new world arrives with the pre-cue (the wash
+ * is centred on the change). Inside a running block a scene never changes while it is a sprint or
+ * effort 9+ (nothing changes in the middle of an effort).
+ */
 export function sceneChangeAllowed(segments: readonly Segment[], t: number): boolean {
   for (const s of segments) {
     if (t < s.startSec || t >= s.startSec + s.durationSec) continue;
+    if (t - s.startSec < BOUNDARY_TOLERANCE_SEC) return true;
     return (
       Math.max(s.effortStart, s.effortEnd) < NO_CHANGE_EFFORT && (s.rpm ?? 0) < SPRINT_RPM_LIMIT
     );
