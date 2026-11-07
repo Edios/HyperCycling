@@ -12,6 +12,12 @@ export const pl: Messages = {
     settings: 'Ustawienia',
     mainMenu: 'Menu główne',
   },
+  knobPrompt: {
+    title: 'Twój rower',
+    body: 'Czy jeździsz na rowerze z ręcznym pokrętłem oporu? Wtedy rampy jadą jako kilka stałych stopni z komunikatem „dodaj opór”. Zmienisz to później w Ustawieniach.',
+    yes: 'Tak, pokrętło',
+    no: 'Nie, trenażer smart',
+  },
   training: {
     effort: 'Wysiłek',
     cadence: 'Kadencja',
@@ -464,6 +470,12 @@ export const pl: Messages = {
       intro: 'Co raportuje Twój rower. Ekran treningu pokazuje tylko to, co da się zmierzyć.',
       showsWatts: 'Rower pokazuje waty',
       showsCadence: 'Rower pokazuje kadencję',
+      ramps: 'Rampy',
+      rampsKnob: 'Pokrętło ręczne',
+      rampsKnobPower: 'Pokrętło + miernik mocy',
+      rampsSmart: 'Płynne (trenażer smart)',
+      rampsHint:
+        'Rower z pokrętłem jedzie rampę jako kilka stałych stopni z komunikatem „dodaj opór”. Płynne zostawia ciągłą rampę, dla trenażera smart.',
       hideRpmTile: 'Ukryj kafelek kadencji',
       ftpTitle: 'Moje FTP',
       ftpValue: 'FTP (W)',

@@ -1,5 +1,7 @@
+import { resolveResistanceMode, type ResistanceMode } from '../../domain/settings';
 import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
+import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
 import { FtpPanel } from './FtpPanel';
 import { useSave } from './save';
@@ -32,6 +34,20 @@ export function EquipmentSection() {
           checked={eq.hideRpmTile}
           onChange={(hideRpmTile) => set({ hideRpmTile })}
         />
+      </div>
+      <div className={styles.field}>
+        <span className={styles.fieldLabel}>{t('settings.equipment.ramps')}</span>
+        <Segmented<ResistanceMode>
+          label={t('settings.equipment.ramps')}
+          value={resolveResistanceMode(settings)}
+          options={[
+            { value: 'knob', label: t('settings.equipment.rampsKnob') },
+            { value: 'knobPower', label: t('settings.equipment.rampsKnobPower') },
+            { value: 'smart', label: t('settings.equipment.rampsSmart') },
+          ]}
+          onChange={(resistanceMode) => void save({ resistanceMode })}
+        />
+        <span className={styles.note}>{t('settings.equipment.rampsHint')}</span>
       </div>
       <FtpPanel mePlayer={mePlayer} />
     </div>

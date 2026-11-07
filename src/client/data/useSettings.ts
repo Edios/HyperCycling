@@ -3,7 +3,6 @@ import { create } from 'zustand';
 import {
   DEFAULT_SETTINGS,
   parseWorldSetting,
-  resolveResistanceMode,
   type Settings,
 } from '../../domain/settings';
 import { getRepositories } from './repositories';
@@ -22,15 +21,17 @@ const useSettingsStore = create<SettingsStore>(() => ({
 }));
 
 function mergeSettings(stored: Partial<Settings>): Settings {
-  return {
+  const merged: Settings = {
     ...DEFAULT_SETTINGS,
     ...stored,
     equipment: { ...DEFAULT_SETTINGS.equipment, ...stored.equipment },
     // A world id this build does not know (e.g. written by a newer version) shows the default.
     hyperrideWorld: parseWorldSetting(stored.hyperrideWorld),
-    // Stored before stepped effort existed: keep smooth ramps, do not inherit the new default.
-    resistanceMode: resolveResistanceMode(stored),
   };
+  // Stored before stepped effort existed: leave the mode unset (it reads as smooth, and the
+  // one-time KnobPrompt asks) instead of inheriting the fresh-profile default.
+  if (stored.resistanceMode === undefined) delete merged.resistanceMode;
+  return merged;
 }
 
 let loading: Promise<void> | undefined;

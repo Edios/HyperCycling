@@ -10,6 +10,12 @@ export const en = {
     settings: 'Settings',
     mainMenu: 'Main menu',
   },
+  knobPrompt: {
+    title: 'Your bike',
+    body: 'Do you ride a bike with a manual resistance knob? Then ramps are ridden as a few steady steps with an "add resistance" cue. You can change this later in Settings.',
+    yes: 'Yes, manual knob',
+    no: 'No, smart trainer',
+  },
   training: {
     effort: 'Effort',
     cadence: 'Cadence',
@@ -464,6 +470,12 @@ export const en = {
       showsWatts: 'Bike shows watts',
       showsCadence: 'Bike shows cadence',
       hideRpmTile: 'Hide the cadence tile',
+      ramps: 'Ramps',
+      rampsKnob: 'Manual knob',
+      rampsKnobPower: 'Knob + power meter',
+      rampsSmart: 'Smooth (smart trainer)',
+      rampsHint:
+        'A manual-knob bike rides a ramp as a few steady steps with an "add resistance" cue. Smooth keeps the continuous ramp, for a smart trainer.',
       ftpTitle: 'My FTP',
       ftpValue: 'FTP (W)',
       ftpFor: 'Rider: {name}',
