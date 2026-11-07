@@ -207,7 +207,7 @@ function Wizard({ me }: { me: Player | undefined }) {
       setError(t('plans.saveFailed'));
       return;
     }
-    navigate('/');
+    navigate('/plan');
   }
 
   const doneCount = existing?.entries.filter((e) => e.status === 'done').length ?? 0;

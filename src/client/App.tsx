@@ -1,6 +1,7 @@
 import { createHashRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
 import { Intro } from './brand/Intro';
 import { EditorScreen } from './editor/EditorScreen';
+import { Home } from './home/Home';
 import { DevHome } from './screens/DevHome';
 import { SettingsEffects } from './settings/SettingsEffects';
 import { SettingsScreen } from './settings/SettingsScreen';
@@ -41,12 +42,19 @@ const planPage = (
   </SelectShell>
 );
 
+const homePage = (
+  <SelectShell>
+    <Home />
+  </SelectShell>
+);
+
 function routes(): RouteObject[] {
   return [
     {
       element: <Root />,
       children: [
-        { path: '/', element: planPage },
+        { path: '/', element: homePage },
+        { path: '/plan', element: planPage },
         {
           path: '/freestyle',
           element: (
@@ -81,7 +89,7 @@ function routes(): RouteObject[] {
         { path: '/settings', element: <SettingsScreen /> },
         // Developer shortcut (see DEV_ROUTE): rides any built-in workout with demo players.
         ...(DEV_ROUTE ? [{ path: '/dev', element: <DevHome /> }] : []),
-        { path: '*', element: planPage },
+        { path: '*', element: homePage },
       ],
     },
   ];

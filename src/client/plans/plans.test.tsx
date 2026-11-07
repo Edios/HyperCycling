@@ -205,7 +205,7 @@ describe('PlanDetail', () => {
     fireEvent.click(screen.getByRole('radio', { name: '30 min' }));
     fireEvent.click(screen.getByRole('radio', { name: 'Harder +5%' }));
     fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
-    expect((await screen.findByTestId('where')).textContent).toBe('/');
+    expect((await screen.findByTestId('where')).textContent).toBe('/plan');
     expect(db.puts.progress).toHaveLength(1);
     expect(db.puts.progress[0]).toMatchObject({
       planId: 'build-form',
@@ -231,7 +231,7 @@ describe('PlanDetail', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Start Build Form' }));
-    expect((await screen.findByTestId('where')).textContent).toBe('/');
+    expect((await screen.findByTestId('where')).textContent).toBe('/plan');
     expect(db.puts.progress.map((p) => p.planId)).toEqual(['build-form']);
     expect(db.puts.settings.at(-1)?.activePlanId).toBe('build-form');
   });
@@ -255,7 +255,7 @@ describe('PlanDetail', () => {
     expect(screen.queryByRole('button', { name: 'Start plan' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('radio', { name: '30 min' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
-    expect((await screen.findByTestId('where')).textContent).toBe('/');
+    expect((await screen.findByTestId('where')).textContent).toBe('/plan');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(db.puts.progress[0]?.settings.sessionMinutes).toBe(30);
     expect(db.puts.progress[0]?.entries).toHaveLength(1);
