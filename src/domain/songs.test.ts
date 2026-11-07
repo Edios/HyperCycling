@@ -101,6 +101,20 @@ describe('song slots', () => {
     expect(only.format).toBeUndefined();
   });
 
+  it('trims a later slot instead of dropping it when an earlier one grows over its start', () => {
+    const w = make();
+    const old = w.blocks.map((b) => b.id);
+    // Drag b behind the repeat: a, r, b, c. Slot s1 (a..b) now covers r; s2 (r..c) keeps c.
+    w.blocks = [w.blocks[0]!, w.blocks[2]!, w.blocks[1]!, w.blocks[3]!];
+    repairSongs(w, old);
+    expect(w.songs?.map((s) => [s.id, s.firstBlockId, s.lastBlockId])).toEqual([
+      ['s1', 'a', 'b'],
+      ['s2', 'c', 'c'],
+    ]);
+    expect(w.songs?.[1]?.hint).toBe('chorus sprints');
+    expect(workoutSchema.safeParse(w).success).toBe(true);
+  });
+
   it('compiles pinned tracks to music cues and measures slot duration', () => {
     const w = make();
     expect(compileSongCues(w)).toEqual([{ blockId: 'a', rep: 1, track }]);

@@ -84,15 +84,7 @@ export function parseBpmFromName(name: string): number | undefined {
 }
 
 export type GenreId =
-  | 'chillPop'
-  | 'hipHop'
-  | 'pop'
-  | 'rock'
-  | 'dance'
-  | 'house'
-  | 'techno'
-  | 'trance'
-  | 'drumAndBass';
+  'chillPop' | 'hipHop' | 'pop' | 'rock' | 'dance' | 'house' | 'techno' | 'trance' | 'drumAndBass';
 
 export interface Genre {
   id: GenreId;

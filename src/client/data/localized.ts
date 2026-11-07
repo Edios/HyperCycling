@@ -1,4 +1,5 @@
 import type { Lang, Localized } from '../../domain/lang';
+import type { SongSlot, Workout } from '../../domain/workout';
 
 interface HasText {
   name: string;
@@ -13,4 +14,9 @@ export function localizedText(item: HasText, lang: Lang): Localized {
     name: loc?.name || item.name,
     description: loc?.description || item.description,
   };
+}
+
+/** Song-slot hint in `lang`, falling back to the slot's own (English) hint. */
+export function songHint(w: Pick<Workout, 'localized'>, song: SongSlot, lang: Lang): string | undefined {
+  return w.localized?.[lang]?.songHints?.[song.id] ?? song.hint;
 }

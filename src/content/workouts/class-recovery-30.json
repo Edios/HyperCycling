@@ -1,15 +1,29 @@
 {
   "id": "class-recovery-30",
   "name": "Class: Recovery 30",
-  "description": "An easy seated ride: four calm songs with gentle cadence changes, no standing.",
+  "description": "An easy seated ride: three calm songs with gentle cadence changes, no standing.",
   "localized": {
     "en": {
       "name": "Class: Recovery 30",
-      "description": "An easy seated ride: four calm songs with gentle cadence changes, no standing."
+      "description": "An easy seated ride: three calm songs with gentle cadence changes, no standing.",
+      "songHints": {
+        "class-recovery-30-s1": "Calm warm-up song, about 5 min. Aim for about 165 BPM.",
+        "class-recovery-30-s2": "Relaxed groove; the beat sets the cadence, up and down 10 rpm. Aim for about 188 BPM.",
+        "class-recovery-30-s3": "Soft mid-tempo song, even and easy. Aim for about 179 BPM.",
+        "class-recovery-30-s4": "Relaxed groove with the same cadence waves. Aim for about 188 BPM.",
+        "class-recovery-30-s5": "Slow, quiet cool-down song, about 5 min. Aim for about 156 BPM."
+      }
     },
     "pl": {
       "name": "Zajęcia: regeneracja 30",
-      "description": "Lekka jazda na siedząco: cztery spokojne piosenki z łagodnymi zmianami kadencji, bez stania."
+      "description": "Lekka jazda na siedząco: trzy spokojne piosenki z łagodnymi zmianami kadencji, bez stania.",
+      "songHints": {
+        "class-recovery-30-s1": "Spokojna piosenka na rozgrzewkę, ok. 5 min. Szukaj ok. 165 BPM.",
+        "class-recovery-30-s2": "Rozluźniony groove; rytm wyznacza kadencję, w górę i w dół o 10 obr./min. Szukaj ok. 188 BPM.",
+        "class-recovery-30-s3": "Miękka piosenka o średnim tempie, równa i lekka. Szukaj ok. 179 BPM.",
+        "class-recovery-30-s4": "Rozluźniony groove z tymi samymi falami kadencji. Szukaj ok. 188 BPM.",
+        "class-recovery-30-s5": "Wolna, cicha piosenka na schłodzenie, ok. 5 min. Szukaj ok. 156 BPM."
+      }
     }
   },
   "category": "freestyle",
@@ -176,36 +190,36 @@
       "id": "class-recovery-30-s1",
       "firstBlockId": "r-wu",
       "lastBlockId": "r-wu",
-      "hint": "Calm warm-up song, 90-100 BPM, about 5 min.",
-      "bpm": [90, 100]
+      "bpm": [162, 168],
+      "hint": "Calm warm-up song, about 5 min. Aim for about 165 BPM."
     },
     {
       "id": "class-recovery-30-s2",
       "firstBlockId": "r-1a",
       "lastBlockId": "r-1d",
-      "hint": "Relaxed groove, 90-105 BPM; the beat sets the cadence, up and down 10 rpm.",
-      "bpm": [90, 105]
+      "bpm": [185, 191],
+      "hint": "Relaxed groove; the beat sets the cadence, up and down 10 rpm. Aim for about 188 BPM."
     },
     {
       "id": "class-recovery-30-s3",
       "firstBlockId": "r-2a",
       "lastBlockId": "r-2d",
-      "hint": "Soft mid-tempo song, 90-100 BPM, even and easy.",
-      "bpm": [90, 100]
+      "bpm": [176, 182],
+      "hint": "Soft mid-tempo song, even and easy. Aim for about 179 BPM."
     },
     {
       "id": "class-recovery-30-s4",
       "firstBlockId": "r-3a",
       "lastBlockId": "r-3d",
-      "hint": "Relaxed groove, 90-105 BPM, same cadence waves as before.",
-      "bpm": [90, 105]
+      "bpm": [185, 191],
+      "hint": "Relaxed groove with the same cadence waves. Aim for about 188 BPM."
     },
     {
       "id": "class-recovery-30-s5",
       "firstBlockId": "r-cd",
       "lastBlockId": "r-cd",
-      "hint": "Slow, quiet cool-down song, 70-90 BPM, about 5 min.",
-      "bpm": [70, 90]
+      "bpm": [153, 159],
+      "hint": "Slow, quiet cool-down song, about 5 min. Aim for about 156 BPM."
     }
   ],
   "scaling": {
