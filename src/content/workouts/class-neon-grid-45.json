@@ -808,6 +808,7 @@
     "warmupBlockId": "ng1-wu",
     "cooldownBlockId": "ng11-c"
   },
+  "silenceLastSec": 60,
   "schemaVersion": 1,
   "updatedAt": "2026-11-07T00:00:00.000Z"
 }

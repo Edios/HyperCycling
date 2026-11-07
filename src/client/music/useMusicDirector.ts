@@ -37,6 +37,7 @@ export function useMusicDirector(
   const enabled = config.music;
   const cues = useMemo(() => effectiveMusicCues(workout), [workout]);
   const fallback = workout.fallbackPlaylist;
+  const silenceLastSec = workout.silenceLastSec;
 
   useEffect(() => {
     if (!enabled || (cues.length === 0 && fallback.length === 0)) return undefined;
@@ -55,6 +56,7 @@ export function useMusicDirector(
       onWarning: (track, error) => warningRef.current(track, error),
       onPlaying: (track) => playingRef.current?.(track),
       volume: volumeRef.current,
+      ...(silenceLastSec ? { silenceLastSec } : {}),
       switchFadeMs: SWITCH_FADE_MS,
     });
     directorRef.current = director;
@@ -65,5 +67,5 @@ export function useMusicDirector(
       director.dispose();
       providers.dispose();
     };
-  }, [enabled, segments, cues, fallback]);
+  }, [enabled, segments, cues, fallback, silenceLastSec]);
 }

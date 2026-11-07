@@ -832,3 +832,42 @@ describe('music director: missing titles', () => {
     expect(seen).not.toContain('Late');
   });
 });
+
+describe('music director: closing silence', () => {
+  // total 600 s; silence for the last 60 s => from 540 s
+  it('fades the track out when the silence window opens and stays quiet to the end', async () => {
+    make({ cues: [cue('c', track('C'))], silenceLastSec: 60, fadeMs: 1500 }).start();
+    await runAt(300);
+    await runAt(539);
+    expect(spotify.log).toEqual(['play:C@0']);
+    await runAt(540);
+    await advance(1500);
+    expect(spotify.log).toEqual(['play:C@0', 'fadeOut:1500']);
+    await runAt(580);
+    await advance(5000);
+    expect(spotify.log).toEqual(['play:C@0', 'fadeOut:1500']);
+  });
+
+  it('does not start a track inside the silence window', async () => {
+    make({ cues: [cue('c', track('C'))], silenceLastSec: 60 }).start();
+    await runAt(560);
+    expect(spotify.log).toEqual([]);
+  });
+
+  it('is off by default', async () => {
+    make({ cues: [cue('c', track('C'))] }).start();
+    await runAt(580);
+    expect(spotify.log).toEqual(['play:C@280']);
+  });
+
+  it('a provider that fails to fade does not break the director or throw', async () => {
+    spotify.fadeOut = () => Promise.reject(new Error('fade failed'));
+    const director = make({ cues: [cue('c', track('C'))], silenceLastSec: 60 });
+    director.start();
+    await runAt(300);
+    await runAt(545);
+    await advance(5000);
+    expect(console.warn).toHaveBeenCalled();
+    expect(() => director.dispose()).not.toThrow();
+  });
+});
