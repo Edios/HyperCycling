@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { WorldQuality, WorldRenderer, WorldFrame } from '../world';
 import { prefersReducedMotion } from './motion';
-import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
+import { renderPixelRatio, watchDevicePixelRatio, wantsAntialias } from './pixel-ratio';
 import { BASE_VFOV_DEG, baseVerticalFov, dashOffset, gateDepth, hash01 } from './road-model';
 
 /**
@@ -563,7 +563,7 @@ export function createRoad(opts: RoadOptions = {}): WorldRenderer {
   }
 
   function build(renderer: THREE.WebGLRenderer, high: boolean, created: Disposable[]): Scene3D {
-    renderer.setPixelRatio(high ? maxPixelRatio() : 1);
+    renderer.setPixelRatio(renderPixelRatio(width, height, high));
     renderer.setSize(width, height, false);
     renderer.autoClear = false;
 
@@ -736,7 +736,7 @@ export function createRoad(opts: RoadOptions = {}): WorldRenderer {
     if (glow) out.glow = glow;
     if (high) {
       out.unwatchDpr = watchDevicePixelRatio(() => {
-        renderer.setPixelRatio(maxPixelRatio());
+        renderer.setPixelRatio(renderPixelRatio(width, height, true));
         renderer.setSize(width, height, false);
         paint();
       });
@@ -910,7 +910,10 @@ export function createRoad(opts: RoadOptions = {}): WorldRenderer {
       reduced = opts.reducedMotion ?? prefersReducedMotion();
       width = Math.max(1, canvas.clientWidth || canvas.width);
       height = Math.max(1, canvas.clientHeight || canvas.height);
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: wantsAntialias(renderPixelRatio(width, height, quality === 'high')),
+      });
       const created: Disposable[] = [];
       try {
         s = build(renderer, quality === 'high', created);

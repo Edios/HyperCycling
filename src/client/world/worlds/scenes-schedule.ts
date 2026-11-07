@@ -148,6 +148,24 @@ export function lerpHex(a: string, b: string, t: number): string {
   return out;
 }
 
+/** Like lerpLook but writes into a reused buffer (no object allocation per call). */
+export function lerpLookInto<T extends Record<string, number | string>>(
+  out: T,
+  a: T,
+  b: T,
+  t: number,
+): T {
+  const o = out as Record<string, number | string>;
+  for (const key in a) {
+    const x = a[key];
+    const y = b[key];
+    if (typeof x === 'string' && typeof y === 'string') o[key] = lerpHex(x, y, t);
+    else if (typeof x === 'number' && typeof y === 'number') o[key] = x + (y - x) * t;
+    else o[key] = (t < 0.5 ? x : y) ?? '';
+  }
+  return out;
+}
+
 /** Mixes two looks field by field: `#rrggbb` strings as colours, numbers linearly. */
 export function lerpLook<T extends Record<string, number | string>>(a: T, b: T, t: number): T {
   const out: Record<string, number | string> = {};

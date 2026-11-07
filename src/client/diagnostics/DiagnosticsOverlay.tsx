@@ -1,4 +1,5 @@
 import { useT } from '../i18n';
+import { readRenderStats } from '../world/render-stats';
 import { useFrameMeter } from './useFrameMeter';
 import styles from './DiagnosticsOverlay.module.css';
 
@@ -19,6 +20,7 @@ export function DiagnosticsOverlay({ scene, quality }: DiagnosticsOverlayProps) 
   const canvas = document.querySelector<HTMLCanvasElement>(CANVAS);
   const size = canvas ? `${canvas.width}x${canvas.height}` : undefined;
   const dash = '-';
+  const rs = readRenderStats();
   return (
     <div className={styles.overlay} data-testid="diagnostics-overlay" aria-hidden="true">
       <div>
@@ -28,6 +30,16 @@ export function DiagnosticsOverlay({ scene, quality }: DiagnosticsOverlayProps) 
       <div>
         {size ?? dash} | {quality ?? dash} | {scene}
       </div>
+      {rs && (
+        <div data-testid="diagnostics-gpu">
+          {t('diagnostics.overlay.gpu', {
+            ms: rs.gpuMs === null ? dash : rs.gpuMs.toFixed(1),
+            calls: rs.drawCalls,
+            tris: Math.round(rs.triangles / 1000),
+            mpx: rs.mpx.toFixed(2),
+          })}
+        </div>
+      )}
     </div>
   );
 }

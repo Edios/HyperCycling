@@ -3,16 +3,22 @@ import type { Segment } from '../../../domain/segments';
 import { FOV_NORMAL } from '../frame';
 import type { WorldQuality, WorldRenderer, WorldFrame } from '../world';
 import { prefersReducedMotion } from './motion';
-import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
+import { renderPixelRatio, watchDevicePixelRatio, wantsAntialias } from './pixel-ratio';
 import { buildExtra, type Disposable, type SceneExtra } from './scenes-extras';
 import { BASE_VFOV_DEG, baseVerticalFov, dashOffset, gateDepth, hash01 } from './road-model';
 import { approach, terrainHeight, type TerrainShape } from './scenes-model';
 import { elevationTable, sampleTable, windX } from './scenes-path';
+import {
+  createGpuTimer,
+  publishRenderStats,
+  clearRenderStats,
+  type GpuTimer,
+} from '../render-stats';
 import { SCENES, SCENE_VARIANT_COUNTS, type SceneExtraId, type SceneLook } from './scenes-registry';
 import {
   workoutSeed,
   buildSceneSchedule,
-  lerpLook,
+  lerpLookInto,
   sceneStateAt,
   type SceneScheduleEntry,
 } from './scenes-schedule';
@@ -97,6 +103,7 @@ interface Streak {
 
 interface Scene3D {
   renderer: THREE.WebGLRenderer;
+  gpuTimer?: GpuTimer;
   scene: THREE.Scene;
   cam: THREE.PerspectiveCamera;
   fog: THREE.Fog;
@@ -203,10 +210,28 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
 
   const tmp = new THREE.Object3D();
   tmp.rotation.order = 'YXZ';
+  // per-frame road sampling state: closures are created once, not per update()
+  let frameX0 = 0;
+  const roadX = (d: number): number => windX(dist + d, seed) - frameX0;
+  const roadY = (d: number): number => sampleTable(profile, profileStep, d);
+  const yawAt = (d: number): number => -Math.atan(roadX(d + 0.5) - roadX(d - 0.5));
+  const shape: TerrainShape = { height: 0, flat: 0, rise: 0, roughness: 0 };
+  const lookBuf: Record<string, number | string> = {};
+  const extraFrame = {
+    dist: 0,
+    time: 0,
+    intensity: 0,
+    look: lookBuf as unknown as SceneLook,
+    roadX,
+    roadY,
+    fogNear: FOG_NEAR,
+  };
   const colorCache = new Map<string, THREE.Color>();
   const parsed = (hex: string): THREE.Color => {
     let c = colorCache.get(hex);
     if (!c) {
+      // colorAtDepth yields arbitrary strings: keep the cache bounded
+      if (colorCache.size >= 64) colorCache.clear();
       c = new THREE.Color(hex);
       colorCache.set(hex, c);
     }
@@ -248,7 +273,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
   }
 
   function build(renderer: THREE.WebGLRenderer, high: boolean, created: Disposable[]): Scene3D {
-    renderer.setPixelRatio(high ? maxPixelRatio() : 1);
+    renderer.setPixelRatio(renderPixelRatio(width, height, high));
     renderer.setSize(width, height, false);
     renderer.autoClear = false;
 
@@ -504,7 +529,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     if (glow) out.glow = glow;
     if (high) {
       out.unwatchDpr = watchDevicePixelRatio(() => {
-        renderer.setPixelRatio(maxPixelRatio());
+        renderer.setPixelRatio(renderPixelRatio(width, height, true));
         renderer.setSize(width, height, false);
       });
     }
@@ -553,13 +578,15 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     const fromLook = def.variants[st.fromVariant] ?? def.variants[0];
     const toLook = def.variants[st.toVariant] ?? fromLook;
     if (!fromLook || !toLook) return;
-    const look: SceneLook = st.variantMix >= 1 ? toLook : lerpLook(fromLook, toLook, st.variantMix);
+    const look: SceneLook =
+      st.variantMix >= 1
+        ? toLook
+        : lerpLookInto(lookBuf as unknown as SceneLook, fromLook, toLook, st.variantMix);
 
     // road geometry ahead: curves and elevation relative to the camera
     // (scenes-path: winding bends, rolling crests and dips, block grades integrated ahead;
     // under reduced motion the profile ignores the workout so the scene stays still)
-    const x0 = windX(dist, seed);
-    const roadX = (d: number): number => windX(dist + d, seed) - x0;
+    frameX0 = windX(dist, seed);
     elevationTable(
       reduced ? [] : frame.segments,
       reduced ? 0 : frame.workoutSec,
@@ -569,8 +596,6 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       profileStep,
       profile,
     );
-    const roadY = (d: number): number => sampleTable(profile, profileStep, d);
-    const yawAt = (d: number): number => -Math.atan(roadX(d + 0.5) - roadX(d - 0.5));
 
     // camera: pitches with the slope ahead, banks gently into bends
     const lookY = roadY(LOOK_AHEAD) * PITCH_SHARE;
@@ -629,12 +654,10 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     // climbs lift the side terrain, recovery lowers it
     const slopeAhead = roadY(200) / 200;
     const lift = 1 + Math.max(-0.35, Math.min(0.7, slopeAhead * 4));
-    const shape: TerrainShape = {
-      height: look.height * lift,
-      flat: look.flat,
-      rise: look.rise,
-      roughness: look.roughness,
-    };
+    shape.height = look.height * lift;
+    shape.flat = look.flat;
+    shape.rise = look.rise;
+    shape.roughness = look.roughness;
     tm.uPeak.value = Math.max(1, shape.height);
     const { terrainPos: tp, terrainGrid: tg, terrainCols: cols, terrainDepths: tds } = s;
     const nCols = cols.length;
@@ -710,15 +733,11 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     // scene extras: only the current scene's extra is visible
     for (const [id, e] of s.extras) e.object.visible = id === def.extra;
     if (def.extra) {
-      extraFor(def.extra)?.update({
-        dist,
-        time,
-        intensity,
-        look,
-        roadX,
-        roadY,
-        fogNear: FOG_NEAR,
-      });
+      extraFrame.dist = dist;
+      extraFrame.time = time;
+      extraFrame.intensity = intensity;
+      extraFrame.look = look;
+      extraFor(def.extra)?.update(extraFrame);
     }
 
     // sprint streaks
@@ -726,7 +745,9 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     if (s.streaks.visible) {
       const len = Math.max(0.5, speed * 0.12);
       const sp = s.streakPos;
-      s.streakData.forEach((k, i) => {
+      for (let i = 0; i < s.streakData.length; i++) {
+        const k = s.streakData[i];
+        if (!k) continue;
         k.depth -= speed * 1.6 * dt;
         if (k.depth < 0) k.depth += STREAK_VIEW;
         const o = i * 6;
@@ -738,7 +759,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
         sp[o + 3] = x;
         sp[o + 4] = y;
         sp[o + 5] = -(k.depth + len);
-      });
+      }
       s.streaks.geometry.getAttribute('position').needsUpdate = true;
       s.streakMat.color.copy(edgeColor).lerp(white, 0.5);
       s.streakMat.opacity = 0.55 * sprint;
@@ -751,10 +772,19 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     s.wash.opacity = st.wash;
 
     const { renderer } = s;
+    renderer.info.reset();
+    s.gpuTimer?.begin();
     renderer.clear();
     renderer.render(s.bgScene, s.flatCam);
     renderer.render(s.scene, cam);
     if (st.wash > 0.001) renderer.render(s.overlayScene, s.flatCam);
+    s.gpuTimer?.end();
+    publishRenderStats({
+      gpuMs: s.gpuTimer?.ms ?? null,
+      drawCalls: renderer.info.render.calls,
+      triangles: renderer.info.render.triangles,
+      mpx: (renderer.domElement.width * renderer.domElement.height) / 1e6,
+    });
   }
 
   return {
@@ -769,10 +799,17 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       reduced = opts.reducedMotion ?? prefersReducedMotion();
       width = Math.max(1, canvas.clientWidth || canvas.width);
       height = Math.max(1, canvas.clientHeight || canvas.height);
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: wantsAntialias(renderPixelRatio(width, height, quality === 'high')),
+      });
       const created: Disposable[] = [];
       try {
         s = build(renderer, quality === 'high', created);
+        renderer.info.autoReset = false;
+        const gl = renderer.getContext();
+        const timer = createGpuTimer(gl, gl.getExtension('EXT_disjoint_timer_query_webgl2'));
+        if (timer) s.gpuTimer = timer;
         applyProjection();
       } catch (err) {
         s?.unwatchDpr();
@@ -793,6 +830,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       width = nw;
       height = nh;
       if (!s) return;
+      s.renderer.setPixelRatio(renderPixelRatio(width, height, s.high));
       s.renderer.setSize(width, height, false);
       applyProjection();
     },
@@ -808,6 +846,8 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       const cur = s;
       s = undefined;
       cur.unwatchDpr();
+      cur.gpuTimer?.dispose();
+      clearRenderStats();
       cur.scene.clear();
       cur.bgScene.clear();
       cur.overlayScene.clear();

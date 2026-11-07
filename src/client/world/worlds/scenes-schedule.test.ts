@@ -8,6 +8,7 @@ import {
   buildSceneSchedule,
   lerpHex,
   lerpLook,
+  lerpLookInto,
   sceneStateAt,
   workoutSeed,
 } from './scenes-schedule';
@@ -174,5 +175,16 @@ describe('lerpLook', () => {
     expect(lerpLook(a, b, 0)).toEqual(a);
     expect(lerpLook(a, b, 1)).toEqual(b);
     expect(lerpLook(a, b, 0.5)).toEqual({ sky: '#808080', size: 5, pattern: 2 });
+  });
+});
+
+describe('lerpLookInto', () => {
+  it('equals lerpLook and reuses the buffer', () => {
+    const a = { sky: '#000000', size: 0, pattern: 1 };
+    const b = { sky: '#ffffff', size: 10, pattern: 3 };
+    const buf = { sky: '', size: 0, pattern: 0 };
+    const r = lerpLookInto(buf, a, b, 0.5);
+    expect(r).toBe(buf);
+    expect(r).toEqual(lerpLook(a, b, 0.5));
   });
 });

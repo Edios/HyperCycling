@@ -7,7 +7,7 @@ import { TUNNEL_LENGTH } from '../../../domain/tunnel-path';
 import { glowStrength } from '../frame';
 import type { WorldQuality, WorldRenderer, WorldFrame } from '../world';
 import { motionDt, prefersReducedMotion } from './motion';
-import { maxPixelRatio, watchDevicePixelRatio } from './pixel-ratio';
+import { renderPixelRatio, watchDevicePixelRatio, wantsAntialias } from './pixel-ratio';
 
 /**
  * "Neon Tunnel": a port of docs/design/prototypes/world-prototype.html. Comfort rules
@@ -107,7 +107,7 @@ export function createNeonTunnel(opts: NeonTunnelOptions = {}): WorldRenderer {
 
   /** Everything after the renderer; `created` collects disposables for cleanup on failure. */
   function build(renderer: THREE.WebGLRenderer, high: boolean, created: Disposable[]): Scene3D {
-    renderer.setPixelRatio(high ? maxPixelRatio() : 1);
+    renderer.setPixelRatio(renderPixelRatio(width, height, high));
     renderer.setSize(width, height, false);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
@@ -191,9 +191,9 @@ export function createNeonTunnel(opts: NeonTunnelOptions = {}): WorldRenderer {
       out.composer = composer;
       out.bloom = bloom;
       out.unwatchDpr = watchDevicePixelRatio(() => {
-        renderer.setPixelRatio(maxPixelRatio());
+        renderer.setPixelRatio(renderPixelRatio(width, height, true));
         renderer.setSize(width, height, false);
-        composer.setPixelRatio(maxPixelRatio());
+        composer.setPixelRatio(renderPixelRatio(width, height, true));
         composer.setSize(width, height);
       });
     }
@@ -303,7 +303,10 @@ export function createNeonTunnel(opts: NeonTunnelOptions = {}): WorldRenderer {
       reduced = opts.reducedMotion ?? prefersReducedMotion();
       width = Math.max(1, canvas.clientWidth || canvas.width);
       height = Math.max(1, canvas.clientHeight || canvas.height);
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: wantsAntialias(renderPixelRatio(width, height, quality === 'high')),
+      });
       const created: Disposable[] = [];
       try {
         s = build(renderer, quality === 'high', created);
