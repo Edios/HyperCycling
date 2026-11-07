@@ -226,7 +226,7 @@ function Wizard({ me }: { me: Player | undefined }) {
   const otherActive = current !== undefined && current.id !== plan?.id;
 
   return (
-    <div className={styles.page} data-testid="plan-wizard">
+    <main className={styles.page} data-testid="plan-wizard">
       <header className={styles.top}>
         <h2>{t('wizard.title')}</h2>
         <Link to="/" className={styles.cancel}>
@@ -539,6 +539,11 @@ function Wizard({ me }: { me: Player | undefined }) {
       </div>
 
       <div className={styles.actions}>
+        {step < LAST && !canGoOn && (
+          <p className={styles.pickHint} role="status">
+            {t('wizard.pickToContinue')}
+          </p>
+        )}
         {step > 0 && <Button onClick={() => setStep(step - 1)}>{t('wizard.back')}</Button>}
         {step < LAST ? (
           <Button
@@ -607,7 +612,7 @@ function Wizard({ me }: { me: Player | undefined }) {
         </Modal>
       )}
       {error && <Toast message={error} onClose={() => setError(undefined)} />}
-    </div>
+    </main>
   );
 }
 

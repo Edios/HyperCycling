@@ -89,6 +89,7 @@ export function FreestyleTab() {
 
   return (
     <div className={styles.page}>
+      <h1 className="sr-only">{t('free.heading')}</h1>
       <div className={styles.header}>
         <div className={styles.searchWrap}>
           <svg
@@ -176,14 +177,15 @@ export function FreestyleTab() {
             onClick={() => setSheetOpen(false)}
             aria-hidden="true"
           />
-          <aside
+          <div
             className={styles.sheet}
             role="dialog"
+            aria-modal="true"
             aria-label={t('free.previewLabel')}
             data-testid="preview-sheet"
           >
             <WorkoutPreview key={active.id} workout={active} onClose={() => setSheetOpen(false)} />
-          </aside>
+          </div>
         </>
       )}
       {importing && (
