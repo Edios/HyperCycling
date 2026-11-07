@@ -1,4 +1,12 @@
 import { useEffect, useId, useRef, useState, type Dispatch } from 'react';
+import {
+  BPM_MAX,
+  BPM_MIN,
+  genresForRpm,
+  matchBpm,
+  tapTempoBpm,
+  targetBpms,
+} from '../../domain/bpm-match';
 import { effortRow, effortToFtpPct, type EffortLevel, type EffortTable } from '../../domain/effort';
 import type { Block, Intensity, Position, TrackRef, Workout } from '../../domain/workout';
 import { parseClock, parseTrackUrl } from '../music/parse-track-url';
@@ -439,6 +447,7 @@ function LeafInspector({
         key={`${id}:${cue ? `${cue.track.provider}:${cue.track.id}:${cue.track.startAtSec}` : ''}`}
         blockId={id}
         cue={cue?.track}
+        rpm={leaf.rpm}
         getCue={() =>
           workoutRef.current.musicCues.find((c) => c.blockId === id && c.rep === 1)?.track
         }
@@ -468,6 +477,7 @@ function trackUrl(track: { provider: 'spotify' | 'youtube'; id: string }): strin
 function TrackField({
   blockId,
   cue,
+  rpm,
   getCue,
   dispatch,
   focusRequested,
@@ -477,6 +487,8 @@ function TrackField({
 }: {
   blockId: string;
   cue: Workout['musicCues'][number]['track'] | undefined;
+  /** Cadence of the block this track is pinned to (for the BPM hint). */
+  rpm: number | undefined;
   /** The cue as it is now (after any later edits); used when an async check finishes. */
   getCue: () => TrackRef | undefined;
   dispatch: Dispatch<EditorAction>;
@@ -556,6 +568,7 @@ function TrackField({
       title: same ? cue.title : '',
       ...(same && cue.artist ? { artist: cue.artist } : {}),
       ...(same && cue.notEmbeddable ? { notEmbeddable: true } : {}),
+      ...(same && cue.bpm !== undefined ? { bpm: cue.bpm } : {}),
       startAtSec: startSec,
     });
   };
@@ -629,11 +642,115 @@ function TrackField({
           </Button>
         )}
       </div>
+      <BpmField
+        rpm={rpm}
+        track={cue}
+        onChange={(bpm) => {
+          const now = getCue();
+          if (!now) return;
+          const { bpm: _old, ...rest } = now;
+          void _old;
+          dispatch({
+            type: 'setCue',
+            blockId,
+            rep: 1,
+            track: bpm === undefined ? rest : { ...rest, bpm },
+          });
+        }}
+      />
       <SpotifySearch
         onPick={(track) => {
           place({ ...track, startAtSec: startSec ?? 0 });
         }}
       />
+    </div>
+  );
+}
+
+/**
+ * Manual tempo of the pinned track (Spotify gives new apps no audio features) and how well it fits
+ * the block's cadence: 2 BPM = 1 RPM, half and double time also count. Without a pinned track it
+ * only tells which tempo and genres to look for.
+ */
+function BpmField({
+  rpm,
+  track,
+  onChange,
+}: {
+  rpm: number | undefined;
+  track: TrackRef | undefined;
+  onChange: (bpm: number | undefined) => void;
+}) {
+  const t = useT();
+  const bpmId = useId();
+  const [text, setText] = useState(track?.bpm === undefined ? '' : String(track.bpm));
+  const taps = useRef<number[]>([]);
+  const parsed = text.trim() === '' ? undefined : Number(text);
+  const invalid =
+    parsed !== undefined && !(Number.isFinite(parsed) && parsed >= BPM_MIN && parsed <= BPM_MAX);
+  const commit = (value: string): void => {
+    setText(value);
+    const n = value.trim() === '' ? undefined : Number(value);
+    if (n === undefined) onChange(undefined);
+    else if (Number.isFinite(n) && n >= BPM_MIN && n <= BPM_MAX) onChange(Math.round(n));
+  };
+  const tap = (): void => {
+    const now = performance.now();
+    const last = taps.current[taps.current.length - 1];
+    // A pause longer than 2 s starts a new measurement.
+    taps.current = last !== undefined && now - last > 2000 ? [now] : [...taps.current, now];
+    const bpm = tapTempoBpm(taps.current);
+    if (bpm !== undefined) commit(String(bpm));
+  };
+  const match =
+    !invalid && parsed !== undefined && rpm !== undefined ? matchBpm(parsed, rpm) : undefined;
+  const targets = rpm === undefined ? [] : targetBpms(rpm);
+  const genres = rpm === undefined ? [] : genresForRpm(rpm);
+  return (
+    <div className={styles.group} data-testid="bpm-field">
+      {targets.length > 0 && (
+        <small className={styles.caption} data-testid="bpm-target">
+          {t('editor.bpm.target', {
+            rpm: String(rpm),
+            bpm: String(targets[0]?.bpm),
+            half: String(targets.find((x) => x.kind === 'half')?.bpm ?? '-'),
+          })}
+          {genres.length > 0 &&
+            ` ${t('editor.bpm.genres', { list: genres.map((g) => t(`bpm.genre.${g.id}`)).join(', ') })}`}
+        </small>
+      )}
+      {track && (
+        <div className={styles.row}>
+          <label className={styles.inline} htmlFor={bpmId}>
+            <span>{t('editor.bpm.label')}</span>
+            <input
+              id={bpmId}
+              data-testid="track-bpm"
+              inputMode="numeric"
+              value={text}
+              aria-invalid={invalid ? true : undefined}
+              onChange={(e) => commit(e.target.value)}
+            />
+          </label>
+          <Button onClick={tap}>{t('editor.bpm.tap')}</Button>
+        </div>
+      )}
+      {track && invalid && (
+        <small role="alert" className={styles.error}>
+          {t('editor.bpm.error', { min: String(BPM_MIN), max: String(BPM_MAX) })}
+        </small>
+      )}
+      {track && match && (
+        <small className={styles.caption} data-testid="bpm-match" data-fit={match.fit}>
+          {t(`editor.bpm.match.${match.kind}`)}
+          {match.fit === 'close' ? ` · ${t('editor.bpm.close')}` : ''}
+        </small>
+      )}
+      {track && parsed !== undefined && !invalid && rpm !== undefined && !match && (
+        <small className={styles.caption} data-testid="bpm-nomatch">
+          {t('editor.bpm.noMatch')}
+        </small>
+      )}
     </div>
   );
 }
