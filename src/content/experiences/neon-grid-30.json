@@ -1,0 +1,57 @@
+{
+  "id": "neon-grid-30",
+  "title": "Neon Grid 30",
+  "description": "A short ride through the lit-up grid: intervals, one summit climb with a long recovery after it, and a sprint finish.",
+  "localized": {
+    "pl": {
+      "title": "Neon Grid 30",
+      "description": "Krótka jazda przez rozświetloną siatkę: interwały, jeden podjazd na szczyt z długim odpoczynkiem po nim i sprint na koniec."
+    },
+    "en": {
+      "title": "Neon Grid 30",
+      "description": "A short ride through the lit-up grid: intervals, one summit climb with a long recovery after it, and a sprint finish."
+    }
+  },
+  "workoutRef": {
+    "kind": "builtin",
+    "id": "class-neon-grid-30"
+  },
+  "musicPins": [],
+  "worldTheme": {
+    "theme": "neon-grid",
+    "chapters": [
+      {
+        "atPin": 0,
+        "look": "grid-wake"
+      },
+      {
+        "atPin": 1,
+        "look": "light-lanes"
+      },
+      {
+        "atPin": 3,
+        "look": "summit-scan"
+      },
+      {
+        "atPin": 5,
+        "look": "overdrive"
+      },
+      {
+        "atPin": 6,
+        "look": "afterglow"
+      }
+    ]
+  },
+  "lengthMin": 30,
+  "level": "medium",
+  "bike": "manual-stepped",
+  "stepCount": 5,
+  "tags": [
+    "electronic",
+    "intervals",
+    "hills",
+    "sprints"
+  ],
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-08T00:00:00.000Z"
+}

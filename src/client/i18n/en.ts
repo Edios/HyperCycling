@@ -830,7 +830,7 @@ export const en = {
     },
     theme: { abstract: 'Abstract', 'neon-grid': 'Neon Grid' },
     cardMeta: '{minutes} min · {steps} resistance steps · {songs} songs',
-    songRow: 'Song {n}: {minutes} min',
+    songRow: 'Song {n}: {time}',
     start: 'Start',
     showScenario: 'Show scenario',
     hideScenario: 'Hide scenario',
@@ -1026,6 +1026,8 @@ export const en = {
     ngBreathe2: 'Take two steps off, breathe.',
     ngWindDown: 'Take it all off, easy spin, breathe.',
     ngSilence: 'Silence. Breathe, loosen your shoulders.',
+    ngWelcome: 'Welcome. Settle in, easy legs, we start gently.',
+    ngFlatRoad: 'Flat road, seated, find a steady rhythm.',
   },
   block: {
     warmup: 'Warm-up',

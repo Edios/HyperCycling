@@ -80,7 +80,7 @@ export function ExperiencePicker() {
               {expanded && (
                 <ol className={styles.scenario} data-testid="experience-scenario">
                   {rows.map((r, i) => (
-                    <li key={r.id}>{t('experience.songRow', { n: i + 1, minutes: r.minutes })}</li>
+                    <li key={r.id}>{t('experience.songRow', { n: i + 1, time: r.time })}</li>
                   ))}
                 </ol>
               )}
