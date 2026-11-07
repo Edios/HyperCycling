@@ -255,6 +255,15 @@ export const pl: Messages = {
     saveFailed: 'Zapis się nie udał. Spróbuj ponownie.',
   },
   wizard: {
+    hr: {
+      title: 'Jeździsz z pulsometrem?',
+      sub: 'Opcjonalnie. Znając tętno maksymalne, pokażemy przy każdym bloku zakres bpm obok wysiłku.',
+      input: 'Tętno maksymalne',
+      unit: 'bpm',
+      age: 'Wiek (nie jest zapisywany)',
+      fromAge: 'Z wieku',
+      skipHint: 'Nie masz pulsometru? Zostaw puste i idź dalej.',
+    },
     title: 'Nowy plan',
     cancel: 'Anuluj',
     back: 'Wstecz',
@@ -265,6 +274,7 @@ export const pl: Messages = {
     stepOf: 'Krok {n} z 4',
     stepGoal: 'Cel',
     stepTime: 'Czas',
+    stepHr: 'Tętno',
     stepFtp: 'Moc',
     stepDone: 'Twój plan',
     ready: 'Gotowe',

@@ -253,6 +253,15 @@ export const en = {
     saveFailed: 'Saving failed. Try again.',
   },
   wizard: {
+    hr: {
+      title: 'Do you ride with a heart-rate monitor?',
+      sub: 'Optional. With your max heart rate every block shows a bpm band next to the effort.',
+      input: 'Max heart rate',
+      unit: 'bpm',
+      age: 'Age (not stored)',
+      fromAge: 'From age',
+      skipHint: 'No monitor? Leave it empty and go on.',
+    },
     title: 'New plan',
     cancel: 'Cancel',
     back: 'Back',
@@ -263,6 +272,7 @@ export const en = {
     stepOf: 'Step {n} of 4',
     stepGoal: 'Goal',
     stepTime: 'Time',
+    stepHr: 'Heart rate',
     stepFtp: 'Power',
     stepDone: 'Your plan',
     ready: 'Ready',

@@ -527,3 +527,40 @@
 .dayPick {
   margin-top: 0.875rem;
 }
+
+.hrBars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.hrBars li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 6px 10px;
+  border-left: 4px solid currentColor;
+  background: var(--s2);
+  border-radius: 6px;
+}
+
+.hrBars li[data-zone='1'] {
+  color: #9aa5b8;
+}
+.hrBars li[data-zone='2'] {
+  color: #5b8cff;
+}
+.hrBars li[data-zone='3'] {
+  color: #35d07f;
+}
+.hrBars li[data-zone='4'] {
+  color: #ffd23f;
+}
+.hrBars li[data-zone='5'] {
+  color: #ff4d4d;
+}
+.hrBars li span {
+  color: var(--fg);
+}

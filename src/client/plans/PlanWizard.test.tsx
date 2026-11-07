@@ -103,12 +103,12 @@ beforeEach(() => {
 });
 
 describe('PlanWizard steps', () => {
-  it('shows a four-step bar and the four goals with localized plan names', async () => {
+  it('shows a five-step bar and the four goals with localized plan names', async () => {
     renderWizard();
     const goals = await screen.findAllByRole('radio');
     expect(goals).toHaveLength(4);
     expect(screen.getByRole('radio', { name: /Build Form/ })).toBeInTheDocument();
-    expect(screen.getAllByTestId('wizard-step')).toHaveLength(4);
+    expect(screen.getAllByTestId('wizard-step')).toHaveLength(5);
     expect(screen.getAllByTestId('wizard-step')[0]).toHaveAttribute('aria-current', 'step');
     // Nothing is chosen yet, so there is nothing to go on with.
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
@@ -169,7 +169,47 @@ describe('PlanWizard steps', () => {
     expect(screen.getByRole('radio', { name: '60 min' })).toBeChecked();
     next();
     next();
+    next();
     expect(screen.getByRole('heading', { level: 1, name: 'Keep Fit' })).toBeInTheDocument();
+  });
+});
+
+describe('PlanWizard heart-rate step', () => {
+  it('can be skipped and saves no HRmax', async () => {
+    db.players = [{ id: 'me', name: 'Me', ftp: 245, isMe: true }];
+    renderWizard();
+    await toFtpStep();
+    next();
+    expect(
+      screen.getByRole('heading', { level: 1, name: /heart-rate monitor/ }),
+    ).toBeInTheDocument();
+    next();
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    await screen.findByTestId('where');
+    expect(db.puts.players).toHaveLength(0);
+  });
+
+  it('computes HRmax from age, previews the zones and saves it to the "me" player', async () => {
+    db.players = [{ id: 'me', name: 'Me', ftp: 245, isMe: true }];
+    renderWizard();
+    await toFtpStep();
+    next();
+    fireEvent.change(screen.getByLabelText('Age (not stored)'), { target: { value: '36' } });
+    fireEvent.click(screen.getByRole('button', { name: 'From age' }));
+    expect(screen.getByLabelText('Max heart rate')).toHaveValue(183);
+    expect(screen.getByTestId('hr-preview')).toHaveTextContent('Z3');
+    next();
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    await screen.findByTestId('where');
+    expect(db.puts.players.at(-1)).toMatchObject({ isMe: true, hrMax: 183 });
+  });
+
+  it('refuses an invalid HRmax', async () => {
+    renderWizard();
+    await toFtpStep();
+    next();
+    fireEvent.change(screen.getByLabelText('Max heart rate'), { target: { value: '250' } });
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
   });
 });
 
@@ -177,6 +217,7 @@ describe('PlanWizard recommendation', () => {
   it('shows the plan, a plain reason, the calendar, Start and Customize', async () => {
     renderWizard();
     await toFtpStep();
+    next(); // heart-rate step (skipped)
     next();
     expect(screen.getByRole('heading', { level: 1, name: 'Build Form' })).toBeInTheDocument();
     expect(screen.getByTestId('wizard-reason')).toHaveTextContent(/20-minute test/);
@@ -190,6 +231,7 @@ describe('PlanWizard recommendation', () => {
   it('Start with no active plan activates it and goes home', async () => {
     renderWizard();
     await toFtpStep();
+    next(); // heart-rate step (skipped)
     next();
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     expect((await screen.findByTestId('where')).textContent).toBe('/');
@@ -203,6 +245,7 @@ describe('PlanWizard recommendation', () => {
     await toFtpStep();
     fireEvent.click(screen.getByRole('radio', { name: /Yes, I know it/ }));
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '230' } });
+    next(); // heart-rate step (skipped)
     next();
     // A known FTP drops the first test from the calendar.
     expect(screen.getByTestId('wizard-reason')).toHaveTextContent(/230|know/i);
@@ -225,6 +268,7 @@ describe('PlanWizard recommendation', () => {
     renderWizard();
     await toFtpStep();
     fireEvent.click(screen.getByRole('radio', { name: /Bike without watts/ }));
+    next(); // heart-rate step (skipped)
     next();
     expect(screen.queryAllByTestId('calendar-test')).toHaveLength(0);
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
@@ -238,6 +282,7 @@ describe('PlanWizard recommendation', () => {
     db.progress = [progressFor(other, SETTINGS)];
     renderWizard();
     await toFtpStep();
+    next(); // heart-rate step (skipped)
     next();
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     const dialog = await screen.findByRole('dialog');
@@ -252,6 +297,7 @@ describe('PlanWizard recommendation', () => {
     db.progress = [progressFor(buildForm, SETTINGS)];
     renderWizard();
     await toFtpStep();
+    next(); // heart-rate step (skipped)
     next();
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     const dialog = await screen.findByRole('dialog');
@@ -269,6 +315,7 @@ describe('PlanWizard recommendation', () => {
     fireEvent.click(screen.getByRole('radio', { name: '60 min' }));
     next();
     next();
+    next();
     fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
     expect(await screen.findByTestId('customize')).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: '60 min' })).toBeChecked();
@@ -280,6 +327,7 @@ describe('PlanWizard recommendation', () => {
     await toFtpStep();
     fireEvent.click(screen.getByRole('radio', { name: /Yes, I know it/ }));
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '231' } });
+    next(); // heart-rate step (skipped)
     next();
     fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
     await screen.findByTestId('customize');
@@ -290,6 +338,7 @@ describe('PlanWizard recommendation', () => {
     renderWizard();
     await toFtpStep();
     fireEvent.click(screen.getByRole('radio', { name: /Bike without watts/ }));
+    next(); // heart-rate step (skipped)
     next();
     fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
     await screen.findByTestId('customize');
@@ -301,6 +350,7 @@ describe('PlanWizard recommendation', () => {
     db.progress = [progressFor(buildForm, SETTINGS)];
     renderWizard();
     await toFtpStep();
+    next(); // heart-rate step (skipped)
     next();
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     const dialog = await screen.findByRole('dialog');
@@ -313,6 +363,7 @@ describe('PlanWizard recommendation', () => {
     db.progress = [{ ...progressFor(buildForm, SETTINGS), entries: [] }];
     renderWizard();
     await toFtpStep();
+    next(); // heart-rate step (skipped)
     next();
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     await screen.findByTestId('where');

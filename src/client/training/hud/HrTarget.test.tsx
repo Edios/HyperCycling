@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Player } from '../../../domain/player';
+import type { EffortLevel } from '../../../domain/effort';
 import type { Segment } from '../../../domain/segments';
 import { DEFAULT_SETTINGS, type Settings } from '../../../domain/settings';
 
@@ -21,7 +22,7 @@ import { resetSettingsForTests } from '../../data/useSettings';
 import { HrTarget } from './HrTarget';
 import { PlayersList } from './PlayersList';
 
-function seg(durationSec: number, effort = 6): Segment {
+function seg(durationSec: number, effort: EffortLevel = 6): Segment {
   return {
     index: 0,
     startSec: 0,

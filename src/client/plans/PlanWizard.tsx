@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { bpmRange, estimateHrMax, HR_ZONES } from '../../domain/hr-zones';
 import type { Plan, PlanProgress, PlanSettings } from '../../domain/plan';
 import type { Player } from '../../domain/player';
 import {
@@ -33,6 +34,7 @@ const STEP_KEYS = [
   'wizard.stepGoal',
   'wizard.stepTime',
   'wizard.stepFtp',
+  'wizard.stepHr',
   'wizard.stepDone',
 ] as const;
 const LAST = STEP_KEYS.length - 1;
@@ -43,6 +45,11 @@ function planFor(goal: WizardGoal): Plan | undefined {
 
 function goalOfPlan(planId: string): WizardGoal | undefined {
   return GOALS.find((g) => GOAL_PLAN[g] === planId);
+}
+
+function validHrMax(text: string): number | undefined {
+  const n = Number(text);
+  return text.trim() !== '' && Number.isInteger(n) && n >= 100 && n <= 230 ? n : undefined;
 }
 
 function validFtp(text: string): number | undefined {
@@ -95,6 +102,8 @@ function Wizard({ me }: { me: Player | undefined }) {
   const [trainingDays, setTrainingDays] = useState<number[]>([]);
   const [pickedKind, setPickedKind] = useState<FtpKind | undefined>();
   const [ftpText, setFtpText] = useState(me ? String(me.ftp) : '');
+  const [hrText, setHrText] = useState(me?.hrMax !== undefined ? String(me.hrMax) : '');
+  const [ageText, setAgeText] = useState('');
   const [confirming, setConfirming] = useState<false | 'choose' | 'reset'>(false);
   const [existing, setExisting] = useState<PlanProgress | undefined>();
   const [error, setError] = useState<string | undefined>();
@@ -109,6 +118,9 @@ function Wizard({ me }: { me: Player | undefined }) {
       : ftpKind === 'known'
         ? { kind: 'unknown' }
         : { kind: ftpKind };
+
+  const hrBlank = hrText.trim() === '';
+  const hrValue = validHrMax(hrText);
 
   useEffect(() => {
     heading.current?.focus();
@@ -138,7 +150,9 @@ function Wizard({ me }: { me: Player | undefined }) {
       ? goal !== undefined
       : step === 2
         ? ftpKind !== 'known' || ftpValue !== undefined
-        : true;
+        : step === 3
+          ? hrBlank || hrValue !== undefined
+          : true;
 
   function weeksOf(p: Plan): string {
     const label = weeksLabel(p.weeks.length);
@@ -178,6 +192,7 @@ function Wizard({ me }: { me: Player | undefined }) {
         settings: rec.settings,
         mode,
         ftp: ftpAnswer.kind === 'known' ? ftpAnswer.ftp : undefined,
+        ...(hrValue !== undefined ? { hrMax: hrValue } : {}),
         meName: t('plans.me'),
         currentActiveId: settings.activePlanId,
       });
@@ -422,6 +437,64 @@ function Wizard({ me }: { me: Player | undefined }) {
                 <p className={styles.desc}>{t('wizard.ftp.noWattsBody')}</p>
               </div>
             </div>
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            <h1 ref={heading} tabIndex={-1}>
+              {t('wizard.hr.title')}
+            </h1>
+            <p className={styles.sub}>{t('wizard.hr.sub')}</p>
+            <div className={styles.ftpCard}>
+              <div className={styles.ftpInput}>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  aria-label={t('wizard.hr.input')}
+                  aria-invalid={!hrBlank && hrValue === undefined}
+                  value={hrText}
+                  onChange={(e) => setHrText(e.target.value)}
+                />
+                <span aria-hidden="true">{t('wizard.hr.unit')}</span>
+              </div>
+              <div className={styles.ftpInput}>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  aria-label={t('wizard.hr.age')}
+                  value={ageText}
+                  onChange={(e) => setAgeText(e.target.value)}
+                />
+                <Button
+                  disabled={!(Number(ageText) > 0)}
+                  onClick={() => setHrText(String(estimateHrMax(Number(ageText))))}
+                >
+                  {t('wizard.hr.fromAge')}
+                </Button>
+              </div>
+              {!hrBlank && hrValue === undefined && (
+                <small className={styles.err} role="alert">
+                  {t('players.hrMaxError')}
+                </small>
+              )}
+              {hrValue !== undefined && (
+                <ul className={styles.hrBars} data-testid="hr-preview">
+                  {HR_ZONES.map((z) => {
+                    const r = bpmRange(z.zone, hrValue);
+                    return (
+                      <li key={z.zone} data-zone={z.zone}>
+                        <b>{`Z${z.zone}`}</b> <span>{t(`hr.zone${z.zone}`)}</span>{' '}
+                        <span>
+                          {r.min}–{r.max} {t('hr.bpm')}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+            <p className={styles.note}>{t('wizard.hr.skipHint')}</p>
           </>
         )}
 
