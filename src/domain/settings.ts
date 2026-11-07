@@ -7,6 +7,10 @@ export const WORLD_SETTING_IDS = ['neon-tunnel', 'road', 'scenes'] as const;
 export type WorldSettingId = (typeof WORLD_SETTING_IDS)[number];
 export const DEFAULT_WORLD_SETTING: WorldSettingId = 'neon-tunnel';
 
+/** How ramps are ridden: stepped for a manual knob, stepped with a power hint, or continuous. */
+export const RESISTANCE_MODES = ['knob', 'knobPower', 'smart'] as const;
+export type ResistanceMode = (typeof RESISTANCE_MODES)[number];
+
 export interface Equipment {
   showsWatts: boolean;
   showsCadence: boolean;
@@ -46,6 +50,11 @@ export interface Settings {
   /** Stored key names (hyperride*) are kept for saved data; the feature is called World. */
   hyperrideQuality: 'high' | 'low' | 'auto';
   hyperrideWorld: WorldSettingId;
+  /**
+   * Absent in settings stored before stepped effort existed: those riders keep smooth ramps
+   * (resolveResistanceMode gives 'smart'); fresh profiles start with 'knob'.
+   */
+  resistanceMode?: ResistanceMode;
   /** Diagnostics mode: live FPS overlay while training, device info and performance test. */
   diagnostics?: boolean;
   /** Show heart-rate zones; undefined = on when the "me" player has an HRmax. */
@@ -90,6 +99,7 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   effectsIntensity: z.number().min(0).max(1),
   hyperrideQuality: z.enum(['high', 'low', 'auto']),
   hyperrideWorld: z.enum(WORLD_SETTING_IDS).catch(DEFAULT_WORLD_SETTING),
+  resistanceMode: z.enum(RESISTANCE_MODES).optional().catch(undefined),
   diagnostics: z.boolean().optional(),
   showHrZones: z.boolean().optional(),
   activePlanId: z.string().optional(),
@@ -107,8 +117,14 @@ export const DEFAULT_SETTINGS: Settings = {
   effectsIntensity: 1,
   hyperrideQuality: 'high',
   hyperrideWorld: DEFAULT_WORLD_SETTING,
+  resistanceMode: 'knob',
   recentYoutubeUrls: [],
 };
+
+/** The effective mode: a stored object without the field is an existing rider and stays smooth. */
+export function resolveResistanceMode(s: Pick<Settings, 'resistanceMode'>): ResistanceMode {
+  return RESISTANCE_MODES.find((m) => m === s.resistanceMode) ?? 'smart';
+}
 
 /** A stored world id when this build knows it, else the default (missing or from a newer build). */
 export function parseWorldSetting(value: unknown): WorldSettingId {

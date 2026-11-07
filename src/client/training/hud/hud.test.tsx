@@ -98,14 +98,42 @@ describe('EffortGroup', () => {
   });
 });
 
+describe('EffortGroup position and steps', () => {
+  it('shows the current position badge even without any cadence tile', () => {
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" position="standing" />);
+    expect(screen.getAllByTestId('position-badge')).toHaveLength(1);
+    expect(screen.getByTestId('position-badge')).toHaveAttribute('data-position', 'standing');
+  });
+  it('shows the next block position in NEXT', () => {
+    const next = seg({ index: 1, startSec: 60, durationSec: 30, position: 'standing' });
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" position="seated" next={next} />);
+    expect(screen.getByTestId('next-block')).toHaveTextContent(/standing/i);
+  });
+  it('NEXT does not mention a position for an old segment without one', () => {
+    const next = seg({ index: 1, startSec: 60, durationSec: 30 });
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" next={next} />);
+    expect(screen.getByTestId('next-block').textContent ?? '').not.toMatch(/undefined/);
+  });
+  it('shows the step line only for stepped segments', () => {
+    const { rerender } = render(
+      <EffortGroup effort={7} ftpPct={92} labelKey="hard" step={{ index: 1, count: 4 }} />,
+    );
+    expect(screen.getByTestId('step-line')).toHaveTextContent('Step 2/4');
+    rerender(<EffortGroup effort={7} ftpPct={92} labelKey="hard" step={{ index: 0, count: 1 }} />);
+    expect(screen.queryByTestId('step-line')).toBeNull();
+    rerender(<EffortGroup effort={7} ftpPct={92} labelKey="hard" />);
+    expect(screen.queryByTestId('step-line')).toBeNull();
+  });
+});
+
 describe('MeasuresGroup', () => {
-  it('shows the cadence and the position', () => {
-    render(<MeasuresGroup rpm={90} position="seated" isTarget={false} />);
+  it('shows the cadence (the position lives in the effort group)', () => {
+    render(<MeasuresGroup rpm={90} isTarget={false} />);
     const root = screen.getByTestId('rpm-value');
     expect(root).toHaveAttribute('data-g', 'M');
     expect(root).toHaveTextContent('90');
     expect(root).toHaveTextContent('rpm');
-    expect(root).toHaveTextContent('Seated');
+    expect(root).not.toHaveTextContent(/seated|standing/i);
   });
   it('shows a dash when rpm is undefined', () => {
     render(<MeasuresGroup isTarget={false} />);
@@ -116,8 +144,8 @@ describe('MeasuresGroup', () => {
     expect(screen.getByTestId('rpm-value')).toHaveTextContent(/target from plan/i);
   });
   it('drops the description in the bare strip', () => {
-    render(<MeasuresGroup rpm={85} position="standing" isTarget bare />);
-    expect(screen.getByTestId('rpm-value')).not.toHaveTextContent(/standing|target/i);
+    render(<MeasuresGroup rpm={85} isTarget bare />);
+    expect(screen.getByTestId('rpm-value')).not.toHaveTextContent(/target/i);
   });
 });
 

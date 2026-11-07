@@ -336,6 +336,19 @@ function LeafInspector({
 
   return (
     <>
+      <div className={styles.group}>
+        <span className={styles.groupLabel}>{t('editor.inspector.position')}</span>
+        <Segmented<Position | ''>
+          label={t('editor.inspector.position')}
+          value={leaf.position ?? ''}
+          options={[
+            { value: 'seated', label: t('editor.inspector.seated') },
+            { value: 'standing', label: t('editor.inspector.standing') },
+          ]}
+          onChange={(v) => patch({ position: v === '' ? undefined : v })}
+        />
+      </div>
+
       {leaf.kind === 'steady' ? (
         <EffortPicker
           label={t('editor.inspector.effort')}
@@ -396,18 +409,24 @@ function LeafInspector({
         />
       </div>
 
-      <div className={styles.group}>
-        <span className={styles.groupLabel}>{t('editor.inspector.position')}</span>
-        <Segmented<Position | ''>
-          label={t('editor.inspector.position')}
-          value={leaf.position ?? ''}
-          options={[
-            { value: 'seated', label: t('editor.inspector.seated') },
-            { value: 'standing', label: t('editor.inspector.standing') },
-          ]}
-          onChange={(v) => patch({ position: v === '' ? undefined : v })}
+      {leaf.kind === 'ramp' && (
+        <CommitField
+          label={t('editor.inspector.steps')}
+          value={leaf.steps === undefined || leaf.steps === 0 ? '' : String(leaf.steps)}
+          inputMode="numeric"
+          testId="block-steps"
+          validate={(s) => {
+            if (s.trim() === '') return undefined;
+            const v = Number(s);
+            return Number.isInteger(v) && v >= 0 && v <= 8
+              ? undefined
+              : t('editor.inspector.stepsError');
+          }}
+          onCommit={(s) =>
+            patch({ steps: s.trim() === '' || Number(s) === 0 ? undefined : Number(s) })
+          }
         />
-      </div>
+      )}
 
       <CommitField
         label={t('editor.inspector.cue')}

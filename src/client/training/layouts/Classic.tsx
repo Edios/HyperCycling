@@ -56,7 +56,6 @@ export function Classic({
         {!hideRpmTile && (
           <MeasuresGroup
             {...(view.segment.rpm !== undefined ? { rpm: view.segment.rpm } : {})}
-            {...(view.segment.position ? { position: view.segment.position } : {})}
             isTarget={rpmIsTarget}
             fit
             className={styles.measures}
@@ -67,6 +66,8 @@ export function Classic({
           ftpPct={view.ftpPct}
           labelKey={view.labelKey}
           {...(view.next ? { next: view.next } : {})}
+          position={view.position}
+          step={{ index: view.stepIndex, count: view.stepCount }}
           motion={!reducedMotion}
           hr={
             <HrTarget

@@ -1,11 +1,13 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { DashLine, EffortRing } from '../../brand';
 import { useT } from '../../i18n';
-import type { Segment } from '../../../domain/segments';
+import { positionOf, type Segment } from '../../../domain/segments';
+import type { Position } from '../../../domain/workout';
 import type { EffortLabelKey } from '../../../domain/effort';
 import { translateContentText } from '../content-text';
 import { formatClock } from '../format';
 import hud from './hud.module.css';
+import { PositionBadge } from './PositionBadge';
 import styles from './EffortGroup.module.css';
 
 /** The word 'Effort' goes inside the ring only from this ring size (px); below, a caption. */
@@ -16,6 +18,10 @@ export interface EffortGroupProps {
   ftpPct: number;
   labelKey: EffortLabelKey;
   next?: Segment;
+  /** Position of the current block; the badge is drawn whenever the group is. */
+  position?: Position;
+  /** Step inside a stepped ramp; the line is drawn only when count > 1. */
+  step?: { index: number; count: number };
   /**
    * Where NEXT sits: 'below' = under the ring behind a grey dash (corner, wing and tile panels),
    * 'aside' = a stack to the right of the ring (column section, Minimal strip, phone).
@@ -38,6 +44,8 @@ export function EffortGroup({
   ftpPct,
   labelKey,
   next,
+  position,
+  step,
   nextPlacement = 'below',
   glass = false,
   section = false,
@@ -104,6 +112,14 @@ export function EffortGroup({
             {t('training.effort')}
           </div>
         )}
+        <div className={styles.posRow}>
+          <PositionBadge position={position} />
+          {step && step.count > 1 && (
+            <div className={`${hud.lbl} ${styles.step}`} data-testid="step-line">
+              {t('training.step', { n: step.index + 1, total: step.count })}
+            </div>
+          )}
+        </div>
       </div>
       <DashLine className={styles.dash} />
       <div
@@ -123,6 +139,9 @@ export function EffortGroup({
               className={styles.nextRing}
             />
             <div className={`${hud.big} ${styles.nextTime}`}>{formatClock(next.durationSec)}</div>
+            <div className={`${hud.cap} ${styles.nextPos}`}>
+              {t(positionOf(next) === 'standing' ? 'training.standing' : 'training.seated')}
+            </div>
             {nextDesc && <div className={`${hud.cap} ${styles.nextDesc}`}>{nextDesc}</div>}
           </>
         ) : (

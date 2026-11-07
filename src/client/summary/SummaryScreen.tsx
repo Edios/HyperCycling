@@ -1,3 +1,4 @@
+import { resolveResistanceMode } from '../../domain/settings';
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { DEFAULT_PLAN_SETTINGS, type Plan, type PlanProgress } from '../../domain/plan';
@@ -55,8 +56,8 @@ function Summary({ result }: { result: LastResult }) {
   const { settings, loaded } = useSettings();
 
   const segments = useMemo(
-    () => flattenWorkout(result.workout, settings.effortTable),
-    [result.workout, settings.effortTable],
+    () => flattenWorkout(result.workout, settings.effortTable, resolveResistanceMode(settings)),
+    [result.workout, settings],
   );
   const totalSec = segments.reduce((s, x) => s + x.durationSec, 0);
 

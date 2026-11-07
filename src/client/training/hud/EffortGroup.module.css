@@ -46,6 +46,41 @@
   margin-top: calc(0.4 * var(--u));
 }
 
+.posRow {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  /* Compact: the badge tucks under the ring name and adds as little height as possible. */
+  gap: calc(1.2 * var(--u));
+  margin-top: calc(-1.2 * var(--u));
+  --lbl: clamp(11px, calc(2 * var(--u)), 30px);
+}
+
+.posRow > [data-testid='position-badge'] {
+  padding: calc(0.3 * var(--u)) calc(1.2 * var(--u));
+  border-width: 1.5px;
+}
+
+@media (orientation: landscape) and (max-height: 450px) {
+  /* Short phone screens: the badge stays, the step line is the first thing to give way. */
+  .step {
+    display: none;
+  }
+}
+
+.step {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.nextPos {
+  grid-area: pos;
+  margin-top: calc(0.4 * var(--u));
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .dash {
   width: 100%;
 }
@@ -55,6 +90,7 @@
   grid-template-areas:
     'ring label'
     'ring time'
+    'ring pos'
     'ring desc';
   grid-template-columns: auto auto;
   align-items: center;

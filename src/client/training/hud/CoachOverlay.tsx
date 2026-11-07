@@ -23,6 +23,16 @@ const SIMPLE_KEYS: Record<
   cadenceDown: 'coach.cadenceDown',
 };
 
+type ResistanceCue = Extract<CoachCue, { kind: 'addResistance' | 'reduceResistance' }>;
+
+function resistanceText(cue: ResistanceCue, t: ReturnType<typeof useT>): string {
+  const base = t(cue.kind === 'addResistance' ? 'coach.addResistance' : 'coach.reduceResistance', {
+    s: cue.inSec,
+    effort: cue.effort,
+  });
+  return cue.rpm === undefined ? base : `${base}, ${cue.rpm} ${t('training.rpm')}`;
+}
+
 export function CoachOverlay({ cue, cueKey, color, reducedMotion = false }: CoachOverlayProps) {
   const t = useT();
   const text = !cue
@@ -31,7 +41,9 @@ export function CoachOverlay({ cue, cueKey, color, reducedMotion = false }: Coac
       ? translateContentText(cue.text, 'cue')
       : cue.kind === 'cadence'
         ? t('training.cadenceCue', { rpm: cue.rpm })
-        : t(SIMPLE_KEYS[cue.kind]);
+        : cue.kind === 'addResistance' || cue.kind === 'reduceResistance'
+          ? resistanceText(cue, t)
+          : t(SIMPLE_KEYS[cue.kind]);
   const style: CSSProperties & Record<'--c', string> = { '--c': color };
   return (
     <>

@@ -378,7 +378,8 @@
   }
 
   .root[data-players='true'] {
-    --ring: 34vw;
+    /* The position row under the effort name needs ~6vw; the ring gives it up. */
+    --ring: 28vw;
   }
 
   .root > [data-g='M'] {

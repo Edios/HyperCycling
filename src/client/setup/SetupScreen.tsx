@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
-import type { WorldSettingId } from '../../domain/settings';
+import { resolveResistanceMode, type WorldSettingId } from '../../domain/settings';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
 import { playerSchema, type Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
@@ -142,8 +142,8 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
     [workout, plan, planSettings],
   );
   const segments = useMemo(
-    () => flattenWorkout(scaled, settings.effortTable),
-    [scaled, settings.effortTable],
+    () => flattenWorkout(scaled, settings.effortTable, resolveResistanceMode(settings)),
+    [scaled, settings],
   );
   const cueCount = scaled.musicCues.length;
   const hasCues = cueCount > 0;

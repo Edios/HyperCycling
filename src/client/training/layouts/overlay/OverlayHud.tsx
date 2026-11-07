@@ -51,6 +51,8 @@ export function OverlayHud({
       ftpPct={view.ftpPct}
       labelKey={view.labelKey}
       {...(view.next ? { next: view.next } : {})}
+      position={view.position}
+      step={{ index: view.stepIndex, count: view.stepCount }}
       nextPlacement={column || tunnel ? 'aside' : 'below'}
       glass={glass}
       section={column}
@@ -73,7 +75,6 @@ export function OverlayHud({
   const measures = hideRpmTile ? null : (
     <MeasuresGroup
       {...(view.segment.rpm !== undefined ? { rpm: view.segment.rpm } : {})}
-      {...(view.segment.position ? { position: view.segment.position } : {})}
       isTarget={rpmIsTarget}
       section={column}
       line={column}

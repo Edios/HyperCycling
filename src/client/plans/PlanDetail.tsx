@@ -1,3 +1,4 @@
+import { resolveResistanceMode } from '../../domain/settings';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -464,8 +465,9 @@ function Preview({ testId, badge, badgeClass, workout, cfg }: PreviewProps) {
     }
   }, [workout, cfg]);
   const segments = useMemo(
-    () => (scaled ? flattenWorkout(scaled, settings.effortTable) : []),
-    [scaled, settings.effortTable],
+    () =>
+      scaled ? flattenWorkout(scaled, settings.effortTable, resolveResistanceMode(settings)) : [],
+    [scaled, settings],
   );
   return (
     <div data-testid={testId}>

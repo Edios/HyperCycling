@@ -1,3 +1,4 @@
+import { resolveResistanceMode } from '../../domain/settings';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -153,8 +154,9 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
     }
   }, [nextWorkout, progress.settings]);
   const segments = useMemo(
-    () => (scaled ? flattenWorkout(scaled, settings.effortTable) : []),
-    [scaled, settings.effortTable],
+    () =>
+      scaled ? flattenWorkout(scaled, settings.effortTable, resolveResistanceMode(settings)) : [],
+    [scaled, settings],
   );
 
   const lastWorkout = last ? byId.get(last.workoutId) : undefined;

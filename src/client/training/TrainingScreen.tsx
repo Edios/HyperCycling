@@ -45,7 +45,7 @@ import {
   useNavigate,
   type Blocker,
 } from 'react-router-dom';
-import { cueForTransition, type CoachCue } from '../../domain/coach';
+import { cueForTransition, stepPreCue, type CoachCue } from '../../domain/coach';
 import type { TrackRef } from '../../domain/workout';
 import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
@@ -218,6 +218,18 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     () => buildTrainingView(runtime.segments, state, settings.effortTable),
     [runtime.segments, state, settings.effortTable],
   );
+
+  // Pre-cue for the next step of a stepped ramp ("In 5 s: add resistance"), once per step.
+  const lastStepCue = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!coachOn || state.status !== 'running') return;
+    const seg = runtime.segments[state.segmentIndex];
+    if (!seg) return;
+    const pre = stepPreCue(seg, state.segmentElapsedSec);
+    if (!pre || pre.key === lastStepCue.current) return;
+    lastStepCue.current = pre.key;
+    setCue((prev) => ({ cue: pre.cue, key: prev.key + 1 }));
+  }, [coachOn, runtime.segments, state.status, state.segmentIndex, state.segmentElapsedSec]);
 
   const leave = useCallback(
     (completed: boolean) => {

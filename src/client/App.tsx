@@ -5,6 +5,7 @@ import { DevHome } from './screens/DevHome';
 import { SettingsEffects } from './settings/SettingsEffects';
 import { SettingsScreen } from './settings/SettingsScreen';
 import { PlayersScreen } from './players/PlayersScreen';
+import { KnobPrompt } from './settings/KnobPrompt';
 import { ResumePrompt } from './setup/ResumePrompt';
 import { SetupScreen } from './setup/SetupScreen';
 import { SummaryScreen } from './summary/SummaryScreen';
@@ -28,6 +29,7 @@ function Root() {
       <SettingsEffects />
       <Intro />
       <ResumePrompt />
+      <KnobPrompt />
       <Outlet />
     </>
   );

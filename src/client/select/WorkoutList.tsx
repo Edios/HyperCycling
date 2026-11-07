@@ -1,3 +1,4 @@
+import { resolveResistanceMode } from '../../domain/settings';
 import { memo, useMemo, type KeyboardEvent } from 'react';
 import { flattenWorkout } from '../../domain/segments';
 import type { Workout } from '../../domain/workout';
@@ -34,8 +35,8 @@ export const WorkoutRow = memo(function WorkoutRow({
   const { settings } = useSettings();
   const name = localizedText(workout, lang).name;
   const segments = useMemo(
-    () => flattenWorkout(workout, settings.effortTable),
-    [workout, settings.effortTable],
+    () => flattenWorkout(workout, settings.effortTable, resolveResistanceMode(settings)),
+    [workout, settings],
   );
   const difficulty = useMemo(() => difficultyOf(segments), [segments]);
   return (

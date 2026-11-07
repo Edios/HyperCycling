@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { flattenWorkout } from '../../domain/segments';
 import type { Player } from '../../domain/player';
-import type { SessionConfig } from '../../domain/settings';
+import { resolveResistanceMode, type SessionConfig } from '../../domain/settings';
 import { totalDurationSec, type Workout } from '../../domain/workout';
 import { builtinWorkouts } from '../data/builtin';
 import { useSettings } from '../data/useSettings';
@@ -39,7 +39,7 @@ export function DevHome() {
     };
     useSessionStore.getState().load({
       workout,
-      segments: flattenWorkout(workout, settings.effortTable),
+      segments: flattenWorkout(workout, settings.effortTable, resolveResistanceMode(settings)),
       config,
       players,
     });
