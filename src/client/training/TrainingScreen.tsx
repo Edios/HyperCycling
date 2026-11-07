@@ -47,7 +47,13 @@ import {
   useNavigate,
   type Blocker,
 } from 'react-router-dom';
-import { cueForTransition, stepPreCue, type CoachCue } from '../../domain/coach';
+import {
+  buildCuePlan,
+  cuePlanAt,
+  cueForTransition,
+  stepPreCue,
+  type CoachCue,
+} from '../../domain/coach';
 import type { TrackRef } from '../../domain/workout';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT } from '../i18n';
@@ -239,6 +245,26 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     lastStepCue.current = pre.key;
     setCue((prev) => ({ cue: pre.cue, key: prev.key + 1 }));
   }, [coachOn, runtime.segments, state.status, state.segmentIndex, state.segmentElapsedSec]);
+
+  // M2 script: announcement, closing and silence notice, driven by the workout clock (not frames).
+  const cuePlan = useMemo(
+    () =>
+      buildCuePlan(runtime.segments, {
+        numericCadence: settings.equipment.showsCadence,
+        ...(runtime.workout.silenceLastSec
+          ? { silenceLastSec: runtime.workout.silenceLastSec }
+          : {}),
+      }),
+    [runtime.segments, runtime.workout.silenceLastSec, settings.equipment.showsCadence],
+  );
+  const lastPlanKey = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!coachOn || state.status !== 'running') return;
+    const hit = cuePlanAt(cuePlan, state.workoutElapsedSec);
+    if (!hit || hit.key === lastPlanKey.current) return;
+    lastPlanKey.current = hit.key;
+    setCue((prev) => ({ cue: hit.cue, key: prev.key + 1 }));
+  }, [coachOn, cuePlan, state.status, state.workoutElapsedSec]);
 
   const leave = useCallback(
     (completed: boolean) => {

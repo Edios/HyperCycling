@@ -33,17 +33,39 @@ function resistanceText(cue: ResistanceCue, t: ReturnType<typeof useT>): string 
   return cue.rpm === undefined ? base : `${base}, ${cue.rpm} ${t('training.rpm')}`;
 }
 
+const PRE_KEYS: Record<Extract<CoachCue, { kind: 'pre' }>['change'], MessageKey> = {
+  attack: 'coach.preAttack',
+  standUp: 'coach.preStandUp',
+  sitDown: 'coach.preSitDown',
+  cadenceUp: 'coach.preCadenceUp',
+  cadenceDown: 'coach.preCadenceDown',
+};
+
+function cueText(cue: CoachCue, t: ReturnType<typeof useT>): string {
+  switch (cue.kind) {
+    case 'custom':
+      return translateContentText(cue.text, 'cue');
+    case 'cadence':
+      return t('training.cadenceCue', { rpm: cue.rpm });
+    case 'addResistance':
+    case 'reduceResistance':
+      return resistanceText(cue, t);
+    case 'pre':
+      return t(PRE_KEYS[cue.change], { s: cue.inSec });
+    case 'preCadence':
+      return t('coach.preCadence', { s: cue.inSec, rpm: cue.rpm });
+    case 'closing':
+      return t(cue.after === 'position' ? 'coach.closingPosition' : 'coach.closingEffort');
+    case 'silenceAhead':
+      return t('coach.silenceAhead', { s: cue.inSec });
+    default:
+      return t(SIMPLE_KEYS[cue.kind]);
+  }
+}
+
 export function CoachOverlay({ cue, cueKey, color, reducedMotion = false }: CoachOverlayProps) {
   const t = useT();
-  const text = !cue
-    ? ''
-    : cue.kind === 'custom'
-      ? translateContentText(cue.text, 'cue')
-      : cue.kind === 'cadence'
-        ? t('training.cadenceCue', { rpm: cue.rpm })
-        : cue.kind === 'addResistance' || cue.kind === 'reduceResistance'
-          ? resistanceText(cue, t)
-          : t(SIMPLE_KEYS[cue.kind]);
+  const text = cue ? cueText(cue, t) : '';
   const style: CSSProperties & Record<'--c', string> = { '--c': color };
   return (
     <>

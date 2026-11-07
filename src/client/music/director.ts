@@ -33,6 +33,8 @@ export interface MusicDirectorOptions {
   onPlaying?(track: TrackRef | null): void;
   /** Volume 0..1 applied to every provider; 1 by default. */
   volume?: number;
+  /** Music fades out and stays off for this many seconds before the workout ends (0 = off). */
+  silenceLastSec?: number;
   fadeMs?: number;
   /**
    * Fade length when one track is replaced by another (a cue cut or a seek). Shorter than `fadeMs`
@@ -139,8 +141,16 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
   let playCounter = 0;
   const retryTimers = new Set<ReturnType<typeof setTimeout>>();
 
+  const silenceFromSec = (() => {
+    const quiet = options.silenceLastSec ?? 0;
+    if (!(quiet > 0)) return Infinity;
+    let total = 0;
+    for (const s of options.segments) total = Math.max(total, s.startSec + s.durationSec);
+    return total - quiet;
+  })();
+
   const desiredNow = (state: EngineState): ScheduledTrack | null =>
-    state.status === 'running'
+    state.status === 'running' && state.workoutElapsedSec < silenceFromSec
       ? musicAt({
           segments: options.segments,
           cues: options.cues,
