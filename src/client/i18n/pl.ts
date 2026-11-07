@@ -885,6 +885,8 @@ export const pl: Messages = {
       exactFtpError: '% FTP musi być od 20 do 200',
       time: 'Czas',
       timeError: 'Użyj m:ss, co najmniej 0:05',
+      steps: 'Stopnie (puste = automatycznie)',
+      stepsError: 'Podaj liczbę całkowitą od 0 do 8',
       rpm: 'Kadencja',
       rpmUnit: 'rpm',
       rpmWarning: 'Zwykła kadencja to 55 do 120 rpm',

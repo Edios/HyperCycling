@@ -144,6 +144,41 @@ describe('palette', () => {
   });
 });
 
+describe('inspector: position and steps', () => {
+  async function openRamp() {
+    await openNew();
+    fireEvent.click(screen.getByTestId('palette-ramp'));
+    // the new ramp is selected
+  }
+
+  it('shows the position control before the effort pickers', async () => {
+    await openRamp();
+    const position = screen.getByRole('radiogroup', { name: 'Position' });
+    const effort = screen.getByRole('group', { name: 'Effort at start' });
+    expect(
+      position.compareDocumentPosition(effort) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('a ramp has a Steps field (empty = auto) that stores 1..8 and rejects 9', async () => {
+    await openRamp();
+    const field = screen.getByTestId('block-steps');
+    expect(field).toHaveValue('');
+    fireEvent.change(field, { target: { value: '4' } });
+    fireEvent.blur(field);
+    expect(screen.getByTestId('block-steps')).toHaveValue('4');
+    fireEvent.change(field, { target: { value: '9' } });
+    fireEvent.blur(field);
+    expect(screen.getByText(/0 to 8/)).toBeInTheDocument();
+  });
+
+  it('a steady block has no Steps field', async () => {
+    await openNew();
+    fireEvent.click(block(1));
+    expect(screen.queryByTestId('block-steps')).not.toBeInTheDocument();
+  });
+});
+
 describe('inspector', () => {
   async function openUser() {
     repo.store.set('user-1', userWorkout());

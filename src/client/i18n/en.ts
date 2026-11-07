@@ -884,6 +884,8 @@ export const en = {
       exactFtpError: '% FTP must be from 20 to 200',
       time: 'Time',
       timeError: 'Use m:ss, at least 0:05',
+      steps: 'Steps (empty = automatic)',
+      stepsError: 'Use a whole number from 0 to 8',
       rpm: 'Cadence',
       rpmUnit: 'rpm',
       rpmWarning: 'Usual cadence is 55 to 120 rpm',
