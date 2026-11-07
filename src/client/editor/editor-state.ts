@@ -1,6 +1,7 @@
 import type { EffortLevel } from '../../domain/effort';
 import { newId } from '../../domain/ids';
 import {
+  repairSongs,
   workoutSchema,
   type Block,
   type RampBlock,
@@ -209,8 +210,10 @@ function noop(state: EditorState): EditorState {
 /** Clones the workout, runs `fn` on the clone, validates, and records history on success. */
 function apply(state: EditorState, fn: (w: Workout, nextId: () => string) => Outcome): EditorState {
   const draft = structuredClone(state.workout);
+  const oldOrder = draft.blocks.map((b) => b.id);
   const outcome = fn(draft, state.idFactory ?? newId);
   if ('error' in outcome) return fail(state, outcome.error);
+  repairSongs(draft, oldOrder);
   draft.updatedAt = (state.now ?? systemNow)();
   const parsed = workoutSchema.safeParse(draft);
   if (!parsed.success) return fail(state, ERROR_INVALID);
