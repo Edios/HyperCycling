@@ -58,6 +58,8 @@ export interface WorldRenderer {
   init(canvas: HTMLCanvasElement, quality: WorldQuality): void;
   update(frame: WorldFrame): void;
   resize(width: number, height: number): void;
+  /** Continuous resolution scale 0.5..1 set by the quality controller (optional: worlds without it ignore it). */
+  setRenderScale?(scale: number): void;
   /** Horizontal view offset as a fraction of the width (Column HUD without players: 0.11). */
   setViewOffsetX(fraction: number): void;
   /** Current (smoothed) speed in units per second. */

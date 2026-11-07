@@ -29,3 +29,10 @@ describe('renderPixelRatio', () => {
     expect(wantsAntialias(2)).toBe(false);
   });
 });
+
+describe('renderPixelRatio render scale', () => {
+  it('multiplies the budgeted ratio by the continuous scale', () => {
+    expect(renderPixelRatio(800, 600, true, 2, 0.5)).toBe(1);
+    expect(renderPixelRatio(3840, 2160, true, 1, 0.5)).toBeCloseTo(0.25, 5);
+  });
+});

@@ -88,13 +88,18 @@ export interface ScenesOptions {
   reducedMotion?: boolean;
 }
 
-/** A strip along the road between two lateral offsets (fractions of ROAD_HALF). */
-interface Ribbon {
-  mesh: THREE.Mesh;
-  pos: Float32Array;
+/** One strip along the road between two lateral offsets (fractions of ROAD_HALF). */
+interface Strip {
   inner: number;
   outer: number;
   lift: number;
+}
+
+/** One mesh (one draw call) holding one or more strips that share a material. */
+interface Ribbon {
+  mesh: THREE.Mesh;
+  pos: Float32Array;
+  strips: readonly Strip[];
 }
 
 interface Streak {
@@ -185,6 +190,7 @@ function stripIndex(segments: number, columns = 2): number[] {
 
 export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
   let s: Scene3D | undefined;
+  let renderScale = 1;
   let width = 1;
   let height = 1;
   let viewOffsetX = 0;
@@ -256,28 +262,30 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
 
   function makeRibbon(
     segments: number,
-    inner: number,
-    outer: number,
+    strips: readonly Strip[],
     mat: THREE.Material,
     order: number,
-    lift: number,
     created: Disposable[],
     extra?: (geo: THREE.BufferGeometry) => void,
   ): Ribbon {
-    const pos = new Float32Array((segments + 1) * 2 * 3);
+    const per = (segments + 1) * 2;
+    const pos = new Float32Array(strips.length * per * 3);
     const geo = new THREE.BufferGeometry();
     created.push(geo);
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setIndex(stripIndex(segments));
+    const one = stripIndex(segments);
+    const idx: number[] = [];
+    for (let k = 0; k < strips.length; k++) for (const v of one) idx.push(v + k * per);
+    geo.setIndex(idx);
     extra?.(geo);
     const mesh = new THREE.Mesh(geo, mat);
     mesh.frustumCulled = false;
     mesh.renderOrder = order;
-    return { mesh, pos, inner, outer, lift };
+    return { mesh, pos, strips };
   }
 
   function build(renderer: THREE.WebGLRenderer, high: boolean, created: Disposable[]): Scene3D {
-    renderer.setPixelRatio(renderPixelRatio(width, height, high));
+    renderer.setPixelRatio(renderPixelRatio(width, height, high, undefined, renderScale));
     renderer.setSize(width, height, false);
     renderer.autoClear = false;
 
@@ -366,9 +374,18 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     });
     created.push(edge);
     const ribbons = [
-      makeRibbon(segs, -1, 1, road, 1, 0, created),
-      makeRibbon(segs, -EDGE_OUTER, -EDGE_INNER, edge, 4, 0.01, created),
-      makeRibbon(segs, EDGE_INNER, EDGE_OUTER, edge, 4, 0.01, created),
+      makeRibbon(segs, [{ inner: -1, outer: 1, lift: 0 }], road, 1, created),
+      // both edge lines share a material and render order: one mesh, one draw call
+      makeRibbon(
+        segs,
+        [
+          { inner: -EDGE_OUTER, outer: -EDGE_INNER, lift: 0.01 },
+          { inner: EDGE_INNER, outer: EDGE_OUTER, lift: 0.01 },
+        ],
+        edge,
+        4,
+        created,
+      ),
     ];
     let glow: THREE.MeshBasicMaterial | undefined;
     if (high) {
@@ -391,19 +408,31 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       created.push(glow);
       // u across the strip for the soft texture; brightness fades with depth (fixed per section)
       const glowAttrs = (geo: THREE.BufferGeometry): void => {
-        const uv = new Float32Array((segs + 1) * 4);
-        const col = new Float32Array((segs + 1) * 6);
-        for (let i = 0; i <= segs; i++) {
-          uv.set([0, 0.5, 1, 0.5], i * 4);
-          const fade = Math.max(0, 1 - (ribbonDepths[i] ?? 0) / 220);
-          col.fill(fade * fade, i * 6, i * 6 + 6);
+        const uv = new Float32Array((segs + 1) * 4 * 2);
+        const col = new Float32Array((segs + 1) * 6 * 2);
+        for (let k = 0; k < 2; k++) {
+          for (let i = 0; i <= segs; i++) {
+            const n = k * (segs + 1) + i;
+            uv.set([0, 0.5, 1, 0.5], n * 4);
+            const fade = Math.max(0, 1 - (ribbonDepths[i] ?? 0) / 220);
+            col.fill(fade * fade, n * 6, n * 6 + 6);
+          }
         }
         geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
         geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
       };
       ribbons.push(
-        makeRibbon(segs, -GLOW_OUTER, -GLOW_INNER, glow, 3, 0.005, created, glowAttrs),
-        makeRibbon(segs, GLOW_INNER, GLOW_OUTER, glow, 3, 0.005, created, glowAttrs),
+        makeRibbon(
+          segs,
+          [
+            { inner: -GLOW_OUTER, outer: -GLOW_INNER, lift: 0.005 },
+            { inner: GLOW_INNER, outer: GLOW_OUTER, lift: 0.005 },
+          ],
+          glow,
+          3,
+          created,
+          glowAttrs,
+        ),
       );
     }
     for (const r of ribbons) scene.add(r.mesh);
@@ -533,7 +562,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     if (glow) out.glow = glow;
     if (high) {
       out.unwatchDpr = watchDevicePixelRatio(() => {
-        renderer.setPixelRatio(renderPixelRatio(width, height, true));
+        renderer.setPixelRatio(renderPixelRatio(width, height, true, undefined, renderScale));
         renderer.setSize(width, height, false);
       });
     }
@@ -699,18 +728,22 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
 
     // road ribbons
     for (const r of ribbons) {
-      const { pos, inner, outer, lift: up } = r;
-      for (let i = 0; i < ribbonDepths.length; i++) {
-        const d = ribbonDepths[i] ?? 0;
-        const x = roadX(d);
-        const y = roadY(d) + up;
-        const o = i * 6;
-        pos[o] = x + inner * ROAD_HALF;
-        pos[o + 1] = y;
-        pos[o + 2] = -d;
-        pos[o + 3] = x + outer * ROAD_HALF;
-        pos[o + 4] = y;
-        pos[o + 5] = -d;
+      const { pos, strips } = r;
+      const n = ribbonDepths.length;
+      for (let k = 0; k < strips.length; k++) {
+        const { inner, outer, lift: up } = strips[k] as Strip;
+        for (let i = 0; i < n; i++) {
+          const d = ribbonDepths[i] ?? 0;
+          const x = roadX(d);
+          const y = roadY(d) + up;
+          const o = (k * n + i) * 6;
+          pos[o] = x + inner * ROAD_HALF;
+          pos[o + 1] = y;
+          pos[o + 2] = -d;
+          pos[o + 3] = x + outer * ROAD_HALF;
+          pos[o + 4] = y;
+          pos[o + 5] = -d;
+        }
       }
       r.mesh.geometry.getAttribute('position').needsUpdate = true;
     }
@@ -846,9 +879,18 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       width = nw;
       height = nh;
       if (!s) return;
-      s.renderer.setPixelRatio(renderPixelRatio(width, height, s.high));
+      s.renderer.setPixelRatio(renderPixelRatio(width, height, s.high, undefined, renderScale));
       s.renderer.setSize(width, height, false);
       applyProjection();
+    },
+
+    setRenderScale(scale: number) {
+      const next = Math.min(1, Math.max(0.25, scale));
+      if (next === renderScale) return;
+      renderScale = next;
+      if (!s) return;
+      s.renderer.setPixelRatio(renderPixelRatio(width, height, s.high, undefined, renderScale));
+      s.renderer.setSize(width, height, false);
     },
 
     setViewOffsetX(fraction: number) {
