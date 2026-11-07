@@ -11,6 +11,7 @@ import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { Segmented } from '../ui/Segmented';
 import { Toast } from '../ui/Toast';
+import { ClassCard } from '../class/ClassCard';
 import { duplicateAndSave } from './duplicate';
 import {
   createEditorState,
@@ -23,6 +24,7 @@ import { MetaBar } from './MetaBar';
 import { findBlock, hardMinutes, saveIssue, shortcutToAction } from './model';
 import { MusicLane } from './MusicLane';
 import { Palette, PALETTE_PREFIX } from './Palette';
+import { SongSection } from './SongSection';
 import { Timeline, TIMELINE_DROP_ID } from './Timeline';
 import styles from './Editor.module.css';
 
@@ -56,6 +58,7 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [focusTrack, setFocusTrack] = useState(false);
+  const [showCard, setShowCard] = useState(false);
   // Built-ins are shown in the UI language, like the tiles; own workouts show their stored text.
   const shown = readOnly ? localizedText(workout, lang) : workout;
   const [nameDraft, setNameDraft] = useState(shown.name);
@@ -342,10 +345,20 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
             />
             <div className={styles.timelineFoot}>
               <p className={styles.hint}>{t('editor.timelineHint')}</p>
+              {(workout.songs?.length ?? 0) > 0 && (
+                <Button onClick={() => setShowCard(true)}>{t('editor.cardButton')}</Button>
+              )}
               {!readOnly && selectedBlock && (
                 <Button onClick={deleteSelected}>{t('editor.deleteBlock')}</Button>
               )}
             </div>
+            <SongSection
+              workout={workout}
+              selectedId={state.selectedId}
+              readOnly={readOnly}
+              lang={lang}
+              dispatch={dispatch}
+            />
           </main>
           <Inspector
             workout={workout}
@@ -381,6 +394,17 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
               <Button onClick={() => setConfirmDelete(false)}>{t('editor.cancel')}</Button>
               <Button variant="primary" onClick={() => void remove()}>
                 {t('editor.delete')}
+              </Button>
+            </div>
+          </Modal>
+        )}
+        {showCard && (
+          <Modal title={t('card.title')} onClose={() => setShowCard(false)}>
+            <ClassCard workout={workout} lang={lang} table={table} name={shown.name} />
+            <div className={styles.actions}>
+              <Button onClick={() => window.print()}>{t('card.print')}</Button>
+              <Button variant="primary" onClick={() => setShowCard(false)}>
+                {t('editor.cardClose')}
               </Button>
             </div>
           </Modal>

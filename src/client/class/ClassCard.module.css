@@ -1,0 +1,73 @@
+.card {
+  color: var(--fg);
+}
+.name {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+}
+.sum {
+  margin: 0 0 0.75rem;
+  color: var(--mut);
+  font-size: 0.875rem;
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.song {
+  border: 1px solid var(--line, #2a2f3a);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+}
+.hint {
+  margin: 0.25rem 0 0;
+  color: var(--mut);
+  font-size: 0.875rem;
+}
+.track {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+}
+.rows {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+.time {
+  font-variant-numeric: tabular-nums;
+  color: var(--mut);
+  margin-right: 0.375rem;
+}
+
+@media print {
+  :global(body *) {
+    visibility: hidden;
+  }
+  .card,
+  .card * {
+    visibility: visible;
+    color: #000;
+  }
+  .card {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    background: #fff;
+  }
+  .song {
+    break-inside: avoid;
+    border-color: #888;
+  }
+}

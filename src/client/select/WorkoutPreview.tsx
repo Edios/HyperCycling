@@ -7,6 +7,8 @@ import { localizedText } from '../data/localized';
 import { useSettings } from '../data/useSettings';
 import { duplicateAndSave } from '../editor/duplicate';
 import { useLang, useT } from '../i18n';
+import { ClassCard } from '../class/ClassCard';
+import { Modal } from '../ui/Modal';
 import { ProfileChart } from '../ui/ProfileChart';
 import { difficultyOf, minutesOf, musicHintsOf, primaryTag, tagKey } from './model';
 import { DifficultyTicks } from './WorkoutList';
@@ -34,6 +36,7 @@ export function WorkoutPreview({
   const { settings } = useSettings();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  const [card, setCard] = useState(false);
   const { name, description } = localizedText(workout, lang);
   const segments = useMemo(
     () => flattenWorkout(workout, settings.effortTable, resolveResistanceMode(settings)),
@@ -89,6 +92,24 @@ export function WorkoutPreview({
         <p className={styles.music}>
           <span>{t('free.musicHint')}</span> {hints.join(', ')}
         </p>
+      )}
+      {(workout.songs?.length ?? 0) > 0 && (
+        <button
+          type="button"
+          className={styles.cardBtn}
+          data-testid="open-class-card"
+          onClick={() => setCard(true)}
+        >
+          {t('card.open')}
+        </button>
+      )}
+      {card && (
+        <Modal title={t('card.title')} onClose={() => setCard(false)}>
+          <ClassCard workout={workout} lang={lang} table={settings.effortTable} name={name} />
+          <button type="button" className={styles.cardBtn} onClick={() => window.print()}>
+            {t('card.print')}
+          </button>
+        </Modal>
       )}
       <div className={styles.actions}>
         <Link

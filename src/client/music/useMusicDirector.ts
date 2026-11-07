@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import type { TrackRef } from '../../domain/workout';
+import { useEffect, useMemo, useRef } from 'react';
+import { effectiveMusicCues, type TrackRef } from '../../domain/workout';
 import {
   subscribeSessionEvents,
   useSessionStore,
@@ -35,7 +35,7 @@ export function useMusicDirector(
 
   const { segments, config, workout } = runtime;
   const enabled = config.music;
-  const cues = workout.musicCues;
+  const cues = useMemo(() => effectiveMusicCues(workout), [workout]);
   const fallback = workout.fallbackPlaylist;
 
   useEffect(() => {

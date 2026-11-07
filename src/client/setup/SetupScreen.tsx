@@ -1,3 +1,4 @@
+import { effectiveMusicCues } from '../../domain/workout';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
@@ -155,7 +156,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
     () => flattenWorkout(scaled, settings.effortTable, resolveResistanceMode(settings)),
     [scaled, settings],
   );
-  const cueCount = scaled.musicCues.length;
+  const cueCount = effectiveMusicCues(scaled).length;
   const hasCues = cueCount > 0;
   const text = localizedText(workout, lang);
   const hasPlayers = selected.length > 0;

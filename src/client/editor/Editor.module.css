@@ -227,3 +227,7 @@
     flex-wrap: wrap;
   }
 }
+
+.timelineFoot button {
+  white-space: nowrap;
+}
