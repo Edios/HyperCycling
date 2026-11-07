@@ -11,6 +11,8 @@ import { playerSchema, type Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
 import type { EffortTable } from '../../domain/effort';
 import type { LastResult } from '../training/last-result';
+import { resolveChapters, type Experience } from '../../domain/experience';
+import type { Workout } from '../../domain/workout';
 
 /** Where a counted ride would be recorded, and whether the toggle starts on. */
 export interface CountTarget {
@@ -107,7 +109,22 @@ export function withFtp(player: Player, ftp: number): Player | undefined {
 export function setupPath(result: LastResult): string {
   const base = `/setup/${encodeURIComponent(result.workout.id)}`;
   const p = result.plan;
-  if (!p) return base;
+  if (!p) {
+    return result.experienceId ? `${base}?exp=${encodeURIComponent(result.experienceId)}` : base;
+  }
   const cycle = p.cycle !== undefined && p.cycle > 1 ? `&cycle=${p.cycle}` : '';
   return `${base}?plan=${encodeURIComponent(p.planId)}&week=${p.week}&slot=${p.slot}${cycle}`;
+}
+
+/** Chapters of an Experience the rider reached (a chapter counts once its first second was ridden). */
+export function reachedChapters(
+  experience: Experience,
+  workout: Workout,
+  riddenSec: number,
+): { looks: string[]; total: number } {
+  const chapters = resolveChapters(experience, workout);
+  return {
+    looks: chapters.filter((c) => c.startSec < riddenSec).map((c) => c.look),
+    total: chapters.length,
+  };
 }

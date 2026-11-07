@@ -13,6 +13,8 @@ export interface LastResult {
   players: Player[];
   startedAt: string;
   plan?: { planId: string; week: number; slot: PlanSlot; cycle?: number };
+  /** Built-in Experience that was ridden (its title and chapters show on the summary). */
+  experienceId?: string;
   /** True when read back from session storage after a reload: it was already logged and counted. */
   restored?: true;
 }

@@ -30,6 +30,16 @@ The Plan tab shows your next session with **Ride**, **Swap** for an alternative,
 
 ![Freestyle library](images/freestyle.png)
 
+## Experience
+
+An **Experience** is a ready-made ride: a class-style workout (song by song, with a cue for every resistance step), a world and a place for your own music. Open it from the **Experience** tile on the start page, read the scenario (song lengths) and press **Start**: Setup opens with the World preset to _Scenes_.
+
+The first one is **Neon Grid 45**: 11 songs on a 5-step resistance knob (S1 = light, S5 = as much as you can hold at about 62 RPM), with 30/30 intervals, rolling hills, a pyramid, a summit climb, three sprints and a quiet cool-down. The grid brightens with every chapter (Grid Wake, Light Lanes, Arches, Surge, Summit Scan, Overdrive, Afterglow); the scene only changes at song boundaries, never into a sprint or the hardest step. No music is bundled: every song slot shows a tempo and an idea, and you pin your own track in the Editor (slot 8 is left open on purpose). The summary lists the chapters you rode and **Ride again** reopens the same Experience.
+
+![Neon Grid: Arches (phone)](images/experience-arches-390.png)
+
+![Neon Grid: Summit Scan (desktop)](images/experience-summit-scan-1280.png)
+
 ## Setup before a ride
 
 ![Setup screen](images/setup.png)

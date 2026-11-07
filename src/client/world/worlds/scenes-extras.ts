@@ -335,6 +335,143 @@ function towers(high: boolean, created: Disposable[]): SceneExtra {
   };
 }
 
+// ---------------------------------------------------------------------------------------------
+// Pylons and arches (Neon Grid): thin glowing posts beside the road, arches over it
+// ---------------------------------------------------------------------------------------------
+
+type PylonUniforms = TowerUniforms;
+
+/** How dense the Neon Grid scenery is for a look (0 = sparse and dark, 1 = dense), from the grid cell size. */
+export function pylonDensity(patternScale: number): number {
+  return Math.min(1, Math.max(0, (18 - patternScale) / 10));
+}
+
+function pylons(high: boolean, created: Disposable[]): SceneExtra {
+  const uniforms: PylonUniforms = {
+    uA: { value: new THREE.Vector3() },
+    uB: { value: new THREE.Vector3() },
+    uFill: { value: new THREE.Vector3() },
+    uFog: { value: new THREE.Vector3() },
+    uFogNear: { value: 40 },
+    uFogFar: { value: 600 },
+    uTime: { value: 0 },
+    uIntensity: { value: 0.5 },
+  };
+  const geo = new THREE.BoxGeometry(1, 1, 1);
+  geo.translate(0, 0.5, 0);
+  created.push(geo);
+  const mat = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: /* glsl */ `
+      varying vec3 vLocal;
+      varying vec3 vSize;
+      varying float vDepth;
+      void main() {
+        vLocal = position;
+        vSize = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz),
+          length(instanceMatrix[2].xyz));
+        vec4 mv = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+        vDepth = -mv.z;
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uA, uB, uFill, uFog;
+      uniform float uFogNear, uFogFar, uTime, uIntensity;
+      varying vec3 vLocal;
+      varying vec3 vSize;
+      varying float vDepth;
+      void main() {
+        // distance (world units) to the three face planes; the face itself is the smallest, the
+        // middle one is the distance to the nearest edge
+        float a = (0.5 - abs(vLocal.x)) * vSize.x;
+        float b = (0.5 - abs(vLocal.z)) * vSize.z;
+        float c = min(vLocal.y, 1.0 - vLocal.y) * vSize.y;
+        float mn = min(a, min(b, c));
+        float mx = max(a, max(b, c));
+        float mid = a + b + c - mn - mx;
+        float fw = max(fwidth(mid), 1e-3);
+        float edge = 1.0 - smoothstep(0.18, 0.18 + 1.5 * fw, mid);
+        float wy = vLocal.y * vSize.y;
+        float run = fract((wy - uTime * (8.0 + 22.0 * uIntensity)) / 24.0);
+        float pulse = smoothstep(0.0, 0.08, run) * smoothstep(0.3, 0.08, run);
+        vec3 col = uFill + uA * edge * (0.45 + 0.55 * pulse) * (0.55 + 0.45 * uIntensity);
+        col += uB * 0.1;
+        float fogK = smoothstep(uFogNear, uFogFar, vDepth);
+        gl_FragColor = vec4(mix(col, uFog, fogK), 1.0);
+      }
+    `,
+  });
+  created.push(mat);
+  const period = high ? 34 : 60;
+  const perSide = Math.ceil(EXTRA_VIEW / period) + 1;
+  // per slot: two posts and (on the high setting) one lintel
+  const capacity = perSide * (high ? 3 : 2);
+  const mesh = new THREE.InstancedMesh(geo, mat, capacity);
+  created.push(mesh);
+  mesh.frustumCulled = false;
+  mesh.renderOrder = 5;
+  const tmp = new THREE.Object3D();
+  const smooth = (x: number): number => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+
+  return {
+    object: mesh,
+    update(f) {
+      // edges glow in the grid colour of the look (cyan, brighter in the hard chapters)
+      setHex(uniforms.uA.value, f.look.line);
+      setHex(uniforms.uB.value, f.look.extraB);
+      setHex(uniforms.uFill.value, f.look.fill);
+      setHex(uniforms.uFog.value, f.look.fog);
+      uniforms.uFogNear.value = f.fogNear;
+      uniforms.uFogFar.value = f.look.fogFar;
+      uniforms.uTime.value = f.time;
+      uniforms.uIntensity.value = f.intensity;
+      const density = pylonDensity(f.look.patternScale);
+      const phase = dashOffset(f.dist, period);
+      const base = Math.floor(f.dist / period);
+      let n = 0;
+      for (let i = 0; i < perSide; i++) {
+        const depth = i * period - phase;
+        if (depth < 4) continue;
+        const slot = i + base;
+        // grows in and out with the look instead of popping
+        const vis = smooth((0.12 + 0.88 * density - hash01(slot * 5 + 3)) * 8);
+        const rx = f.roadX(depth);
+        const ry = f.roadY(depth) - 0.3;
+        if (vis > 0.01) {
+          const h = (10 + hash01(slot * 5 + 9) * 14) * vis;
+          for (let side = 0; side < 2; side++) {
+            tmp.position.set(rx + (side === 0 ? -15 : 15), ry, -depth);
+            tmp.rotation.set(0, 0, 0);
+            tmp.scale.set(0.9, h, 0.9);
+            tmp.updateMatrix();
+            mesh.setMatrixAt(n++, tmp.matrix);
+          }
+        }
+        // an arch over the road on every third slot once the scenery is dense
+        const arch = high && slot % 3 === 0 ? smooth((density - 0.5) * 5) : 0;
+        if (arch > 0.01) {
+          const h = 17 * arch;
+          tmp.position.set(rx - 15, ry, -depth);
+          tmp.scale.set(0.9, h, 0.9);
+          tmp.updateMatrix();
+          mesh.setMatrixAt(n++, tmp.matrix);
+          tmp.position.set(rx + 15, ry, -depth);
+          tmp.updateMatrix();
+          mesh.setMatrixAt(n++, tmp.matrix);
+          tmp.position.set(rx, ry + h - 0.9, -depth);
+          tmp.scale.set(31, 0.9, 0.9);
+          tmp.updateMatrix();
+          mesh.setMatrixAt(n++, tmp.matrix);
+        }
+      }
+      mesh.count = Math.min(n, capacity);
+      mesh.instanceMatrix.needsUpdate = true;
+    },
+  };
+}
+
 export function buildExtra(id: SceneExtraId, high: boolean, created: Disposable[]): SceneExtra {
-  return id === 'aurora' ? aurora(high, created) : towers(high, created);
+  if (id === 'aurora') return aurora(high, created);
+  return id === 'pylons' ? pylons(high, created) : towers(high, created);
 }

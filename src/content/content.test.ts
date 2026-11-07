@@ -117,6 +117,39 @@ const CATEGORY: Record<string, { ids: string[] } | { tag: string }> = {
   },
 };
 
+/** Coach cue tokens of the Neon Grid class (PL/EN text in the dictionaries). */
+const NEON_GRID_CUES = [
+  'ngEnter',
+  'ngAddRpm90',
+  'ngPickup',
+  'ngMakeHill',
+  'ngOneMore',
+  'ngOneOff',
+  'ngFlatSame',
+  'ngOnGo',
+  'ngOnAddStep',
+  'ngOffStep',
+  'ngTakeTwoOff',
+  'ngBackToRhythm',
+  'ngAddSeated',
+  'ngStandHands3',
+  'ngSitKeep',
+  'ngPyramid',
+  'ngLongest',
+  'ngTakeItOff',
+  'ngSummitClose',
+  'ngSummit',
+  'ngStandLast',
+  'ngEaseOff',
+  'ngSprint15',
+  'ngAddChorus',
+  'ngReady',
+  'ngLastSprint',
+  'ngBreathe2',
+  'ngWindDown',
+  'ngSilence',
+];
+
 /** The song slot that covers a block id (top-level or a repeat child). */
 function slotOfBlock(w: Workout, id: string): SongSlot | undefined {
   const top = w.blocks.map((b) => b.id);
@@ -469,6 +502,7 @@ describe('built-in workouts', () => {
       'spinUp',
       'holdIt',
       'lastOne',
+      ...NEON_GRID_CUES,
     ]);
     const labels = new Set([
       'warmup',
@@ -505,6 +539,7 @@ describe('built-in workouts', () => {
       'spinUp',
       'holdIt',
       'lastOne',
+      ...NEON_GRID_CUES,
     ]) {
       expect(en.coach[k as keyof typeof en.coach], k).toBeTruthy();
       expect(pl.coach[k as keyof typeof pl.coach], k).toBeTruthy();

@@ -57,6 +57,7 @@ const LOOK_NAMES = [
 const NEON_GRID: ThemeDef = {
   scene: {
     id: 'neon-grid',
+    extra: 'pylons',
     variants: [
       // grid-wake: sparse, dim, slow
       { ...NEON, patternScale: 18, lineWidth: 0.8, stars: 0.4, fogFar: 520, height: 30 },
