@@ -17,7 +17,7 @@ test('fresh profile: hero offers a gentle workout and a way to build a plan', as
   await expect(page.getByTestId('home-ride')).toBeVisible();
   await expect(page.getByTestId('home-tunnel')).toBeVisible();
   await expect(page.getByTestId('home-secondary')).toHaveAttribute('href', /plans\/wizard/);
-  await expect(page.getByRole('tab', { name: /Experience/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /Experience/ })).toBeDisabled();
   await shot(page, `home-fresh-${info.project.name}`);
   await page.getByTestId('home-ride').click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
@@ -36,7 +36,7 @@ test('active plan: hero shows the next session, Ride opens its setup', async ({ 
 test('Freestyle tile switches the hero and the secondary action', async ({ page }, info) => {
   await seedSettings(page, info, 'build-form');
   await page.goto('./#/');
-  await page.getByRole('tab', { name: /Freestyle/ }).click();
+  await page.getByRole('button', { name: /Freestyle/ }).click();
   await expect(page.getByTestId('home')).toHaveAttribute('data-mode', 'free');
   await expect(page.getByTestId('home-secondary')).toHaveAttribute('href', /freestyle/);
   await shot(page, `home-free-${info.project.name}`);
@@ -52,7 +52,7 @@ test('phone: hero above a stacked dock, no horizontal scroll', async ({ page }, 
   );
   expect(overflow).toBeLessThanOrEqual(0);
   const heroBox = await page.getByTestId('home-hero').boundingBox();
-  const dockBox = await page.getByRole('tablist').boundingBox();
+  const dockBox = await page.getByRole('group', { name: /ways to ride/i }).boundingBox();
   expect(heroBox!.y + heroBox!.height).toBeLessThanOrEqual(dockBox!.y + 1);
   await shot(page, `home-phone-${info.project.name}`);
 });

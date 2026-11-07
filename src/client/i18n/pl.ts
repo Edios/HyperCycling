@@ -720,6 +720,7 @@ export const pl: Messages = {
     otherWorkout: 'Inny trening',
     buildPlan: 'Ułóż plan',
     loading: 'Ładowanie',
+    emptyTitle: 'Nie ma jeszcze treningu do pokazania',
     minutes: '{minutes} min',
   },
   welcome: {

@@ -100,7 +100,7 @@ export function Home() {
 
   return (
     <div className={styles.home} data-testid="home" data-mode={accentMode}>
-      <section className={styles.hero} aria-live="polite" data-testid="home-hero">
+      <section className={styles.hero} data-testid="home-hero">
         <Tunnel zones={zones} />
         {ready && workout && text ? (
           <div className={styles.cap} data-kind={hero.kind}>
@@ -137,6 +137,15 @@ export function Home() {
               )}
             </div>
           </div>
+        ) : ready ? (
+          <div className={styles.cap} data-testid="home-empty">
+            <h1>{t('home.emptyTitle')}</h1>
+            <div className={styles.actions}>
+              <Link to="/freestyle" className={styles.primary}>
+                {t('home.otherWorkout')}
+              </Link>
+            </div>
+          </div>
         ) : (
           <div className={styles.cap} aria-busy="true">
             <p className={styles.kicker}>{t('home.loading')}</p>
@@ -144,7 +153,7 @@ export function Home() {
         )}
       </section>
 
-      <div className={styles.dock} role="tablist" aria-label={t('home.dockLabel')}>
+      <div className={styles.dock} role="group" aria-label={t('home.dockLabel')}>
         {TILES.map(({ id, icon, body }) => {
           const soon = id === 'experience';
           const on = !soon && tab === id;
@@ -152,8 +161,7 @@ export function Home() {
             <button
               key={id}
               type="button"
-              role="tab"
-              aria-selected={on}
+              aria-pressed={on}
               disabled={soon}
               data-tile={id}
               data-mode={icon}

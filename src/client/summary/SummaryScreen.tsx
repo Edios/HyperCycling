@@ -168,7 +168,7 @@ function Summary({ result }: { result: LastResult }) {
 
         <div className={styles.buttons}>
           <Button onClick={() => leave(setupPath(result), false)}>{t('summary.again')}</Button>
-          <Button variant="primary" onClick={() => leave('/', true)}>
+          <Button variant="primary" onClick={() => leave('/plan', true)}>
             {t('summary.backToPlan')}
           </Button>
         </div>

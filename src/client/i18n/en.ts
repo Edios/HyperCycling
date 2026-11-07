@@ -720,6 +720,7 @@ export const en = {
     otherWorkout: 'Another workout',
     buildPlan: 'Build a plan',
     loading: 'Loading',
+    emptyTitle: 'No workout to show yet',
     minutes: '{minutes} min',
   },
   welcome: {
