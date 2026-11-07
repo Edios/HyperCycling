@@ -860,10 +860,12 @@ export const en = {
   editor: {
     bpm: {
       target: 'For {rpm} RPM look for about {bpm} BPM (or {half} BPM half time).',
+      targetNoHalf: 'For {rpm} RPM look for about {bpm} BPM.',
+      targetHalfOnly: 'For {rpm} RPM look for about {bpm} BPM (half time).',
       genres: 'Typical genres: {list}.',
       label: 'Track BPM',
       tap: 'Tap tempo',
-      error: 'Use {min}-{max}',
+      error: 'Use {min}-{max} BPM',
       close: 'close',
       noMatch: "Does not match this block's cadence",
       match: {

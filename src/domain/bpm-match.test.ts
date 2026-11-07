@@ -4,6 +4,7 @@ import {
   genresForRpm,
   matchBpm,
   parseBpmFromName,
+  parseBpmInput,
   rankTracks,
   tapTempoBpm,
   targetBpms,
@@ -118,5 +119,17 @@ describe('rankTracks', () => {
       90,
     );
     expect(r.map((x) => x.track.id)).toEqual(['x', 'y']);
+  });
+});
+
+describe('parseBpmInput', () => {
+  it('accepts plain numbers and rounds decimals', () => {
+    expect(parseBpmInput('128')).toBe(128);
+    expect(parseBpmInput(' 128.4 ')).toBe(128);
+    expect(parseBpmInput('127,6')).toBe(128);
+  });
+  it('rejects hex, exponent, signs, text and out-of-range values', () => {
+    for (const bad of ['0x50', '1e2', '-90', '+90', '12abc', '', '39', '221', '1000', 'NaN'])
+      expect(parseBpmInput(bad), bad).toBeUndefined();
   });
 });
