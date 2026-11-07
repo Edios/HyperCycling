@@ -319,6 +319,18 @@ describe('Deezer off (the default)', () => {
   });
 });
 
+describe('Deezer off, GetSongBPM key present', () => {
+  it('returns undefined (not found) when GetSongBPM does not know the song', async () => {
+    const gs = {
+      lookupBpm: vi.fn(() => Promise.resolve(undefined)),
+      findByBpm: vi.fn(),
+      searchSongs: vi.fn(),
+    };
+    const lookup = createBpmLookup(gs, undefined);
+    await expect(lookup.lookup({ title: 'x' })).resolves.toBeUndefined();
+  });
+});
+
 describe('createBpmLookup.search (M19d)', () => {
   const dzHit = { title: 'Same', artist: 'X', bpm: 120, url: 'https://www.deezer.com/track/1' };
   const gsHit = { title: 'Same', artist: 'X', bpm: 120, url: 'https://getsongbpm.com/song/s/1' };

@@ -120,7 +120,9 @@ export function createBpmLookup(
       }
       if (!dz) {
         if (firstError) throw firstError;
-        throw new GetSongBpmError('no-key');
+        // A key but no answer is "not found"; only no provider at all is "nothing is on".
+        if (!gsbpm) throw new GetSongBpmError('no-key');
+        return undefined;
       }
       try {
         const hit = await dz.lookupBpm(query);

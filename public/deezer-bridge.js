@@ -23,7 +23,7 @@
     var url;
     try {
       url = new URL(String(m.url));
-    } catch (e) {
+    } catch {
       return reply(m.id, false);
     }
     if (
