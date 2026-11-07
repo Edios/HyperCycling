@@ -219,6 +219,7 @@ export const pl: Messages = {
     recovery: 'Regeneracja',
   },
   hr: {
+    bpm: 'bpm',
     withBpm: 'Z{zone} · {min}–{max} bpm',
     withPct: 'Z{zone} · {min}–{max} % HRmax',
     zone1: 'Regeneracja', zone2: 'Baza tlenowa', zone3: 'Tempo', zone4: 'Próg', zone5: 'Maksimum',

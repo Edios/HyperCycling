@@ -1,5 +1,6 @@
 import { DashLine } from '../../../brand';
 import { EffortGroup } from '../../hud/EffortGroup';
+import { HrTarget } from '../../hud/HrTarget';
 import { MeasuresGroup } from '../../hud/MeasuresGroup';
 import { PlayersList } from '../../hud/PlayersList';
 import { TimeGroup } from '../../hud/TimeGroup';
@@ -54,6 +55,9 @@ export function OverlayHud({
       glass={glass}
       section={column}
       motion={motion}
+      hr={
+        <HrTarget segment={view.segment} elapsedInSegSec={view.durationSec - view.remainingSec} />
+      }
     />
   );
   const time = (
@@ -92,6 +96,7 @@ export function OverlayHud({
           ftpPct={view.ftpPct}
           effort={view.effort}
           showsWatts={showsWatts}
+          hr={{ segment: view.segment, elapsedInSegSec: view.durationSec - view.remainingSec }}
         />
       )}
       {column ? (

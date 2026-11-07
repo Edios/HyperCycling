@@ -51,7 +51,12 @@ function newId(): string {
 }
 
 function withoutMe(p: Player): Player {
-  return { id: p.id, name: p.name, ftp: p.ftp, ...(p.hrMax !== undefined ? { hrMax: p.hrMax } : {}) };
+  return {
+    id: p.id,
+    name: p.name,
+    ftp: p.ftp,
+    ...(p.hrMax !== undefined ? { hrMax: p.hrMax } : {}),
+  };
 }
 
 interface FormProps {

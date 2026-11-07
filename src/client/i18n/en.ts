@@ -217,6 +217,7 @@ export const en = {
     recovery: 'Recovery',
   },
   hr: {
+    bpm: 'bpm',
     withBpm: 'Z{zone} · {min}–{max} bpm',
     withPct: 'Z{zone} · {min}–{max} % HRmax',
     zone1: 'Recovery', zone2: 'Endurance', zone3: 'Tempo', zone4: 'Threshold', zone5: 'Max',
