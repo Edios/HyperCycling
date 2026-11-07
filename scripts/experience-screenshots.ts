@@ -12,7 +12,9 @@ import path from 'node:path';
 import { chromium, type Page } from '@playwright/test';
 import { build, preview } from 'vite';
 
-const OUT_DIR = path.resolve('docs/images');
+const OUT_DIR = path.resolve(process.env.SHOTS_OUT ?? 'docs/images');
+/** SHOTS_ONLY=1280 limits the sizes; SHOTS_NO_PICKER=1 skips the catalogue shot. */
+const ONLY = process.env.SHOTS_ONLY;
 const BUILD_DIR = path.resolve('dist/experience-shots');
 const PORT = 5178;
 const ORIGIN = `http://127.0.0.1:${PORT}/`;
@@ -21,7 +23,9 @@ const EXPERIENCE = 'neon-grid-45';
 /** Chapter → a workout second inside it (see the scenario: song starts 0, 9, 16, 24:30, 32, 37, 41). */
 const CHAPTERS: readonly { name: string; sec: number }[] = [
   { name: 'grid-wake', sec: 150 },
+  { name: 'light-lanes', sec: 800 },
   { name: 'arches', sec: 1100 },
+  { name: 'surge', sec: 1700 },
   { name: 'summit-scan', sec: 2000 },
   { name: 'overdrive', sec: 2290 },
   { name: 'afterglow', sec: 2600 },
@@ -35,7 +39,7 @@ const SIZES = [
 async function shot(page: Page, name: string): Promise<void> {
   await page.waitForTimeout(600);
   await page.screenshot({ path: path.join(OUT_DIR, `${name}.png`) });
-  console.log(`docs/images/${name}.png`);
+  console.log(`${path.join(OUT_DIR, name)}.png`);
 }
 
 async function main(): Promise<void> {
@@ -53,6 +57,7 @@ async function main(): Promise<void> {
   });
   try {
     for (const size of SIZES) {
+      if (ONLY && size.tag !== ONLY) continue;
       const context = await browser.newContext({
         viewport: { width: size.width, height: size.height },
         deviceScaleFactor: 1,
@@ -67,6 +72,10 @@ async function main(): Promise<void> {
         );
         await page.getByTestId('world-canvas').waitFor();
         await shot(page, `experience-${c.name}-${size.tag}`);
+      }
+      if (process.env.SHOTS_NO_PICKER) {
+        await context.close();
+        continue;
       }
       await page.goto(`${ORIGIN}#/experiences`);
       await page.getByTestId('experience-card').first().waitFor();

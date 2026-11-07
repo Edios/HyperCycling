@@ -16,6 +16,8 @@ export interface ExtraFrame {
   time: number;
   /** Effort intensity 0..1. */
   intensity: number;
+  /** Beat pulse swell 0..~0.6 (0 under reduced motion). */
+  beat: number;
   look: SceneLook;
   /** Road centre x / height at a depth ahead of the camera. */
   roadX(depth: number): number;
@@ -341,11 +343,6 @@ function towers(high: boolean, created: Disposable[]): SceneExtra {
 
 type PylonUniforms = TowerUniforms;
 
-/** How dense the Neon Grid scenery is for a look (0 = sparse and dark, 1 = dense), from the grid cell size. */
-export function pylonDensity(patternScale: number): number {
-  return Math.min(1, Math.max(0, (18 - patternScale) / 10));
-}
-
 function pylons(high: boolean, created: Disposable[]): SceneExtra {
   const uniforms: PylonUniforms = {
     uA: { value: new THREE.Vector3() },
@@ -425,8 +422,10 @@ function pylons(high: boolean, created: Disposable[]): SceneExtra {
       uniforms.uFogNear.value = f.fogNear;
       uniforms.uFogFar.value = f.look.fogFar;
       uniforms.uTime.value = f.time;
-      uniforms.uIntensity.value = f.intensity;
-      const density = pylonDensity(f.look.patternScale);
+      uniforms.uIntensity.value = f.intensity + f.beat * 0.5;
+      const density = f.look.objDensity;
+      const heightK = f.look.objHeight;
+      const archShare = high ? f.look.objArch : 0;
       const phase = dashOffset(f.dist, period);
       const base = Math.floor(f.dist / period);
       let n = 0;
@@ -435,11 +434,14 @@ function pylons(high: boolean, created: Disposable[]): SceneExtra {
         if (depth < 4) continue;
         const slot = i + base;
         // grows in and out with the look instead of popping
-        const vis = smooth((0.12 + 0.88 * density - hash01(slot * 5 + 3)) * 8);
+        const vis = density > 0.001 ? smooth((density * 1.05 - hash01(slot * 5 + 3)) * 8) : 0;
+        // an arch over the road on the slots the look picks (its posts are the side pylons)
+        const arch = archShare > 0.001 ? smooth((archShare - hash01(slot * 5 + 17)) * 8) : 0;
         const rx = f.roadX(depth);
         const ry = f.roadY(depth) - 0.3;
-        if (vis > 0.01) {
-          const h = (10 + hash01(slot * 5 + 9) * 14) * vis;
+        const show = Math.max(vis, arch);
+        if (show > 0.01) {
+          const h = (10 + hash01(slot * 5 + 9) * 14) * heightK * show + 7 * arch * heightK;
           for (let side = 0; side < 2; side++) {
             tmp.position.set(rx + (side === 0 ? -15 : 15), ry, -depth);
             tmp.rotation.set(0, 0, 0);
@@ -447,22 +449,12 @@ function pylons(high: boolean, created: Disposable[]): SceneExtra {
             tmp.updateMatrix();
             mesh.setMatrixAt(n++, tmp.matrix);
           }
-        }
-        // an arch over the road on every third slot once the scenery is dense
-        const arch = high && slot % 3 === 0 ? smooth((density - 0.5) * 5) : 0;
-        if (arch > 0.01) {
-          const h = 17 * arch;
-          tmp.position.set(rx - 15, ry, -depth);
-          tmp.scale.set(0.9, h, 0.9);
-          tmp.updateMatrix();
-          mesh.setMatrixAt(n++, tmp.matrix);
-          tmp.position.set(rx + 15, ry, -depth);
-          tmp.updateMatrix();
-          mesh.setMatrixAt(n++, tmp.matrix);
-          tmp.position.set(rx, ry + h - 0.9, -depth);
-          tmp.scale.set(31, 0.9, 0.9);
-          tmp.updateMatrix();
-          mesh.setMatrixAt(n++, tmp.matrix);
+          if (arch > 0.01) {
+            tmp.position.set(rx, ry + h - 0.9, -depth);
+            tmp.scale.set(31, 0.9, 0.9);
+            tmp.updateMatrix();
+            mesh.setMatrixAt(n++, tmp.matrix);
+          }
         }
       }
       mesh.count = Math.min(n, capacity);

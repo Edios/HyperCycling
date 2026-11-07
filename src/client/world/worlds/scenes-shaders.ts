@@ -47,6 +47,10 @@ export type SkyUniforms = {
   /** Camera bank (radians) and the screen point it turns around (uv). */
   uRoll: { value: number };
   uPivot: { value: THREE.Vector2 };
+  /** Nebula strength 0..1, its detail (1 Lite, 2 Standard) and the beat swell 0..1. */
+  uWarp: { value: number };
+  uDetail: { value: number };
+  uBeat: { value: number };
 };
 
 export function skyMaterial(): THREE.ShaderMaterial & { uniforms: SkyUniforms } {
@@ -69,6 +73,9 @@ export function skyMaterial(): THREE.ShaderMaterial & { uniforms: SkyUniforms } 
     uTime: f(),
     uRoll: f(),
     uPivot: { value: new THREE.Vector2(0.5, 0.55) },
+    uWarp: f(),
+    uDetail: f(2),
+    uBeat: f(),
   };
   const mat = new THREE.ShaderMaterial({
     uniforms,
@@ -84,10 +91,17 @@ export function skyMaterial(): THREE.ShaderMaterial & { uniforms: SkyUniforms } 
     fragmentShader: /* glsl */ `
       uniform vec3 uTop, uMid, uHor, uGlow, uSunA, uSunB, uBelow;
       uniform float uSunSize, uSunX, uSunY, uStripes, uRing, uStars, uHorizonY, uAspect, uTime;
-      uniform float uRoll;
+      uniform float uRoll, uWarp, uDetail, uBeat;
       uniform vec2 uPivot;
       varying vec2 vUv;
       ${HASH}
+      float vnoise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 q = fract(p);
+        q = q * q * (3.0 - 2.0 * q);
+        return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), q.x),
+          mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), q.x), q.y);
+      }
       void main() {
         // the sky banks with the camera, around the level horizon's centre
         vec2 c = vUv - uPivot;
@@ -102,7 +116,22 @@ export function skyMaterial(): THREE.ShaderMaterial & { uniforms: SkyUniforms } 
         float t = clamp(h / max(0.05, 1.0 - uHorizonY), 0.0, 1.0);
         vec3 col = mix(uHor, uMid, smoothstep(0.0, 0.42, t));
         col = mix(col, uTop, smoothstep(0.3, 1.0, t));
-        col += uGlow * exp(-h * 22.0) * 0.55;
+        col += uGlow * exp(-h * 22.0) * (0.55 + 0.35 * uBeat);
+
+        // flowing nebula: domain-warped value noise tinted by the look's glow and sun colours
+        if (uWarp > 0.001) {
+          vec2 q = vec2(uv.x * uAspect, uv.y) * 2.6;
+          float tt = uTime * 0.05;
+          float n;
+          if (uDetail > 1.5) {
+            vec2 w = vec2(vnoise(q + tt), vnoise(q + 7.3 - tt));
+            n = vnoise(q * 1.7 + w * 2.2 + tt * 2.0) * 0.65 + vnoise(q * 3.4 - w * 1.6) * 0.35;
+          } else {
+            n = vnoise(q * 1.5 + tt * 2.0);
+          }
+          float veil = smoothstep(0.35, 0.85, n) * smoothstep(0.02, 0.4, t) * (1.0 - 0.45 * t);
+          col += mix(uSunB, uGlow, n) * veil * uWarp * (0.42 + 0.2 * uBeat);
+        }
 
         // stars: sparse cells, fading toward the horizon, slow twinkle
         vec2 sp = vec2(uv.x * uAspect, uv.y) * 150.0;
@@ -149,6 +178,7 @@ export function applySkyLook(u: SkyUniforms, look: SceneLook): void {
   u.uStripes.value = look.sunStripes;
   u.uRing.value = look.sunRing;
   u.uStars.value = look.stars;
+  u.uWarp.value = look.warp;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -158,6 +188,10 @@ export function applySkyLook(u: SkyUniforms, look: SceneLook): void {
 export type TerrainUniforms = {
   uFill: { value: THREE.Vector3 };
   uLine: { value: THREE.Vector3 };
+  uLineB: { value: THREE.Vector3 };
+  /** Share of the travelling second colour 0..1 and the beat swell 0..1. */
+  uBand: { value: number };
+  uBeat: { value: number };
   uFog: { value: THREE.Vector3 };
   uFogNear: { value: number };
   uFogFar: { value: number };
@@ -178,6 +212,9 @@ export function terrainMaterial(): THREE.ShaderMaterial & { uniforms: TerrainUni
   const uniforms: TerrainUniforms = {
     uFill: v3(),
     uLine: v3(),
+    uLineB: v3(),
+    uBand: f(),
+    uBeat: f(),
     uFog: v3(),
     uFogNear: f(40),
     uFogFar: f(650),
@@ -205,7 +242,8 @@ export function terrainMaterial(): THREE.ShaderMaterial & { uniforms: TerrainUni
       }
     `,
     fragmentShader: /* glsl */ `
-      uniform vec3 uFill, uLine, uFog;
+      uniform vec3 uFill, uLine, uLineB, uFog;
+      uniform float uBand, uBeat;
       uniform float uFogNear, uFogFar, uScale, uWidth, uPatA, uPatB, uPatMix, uIntensity, uPeak;
       uniform float uTime, uDist;
       varying vec3 vGrid;
@@ -253,14 +291,61 @@ export function terrainMaterial(): THREE.ShaderMaterial & { uniforms: TerrainUni
         float pat = mix(pattern(uPatA, p), pattern(uPatB, p), uPatMix);
         // a slow wave of light rolls toward the rider; stronger with effort
         float wave = 0.5 + 0.5 * sin((vGrid.y - uDist) * 0.035 - uTime * 1.6);
-        float bright = 0.35 + 0.65 * uIntensity + 0.45 * uIntensity * wave;
+        float bright = (0.35 + 0.65 * uIntensity + 0.45 * uIntensity * wave) * (1.0 + 0.5 * uBeat);
         float peak = clamp(vGrid.z / max(uPeak, 1.0), 0.0, 1.0);
-        vec3 col = mix(uFill, uLine, clamp(pat * bright * (0.8 + 0.5 * peak), 0.0, 1.0));
-        col += uLine * 0.06 * peak;
+        // bands of the second colour drift through the terrain (psychedelic colour travel)
+        float bandK = uBand * (0.5 + 0.5 * sin(vGrid.y * 0.011 + vGrid.x * 0.006 - uTime * 0.18));
+        vec3 lineCol = mix(uLine, uLineB, bandK);
+        vec3 col = mix(uFill, lineCol, clamp(pat * bright * (0.8 + 0.5 * peak), 0.0, 1.0));
+        col += lineCol * 0.09 * peak * (1.0 + 0.6 * uBeat);
         float fogK = smoothstep(uFogNear, uFogFar, vDepth);
         gl_FragColor = vec4(mix(col, uFog, fogK), 1.0);
       }
     `,
   });
   return mat as THREE.ShaderMaterial & { uniforms: TerrainUniforms };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Overlay: the scene-change wash and the screen-edge vignette in one full-screen pass
+// ---------------------------------------------------------------------------------------------
+
+export type OverlayUniforms = {
+  uColor: { value: THREE.Vector3 };
+  /** Wash opacity 0..1 and vignette strength 0..1. */
+  uWash: { value: number };
+  uVig: { value: number };
+  uAspect: { value: number };
+};
+
+export function overlayMaterial(): THREE.ShaderMaterial & { uniforms: OverlayUniforms } {
+  const uniforms: OverlayUniforms = { uColor: v3(), uWash: f(), uVig: f(), uAspect: f(1.78) };
+  const mat = new THREE.ShaderMaterial({
+    uniforms,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+    vertexShader: /* glsl */ `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position.xy, 0.0, 1.0);
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uColor;
+      uniform float uWash, uVig, uAspect;
+      varying vec2 vUv;
+      void main() {
+        vec2 c = (vUv - 0.5) * vec2(min(uAspect, 1.0) * 1.0 + max(uAspect - 1.0, 0.0) * 0.45, 1.0);
+        float v = smoothstep(0.28, 0.95, length(c) * 1.25);
+        float vig = uVig * v * 0.8;
+        // wash colour over black vignette, one "over" operation
+        float a = uWash + vig * (1.0 - uWash);
+        vec3 rgb = a > 0.0001 ? uColor * uWash / a : vec3(0.0);
+        gl_FragColor = vec4(rgb, a);
+      }
+    `,
+  });
+  return mat as THREE.ShaderMaterial & { uniforms: OverlayUniforms };
 }
