@@ -484,7 +484,7 @@ function cueTarget(b: Block): string | undefined {
  * block/rep, except the cooldown track, which owns the cooldown block (lane 2).
  */
 export function effectiveMusicCues(w: Workout): MusicCue[] {
-  const cues = [...w.musicCues];
+  const cues = [...(w.musicCues ?? [])];
   const has = (blockId: string, rep: number): boolean =>
     cues.some((c) => c.blockId === blockId && c.rep === rep);
   for (const c of w.format === 'songs' ? compileSongCues(w) : []) {

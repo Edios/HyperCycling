@@ -136,6 +136,16 @@ describe('effectiveMusicCues (M19c two lanes)', () => {
     expect(effectiveMusicCues(w)).toEqual(w.musicCues);
   });
 
+  it('copes with a workout that has no musicCues at all (loose fixtures, old data)', () => {
+    const w = make() as unknown as Record<string, unknown>;
+    delete w.musicCues;
+    delete w.songs;
+    delete w.format;
+    expect(effectiveMusicCues(w as unknown as Workout)).toEqual([]);
+    w.cooldownTrack = cd;
+    expect(effectiveMusicCues(w as unknown as Workout)).toHaveLength(1);
+  });
+
   it('adds pinned slot tracks but never over an explicit cue', () => {
     const w = make();
     expect(effectiveMusicCues(w).map((c) => c.blockId)).toEqual(['a']);
