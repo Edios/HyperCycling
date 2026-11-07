@@ -74,7 +74,7 @@ describe('PlayersScreen', () => {
     renderScreen();
     expect(await screen.findByText('Add your first player')).toBeInTheDocument();
     expect(
-      screen.getByText('FTP is used to compute target watts. Update it after a test.'),
+      screen.getByText('FTP is the power you can hold for about an hour; it sets the target watts. Update it after a test.'),
     ).toBeInTheDocument();
   });
 
