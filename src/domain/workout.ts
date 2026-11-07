@@ -45,6 +45,9 @@ export interface RepeatBlock {
 
 export type Block = SteadyBlock | RampBlock | RepeatBlock;
 
+/** Where a looked-up tempo came from. */
+export type BpmSource = 'getsongbpm' | 'deezer';
+
 export interface TrackRef {
   provider: 'spotify' | 'youtube';
   id: string;
@@ -55,7 +58,7 @@ export interface TrackRef {
   /** Tempo typed or tapped by the user (no audio analysis); used to match the block's RPM. */
   bpm?: number;
   /** Where `bpm` came from when it was looked up (absent = typed or tapped by the user). */
-  bpmSource?: 'getsongbpm';
+  bpmSource?: BpmSource;
   /** Set by the editor when YouTube reports that the video cannot be embedded. */
   notEmbeddable?: boolean;
 }
@@ -159,7 +162,7 @@ const trackRefSchema = z.object({
   durationSec: z.number().min(0).optional(),
   startAtSec: z.number().min(0),
   bpm: z.number().min(BPM_MIN).max(BPM_MAX).optional(),
-  bpmSource: z.literal('getsongbpm').optional(),
+  bpmSource: z.enum(['getsongbpm', 'deezer']).optional(),
   notEmbeddable: z.boolean().optional(),
 });
 

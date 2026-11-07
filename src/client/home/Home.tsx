@@ -183,6 +183,10 @@ export function Home() {
         <a href="https://getsongbpm.com" target="_blank" rel="noopener">
           {t('home.bpmSource')}
         </a>
+        {' · '}
+        <a href="https://www.deezer.com" target="_blank" rel="noopener">
+          {t('home.bpmSourceDeezer')}
+        </a>
       </footer>
     </div>
   );

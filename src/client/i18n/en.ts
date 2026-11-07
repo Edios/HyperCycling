@@ -277,7 +277,8 @@ export const en = {
       ageUnit: 'years',
       inputPlaceholder: 'e.g. 185',
       agePlaceholder: 'e.g. 35',
-      ageHelp: "Don't know your max heart rate? Enter your age and we'll suggest one (age is not stored).",
+      ageHelp:
+        "Don't know your max heart rate? Enter your age and we'll suggest one (age is not stored).",
       fromAge: 'Suggest from age',
       skipHint: 'No monitor? Leave it empty and go on.',
     },
@@ -672,7 +673,7 @@ export const en = {
       gsbpm: {
         title: 'GetSongBPM (tempo lookup)',
         key: 'GetSongBPM API key',
-        hint: 'Optional. Fills the BPM of a pinned track and lists songs at a tempo. The key stays on this device and is left out of exports.',
+        hint: 'Optional. Without a key, the tempo of a pinned track is looked up on Deezer. A key adds GetSongBPM lookups and a list of songs at a tempo. The key stays on this device and is left out of exports.',
         placeholder: 'Paste the API key',
         get: 'Get a free key',
         link: 'Data: GetSongBPM',
@@ -739,6 +740,7 @@ export const en = {
     emptyTitle: 'No workout to show yet',
     bpmCredit: 'Tempo data:',
     bpmSource: 'GetSongBPM',
+    bpmSourceDeezer: 'Deezer',
     minutes: '{minutes} min',
   },
   welcome: {
@@ -901,10 +903,10 @@ export const en = {
       noMatch: "Does not match this block's cadence",
       fetch: 'Get BPM',
       fetching: 'Looking up…',
-      notFound: 'GetSongBPM does not know this song. Type or tap the tempo.',
+      notFound: 'No tempo found for this song (GetSongBPM or Deezer). Type or tap the tempo.',
       source: 'Source: {source} (you can correct it)',
       dataFrom: 'Data:',
-      needKey: 'Looking up BPM needs a GetSongBPM API key (free).',
+      needKey: 'Song suggestions by tempo need a GetSongBPM API key (free).',
       needKeyLink: 'Add it in Settings',
       suggest: 'Find matching songs',
       suggesting: 'Searching…',
@@ -920,10 +922,15 @@ export const en = {
         noKey: 'Add a GetSongBPM API key in Settings.',
         unauthorized: 'GetSongBPM rejected the API key. Check it in Settings.',
         rateLimited: 'GetSongBPM request limit reached. Try again later.',
-        forbidden: 'GetSongBPM refused the key or the account (403). Check the key in Settings; a new key is tried at once.',
-        blocked: 'GetSongBPM is not answering this key for now (up to an hour, or until you change the key). Type or tap the tempo meanwhile.',
+        forbidden:
+          'GetSongBPM refused the key or the account (403). Check the key in Settings; a new key is tried at once.',
+        blocked:
+          'GetSongBPM is not answering this key for now (up to an hour, or until you change the key). Type or tap the tempo meanwhile.',
         network: 'Cannot reach GetSongBPM.',
         badResponse: 'GetSongBPM sent an unexpected answer.',
+        deezerNetwork: 'Cannot reach Deezer.',
+        deezerBadResponse: 'Deezer sent an unexpected answer.',
+        deezerRateLimited: 'Deezer request limit reached. Try again later.',
       },
       match: {
         exact: 'Fits the cadence (2 BPM = 1 RPM)',
