@@ -41,6 +41,8 @@ vi.setConfig({ testTimeout: 20_000 });
 
 import { DEFAULT_SETTINGS } from '../../domain/settings';
 import { resetSettingsForTests } from '../data/useSettings';
+import { GetSongBpmError } from '../music/getsongbpm/client';
+import { setDeezerClientForTests } from '../music/bpmLookup';
 import { resetGetSongBpmClientForTests } from '../music/getsongbpm/useGetSongBpm';
 import { resetSharedSpotifyProviderForTests } from '../music/spotify/shared';
 import { EditorScreen } from './EditorScreen';
@@ -93,6 +95,8 @@ beforeEach(() => {
   repo.settings = undefined;
   resetSettingsForTests();
   resetGetSongBpmClientForTests();
+  // The real Deezer client loads <script> tags; here it knows no song unless a test says otherwise.
+  setDeezerClientForTests({ lookupBpm: () => Promise.resolve(undefined) });
   try {
     localStorage.clear();
   } catch {
@@ -135,11 +139,55 @@ const stored = async () => {
   return (repo.store.get('user-1') as Workout).musicCues[0]?.track;
 };
 
-describe('GetSongBPM without a key', () => {
-  it('offers no lookup, only a pointer to Settings', async () => {
+describe('Deezer lookup without a key', () => {
+  it('fills the tempo, shows the source and attribution, and the value stays editable', async () => {
+    mockYoutube();
+    const lookupBpm = vi.fn(() =>
+      Promise.resolve({
+        title: 'Master of Puppets',
+        artist: 'Metallica',
+        bpm: 212,
+        url: 'https://www.deezer.com/track/1',
+      }),
+    );
+    setDeezerClientForTests({ lookupBpm });
+    const bpm = await pinTrack();
+    fireEvent.click(await screen.findByTestId('bpm-fetch'));
+    await waitFor(() => expect(bpm).toHaveValue('212'));
+    expect(lookupBpm).toHaveBeenCalledWith({ title: 'Master of Puppets', artist: 'Metallica' });
+    expect(screen.getByTestId('bpm-source')).toHaveTextContent('Source: Deezer');
+    const link = within(screen.getByTestId('bpm-attribution-deezer')).getByRole('link', {
+      name: /Deezer/,
+    });
+    expect(link).toHaveAttribute('href', 'https://www.deezer.com');
+    expect(await stored()).toMatchObject({ bpm: 212, bpmSource: 'deezer' });
+    fireEvent.change(bpm, { target: { value: '106' } });
+    fireEvent.blur(bpm);
+    await waitFor(() => expect(screen.queryByTestId('bpm-source')).not.toBeInTheDocument());
+    expect((await stored())?.bpmSource).toBeUndefined();
+  });
+
+  it('says so when Deezer has no tempo and leaves the field alone', async () => {
+    mockYoutube();
+    const bpm = await pinTrack();
+    fireEvent.click(await screen.findByTestId('bpm-fetch'));
+    expect(await screen.findByTestId('bpm-fetch-notfound')).toBeInTheDocument();
+    expect(bpm).toHaveValue('');
+  });
+
+  it('names Deezer when it cannot be reached', async () => {
+    mockYoutube();
+    setDeezerClientForTests({
+      lookupBpm: () => Promise.reject(new GetSongBpmError('network', 'deezer')),
+    });
+    await pinTrack();
+    fireEvent.click(await screen.findByTestId('bpm-fetch'));
+    expect(await screen.findByTestId('bpm-fetch-error')).toHaveTextContent('Cannot reach Deezer');
+  });
+
+  it('offers no song suggestions, only a pointer to Settings', async () => {
     mockYoutube();
     await pinTrack();
-    expect(screen.queryByTestId('bpm-fetch')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bpm-suggest')).not.toBeInTheDocument();
     expect(screen.getByTestId('bpm-needs-key')).toHaveTextContent('API key');
     expect(screen.getByRole('link', { name: 'Add it in Settings' })).toHaveAttribute(
@@ -173,7 +221,7 @@ describe('GetSongBPM lookup', () => {
     expect(apiKey).toBe('TEST-KEY');
     expect(screen.getByTestId('bpm-source')).toHaveTextContent('Source: GetSongBPM');
     expect(screen.getByTestId('bpm-match')).toHaveTextContent('Fits the cadence');
-    const link = within(screen.getByTestId('bpm-attribution')).getByRole('link', {
+    const link = within(screen.getByTestId('bpm-attribution-getsongbpm')).getByRole('link', {
       name: /GetSongBPM/,
     });
     expect(link).toHaveAttribute('href', 'https://getsongbpm.com');
@@ -330,7 +378,7 @@ describe('GetSongBPM suggestions', () => {
       'https://getsongbpm.com/song/song-x180/x180',
     );
     expect(within(list).queryByText('Song bad')).not.toBeInTheDocument();
-    expect(screen.getByTestId('bpm-attribution')).toBeInTheDocument();
+    expect(screen.getByTestId('bpm-attribution-getsongbpm')).toBeInTheDocument();
   });
 
   it('shows an error when the service refuses', async () => {

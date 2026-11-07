@@ -673,7 +673,7 @@ export const pl: Messages = {
       gsbpm: {
         title: 'GetSongBPM (wyszukiwanie tempa)',
         key: 'Klucz API GetSongBPM',
-        hint: 'Opcjonalny. Uzupełnia BPM przypiętego utworu i podpowiada utwory w danym tempie. Klucz zostaje na tym urządzeniu i nie trafia do eksportu.',
+        hint: 'Opcjonalny. Bez klucza tempo przypiętego utworu jest szukane w Deezer. Klucz dodaje GetSongBPM i podpowiedzi utworów w danym tempie. Klucz zostaje na tym urządzeniu i nie trafia do eksportu.',
         placeholder: 'Wklej klucz API',
         get: 'Weź darmowy klucz',
         link: 'Dane: GetSongBPM',
@@ -758,6 +758,7 @@ export const pl: Messages = {
     emptyTitle: 'Nie ma jeszcze treningu do pokazania',
     bpmCredit: 'Dane o tempie utworów:',
     bpmSource: 'GetSongBPM',
+    bpmSourceDeezer: 'Deezer',
     minutes: '{minutes} min',
   },
   welcome: {
@@ -920,10 +921,11 @@ export const pl: Messages = {
       noMatch: 'Nie pasuje do kadencji tego bloku',
       fetch: 'Pobierz BPM',
       fetching: 'Szukam…',
-      notFound: 'GetSongBPM nie zna tego utworu. Wpisz lub wystukaj tempo.',
+      notFound:
+        'Nie znaleziono tempa tego utworu (GetSongBPM ani Deezer). Wpisz lub wystukaj tempo.',
       source: 'Źródło: {source} (możesz poprawić)',
       dataFrom: 'Dane:',
-      needKey: 'Pobieranie BPM wymaga klucza API GetSongBPM (darmowy).',
+      needKey: 'Propozycje utworów dla tempa wymagają klucza API GetSongBPM (darmowy).',
       needKeyLink: 'Dodaj go w Ustawieniach',
       suggest: 'Znajdź pasujące utwory',
       suggesting: 'Szukam…',
@@ -945,6 +947,9 @@ export const pl: Messages = {
           'GetSongBPM chwilowo nie odpowiada na ten klucz (do godziny albo do zmiany klucza). Na razie wpisz lub wystukaj tempo.',
         network: 'Nie można połączyć się z GetSongBPM.',
         badResponse: 'GetSongBPM zwrócił nieoczekiwaną odpowiedź.',
+        deezerNetwork: 'Nie można połączyć się z Deezer.',
+        deezerBadResponse: 'Deezer zwrócił nieoczekiwaną odpowiedź.',
+        deezerRateLimited: 'Osiągnięto limit zapytań Deezer. Spróbuj później.',
       },
       match: {
         exact: 'Pasuje do kadencji (2 BPM = 1 obr./min)',

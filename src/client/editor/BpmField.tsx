@@ -10,8 +10,10 @@ import {
   targetBpms,
   type MatchKind,
 } from '../../domain/bpm-match';
-import type { TrackRef } from '../../domain/workout';
-import { useT } from '../i18n';
+import type { BpmSource, TrackRef } from '../../domain/workout';
+import { useT, type MessageKey } from '../i18n';
+import { useBpmLookup } from '../music/bpmLookup';
+import { DEEZER_SITE } from '../music/deezer/client';
 import {
   GETSONGBPM_SITE,
   GetSongBpmError,
@@ -19,20 +21,21 @@ import {
   type GetSongBpmErrorKind,
 } from '../music/getsongbpm/client';
 import { trackQuery } from '../music/getsongbpm/query';
-import { useGetSongBpmClient } from '../music/getsongbpm/useGetSongBpm';
 import { Button } from '../ui/Button';
 import styles from './Inspector.module.css';
+
+type ErrorInfo = { kind: GetSongBpmErrorKind; provider: BpmSource };
 
 type LookupState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'notFound' }
-  | { status: 'error'; kind: GetSongBpmErrorKind };
+  | ({ status: 'error' } & ErrorInfo);
 
 type SuggestState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'error'; kind: GetSongBpmErrorKind }
+  | ({ status: 'error' } & ErrorInfo)
   | { status: 'done'; groups: { kind: MatchKind; bpm: number; hits: BpmHit[] }[] };
 
 const ERROR_KEY = {
@@ -46,12 +49,30 @@ const ERROR_KEY = {
 } as const;
 
 const SUGGESTIONS_PER_GROUP = 6;
-const BRAND = 'GetSongBPM';
+const BRAND: Record<BpmSource, string> = { getsongbpm: 'GetSongBPM', deezer: 'Deezer' };
+const SITE: Record<BpmSource, string> = { getsongbpm: GETSONGBPM_SITE, deezer: DEEZER_SITE };
+
+/** Deezer-specific wording for the two errors a keyless rider can meet; the rest is generic. */
+function errorText(t: (key: MessageKey) => string, e: ErrorInfo): string {
+  if (e.provider === 'deezer') {
+    if (e.kind === 'network') return t('editor.bpm.err.deezerNetwork');
+    if (e.kind === 'bad-response') return t('editor.bpm.err.deezerBadResponse');
+    if (e.kind === 'rate-limited') return t('editor.bpm.err.deezerRateLimited');
+  }
+  return t(ERROR_KEY[e.kind]);
+}
+
+function errorInfo(err: unknown): ErrorInfo {
+  return err instanceof GetSongBpmError
+    ? { kind: err.kind, provider: err.provider }
+    : { kind: 'network', provider: 'getsongbpm' };
+}
 
 /**
  * Tempo of the pinned track and how well it fits the block's cadence: 2 BPM = 1 RPM, half and
- * double time also count. The tempo is typed, tapped or (with a GetSongBPM key from Settings)
- * looked up; a looked-up value shows its source and stays editable. Without a pinned track it
+ * double time also count. The tempo is typed, tapped or
+ * looked up (Deezer needs no key, GetSongBPM uses the key from Settings); a looked-up value shows
+ * its source and stays editable. Without a pinned track it
  * tells which tempo and genres to look for, and can list songs at that tempo.
  */
 export function BpmField({
@@ -62,11 +83,12 @@ export function BpmField({
   rpm: number | undefined;
   track: TrackRef | undefined;
   /** `source` is set for a looked-up value; any typed or tapped value arrives without it. */
-  onChange: (bpm: number | undefined, source?: 'getsongbpm') => void;
+  onChange: (bpm: number | undefined, source?: BpmSource) => void;
 }) {
   const t = useT();
   const bpmId = useId();
-  const client = useGetSongBpmClient();
+  const bpmLookup = useBpmLookup();
+  const client = bpmLookup.suggestions;
   const [text, setText] = useState(track?.bpm === undefined ? '' : String(track.bpm));
   const [touched, setTouched] = useState(false);
   const [lookupRaw, setLookup] = useState<LookupState>({ status: 'idle' });
@@ -140,13 +162,13 @@ export function BpmField({
 
   const query = track ? trackQuery(track) : undefined;
   const fetchBpm = async (): Promise<void> => {
-    if (!client || !query || !track) return;
+    if (!query || !track) return;
     const forId = `${track.provider}:${track.id}`;
     const typedBefore = textRef.current;
     setLookupFor(forId);
     setLookup({ status: 'loading' });
     try {
-      const hit = await client.lookupBpm(query);
+      const hit = await bpmLookup.lookup(query);
       if (!alive.current) return;
       const now = trackRef.current;
       if (!now || `${now.provider}:${now.id}` !== forId) return;
@@ -165,13 +187,10 @@ export function BpmField({
       textRef.current = String(hit.bpm);
       setTouched(false);
       setLookup({ status: 'idle' });
-      onChangeRef.current(hit.bpm, 'getsongbpm');
+      onChangeRef.current(hit.bpm, hit.source);
     } catch (err) {
       if (!alive.current) return;
-      setLookup({
-        status: 'error',
-        kind: err instanceof GetSongBpmError ? err.kind : 'network',
-      });
+      setLookup({ status: 'error', ...errorInfo(err) });
     }
   };
 
@@ -202,24 +221,21 @@ export function BpmField({
       if (alive.current) setSuggest({ status: 'done', groups });
     } catch (err) {
       if (alive.current) {
-        setSuggest({
-          status: 'error',
-          kind: err instanceof GetSongBpmError ? err.kind : 'network',
-        });
+        setSuggest({ status: 'error', ...errorInfo(err) });
       }
     }
   };
 
-  const attribution = (
-    <small className={styles.caption} data-testid="bpm-attribution">
+  const attribution = (source: BpmSource) => (
+    <small className={styles.caption} data-testid={`bpm-attribution-${source}`}>
       {t('editor.bpm.dataFrom')}{' '}
       <a
-        href={GETSONGBPM_SITE}
+        href={SITE[source]}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`${BRAND} (${t('editor.bpm.newTab')})`}
+        aria-label={`${BRAND[source]} (${t('editor.bpm.newTab')})`}
       >
-        {BRAND}
+        {BRAND[source]}
       </a>
     </small>
   );
@@ -261,7 +277,7 @@ export function BpmField({
             />
           </label>
           <Button onClick={tap}>{t('editor.bpm.tap')}</Button>
-          {client && query && (
+          {query && (
             <Button
               onClick={() => void fetchBpm()}
               disabled={lookup.status === 'loading'}
@@ -279,12 +295,12 @@ export function BpmField({
       )}
       {track && lookup.status === 'error' && (
         <small role="alert" className={styles.error} data-testid="bpm-fetch-error">
-          {t(ERROR_KEY[lookup.kind])}
+          {errorText(t, lookup)}
         </small>
       )}
-      {track && track.bpmSource === 'getsongbpm' && track.bpm !== undefined && (
+      {track && track.bpmSource !== undefined && track.bpm !== undefined && (
         <small className={styles.caption} data-testid="bpm-source">
-          {t('editor.bpm.source', { source: BRAND })}
+          {t('editor.bpm.source', { source: BRAND[track.bpmSource] })}
         </small>
       )}
       {track && match && (
@@ -312,7 +328,7 @@ export function BpmField({
       )}
       {suggest.status === 'error' && (
         <small role="alert" className={styles.error} data-testid="bpm-suggest-error">
-          {t(ERROR_KEY[suggest.kind])}
+          {errorText(t, suggest)}
         </small>
       )}
       <div aria-live="polite" data-testid="bpm-status">
@@ -362,12 +378,16 @@ export function BpmField({
         )}
       </div>
 
-      {!client && (track || rpm !== undefined) && (
+      {!client && rpm !== undefined && (
         <small className={styles.caption} data-testid="bpm-needs-key">
           {t('editor.bpm.needKey')} <Link to="/settings">{t('editor.bpm.needKeyLink')}</Link>
         </small>
       )}
-      {client && (track || suggest.status === 'done') && attribution}
+      {track?.bpmSource !== undefined && attribution(track.bpmSource)}
+      {client &&
+        suggest.status === 'done' &&
+        track?.bpmSource !== 'getsongbpm' &&
+        attribution('getsongbpm')}
     </div>
   );
 }

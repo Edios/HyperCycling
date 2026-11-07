@@ -14,8 +14,12 @@ export type GetSongBpmErrorKind =
   'no-key' | 'unauthorized' | 'rate-limited' | 'forbidden' | 'blocked' | 'network' | 'bad-response';
 
 export class GetSongBpmError extends Error {
-  constructor(readonly kind: GetSongBpmErrorKind) {
-    super(`GetSongBPM: ${kind}`);
+  /** `provider` tells the UI whose name to show; the Deezer client reuses this error type. */
+  constructor(
+    readonly kind: GetSongBpmErrorKind,
+    readonly provider: 'getsongbpm' | 'deezer' = 'getsongbpm',
+  ) {
+    super(`${provider === 'deezer' ? 'Deezer' : 'GetSongBPM'}: ${kind}`);
     this.name = 'GetSongBpmError';
   }
 }
@@ -101,7 +105,7 @@ export function normalizeForMatch(text: string): string {
 }
 
 /** Cache identity of a text: its normal form, or the lowercased text when nothing letter-like is left. */
-function identity(text: string): string {
+export function identity(text: string): string {
   return normalizeForMatch(text) || text.trim().toLowerCase();
 }
 
@@ -112,7 +116,7 @@ function fingerprint(key: string): string {
   return (h >>> 0).toString(36);
 }
 
-function asRecord(v: unknown): Record<string, unknown> | undefined {
+export function asRecord(v: unknown): Record<string, unknown> | undefined {
   return typeof v === 'object' && v !== null && !Array.isArray(v)
     ? (v as Record<string, unknown>)
     : undefined;
