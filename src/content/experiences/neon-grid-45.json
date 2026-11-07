@@ -1,0 +1,36 @@
+{
+  "id": "neon-grid-45",
+  "title": "Neon Grid 45",
+  "description": "You ride through a lit-up grid to electronic beats: higher and higher, up to the last sprint and the silence after it.",
+  "localized": {
+    "pl": {
+      "title": "Neon Grid 45",
+      "description": "Jedziesz przez rozświetloną siatkę w rytm elektroniki: coraz wyżej, aż do ostatniego sprintu i ciszy po nim."
+    },
+    "en": {
+      "title": "Neon Grid 45",
+      "description": "You ride through a lit-up grid to electronic beats: higher and higher, up to the last sprint and the silence after it."
+    }
+  },
+  "workoutRef": { "kind": "builtin", "id": "class-neon-grid-45" },
+  "musicPins": [],
+  "worldTheme": {
+    "theme": "neon-grid",
+    "chapters": [
+      { "atPin": 0, "look": "grid-wake" },
+      { "atPin": 2, "look": "light-lanes" },
+      { "atPin": 4, "look": "arches" },
+      { "atPin": 6, "look": "surge" },
+      { "atPin": 8, "look": "summit-scan" },
+      { "atPin": 9, "look": "overdrive" },
+      { "atPin": 10, "look": "afterglow" }
+    ]
+  },
+  "lengthMin": 45,
+  "level": "hard",
+  "bike": "manual-stepped",
+  "stepCount": 5,
+  "tags": ["electronic", "intervals", "hills", "sprints"],
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-07T00:00:00.000Z"
+}

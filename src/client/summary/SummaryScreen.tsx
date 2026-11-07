@@ -5,7 +5,8 @@ import { DEFAULT_PLAN_SETTINGS, type Plan, type PlanProgress } from '../../domai
 import { FTP_TESTS, ftpTestKindOf, type FtpTestKind } from '../../domain/ftp-test';
 import type { Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
-import { builtinPlans } from '../data/builtin';
+import { experienceText } from '../../domain/experience';
+import { builtinPlans, getExperience } from '../data/builtin';
 import { localizedText } from '../data/localized';
 import { getRepositories } from '../data/repositories';
 import { useSettings } from '../data/useSettings';
@@ -27,6 +28,7 @@ import {
   meOf,
   MIN_COUNT_SEC,
   proposeFtp,
+  reachedChapters,
   setupPath,
   withFtp,
 } from './model';
@@ -121,7 +123,14 @@ function Summary({ result }: { result: LastResult }) {
     navigate(to);
   };
 
-  const name = localizedText(result.workout, lang).name;
+  const experience = result.experienceId ? getExperience(result.experienceId) : undefined;
+  const chapters = useMemo(
+    () => (experience ? reachedChapters(experience, result.workout, result.riddenSec) : undefined),
+    [experience, result.workout, result.riddenSec],
+  );
+  const name = experience
+    ? experienceText(experience, lang).title
+    : localizedText(result.workout, lang).name;
   const testKind = ftpTestKindOf(result.workout.id);
   const showFtp = testKind !== undefined && settings.equipment.showsWatts && !restored;
 
@@ -153,6 +162,22 @@ function Summary({ result }: { result: LastResult }) {
               </Chip>
             ))}
           </div>
+        )}
+
+        {experience && chapters && (
+          <Card className={styles.count} data-testid="summary-experience">
+            <p className={styles.detail}>
+              {t('summary.experienceChapters', {
+                reached: chapters.looks.length,
+                total: chapters.total,
+              })}
+            </p>
+            <ol className={styles.chapters}>
+              {chapters.looks.map((look) => (
+                <li key={look}>{t(`experience.looks.${look}` as MessageKey)}</li>
+              ))}
+            </ol>
+          </Card>
         )}
 
         {tooShort && (

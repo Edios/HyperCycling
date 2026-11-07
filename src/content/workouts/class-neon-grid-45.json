@@ -1,0 +1,813 @@
+{
+  "id": "class-neon-grid-45",
+  "name": "Class: Neon Grid 45",
+  "description": "Eleven songs on a five-step resistance knob: intervals, rolling hills, a pyramid, a summit climb and a sprint finish.",
+  "localized": {
+    "en": {
+      "name": "Class: Neon Grid 45",
+      "description": "Eleven songs on a five-step resistance knob: intervals, rolling hills, a pyramid, a summit climb and a sprint finish.",
+      "songHints": {
+        "class-neon-grid-45-s1": "Easy electronic warm-up, about 5 min. Aim for about 90 BPM. Idea: Kavinsky – Nightcall (91).",
+        "class-neon-grid-45-s2": "Four-on-the-floor groove for the first hill. Aim for about 128 BPM. Idea: Daft Punk – One More Time (123).",
+        "class-neon-grid-45-s3": "Fast, driving song for 30/30 intervals. Aim for about 174 BPM. Idea: The Weeknd – Blinding Lights (171).",
+        "class-neon-grid-45-s4": "Calm, spacious song to recover. Aim for about 89 BPM. Idea: Tycho – Awake (88).",
+        "class-neon-grid-45-s5": "Anthemic mid-tempo song for rolling hills. Aim for about 128 BPM. Idea: Swedish House Mafia – Don’t You Worry Child (129).",
+        "class-neon-grid-45-s6": "Calm, spacious song to recover. Aim for about 89 BPM. Idea: Chase & Status – Blind Faith, Loadstar Remix (87).",
+        "class-neon-grid-45-s7": "Fast, driving song for the pyramid. Aim for about 174 BPM. Idea: Pendulum – Witchcraft (172-175).",
+        "class-neon-grid-45-s8": "Pick your own calm electronic song, 85-95 BPM; nothing is pinned for this slot.",
+        "class-neon-grid-45-s9": "Big uplifting song for the long summit climb. Aim for about 126 BPM. Idea: David Guetta & Sia – Titanium (126).",
+        "class-neon-grid-45-s10": "Fast, driving song for the sprints. Aim for about 174 BPM. Idea: Sub Focus – Tidal Wave (174).",
+        "class-neon-grid-45-s11": "Quiet, beatless ambient piece; the last minute is silent. Aim for about 67 BPM. Idea: Brian Eno – An Ending (Ascent), no beat."
+      }
+    },
+    "pl": {
+      "name": "Zajęcia: Neon Grid 45",
+      "description": "Jedenaście piosenek na pięciostopniowym pokrętle oporu: interwały, toczące się wzgórza, piramida, podjazd na szczyt i sprint na koniec.",
+      "songHints": {
+        "class-neon-grid-45-s1": "Lekka elektronika na rozgrzewkę, ok. 5 min. Szukaj ok. 90 BPM. Pomysł: Kavinsky – Nightcall (91).",
+        "class-neon-grid-45-s2": "Równy rytm na pierwsze wzniesienie. Szukaj ok. 128 BPM. Pomysł: Daft Punk – One More Time (123).",
+        "class-neon-grid-45-s3": "Szybki, napędzający utwór na interwały 30/30. Szukaj ok. 174 BPM. Pomysł: The Weeknd – Blinding Lights (171).",
+        "class-neon-grid-45-s4": "Spokojny, przestrzenny utwór na odpoczynek. Szukaj ok. 89 BPM. Pomysł: Tycho – Awake (88).",
+        "class-neon-grid-45-s5": "Hymniczny utwór o średnim tempie na toczące się wzgórza. Szukaj ok. 128 BPM. Pomysł: Swedish House Mafia – Don’t You Worry Child (129).",
+        "class-neon-grid-45-s6": "Spokojny, przestrzenny utwór na odpoczynek. Szukaj ok. 89 BPM. Pomysł: Chase & Status – Blind Faith, Loadstar Remix (87).",
+        "class-neon-grid-45-s7": "Szybki, napędzający utwór na piramidę. Szukaj ok. 174 BPM. Pomysł: Pendulum – Witchcraft (172-175).",
+        "class-neon-grid-45-s8": "Wybierz własny spokojny utwór elektroniczny, 85-95 BPM; ten slot nie ma przypiętego utworu.",
+        "class-neon-grid-45-s9": "Podniosły utwór na długi podjazd na szczyt. Szukaj ok. 126 BPM. Pomysł: David Guetta & Sia – Titanium (126).",
+        "class-neon-grid-45-s10": "Szybki, napędzający utwór na sprinty. Szukaj ok. 174 BPM. Pomysł: Sub Focus – Tidal Wave (174).",
+        "class-neon-grid-45-s11": "Cichy ambient bez beatu; ostatnia minuta w ciszy. Szukaj ok. 67 BPM. Pomysł: Brian Eno – An Ending (Ascent), no beat."
+      }
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "hiit", "climb", "sprint"],
+  "source": {
+    "kind": "builtin",
+    "file": "class-neon-grid-45.json"
+  },
+  "blocks": [
+    {
+      "kind": "steady",
+      "id": "ng1-wu",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 85,
+      "position": "seated",
+      "cue": "@ngEnter",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "ng1-b",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated",
+      "cue": "@ngAddRpm90"
+    },
+    {
+      "kind": "steady",
+      "id": "ng1-c",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 100,
+      "position": "seated",
+      "cue": "@ngPickup"
+    },
+    {
+      "kind": "steady",
+      "id": "ng1-d",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng1-e",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 100,
+      "position": "seated",
+      "cue": "@ngPickup"
+    },
+    {
+      "kind": "steady",
+      "id": "ng1-f",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng2-a",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 66,
+      "position": "seated",
+      "cue": "@ngMakeHill",
+      "label": "@climb"
+    },
+    {
+      "kind": "steady",
+      "id": "ng2-b",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 64,
+      "position": "seated",
+      "cue": "@ngOneMore"
+    },
+    {
+      "kind": "steady",
+      "id": "ng2-c",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 66,
+      "position": "seated",
+      "cue": "@ngOneOff"
+    },
+    {
+      "kind": "steady",
+      "id": "ng3-a",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 82,
+      "position": "seated",
+      "cue": "@ngFlatSame",
+      "label": "@interval"
+    },
+    {
+      "kind": "repeat",
+      "id": "ng3-r1",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "ng3-on",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 87,
+          "position": "seated",
+          "cue": "@ngOnGo"
+        },
+        {
+          "kind": "steady",
+          "id": "ng3-off",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 82,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "repeat",
+      "id": "ng3-r2",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "ng3-on2",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 7
+          },
+          "rpm": 87,
+          "position": "seated",
+          "cue": "@ngOnAddStep"
+        },
+        {
+          "kind": "steady",
+          "id": "ng3-off2",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 82,
+          "position": "seated",
+          "cue": "@ngOffStep"
+        }
+      ]
+    },
+    {
+      "kind": "steady",
+      "id": "ng4-a",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 85,
+      "position": "seated",
+      "cue": "@ngTakeTwoOff",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "ng4-b",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated",
+      "cue": "@ngBackToRhythm"
+    },
+    {
+      "kind": "steady",
+      "id": "ng5-a",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 66,
+      "position": "seated",
+      "cue": "@ngAddSeated",
+      "label": "@climb"
+    },
+    {
+      "kind": "steady",
+      "id": "ng5-b",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 66,
+      "position": "seated",
+      "cue": "@ngOneMore"
+    },
+    {
+      "kind": "steady",
+      "id": "ng5-c",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 64,
+      "position": "standing",
+      "cue": "@ngStandHands3"
+    },
+    {
+      "kind": "steady",
+      "id": "ng5-d",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 66,
+      "position": "seated",
+      "cue": "@ngSitKeep"
+    },
+    {
+      "kind": "steady",
+      "id": "ng5-e",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 64,
+      "position": "standing",
+      "cue": "@ngStandHands3"
+    },
+    {
+      "kind": "steady",
+      "id": "ng5-f",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 66,
+      "position": "seated",
+      "cue": "@ngSitKeep"
+    },
+    {
+      "kind": "steady",
+      "id": "ng5-g",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 64,
+      "position": "standing",
+      "cue": "@ngStandHands3"
+    },
+    {
+      "kind": "steady",
+      "id": "ng5-h",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 66,
+      "position": "seated",
+      "cue": "@ngOneOff"
+    },
+    {
+      "kind": "steady",
+      "id": "ng6-a",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 85,
+      "position": "seated",
+      "cue": "@ngTakeTwoOff",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "ng6-b",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated",
+      "cue": "@ngBackToRhythm"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-a",
+      "durationSec": 20,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 82,
+      "position": "seated",
+      "cue": "@ngPyramid",
+      "label": "@interval"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-on1",
+      "durationSec": 20,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 87,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-off1",
+      "durationSec": 20,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 82,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-on2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 87,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-off2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 82,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-on3",
+      "durationSec": 40,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 87,
+      "position": "seated",
+      "cue": "@ngLongest"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-off3",
+      "durationSec": 40,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 82,
+      "position": "seated",
+      "cue": "@ngOffStep"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-on4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 87,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-off4",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 82,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-on5",
+      "durationSec": 20,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 87,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng7-off5",
+      "durationSec": 20,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 82,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng8-a",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 85,
+      "position": "seated",
+      "cue": "@ngTakeItOff",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "ng8-b",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated",
+      "cue": "@ngBackToRhythm"
+    },
+    {
+      "kind": "steady",
+      "id": "ng9-a",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 66,
+      "position": "seated",
+      "cue": "@ngAddSeated",
+      "label": "@climb"
+    },
+    {
+      "kind": "steady",
+      "id": "ng9-b",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 66,
+      "position": "seated",
+      "cue": "@ngSummitClose"
+    },
+    {
+      "kind": "steady",
+      "id": "ng9-c",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 64,
+      "position": "standing",
+      "cue": "@ngStandHands3"
+    },
+    {
+      "kind": "steady",
+      "id": "ng9-d",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 66,
+      "position": "seated",
+      "cue": "@ngSitKeep"
+    },
+    {
+      "kind": "steady",
+      "id": "ng9-e",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 9
+      },
+      "rpm": 62,
+      "position": "seated",
+      "cue": "@ngSummit"
+    },
+    {
+      "kind": "steady",
+      "id": "ng9-f",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 9
+      },
+      "rpm": 64,
+      "position": "standing",
+      "cue": "@ngStandLast"
+    },
+    {
+      "kind": "steady",
+      "id": "ng9-g",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 80,
+      "position": "seated",
+      "cue": "@ngEaseOff",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-a",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 85,
+      "position": "seated",
+      "cue": "@ngOneOff",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-b",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 88,
+      "position": "seated",
+      "cue": "@ngAddChorus"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-s1",
+      "durationSec": 15,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 105,
+      "position": "seated",
+      "cue": "@ngSprint15",
+      "label": "@sprint"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-o1",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-s2",
+      "durationSec": 15,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 105,
+      "position": "seated",
+      "cue": "@ngSprint15",
+      "label": "@sprint"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-o2",
+      "durationSec": 30,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-s3",
+      "durationSec": 15,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 105,
+      "position": "seated",
+      "cue": "@ngSprint15",
+      "label": "@sprint"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-o3",
+      "durationSec": 25,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 85,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-p",
+      "durationSec": 5,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 88,
+      "position": "seated",
+      "cue": "@ngReady"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-fin",
+      "durationSec": 20,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 100,
+      "position": "seated",
+      "cue": "@ngLastSprint",
+      "label": "@sprint"
+    },
+    {
+      "kind": "steady",
+      "id": "ng10-z",
+      "durationSec": 25,
+      "intensity": {
+        "effort": 4
+      },
+      "rpm": 80,
+      "position": "seated",
+      "cue": "@ngBreathe2",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "ng11-cd",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 80,
+      "position": "seated",
+      "cue": "@ngWindDown",
+      "label": "@cooldown"
+    },
+    {
+      "kind": "steady",
+      "id": "ng11-b",
+      "durationSec": 90,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 70,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "ng11-c",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 65,
+      "position": "seated",
+      "cue": "@ngSilence"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "format": "songs",
+  "songs": [
+    {
+      "id": "class-neon-grid-45-s1",
+      "firstBlockId": "ng1-wu",
+      "lastBlockId": "ng1-f",
+      "bpm": [86, 92],
+      "hint": "Easy electronic warm-up, about 5 min. Aim for about 90 BPM. Idea: Kavinsky – Nightcall (91)."
+    },
+    {
+      "id": "class-neon-grid-45-s2",
+      "firstBlockId": "ng2-a",
+      "lastBlockId": "ng2-c",
+      "bpm": [124, 132],
+      "hint": "Four-on-the-floor groove for the first hill. Aim for about 128 BPM. Idea: Daft Punk – One More Time (123)."
+    },
+    {
+      "id": "class-neon-grid-45-s3",
+      "firstBlockId": "ng3-a",
+      "lastBlockId": "ng3-r2",
+      "bpm": [168, 176],
+      "hint": "Fast, driving song for 30/30 intervals. Aim for about 174 BPM. Idea: The Weeknd – Blinding Lights (171)."
+    },
+    {
+      "id": "class-neon-grid-45-s4",
+      "firstBlockId": "ng4-a",
+      "lastBlockId": "ng4-b",
+      "bpm": [86, 92],
+      "hint": "Calm, spacious song to recover. Aim for about 89 BPM. Idea: Tycho – Awake (88)."
+    },
+    {
+      "id": "class-neon-grid-45-s5",
+      "firstBlockId": "ng5-a",
+      "lastBlockId": "ng5-h",
+      "bpm": [124, 132],
+      "hint": "Anthemic mid-tempo song for rolling hills. Aim for about 128 BPM. Idea: Swedish House Mafia – Don’t You Worry Child (129)."
+    },
+    {
+      "id": "class-neon-grid-45-s6",
+      "firstBlockId": "ng6-a",
+      "lastBlockId": "ng6-b",
+      "bpm": [86, 92],
+      "hint": "Calm, spacious song to recover. Aim for about 89 BPM. Idea: Chase & Status – Blind Faith, Loadstar Remix (87)."
+    },
+    {
+      "id": "class-neon-grid-45-s7",
+      "firstBlockId": "ng7-a",
+      "lastBlockId": "ng7-off5",
+      "bpm": [168, 176],
+      "hint": "Fast, driving song for the pyramid. Aim for about 174 BPM. Idea: Pendulum – Witchcraft (172-175)."
+    },
+    {
+      "id": "class-neon-grid-45-s8",
+      "firstBlockId": "ng8-a",
+      "lastBlockId": "ng8-b",
+      "bpm": [85, 95],
+      "hint": "Pick your own calm electronic song, 85-95 BPM; nothing is pinned for this slot."
+    },
+    {
+      "id": "class-neon-grid-45-s9",
+      "firstBlockId": "ng9-a",
+      "lastBlockId": "ng9-g",
+      "bpm": [122, 130],
+      "hint": "Big uplifting song for the long summit climb. Aim for about 126 BPM. Idea: David Guetta & Sia – Titanium (126)."
+    },
+    {
+      "id": "class-neon-grid-45-s10",
+      "firstBlockId": "ng10-a",
+      "lastBlockId": "ng10-z",
+      "bpm": [168, 176],
+      "hint": "Fast, driving song for the sprints. Aim for about 174 BPM. Idea: Sub Focus – Tidal Wave (174)."
+    },
+    {
+      "id": "class-neon-grid-45-s11",
+      "firstBlockId": "ng11-cd",
+      "lastBlockId": "ng11-c",
+      "bpm": [64, 70],
+      "hint": "Quiet, beatless ambient piece; the last minute is silent. Aim for about 67 BPM. Idea: Brian Eno – An Ending (Ascent), no beat."
+    }
+  ],
+  "scaling": {
+    "warmupBlockId": "ng1-wu",
+    "cooldownBlockId": "ng11-c"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-07T00:00:00.000Z"
+}

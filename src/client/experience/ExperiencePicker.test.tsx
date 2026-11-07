@@ -29,13 +29,15 @@ describe('ExperiencePicker', () => {
     renderPicker();
     const cards = screen.getAllByTestId('experience-card');
     expect(cards.length).toBeGreaterThan(0);
-    expect(cards[0]).toHaveAttribute('data-experience', 'neon-grid-endurance-45');
+    expect(cards[0]).toHaveAttribute('data-experience', 'neon-grid-45');
   });
 
   it('filters by level', () => {
     renderPicker();
-    fireEvent.click(screen.getByRole('button', { name: 'Hard' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Easy' }));
     expect(screen.queryAllByTestId('experience-card')).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Hard' }));
+    expect(screen.getAllByTestId('experience-card')).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'All' }));
     expect(screen.getAllByTestId('experience-card').length).toBeGreaterThan(0);
   });
@@ -44,14 +46,14 @@ describe('ExperiencePicker', () => {
     renderPicker();
     expect(screen.queryByTestId('experience-scenario')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Show scenario' }));
-    expect(screen.getByTestId('experience-scenario').children.length).toBe(8);
+    expect(screen.getByTestId('experience-scenario').children.length).toBe(11);
   });
 
   it('Start opens Setup with the workout and the experience id', () => {
     renderPicker();
     fireEvent.click(screen.getAllByTestId('experience-start')[0]!);
     expect(screen.getByTestId('where')).toHaveTextContent(
-      '/setup/class-endurance-45?exp=neon-grid-endurance-45',
+      '/setup/class-neon-grid-45?exp=neon-grid-45',
     );
   });
 });

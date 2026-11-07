@@ -254,6 +254,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         players: rt.players,
         startedAt: startedAt.current ?? new Date().toISOString(),
         ...(rt.plan ? { plan: rt.plan } : {}),
+        ...(rt.options?.experienceId ? { experienceId: rt.options.experienceId } : {}),
       });
       ended.current = true;
       navigate('/summary');

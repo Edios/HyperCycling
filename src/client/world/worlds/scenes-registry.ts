@@ -49,7 +49,7 @@ export type SceneLook = {
   extraB: string;
 };
 
-export type SceneExtraId = 'aurora' | 'towers';
+export type SceneExtraId = 'aurora' | 'towers' | 'pylons';
 
 export interface SceneDef {
   id: string;
