@@ -8,6 +8,7 @@ import { planSchema, weeklyLoad, type Plan } from '../domain/plan';
 import { scaleWorkout } from '../domain/scale';
 import { flattenWorkout } from '../domain/segments';
 import { matchBpm } from '../domain/bpm-match';
+import { doseWarnings, type DoseCode } from '../domain/dose-rules';
 import { totalDurationSec, workoutSchema, type SongSlot, type Workout } from '../domain/workout';
 
 const workoutFiles = import.meta.glob<unknown>('./workouts/*.json', {
@@ -419,28 +420,41 @@ describe('built-in workouts', () => {
     }
   });
 
-  it('respects built-in rpm rules', () => {
+  it('respects the dosing rules: cadence, sprints, standing (single source: domain/dose-rules)', () => {
+    const codes: DoseCode[] = [
+      'rpm-low',
+      'rpm-high',
+      'standing-rpm',
+      'standing-light',
+      'sprint-long',
+    ];
     for (const w of builtinWorkouts) {
-      for (const seg of flattenWorkout(w)) {
-        if (seg.rpm === undefined) continue;
-        const where = `${w.id} ${seg.blockId}`;
-        expect(seg.rpm, where).toBeGreaterThanOrEqual(60);
-        expect(seg.rpm, where).toBeLessThanOrEqual(115);
-        if (seg.rpm > 110) expect(seg.durationSec, `${where} fast cadence`).toBeLessThanOrEqual(30);
-        if (seg.position === 'standing') {
-          expect(seg.rpm, `${where} standing`).toBeLessThanOrEqual(75);
-        }
-      }
+      const bad = doseWarnings(w).filter((x) => x.level === 'warn' && codes.includes(x.code));
+      expect(bad.map((x) => `${w.id} ${x.blockId} ${x.code}`)).toEqual([]);
     }
   });
 
-  it('keeps sprints short (ramp test excluded)', () => {
-    for (const w of builtinWorkouts.filter((x) => !x.tags.includes('test'))) {
-      for (const seg of flattenWorkout(w)) {
-        if (seg.ftpPctStart >= 140) {
-          expect(seg.durationSec, `${w.id} ${seg.blockId}`).toBeLessThanOrEqual(30);
-        }
-      }
+  it('has no dosing warnings beyond the documented exceptions', () => {
+    // Known, deliberate or pending content findings (see the research notes). Remove an entry once fixed.
+    const KNOWN: Record<string, DoseCode[]> = {
+      // Long standing climbs are the point of these workouts.
+      'the-wall': ['standing-bout'],
+      'music-wall': ['standing-bout', 'standing-total'],
+      'standing-climbs': ['standing-total'],
+      // Hand-made demo predates the content design.
+      'demo-mixed': ['standing-bout', 'cooldown-short'],
+      // 30-minute class: 2.5 min cool-down, short by design.
+      'class-hiit-30': ['cooldown-short'],
+    };
+    for (const w of builtinWorkouts) {
+      const found = [
+        ...new Set(
+          doseWarnings(w)
+            .filter((x) => x.level === 'warn')
+            .map((x) => x.code),
+        ),
+      ];
+      expect(found.sort(), w.id).toEqual([...(KNOWN[w.id] ?? [])].sort());
     }
   });
 
@@ -624,18 +638,13 @@ describe('class-format workouts', () => {
 
   it('states a position on every block and keeps standing within limits', () => {
     for (const w of classes) {
-      let standing = 0;
-      for (const seg of flattenWorkout(w)) {
-        if (seg.position === 'standing') standing += seg.durationSec;
-      }
       for (const b of w.blocks) {
         for (const c of b.kind === 'repeat' ? b.blocks : [b]) {
           expect(c.position, `${w.id} ${c.id}`).toBeDefined();
-          if (c.position === 'standing')
-            expect(c.durationSec, `${w.id} ${c.id}`).toBeLessThanOrEqual(60);
         }
       }
-      expect(standing, w.id).toBeLessThanOrEqual(7 * 60);
+      const standing = doseWarnings(w).filter((x) => x.code.startsWith('standing-'));
+      expect(standing, w.id).toEqual([]);
     }
   });
 

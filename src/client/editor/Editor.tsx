@@ -12,6 +12,7 @@ import { Modal } from '../ui/Modal';
 import { Segmented } from '../ui/Segmented';
 import { Toast } from '../ui/Toast';
 import { ClassCard } from '../class/ClassCard';
+import { DoseWarnings } from '../class/DoseWarnings';
 import { duplicateAndSave } from './duplicate';
 import {
   createEditorState,
@@ -316,6 +317,11 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
               : t('editor.saveBlockedInvalid', { issue: issue.issue })}
           </p>
         )}
+        <DoseWarnings
+          workout={workout}
+          table={table}
+          onPick={(blockId) => dispatch({ type: 'select', id: blockId })}
+        />
         {errorKey && (
           <p className={styles.alert} role="alert" data-testid="editor-error">
             {t(errorKey as MessageKey)}
