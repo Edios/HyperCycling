@@ -32,8 +32,12 @@ export function DiagnosticsOverlay({ scene, quality }: DiagnosticsOverlayProps) 
       </div>
       {rs && (
         <div data-testid="diagnostics-gpu">
-          GPU {rs.gpuMs === null ? dash : rs.gpuMs.toFixed(1)} ms | {rs.drawCalls} calls |{' '}
-          {Math.round(rs.triangles / 1000)}k tris | {rs.mpx.toFixed(2)} Mpx
+          {t('diagnostics.overlay.gpu', {
+            ms: rs.gpuMs === null ? dash : rs.gpuMs.toFixed(1),
+            calls: rs.drawCalls,
+            tris: Math.round(rs.triangles / 1000),
+            mpx: rs.mpx.toFixed(2),
+          })}
         </div>
       )}
     </div>

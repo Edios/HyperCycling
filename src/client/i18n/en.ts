@@ -220,7 +220,11 @@ export const en = {
     bpm: 'bpm',
     withBpm: 'Z{zone} · {min}–{max} bpm',
     withPct: 'Z{zone} · {min}–{max} % HRmax',
-    zone1: 'Recovery', zone2: 'Endurance', zone3: 'Tempo', zone4: 'Threshold', zone5: 'Max',
+    zone1: 'Recovery',
+    zone2: 'Endurance',
+    zone3: 'Tempo',
+    zone4: 'Threshold',
+    zone5: 'Max',
   },
   players: {
     title: 'Players',
@@ -591,7 +595,8 @@ export const en = {
       cancel: 'Cancel',
       hrCol: 'Heart rate',
       showHr: 'Show heart-rate zones',
-      showHrHint: 'Adds a Z1–Z5 target next to the effort in training. Your max heart rate is set under Players.',
+      showHrHint:
+        'Adds a Z1–Z5 target next to the effort in training. Your max heart rate is set under Players.',
       saved: 'Saved',
     },
     data: {
@@ -760,6 +765,7 @@ export const en = {
         '{world} / {quality}: avg {avg} fps, worst 5% {p5} fps, slow frames {slow}, render {size}',
     },
     overlay: {
+      gpu: 'GPU {ms} ms | {calls} calls | {tris}k tris | {mpx} Mpx',
       fps: 'FPS',
       frame: 'frame ms avg/p95',
       size: 'canvas',

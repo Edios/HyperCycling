@@ -222,7 +222,11 @@ export const pl: Messages = {
     bpm: 'bpm',
     withBpm: 'Z{zone} · {min}–{max} bpm',
     withPct: 'Z{zone} · {min}–{max} % HRmax',
-    zone1: 'Regeneracja', zone2: 'Baza tlenowa', zone3: 'Tempo', zone4: 'Próg', zone5: 'Maksimum',
+    zone1: 'Regeneracja',
+    zone2: 'Baza tlenowa',
+    zone3: 'Tempo',
+    zone4: 'Próg',
+    zone5: 'Maksimum',
   },
   players: {
     title: 'Gracze',
@@ -761,6 +765,7 @@ export const pl: Messages = {
         '{world} / {quality}: śr. {avg} fps, najgorsze 5% {p5} fps, wolne klatki {slow}, render {size}',
     },
     overlay: {
+      gpu: 'GPU {ms} ms | {calls} wywołań | {tris}k trójkątów | {mpx} Mpx',
       fps: 'FPS',
       frame: 'klatka ms śr./p95',
       size: 'canvas',
