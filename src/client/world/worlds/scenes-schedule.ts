@@ -32,6 +32,54 @@ export interface SceneScheduleEntry {
 export interface ScheduleOptions {
   /** Variant count of every scene in registry order (its length is the scene count). */
   variantCounts: readonly number[];
+  /**
+   * Allowed scene-change seconds (song starts of an Experience), sorted. Changes then happen only
+   * at these seconds that pass `sceneChangeAllowed`; absent = every block boundary (default).
+   */
+  boundaries?: readonly number[];
+}
+
+/** A scene-change wash must not start in a sprint or at effort 9+. */
+export const NO_CHANGE_EFFORT = 9;
+/** A cadence at or above this is a sprint (same limit as the world frame). */
+const SPRINT_RPM_LIMIT = 105;
+
+/** Whether a scene may change at workout second `t` (design doc 4.1: not into a sprint or effort 9+). */
+export function sceneChangeAllowed(segments: readonly Segment[], t: number): boolean {
+  for (const s of segments) {
+    if (t < s.startSec || t >= s.startSec + s.durationSec) continue;
+    return (
+      Math.max(s.effortStart, s.effortEnd) < NO_CHANGE_EFFORT && (s.rpm ?? 0) < SPRINT_RPM_LIMIT
+    );
+  }
+  return true;
+}
+
+export interface ThemedChapter {
+  startSec: number;
+  /** Variant of the theme's scene. */
+  variant: number;
+}
+
+/**
+ * Schedule of a theme: one scene, one variant per chapter, changing only at the chapter starts that
+ * `sceneChangeAllowed` accepts (a refused one is merged into the previous chapter). Pure.
+ */
+export function buildThemedSchedule(
+  segments: readonly Segment[],
+  chapters: readonly ThemedChapter[],
+): SceneScheduleEntry[] {
+  const first = chapters[0];
+  const out: SceneScheduleEntry[] = [
+    { startSec: 0, scene: 0, variant: first?.variant ?? 0, kind: 'start' },
+  ];
+  for (const c of chapters.slice(1)) {
+    const prev = out[out.length - 1];
+    if (!prev || c.startSec <= prev.startSec || c.variant === prev.variant) continue;
+    if (!sceneChangeAllowed(segments, c.startSec)) continue;
+    out.push({ startSec: c.startSec, scene: 0, variant: c.variant, kind: 'scene' });
+  }
+  return out;
 }
 
 export interface SceneState {
@@ -64,7 +112,9 @@ export function buildSceneSchedule(
   if (n === 0) return [];
   const last = segments[segments.length - 1];
   const end = last ? last.startSec + last.durationSec : NO_WORKOUT_SEC;
-  const boundaries = segments.slice(1).map((s) => s.startSec);
+  const boundaries = opts.boundaries
+    ? opts.boundaries.filter((b) => b > 0 && sceneChangeAllowed(segments, b))
+    : segments.slice(1).map((s) => s.startSec);
   const variantsOf = (scene: number): number => Math.max(1, opts.variantCounts[scene] ?? 1);
   const visits = new Array<number>(n).fill(0);
 

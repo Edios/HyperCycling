@@ -6,6 +6,8 @@ import {
   VARIANT_FADE_SEC,
   VARIANT_SEC,
   buildSceneSchedule,
+  buildThemedSchedule,
+  sceneChangeAllowed,
   lerpHex,
   lerpLook,
   lerpLookInto,
@@ -186,5 +188,65 @@ describe('lerpLookInto', () => {
     const r = lerpLookInto(buf, a, b, 0.5);
     expect(r).toBe(buf);
     expect(r).toEqual(lerpLook(a, b, 0.5));
+  });
+});
+
+describe('sceneChangeAllowed', () => {
+  it('refuses effort 9+ and sprint cadence, allows the rest', () => {
+    const hard = { ...blocks([60], 9)[0]!, startSec: 300 };
+    const sprint = { ...blocks([30], 6)[0]!, startSec: 360, rpm: 106 };
+    const all = [...blocks([300], 5), hard, sprint];
+    expect(sceneChangeAllowed(all, 100)).toBe(true);
+    expect(sceneChangeAllowed(all, 310)).toBe(false);
+    expect(sceneChangeAllowed(all, 370)).toBe(false);
+    expect(sceneChangeAllowed(all, 10_000)).toBe(true);
+  });
+});
+
+describe('buildSceneSchedule with boundaries', () => {
+  it('changes scenes only at the given boundaries', () => {
+    const segs = blocks([100, 100, 100, 100, 100, 100, 100, 100], 5);
+    const out = buildSceneSchedule(segs, { ...opts, boundaries: [300, 600] }).filter(
+      (e) => e.kind === 'scene',
+    );
+    expect(out.map((e) => e.startSec)).toEqual([300, 600]);
+  });
+  it('skips boundaries inside a hard block', () => {
+    const segs = [...blocks([300], 5), { ...blocks([300], 9)[0]!, startSec: 300 }];
+    const out = buildSceneSchedule(segs, { ...opts, boundaries: [300] }).filter(
+      (e) => e.kind === 'scene',
+    );
+    expect(out.every((e) => e.startSec !== 300)).toBe(true);
+  });
+  it('without boundaries behaves as before', () => {
+    const segs = blocks([240, 240, 240], 5);
+    expect(scenesOnly(segs).map((e) => e.startSec)).toEqual([0, 240, 480]);
+  });
+});
+
+describe('buildThemedSchedule', () => {
+  const segs = [...blocks([300, 300], 4), { ...blocks([60], 9)[0]!, startSec: 600 }];
+  it('starts at chapter one and switches variant at the chapter starts', () => {
+    const out = buildThemedSchedule(segs, [
+      { startSec: 0, variant: 2 },
+      { startSec: 300, variant: 4 },
+    ]);
+    expect(out).toEqual([
+      { startSec: 0, scene: 0, variant: 2, kind: 'start' },
+      { startSec: 300, scene: 0, variant: 4, kind: 'scene' },
+    ]);
+  });
+  it('drops a chapter that would start inside effort 9+ and a repeated variant', () => {
+    const out = buildThemedSchedule(segs, [
+      { startSec: 0, variant: 0 },
+      { startSec: 100, variant: 0 },
+      { startSec: 620, variant: 3 },
+    ]);
+    expect(out).toHaveLength(1);
+  });
+  it('yields a single start entry without chapters', () => {
+    expect(buildThemedSchedule(segs, [])).toEqual([
+      { startSec: 0, scene: 0, variant: 0, kind: 'start' },
+    ]);
   });
 });

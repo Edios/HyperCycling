@@ -17,6 +17,8 @@ export interface SessionOptions {
   sounds?: boolean;
   coach?: boolean;
   world?: WorldSettingId;
+  /** Built-in Experience being ridden: its theme drives the Scenes world. */
+  experienceId?: string;
 }
 
 export interface SessionLog {
@@ -66,6 +68,7 @@ export const activeSessionSchema: z.ZodType<ActiveSession> = z.object({
       sounds: z.boolean().optional(),
       coach: z.boolean().optional(),
       world: z.enum(WORLD_SETTING_IDS).optional(),
+      experienceId: z.string().min(1).max(100).optional(),
     })
     .optional(),
   savedAt: z.iso.datetime({ offset: true }),

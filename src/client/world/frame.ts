@@ -47,6 +47,7 @@ export function buildWorldFrame(input: FrameInput, ctx: FrameContext): WorldFram
       path: ctx.path,
       workoutSec: state.workoutElapsedSec,
       segments,
+      theme: input.theme,
     };
   }
 
@@ -83,5 +84,6 @@ export function buildWorldFrame(input: FrameInput, ctx: FrameContext): WorldFram
     path: ctx.path,
     workoutSec: t,
     segments,
+    theme: input.theme,
   };
 }

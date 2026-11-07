@@ -18,10 +18,12 @@ import { SCENES, SCENE_VARIANT_COUNTS, type SceneExtraId, type SceneLook } from 
 import {
   workoutSeed,
   buildSceneSchedule,
+  buildThemedSchedule,
   lerpLookInto,
   sceneStateAt,
   type SceneScheduleEntry,
 } from './scenes-schedule';
+import { THEMES, lookVariant, type ThemeDef } from './scenes-themes';
 import { applySkyLook, setHex, skyMaterial, terrainMaterial } from './scenes-shaders';
 
 /**
@@ -206,6 +208,8 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
   const white = new THREE.Color(0xffffff);
 
   let scheduleFor: readonly Segment[] | undefined;
+  let scheduleTheme: WorldFrame['theme'];
+  let activeTheme: ThemeDef | undefined;
   let schedule: SceneScheduleEntry[] = [];
 
   const tmp = new THREE.Object3D();
@@ -567,13 +571,25 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     if (Math.abs(fov - appliedFov) > 1e-3) applyProjection();
 
     // which scene / variant (pure schedule keyed to the workout time)
-    if (scheduleFor !== frame.segments) {
+    if (scheduleFor !== frame.segments || scheduleTheme !== frame.theme) {
       scheduleFor = frame.segments;
-      schedule = buildSceneSchedule(frame.segments, { variantCounts: SCENE_VARIANT_COUNTS });
+      scheduleTheme = frame.theme;
+      const themeDef = frame.theme ? THEMES[frame.theme.id] : undefined;
+      activeTheme = themeDef;
+      if (themeDef && frame.theme) {
+        // an Experience theme: its chapters decide the look, only at song boundaries
+        const chapters = frame.theme.chapters.map((c) => ({
+          startSec: c.startSec,
+          variant: lookVariant(themeDef, c.look),
+        }));
+        schedule = buildThemedSchedule(frame.segments, chapters);
+      } else {
+        schedule = buildSceneSchedule(frame.segments, { variantCounts: SCENE_VARIANT_COUNTS });
+      }
       seed = workoutSeed(frame.segments);
     }
     const st = sceneStateAt(schedule, frame.workoutSec);
-    const def = SCENES[st.scene] ?? SCENES[0];
+    const def = activeTheme ? activeTheme.scene : (SCENES[st.scene] ?? SCENES[0]);
     if (!def) return;
     const fromLook = def.variants[st.fromVariant] ?? def.variants[0];
     const toLook = def.variants[st.toVariant] ?? fromLook;

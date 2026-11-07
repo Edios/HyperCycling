@@ -279,7 +279,8 @@ export const pl: Messages = {
       ageUnit: 'lat',
       inputPlaceholder: 'np. 185',
       agePlaceholder: 'np. 35',
-      ageHelp: 'Nie znasz swojego tętna maksymalnego? Wpisz wiek, a podpowiemy wartość (wiek nie jest zapisywany).',
+      ageHelp:
+        'Nie znasz swojego tętna maksymalnego? Wpisz wiek, a podpowiemy wartość (wiek nie jest zapisywany).',
       fromAge: 'Podpowiedz z wieku',
       skipHint: 'Nie masz pulsometru? Zostaw puste i idź dalej.',
     },
@@ -718,6 +719,24 @@ export const pl: Messages = {
     embedBlocked: 'Tego filmu nie można osadzić. Używam tła Basic.',
     unavailable: 'Nie można odtworzyć filmu. Używam tła Basic.',
   },
+  experience: {
+    title: 'Experience',
+    intro:
+      'Gotowa jazda: trening w stylu zajęć, świat i ścieżka muzyczna. Wybierz i naciśnij Start.',
+    filterLabel: 'Filtr poziomu',
+    filters: { all: 'Wszystkie', easy: 'Łatwe', medium: 'Średnie', hard: 'Trudne' },
+    level: { easy: 'Łatwy', medium: 'Średni', hard: 'Trudny' },
+    theme: { abstract: 'Abstrakcja', 'neon-grid': 'Neon Grid' },
+    cardMeta: '{minutes} min · {steps} stopni oporu · {songs} piosenek',
+    songRow: 'Piosenka {n}: {minutes} min',
+    start: 'Start',
+    showScenario: 'Pokaż scenariusz',
+    hideScenario: 'Ukryj scenariusz',
+    setupBadge: 'Experience: {title}. Świat i jego sceny są już ustawione.',
+    kicker: 'Experience',
+    seeScenario: 'Zobacz scenariusz',
+    empty: 'Nie ma jeszcze żadnego Experience',
+  },
   home: {
     dockLabel: 'Sposoby jazdy',
     plan: 'Plan',
@@ -920,8 +939,10 @@ export const pl: Messages = {
         noKey: 'Dodaj klucz API GetSongBPM w Ustawieniach.',
         unauthorized: 'GetSongBPM odrzucił klucz API. Sprawdź go w Ustawieniach.',
         rateLimited: 'Osiągnięto limit zapytań GetSongBPM. Spróbuj później.',
-        forbidden: 'GetSongBPM odrzucił klucz lub konto (403). Sprawdź klucz w Ustawieniach; nowy klucz zadziała od razu.',
-        blocked: 'GetSongBPM chwilowo nie odpowiada na ten klucz (do godziny albo do zmiany klucza). Na razie wpisz lub wystukaj tempo.',
+        forbidden:
+          'GetSongBPM odrzucił klucz lub konto (403). Sprawdź klucz w Ustawieniach; nowy klucz zadziała od razu.',
+        blocked:
+          'GetSongBPM chwilowo nie odpowiada na ten klucz (do godziny albo do zmiany klucza). Na razie wpisz lub wystukaj tempo.',
         network: 'Nie można połączyć się z GetSongBPM.',
         badResponse: 'GetSongBPM zwrócił nieoczekiwaną odpowiedź.',
       },

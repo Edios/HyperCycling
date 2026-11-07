@@ -1,7 +1,9 @@
 import type { Segment } from '../../domain/segments';
+import type { Experience } from '../../domain/experience';
+import { featuredExperience } from '../experience/model';
 import { totalDurationSec, type Workout } from '../../domain/workout';
 
-/** Tiles of the mode dock. Experience has no content yet and cannot be selected. */
+/** Tiles of the mode dock. */
 export type HomeTab = 'plan' | 'free' | 'experience';
 
 /** Next session of the active plan, already resolved to a concrete workout. */
@@ -18,7 +20,9 @@ export type Hero =
   | { kind: 'plan'; next: PlanNext }
   /** No active plan: a gentle workout to start with, plus a way to build a plan. */
   | { kind: 'starter'; workoutId: string | undefined }
-  | { kind: 'free'; workoutId: string | undefined; source: 'last' | 'recommended' };
+  | { kind: 'free'; workoutId: string | undefined; source: 'last' | 'recommended' }
+  /** A ready-made ride: its workout is shown on the tunnel. */
+  | { kind: 'experience'; experience: Experience; workoutId: string };
 
 export interface HeroInput {
   tab: HomeTab;
@@ -26,6 +30,8 @@ export interface HeroInput {
   next: PlanNext | null;
   lastWorkoutId?: string;
   workouts: readonly Workout[];
+  /** Built-in Experiences; the featured one is the hero of the Experience tile. */
+  experiences?: readonly Experience[];
 }
 
 const GENTLE_TARGET_SEC = 30 * 60;
@@ -46,8 +52,18 @@ export function gentleWorkout(workouts: readonly Workout[]): Workout | undefined
   })[0];
 }
 
-/** What the hero shows for the selected tile. Experience falls back to the Plan hero. */
-export function chooseHero({ tab, next, lastWorkoutId, workouts }: HeroInput): Hero {
+/** What the hero shows for the selected tile. Experience falls back to the Plan hero when none exists. */
+export function chooseHero({
+  tab,
+  next,
+  lastWorkoutId,
+  workouts,
+  experiences = [],
+}: HeroInput): Hero {
+  if (tab === 'experience') {
+    const experience = featuredExperience(experiences);
+    if (experience) return { kind: 'experience', experience, workoutId: experience.workoutRef.id };
+  }
   if (tab === 'free') {
     const last = workouts.find((w) => w.id === lastWorkoutId);
     if (last) return { kind: 'free', workoutId: last.id, source: 'last' };

@@ -1,3 +1,4 @@
+import type { ThemeId } from '../../domain/experience';
 import type { EffortTable } from '../../domain/effort';
 import type { Segment } from '../../domain/segments';
 import type { EngineState } from '../../domain/session-engine';
@@ -14,11 +15,19 @@ export interface PathModel {
   slopeY(z: number): number;
 }
 
+/** Visual theme of an Experience: which look shows from which workout second. */
+export interface WorldTheme {
+  id: ThemeId;
+  chapters: readonly { startSec: number; look: string }[];
+}
+
 /** What the canvas reads from the session every animation frame. */
 export interface FrameInput {
   segments: readonly Segment[];
   state: EngineState;
   table: EffortTable;
+  /** Set during an Experience; only the Scenes world uses it. Keep the same object between frames. */
+  theme?: WorldTheme | undefined;
 }
 
 /** Everything a world needs for one frame. Targets are smoothed by the world itself. */
@@ -41,6 +50,8 @@ export interface WorldFrame {
   workoutSec: number;
   /** The workout's segments (same array every frame while the workout is unchanged). */
   segments: readonly Segment[];
+  /** The Experience theme (same object while it is unchanged), if any. */
+  theme?: WorldTheme | undefined;
 }
 
 export interface WorldRenderer {

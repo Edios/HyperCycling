@@ -1,6 +1,7 @@
 import { createHashRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
 import { Intro } from './brand/Intro';
 import { EditorScreen } from './editor/EditorScreen';
+import { ExperiencePicker } from './experience/ExperiencePicker';
 import { Home } from './home/Home';
 import { DevHome } from './screens/DevHome';
 import { SettingsEffects } from './settings/SettingsEffects';
@@ -60,6 +61,14 @@ function routes(): RouteObject[] {
           element: (
             <SelectShell>
               <FreestyleTab />
+            </SelectShell>
+          ),
+        },
+        {
+          path: '/experiences',
+          element: (
+            <SelectShell>
+              <ExperiencePicker />
             </SelectShell>
           ),
         },

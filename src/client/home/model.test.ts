@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Segment } from '../../domain/segments';
 import type { Workout } from '../../domain/workout';
+import type { Experience } from '../../domain/experience';
 import { chooseHero, gentleWorkout, ringZones, type PlanNext } from './model';
 
 const NEXT: PlanNext = {
@@ -62,6 +63,23 @@ describe('chooseHero', () => {
       workoutId: 'easy',
       source: 'recommended',
     });
+  });
+});
+
+describe('chooseHero with experiences', () => {
+  const workouts = [wk('w1', 30)];
+  const exps = [
+    { id: 'b-exp', workoutRef: { kind: 'builtin', id: 'wb' } },
+    { id: 'a-exp', workoutRef: { kind: 'builtin', id: 'wa' } },
+  ] as unknown as Experience[];
+  it('shows the featured Experience (first by id) on the Experience tile', () => {
+    const hero = chooseHero({ tab: 'experience', next: NEXT, workouts, experiences: exps });
+    expect(hero).toMatchObject({ kind: 'experience', workoutId: 'wa' });
+  });
+  it('falls back to the plan hero when there is no Experience', () => {
+    expect(chooseHero({ tab: 'experience', next: NEXT, workouts, experiences: [] }).kind).toBe(
+      'plan',
+    );
   });
 });
 

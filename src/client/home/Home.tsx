@@ -12,6 +12,9 @@ import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
 import { effectiveSession } from '../plans/effective-session';
 import { useActivePlan, useLastSession } from '../select/useActivePlan';
+import { experienceText } from '../../domain/experience';
+import { builtinExperiences } from '../data/builtin';
+import { experienceSetupUrl } from '../experience/ExperiencePicker';
 import { chooseHero, ringZones, type HomeTab, type PlanNext } from './model';
 import { Tunnel } from './Tunnel';
 import styles from './Home.module.css';
@@ -66,10 +69,18 @@ export function Home() {
   }, [active, settings.equipment]);
 
   const hero = useMemo(
-    () => chooseHero({ tab, next, lastWorkoutId: last?.workoutId, workouts }),
+    () =>
+      chooseHero({
+        tab,
+        next,
+        lastWorkoutId: last?.workoutId,
+        workouts,
+        experiences: builtinExperiences,
+      }),
     [tab, next, last, workouts],
   );
   const workoutId = hero.kind === 'plan' ? hero.next.workoutId : hero.workoutId;
+  const expHero = hero.kind === 'experience' ? hero.experience : undefined;
   const workout: Workout | undefined = workouts.find((w) => w.id === workoutId);
 
   const zones = useMemo(() => {
@@ -86,16 +97,24 @@ export function Home() {
   }, [workout, hero.kind, active, settings]);
 
   const ready = loaded && active.state !== 'loading';
-  const text = workout ? localizedText(workout, lang) : undefined;
-  // The accent follows the tile; Experience has no hero of its own, so it shows the Plan one.
-  const accentMode = hero.kind === 'free' ? 'free' : 'plan';
+  const workoutText = workout ? localizedText(workout, lang) : undefined;
+  const text = expHero
+    ? {
+        name: experienceText(expHero, lang).title,
+        description: experienceText(expHero, lang).description,
+      }
+    : workoutText && { name: workoutText.name, description: workoutText.description };
+  // The accent follows the tile.
+  const accentMode = hero.kind === 'free' ? 'free' : hero.kind === 'experience' ? 'coach' : 'plan';
 
   const kicker =
     hero.kind === 'plan'
       ? t('home.planKicker', { week: hero.next.week, weeks: hero.next.weeks })
-      : hero.kind === 'starter'
-        ? t('home.starterKicker')
-        : t(hero.source === 'last' ? 'home.lastKicker' : 'home.recommendedKicker');
+      : hero.kind === 'experience'
+        ? t('experience.kicker')
+        : hero.kind === 'starter'
+          ? t('home.starterKicker')
+          : t(hero.source === 'last' ? 'home.lastKicker' : 'home.recommendedKicker');
   const minutes = workout ? Math.round(totalDurationSec(workout) / 60) : 0;
 
   return (
@@ -117,12 +136,20 @@ export function Home() {
                 className={styles.primary}
                 data-testid="home-ride"
                 onClick={() =>
-                  navigate(setupUrl(workout.id, hero.kind === 'plan' ? hero.next : undefined))
+                  navigate(
+                    expHero
+                      ? experienceSetupUrl(expHero)
+                      : setupUrl(workout.id, hero.kind === 'plan' ? hero.next : undefined),
+                  )
                 }
               >
                 {t('home.ride')}
               </button>
-              {hero.kind === 'starter' ? (
+              {hero.kind === 'experience' ? (
+                <Link to="/experiences" className={styles.secondary} data-testid="home-secondary">
+                  {t('experience.seeScenario')}
+                </Link>
+              ) : hero.kind === 'starter' ? (
                 <Link to="/plans/wizard" className={styles.secondary} data-testid="home-secondary">
                   {t('home.buildPlan')}
                 </Link>
@@ -155,14 +182,12 @@ export function Home() {
 
       <div className={styles.dock} role="group" aria-label={t('home.dockLabel')}>
         {TILES.map(({ id, icon, body }) => {
-          const soon = id === 'experience';
-          const on = !soon && tab === id;
+          const on = tab === id;
           return (
             <button
               key={id}
               type="button"
               aria-pressed={on}
-              disabled={soon}
               data-tile={id}
               data-mode={icon}
               className={`${styles.tile} ${on ? styles.on : ''}`}
@@ -171,7 +196,6 @@ export function Home() {
               <span className={styles.tileHead}>
                 <ModeIcon mode={icon} size={20} />
                 <b>{t(`home.${id}` as MessageKey)}</b>
-                {soon && <span className={styles.soon}>{t('home.soon')}</span>}
               </span>
               <span className={styles.tileBody}>{t(body)}</span>
             </button>
