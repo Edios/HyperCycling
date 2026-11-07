@@ -194,8 +194,8 @@ describe('PlanWizard heart-rate step', () => {
     renderWizard();
     await toFtpStep();
     next();
-    fireEvent.change(screen.getByLabelText('Age (not stored)'), { target: { value: '36' } });
-    fireEvent.click(screen.getByRole('button', { name: 'From age' }));
+    fireEvent.change(screen.getByLabelText('Age'), { target: { value: '36' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Suggest from age' }));
     expect(screen.getByLabelText('Max heart rate')).toHaveValue(183);
     expect(screen.getByTestId('hr-preview')).toHaveTextContent('Z3');
     next();

@@ -447,25 +447,35 @@ function Wizard({ me }: { me: Player | undefined }) {
             </h1>
             <p className={styles.sub}>{t('wizard.hr.sub')}</p>
             <div className={styles.ftpCard}>
+              <label className={styles.fieldLabel} htmlFor="wizard-hr-max">
+                {t('wizard.hr.input')}
+              </label>
               <div className={styles.ftpInput}>
                 <input
+                  id="wizard-hr-max"
                   type="number"
                   inputMode="numeric"
-                  aria-label={t('wizard.hr.input')}
+                  placeholder={t('wizard.hr.inputPlaceholder')}
                   aria-invalid={!hrBlank && hrValue === undefined}
                   value={hrText}
                   onChange={(e) => setHrText(e.target.value)}
                 />
                 <span aria-hidden="true">{t('wizard.hr.unit')}</span>
               </div>
+              <label className={styles.fieldLabel} htmlFor="wizard-hr-age">
+                {t('wizard.hr.age')}
+              </label>
+              <p className={styles.fieldHelp}>{t('wizard.hr.ageHelp')}</p>
               <div className={styles.ftpInput}>
                 <input
+                  id="wizard-hr-age"
                   type="number"
                   inputMode="numeric"
-                  aria-label={t('wizard.hr.age')}
+                  placeholder={t('wizard.hr.agePlaceholder')}
                   value={ageText}
                   onChange={(e) => setAgeText(e.target.value)}
                 />
+                <span aria-hidden="true">{t('wizard.hr.ageUnit')}</span>
                 <Button
                   disabled={!(Number(ageText) > 0)}
                   onClick={() => setHrText(String(estimateHrMax(Number(ageText))))}

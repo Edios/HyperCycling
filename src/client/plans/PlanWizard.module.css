@@ -343,6 +343,24 @@
   font-size: 1.25rem;
 }
 
+.fieldLabel {
+  display: block;
+  margin: 0.75rem 0 0 2.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.fieldLabel:first-child {
+  margin-top: 0;
+}
+
+.fieldHelp {
+  margin: 0.125rem 0 0 2.25rem;
+  font-size: 0.8125rem;
+  color: var(--dim);
+}
+
 .note,
 .err {
   display: block;
