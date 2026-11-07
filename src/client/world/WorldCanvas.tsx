@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createAutoQuality } from '../diagnostics/auto-quality';
+import { createRenderScaleController, SCALE_MIN } from './render-scale';
+import { readRenderStats } from './render-stats';
 import { buildWorldFrame } from './frame';
 import { createPathModel } from './path-model';
 import { createSway } from './sway';
@@ -97,6 +99,8 @@ export function WorldCanvas(props: WorldCanvasProps) {
       }
 
       const autoQuality = auto && !lowered ? createAutoQuality() : undefined;
+      // continuous resolution scaling comes first; the high->low switch is the fallback at the floor
+      const scaler = auto && w.setRenderScale ? createRenderScaleController() : undefined;
       const path = createPathModel({ rand: Math.random });
       const sway = createSway();
       let last = performance.now();
@@ -105,7 +109,11 @@ export function WorldCanvas(props: WorldCanvasProps) {
         raf = requestAnimationFrame(loop); // schedule first: a failing frame must not stop the loop
         const dtSec = Math.min(MAX_DT_SEC, Math.max(0, (now - last) / 1000));
         last = now;
-        if (autoQuality?.onFrame(now)) {
+        if (scaler) {
+          const next = scaler.onFrame(now, readRenderStats()?.gpuMs ?? null);
+          if (next !== undefined) w.setRenderScale?.(next);
+        }
+        if ((!scaler || scaler.scale <= SCALE_MIN) && autoQuality?.onFrame(now)) {
           setLowered(true);
           latest.current.onAutoLowered?.();
         }

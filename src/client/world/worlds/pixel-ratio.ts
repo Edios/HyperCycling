@@ -5,13 +5,20 @@ export const MSAA_MAX_RATIO = 1.5;
 
 /**
  * Effective render ratio for a CSS-sized canvas: device ratio (≤ 2; 1 for low quality) further
- * reduced so width*height*ratio² never exceeds PIXEL_BUDGET, whatever the CSS size or DPR.
+ * reduced so width*height*ratio² never exceeds PIXEL_BUDGET, whatever the CSS size or DPR, then
+ * multiplied by the continuous render scale (≤ 1, see render-scale.ts).
  */
-export function renderPixelRatio(cssW: number, cssH: number, high: boolean, dpr?: number): number {
+export function renderPixelRatio(
+  cssW: number,
+  cssH: number,
+  high: boolean,
+  dpr?: number,
+  scale = 1,
+): number {
   const device = dpr ?? (typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1);
   const want = high ? Math.min(device, 2) : 1;
   const area = Math.max(1, cssW) * Math.max(1, cssH);
-  return Math.min(want, Math.sqrt(PIXEL_BUDGET / area));
+  return Math.min(want, Math.sqrt(PIXEL_BUDGET / area)) * scale;
 }
 
 /** MSAA only for low effective ratios (high ratios already hide aliasing). */
