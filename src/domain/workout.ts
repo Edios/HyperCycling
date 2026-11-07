@@ -102,6 +102,8 @@ export interface Workout {
   /** Class format: absent = classic. Slots are only meaningful when format === 'songs'. */
   format?: 'classic' | 'songs';
   songs?: SongSlot[];
+  /** Background lane (M19c): a track of its own that takes over at the cooldown block. */
+  cooldownTrack?: TrackRef;
   scaling?: WorkoutScaling;
   schemaVersion: 1;
   updatedAt: string;
@@ -206,6 +208,7 @@ export const workoutSchema: z.ZodType<Workout> = z
     musicHints: z.record(z.string(), z.string()).optional(),
     format: z.enum(['classic', 'songs']).optional(),
     songs: z.array(songSlotSchema).optional(),
+    cooldownTrack: trackRefSchema.optional(),
     scaling: z
       .object({
         warmupBlockId: z.string().min(1),
@@ -461,4 +464,41 @@ export function songDurationSec(w: Workout, song: SongSlot): number {
   const z = w.blocks.findIndex((b) => b.id === song.lastBlockId);
   if (a < 0 || z < a) return 0;
   return totalDurationSec({ ...w, blocks: w.blocks.slice(a, z + 1) });
+}
+
+/** The block where the cooldown track starts: the scaling cooldown, else the last block (if >1 block). */
+export function cooldownBlockOf(w: Workout): Block | undefined {
+  const scaled = w.scaling ? w.blocks.find((b) => b.id === w.scaling?.cooldownBlockId) : undefined;
+  if (scaled) return scaled;
+  return w.blocks.length > 1 ? w.blocks[w.blocks.length - 1] : undefined;
+}
+
+/** Cue target of a top-level block: first child of a repeat, rep 1. */
+function cueTarget(b: Block): string | undefined {
+  return b.kind === 'repeat' ? b.blocks[0]?.id : b.id;
+}
+
+/**
+ * Everything the music director plays, in one list: explicit cues first, then pinned song-slot
+ * tracks and the cooldown track. A later lane never overrides an explicit cue at the same
+ * block/rep, except the cooldown track, which owns the cooldown block (lane 2).
+ */
+export function effectiveMusicCues(w: Workout): MusicCue[] {
+  const cues = [...w.musicCues];
+  const has = (blockId: string, rep: number): boolean =>
+    cues.some((c) => c.blockId === blockId && c.rep === rep);
+  for (const c of w.format === 'songs' ? compileSongCues(w) : []) {
+    if (!has(c.blockId, c.rep)) cues.push(c);
+  }
+  if (w.cooldownTrack) {
+    const block = cooldownBlockOf(w);
+    const target = block ? cueTarget(block) : undefined;
+    if (target) {
+      const i = cues.findIndex((c) => c.blockId === target && c.rep === 1);
+      const cue: MusicCue = { blockId: target, rep: 1, track: w.cooldownTrack };
+      if (i >= 0) cues[i] = cue;
+      else cues.push(cue);
+    }
+  }
+  return cues;
 }

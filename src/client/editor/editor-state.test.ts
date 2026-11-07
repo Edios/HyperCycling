@@ -527,3 +527,61 @@ describe('song slots in the editor', () => {
     expect(slots(dup)).toEqual(['s1:wu-rep', 's2:mid-cd']);
   });
 });
+
+describe('song slot actions and cooldown track (M16/M19c)', () => {
+  const slots = (s: EditorState): string[] =>
+    (s.workout.songs ?? []).map((x) => `${x.id}:${x.firstBlockId}-${x.lastBlockId}`);
+
+  it('addSong creates a slot (format songs), refuses a block already in a slot, undo removes it', () => {
+    const s = run(fresh(), { type: 'addSong', blockId: 'mid' });
+    expect(slots(s)).toEqual(['n1:mid-mid']);
+    expect(s.workout.format).toBe('songs');
+    expect(run(s, { type: 'addSong', blockId: 'mid' }).errors).toHaveLength(1);
+    const back = run(s, { type: 'undo' });
+    expect(back.workout.songs).toBeUndefined();
+  });
+
+  it('slots stay sorted by position', () => {
+    const s = run(fresh(), { type: 'addSong', blockId: 'cd' }, { type: 'addSong', blockId: 'wu' });
+    expect(slots(s)).toEqual(['n2:wu-wu', 'n1:cd-cd']);
+  });
+
+  it('resizeSong grows/shrinks and refuses to overlap or leave the timeline', () => {
+    let s = run(fresh(), { type: 'addSong', blockId: 'wu' }, { type: 'addSong', blockId: 'mid' });
+    s = run(s, { type: 'resizeSong', id: 'n1', edge: 'end', delta: 1 });
+    expect(slots(s)).toEqual(['n1:wu-rep', 'n2:mid-mid']);
+    const clash = run(s, { type: 'resizeSong', id: 'n1', edge: 'end', delta: 1 });
+    expect(clash.errors).toHaveLength(1);
+    expect(slots(clash)).toEqual(['n1:wu-rep', 'n2:mid-mid']);
+    expect(run(s, { type: 'resizeSong', id: 'n1', edge: 'start', delta: 1 }).errors).toHaveLength(
+      1,
+    );
+    s = run(s, { type: 'resizeSong', id: 'n1', edge: 'end', delta: -1 });
+    expect(slots(s)[0]).toBe('n1:wu-wu');
+    expect(run(s, { type: 'resizeSong', id: 'n1', edge: 'end', delta: -1 }).errors).toHaveLength(1);
+  });
+
+  it('updateSong sets and clears hint, bpm and track; removeSong drops format with the last slot', () => {
+    let s = run(
+      fresh(),
+      { type: 'addSong', blockId: 'mid' },
+      { type: 'updateSong', id: 'n1', patch: { hint: 'big chorus', bpm: [120, 128], track } },
+    );
+    expect(s.workout.songs?.[0]).toMatchObject({ hint: 'big chorus', bpm: [120, 128], track });
+    s = run(s, { type: 'updateSong', id: 'n1', patch: { hint: '', bpm: null, track: null } });
+    expect(s.workout.songs?.[0]).toEqual({ id: 'n1', firstBlockId: 'mid', lastBlockId: 'mid' });
+    s = run(s, { type: 'removeSong', id: 'n1' });
+    expect(s.workout.songs).toBeUndefined();
+    expect(s.workout.format).toBeUndefined();
+    expect(run(s, { type: 'removeSong', id: 'zz' }).errors).toHaveLength(1);
+  });
+
+  it('setCooldownTrack sets, clears and survives removing the cooldown block', () => {
+    let s = run(fresh(), { type: 'setCooldownTrack', track });
+    expect(s.workout.cooldownTrack).toEqual(track);
+    s = run(s, { type: 'removeBlock', id: 'cd' });
+    expect(s.workout.cooldownTrack).toEqual(track);
+    s = run(s, { type: 'setCooldownTrack', track: null });
+    expect(s.workout.cooldownTrack).toBeUndefined();
+  });
+});

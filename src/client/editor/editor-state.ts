@@ -6,6 +6,7 @@ import {
   type Block,
   type RampBlock,
   type RepeatBlock,
+  type SongSlot,
   type SteadyBlock,
   type TrackRef,
   type Workout,
@@ -30,6 +31,13 @@ type MetaPatch = Partial<
   Pick<Workout, 'name' | 'description' | 'category' | 'tags' | 'fallbackPlaylist' | 'localized'>
 >;
 
+/** `null` clears the field. */
+export interface SongPatch {
+  hint?: string | null;
+  bpm?: [number, number] | null;
+  track?: TrackRef | null;
+}
+
 export type EditorAction =
   | { type: 'addBlock'; kind: NewBlockKind; atIndex?: number }
   | { type: 'moveBlock'; from: number; to: number }
@@ -42,6 +50,11 @@ export type EditorAction =
   | { type: 'removeChild'; repeatId: string; childId: string }
   | { type: 'setCue'; blockId: string; rep: number; track: TrackRef }
   | { type: 'clearCue'; blockId: string; rep: number }
+  | { type: 'addSong'; blockId: string }
+  | { type: 'removeSong'; id: string }
+  | { type: 'resizeSong'; id: string; edge: 'start' | 'end'; delta: 1 | -1 }
+  | { type: 'updateSong'; id: string; patch: SongPatch }
+  | { type: 'setCooldownTrack'; track: TrackRef | null }
   | { type: 'updateMeta'; patch: MetaPatch }
   | { type: 'select'; id: string | undefined }
   | { type: 'markSaved' }
@@ -187,6 +200,18 @@ function pruneRemoved(w: Workout, removed: Set<string>, topLevel: boolean): void
     delete sc.minTimes;
     delete sc.maxTimes;
   }
+}
+
+function slotIndex(w: Workout, sg: SongSlot): number {
+  return w.blocks.findIndex((b) => b.id === sg.firstBlockId);
+}
+
+/** Top-level block indices covered by a slot (empty when its ids do not resolve). */
+function slotRange(w: Workout, sg: SongSlot): number[] {
+  const a = slotIndex(w, sg);
+  const z = w.blocks.findIndex((b) => b.id === sg.lastBlockId);
+  if (a < 0 || z < a) return [];
+  return Array.from({ length: z - a + 1 }, (_, i) => a + i);
 }
 
 function neighbour(list: Block[], index: number): string | undefined {
@@ -407,6 +432,76 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         w.musicCues = w.musicCues.filter(
           (c) => !(c.blockId === action.blockId && c.rep === action.rep),
         );
+        return { selectedId: state.selectedId };
+      });
+
+    case 'addSong':
+      return apply(state, (w, nextId) => {
+        const i = w.blocks.findIndex((b) => b.id === action.blockId);
+        if (i < 0) return invalid;
+        if ((w.songs ?? []).some((sg) => slotRange(w, sg).includes(i))) return invalid;
+        const slot: SongSlot = {
+          id: nextId(),
+          firstBlockId: action.blockId,
+          lastBlockId: action.blockId,
+        };
+        w.songs = [...(w.songs ?? []), slot].sort((x, y) => slotIndex(w, x) - slotIndex(w, y));
+        w.format = 'songs';
+        return { selectedId: state.selectedId };
+      });
+
+    case 'removeSong':
+      return apply(state, (w) => {
+        if (!w.songs?.some((sg) => sg.id === action.id)) return notFound;
+        w.songs = w.songs.filter((sg) => sg.id !== action.id);
+        if (w.songs.length === 0) {
+          delete w.songs;
+          delete w.format;
+        }
+        return { selectedId: state.selectedId };
+      });
+
+    case 'resizeSong':
+      return apply(state, (w) => {
+        const slot = w.songs?.find((sg) => sg.id === action.id);
+        if (!slot || !w.songs) return notFound;
+        const [a, z] = [slotIndex(w, slot), slotRange(w, slot).at(-1) ?? -1];
+        const na = action.edge === 'start' ? a - action.delta : a;
+        const nz = action.edge === 'end' ? z + action.delta : z;
+        if (na < 0 || nz >= w.blocks.length || na > nz) return invalid;
+        const clash = w.songs.some(
+          (o) => o.id !== slot.id && slotRange(w, o).some((k) => k >= na && k <= nz),
+        );
+        if (clash) return invalid;
+        slot.firstBlockId = (w.blocks[na] as Block).id;
+        slot.lastBlockId = (w.blocks[nz] as Block).id;
+        return { selectedId: state.selectedId };
+      });
+
+    case 'updateSong':
+      return apply(state, (w) => {
+        const slot = w.songs?.find((sg) => sg.id === action.id);
+        if (!slot) return notFound;
+        const { hint, bpm, track } = action.patch;
+        if (hint !== undefined) {
+          if (hint === null || hint.trim() === '') delete slot.hint;
+          else slot.hint = hint;
+        }
+        if (bpm !== undefined) {
+          if (bpm === null) delete slot.bpm;
+          else slot.bpm = bpm;
+        }
+        if (track !== undefined) {
+          if (track === null) delete slot.track;
+          else slot.track = track;
+        }
+        return { selectedId: state.selectedId };
+      });
+
+    case 'setCooldownTrack':
+      return apply(state, (w) => {
+        if (action.track === null) delete w.cooldownTrack;
+        else w.cooldownTrack = action.track;
         return { selectedId: state.selectedId };
       });
 

@@ -175,3 +175,15 @@
     font-size: 1.3125rem;
   }
 }
+
+.cardBtn {
+  align-self: flex-start;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}

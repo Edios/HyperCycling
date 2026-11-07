@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   compileSongCues,
+  cooldownBlockOf,
+  effectiveMusicCues,
   duplicateWorkout,
   repairSongs,
   songDurationSec,
@@ -119,5 +121,57 @@ describe('song slots', () => {
     const w = make();
     expect(compileSongCues(w)).toEqual([{ blockId: 'a', rep: 1, track }]);
     expect(songDurationSec(w, w.songs![1]!)).toBe(2 * 60 + 60);
+  });
+});
+
+describe('effectiveMusicCues (M19c two lanes)', () => {
+  const cd = { provider: 'youtube', id: 'cool', title: 'Cool', startAtSec: 5 } as const;
+
+  it('old workouts (no songs, no cooldownTrack) play exactly their stored cues', () => {
+    const w = make();
+    delete w.songs;
+    delete w.format;
+    w.musicCues = [{ blockId: 'a', rep: 1, track }];
+    expect(workoutSchema.parse(JSON.parse(JSON.stringify(w)))).toBeTruthy();
+    expect(effectiveMusicCues(w)).toEqual(w.musicCues);
+  });
+
+  it('adds pinned slot tracks but never over an explicit cue', () => {
+    const w = make();
+    expect(effectiveMusicCues(w).map((c) => c.blockId)).toEqual(['a']);
+    w.musicCues = [{ blockId: 'a', rep: 1, track: { ...track, id: 'own' } }];
+    const cues = effectiveMusicCues(w);
+    expect(cues).toHaveLength(1);
+    expect(cues[0]?.track.id).toBe('own');
+  });
+
+  it('cooldown track starts at the last block and overrides a cue there', () => {
+    const w = make();
+    w.cooldownTrack = cd;
+    w.musicCues = [{ blockId: 'c', rep: 1, track }];
+    const cues = effectiveMusicCues(w);
+    expect(cues.find((c) => c.blockId === 'c')?.track.id).toBe('cool');
+    expect(cues.filter((c) => c.blockId === 'c')).toHaveLength(1);
+  });
+
+  it('cooldown follows scaling.cooldownBlockId and a repeat uses its first child', () => {
+    const w = make();
+    w.cooldownTrack = cd;
+    w.scaling = { warmupBlockId: 'a', cooldownBlockId: 'r' };
+    expect(cooldownBlockOf(w)?.id).toBe('r');
+    expect(effectiveMusicCues(w).some((c) => c.blockId === 'r1' && c.track.id === 'cool')).toBe(
+      true,
+    );
+  });
+
+  it('single-block workout has no cooldown block; track is ignored; schema accepts the field', () => {
+    const w = make();
+    w.blocks = [steady('a')];
+    delete w.songs;
+    delete w.format;
+    w.cooldownTrack = cd;
+    expect(cooldownBlockOf(w)).toBeUndefined();
+    expect(effectiveMusicCues(w)).toEqual([]);
+    expect(workoutSchema.safeParse(w).success).toBe(true);
   });
 });
