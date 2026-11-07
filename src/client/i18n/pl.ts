@@ -857,10 +857,12 @@ export const pl: Messages = {
   editor: {
     bpm: {
       target: 'Dla {rpm} obr./min szukaj ok. {bpm} BPM (lub {half} BPM w połowie tempa).',
+      targetNoHalf: 'Dla {rpm} obr./min szukaj ok. {bpm} BPM.',
+      targetHalfOnly: 'Dla {rpm} obr./min szukaj ok. {bpm} BPM (połowa tempa).',
       genres: 'Typowe gatunki: {list}.',
       label: 'BPM utworu',
       tap: 'Wystukaj tempo',
-      error: 'Podaj {min}-{max}',
+      error: 'Podaj {min}–{max} BPM',
       close: 'w przybliżeniu',
       noMatch: 'Nie pasuje do kadencji tego bloku',
       match: {

@@ -76,6 +76,14 @@ export function tapTempoBpm(tapsMs: number[]): number | undefined {
   return bpm >= BPM_MIN && bpm <= BPM_MAX ? bpm : undefined;
 }
 
+/** Strict BPM field parser: plain digits (optionally with decimals), rounded; undefined if invalid or out of range. */
+export function parseBpmInput(text: string): number | undefined {
+  const m = /^(\d{2,3}(?:[.,]\d+)?)$/.exec(text.trim());
+  if (!m) return undefined;
+  const n = Math.round(Number((m[1] as string).replace(',', '.')));
+  return n >= BPM_MIN && n <= BPM_MAX ? n : undefined;
+}
+
 /** "Climb 128 BPM", "140bpm", "bpm: 172" -> the number, if it is a plausible tempo. */
 export function parseBpmFromName(name: string): number | undefined {
   const m = /(\d{2,3})\s*bpm|bpm\s*[:=]?\s*(\d{2,3})/i.exec(name);
@@ -84,15 +92,7 @@ export function parseBpmFromName(name: string): number | undefined {
 }
 
 export type GenreId =
-  | 'chillPop'
-  | 'hipHop'
-  | 'pop'
-  | 'rock'
-  | 'dance'
-  | 'house'
-  | 'techno'
-  | 'trance'
-  | 'drumAndBass';
+  'chillPop' | 'hipHop' | 'pop' | 'rock' | 'dance' | 'house' | 'techno' | 'trance' | 'drumAndBass';
 
 export interface Genre {
   id: GenreId;
