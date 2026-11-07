@@ -54,9 +54,7 @@ describe('Neon Grid chapters', () => {
 
   it('spreads across at least four hue families over the ride (not one cyan)', () => {
     const buckets = new Set(
-      looks
-        .filter((l) => hue(l.line).s > 0.25)
-        .map((l) => Math.round(hue(l.line).h / 40)),
+      looks.filter((l) => hue(l.line).s > 0.25).map((l) => Math.round(hue(l.line).h / 40)),
     );
     expect(buckets.size).toBeGreaterThanOrEqual(4);
   });

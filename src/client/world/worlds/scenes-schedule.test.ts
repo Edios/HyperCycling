@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { Segment } from '../../../domain/segments';
+import { builtinWorkouts } from '../../data/builtin';
+import { songStartsSec } from '../../../domain/experience';
+import { flattenWorkout, type Segment } from '../../../domain/segments';
 import {
   MAX_SCENE_SEC,
+  SCENE_FADE_SEC,
   MIN_SCENE_SEC,
   VARIANT_FADE_SEC,
   VARIANT_SEC,
@@ -201,13 +204,47 @@ describe('sceneChangeAllowed', () => {
     expect(sceneChangeAllowed(all, 370)).toBe(false);
     expect(sceneChangeAllowed(all, 10_000)).toBe(true);
   });
-  it('allows a change exactly at a block boundary, also into effort 9+ or a sprint (rest to work)', () => {
+  it('allows a change at a boundary out of rest or moderate work, also into effort 9+ or a sprint', () => {
     const hard = { ...blocks([60], 9)[0]!, startSec: 300 };
-    const sprint = { ...blocks([30], 6)[0]!, startSec: 360, rpm: 106 };
-    const all = [...blocks([300], 5), hard, sprint];
-    expect(sceneChangeAllowed(all, 300)).toBe(true);
-    expect(sceneChangeAllowed(all, 360)).toBe(true);
+    const rest = { ...blocks([30], 3)[0]!, startSec: 360 };
+    const sprint = { ...blocks([30], 6)[0]!, startSec: 390, rpm: 106 };
+    const all = [...blocks([300], 5), hard, rest, sprint];
+    expect(sceneChangeAllowed(all, 300)).toBe(true); // moderate -> effort 9
+    expect(sceneChangeAllowed(all, 390)).toBe(true); // rest -> sprint
+    expect(sceneChangeAllowed(all, 360)).toBe(false); // effort 9 -> rest: inside the wash of a hard block
     expect(sceneChangeAllowed(all, 301.5)).toBe(false);
+  });
+  it('refuses hard -> hard and sprint -> sprint boundaries (the wash would start mid-effort)', () => {
+    const h1 = { ...blocks([60], 9)[0]!, startSec: 300 };
+    const h2 = { ...blocks([60], 9)[0]!, startSec: 360 };
+    const s1 = { ...blocks([15], 6)[0]!, startSec: 420, rpm: 108 };
+    const s2 = { ...blocks([30], 6)[0]!, startSec: 435, rpm: 108 };
+    const all = [...blocks([300], 5), h1, h2, s1, s2];
+    expect(sceneChangeAllowed(all, 360)).toBe(false);
+    expect(sceneChangeAllowed(all, 420)).toBe(false); // effort 9 -> sprint
+    expect(sceneChangeAllowed(all, 435)).toBe(false);
+    const out = buildThemedSchedule(all, [
+      { startSec: 0, variant: 0 },
+      { startSec: 360, variant: 3 },
+    ]);
+    expect(out).toHaveLength(1);
+  });
+  it('never puts a scene-change wash over the middle of a hard block, in any built-in workout', () => {
+    for (const w of builtinWorkouts) {
+      const segs = flattenWorkout(w);
+      const changes = buildSceneSchedule(segs, { ...opts, boundaries: songStartsSec(w) })
+        .filter((e) => e.kind === 'scene')
+        .map((e) => e.startSec);
+      const half = SCENE_FADE_SEC / 2;
+      for (const t of changes) {
+        for (const s of segs) {
+          if (!(s.effortStart >= 9 || s.effortEnd >= 9 || (s.rpm ?? 0) >= 105)) continue;
+          // the wash [t - half, t + half] must not reach into the part of a hard block after its start
+          const overlaps = t - half < s.startSec + s.durationSec && t + half > s.startSec;
+          if (overlaps) expect(t, `${w.id} change at ${t}s`).toBe(s.startSec);
+        }
+      }
+    }
   });
 });
 

@@ -44,22 +44,35 @@ export const NO_CHANGE_EFFORT = 9;
 /** A cadence at or above this is a sprint (same limit as the world frame). */
 const SPRINT_RPM_LIMIT = 105;
 
+/** Step of the search for the next allowed second when a scene change is forced. */
+const FORCED_STEP_SEC = 5;
+
 /** A change this close after a block start counts as AT the block boundary. */
 const BOUNDARY_TOLERANCE_SEC = 1;
 
+/** A block that is a sprint or effort 9+: nothing may change in it, nor right out of it. */
+function isHard(s: Segment): boolean {
+  return (
+    Math.max(s.effortStart, s.effortEnd) >= NO_CHANGE_EFFORT || (s.rpm ?? 0) >= SPRINT_RPM_LIMIT
+  );
+}
+
 /**
- * Whether a scene may change at workout second `t`. A block boundary is always fine, including
- * rest → hard work: that is the dramatic moment, the new world arrives with the pre-cue (the wash
- * is centred on the change). Inside a running block a scene never changes while it is a sprint or
- * effort 9+ (nothing changes in the middle of an effort).
+ * Whether a scene may change at workout second `t`. At a block boundary a change is fine when the
+ * block before it is NOT hard (rest or moderate → anything, including hard work: the dramatic
+ * moment, the new world arrives with the pre-cue and the wash is centred on the boundary). Hard →
+ * hard (or sprint → sprint) is refused: the wash would start in the middle of an effort. Inside a
+ * running block a scene never changes while it is a sprint or effort 9+.
  */
 export function sceneChangeAllowed(segments: readonly Segment[], t: number): boolean {
-  for (const s of segments) {
+  for (let i = 0; i < segments.length; i++) {
+    const s = segments[i] as Segment;
     if (t < s.startSec || t >= s.startSec + s.durationSec) continue;
-    if (t - s.startSec < BOUNDARY_TOLERANCE_SEC) return true;
-    return (
-      Math.max(s.effortStart, s.effortEnd) < NO_CHANGE_EFFORT && (s.rpm ?? 0) < SPRINT_RPM_LIMIT
-    );
+    if (t - s.startSec < BOUNDARY_TOLERANCE_SEC) {
+      const prev = segments[i - 1];
+      return !prev || !isHard(prev);
+    }
+    return !isHard(s);
   }
   return true;
 }
@@ -135,10 +148,14 @@ export function buildSceneSchedule(
 
   for (;;) {
     const boundary = boundaries.find((b) => b >= sceneStart + MIN_SCENE_SEC);
-    const change =
+    let change =
       boundary !== undefined && boundary <= sceneStart + MAX_SCENE_SEC
         ? boundary
         : sceneStart + MAX_SCENE_SEC;
+    // a forced change (no boundary in time) still never lands in the middle of an effort
+    if (change !== boundary) {
+      while (change < end && !sceneChangeAllowed(segments, change)) change += FORCED_STEP_SEC;
+    }
     const count = variantsOf(scene);
     for (let t = sceneStart + VARIANT_SEC; t < end; t += VARIANT_SEC) {
       if (change - t < VARIANT_SKIP_SEC) break;

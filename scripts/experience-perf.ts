@@ -102,7 +102,9 @@ async function main(): Promise<void> {
         console.log(
           `${quality.padEnd(7)}${name.padEnd(13)} ${String(r.cpu.length).padStart(6)} ${avg(r.cpu)
             .toFixed(2)
-            .padStart(10)} ${pct(r.cpu, 0.95).toFixed(2).padStart(10)} ${avg(r.draws).toFixed(1).padStart(9)}`,
+            .padStart(
+              10,
+            )} ${pct(r.cpu, 0.95).toFixed(2).padStart(10)} ${avg(r.draws).toFixed(1).padStart(9)}`,
         );
         await context.close();
       }

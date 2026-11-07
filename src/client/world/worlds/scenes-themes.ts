@@ -6,7 +6,7 @@ import { PATTERN, plainFx, type SceneDef, type SceneLook } from './scenes-regist
  * "looks" an Experience chapter refers to; the Experience decides when each look shows (at song
  * boundaries). Themes live apart from SCENES, so adding one never changes the rotation of the
  * plain Scenes world. Neon Grid palette: dark #02040f, cyan #2de2ff, white #e8fbff, violet #3a1a7a
- * (no orange, no Tron imagery; design doc section 7.1).
+ * (no orange, no film imagery; design doc section 7.1).
  */
 
 export interface ThemeDef {

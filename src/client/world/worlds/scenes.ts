@@ -642,8 +642,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       dist += vspeed * dt;
       beatPhase += dt * look.pulseHz;
       if (beatPhase > 1e4) beatPhase -= 1e4;
-      beat =
-        look.pulse * (0.4 + 0.6 * intensity) * (0.5 + 0.5 * Math.sin(beatPhase * 2 * Math.PI));
+      beat = look.pulse * (0.4 + 0.6 * intensity) * (0.5 + 0.5 * Math.sin(beatPhase * 2 * Math.PI));
     } else {
       beat = 0;
     }
@@ -788,7 +787,11 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     dashes.instanceMatrix.needsUpdate = true;
 
     // gate at the start of the next block, in that block's colour
-    const gd = gateDepth({ speed: vspeed, nextBlockInSec: frame.nextBlockInSec, viewDistance: VIEW });
+    const gd = gateDepth({
+      speed: vspeed,
+      nextBlockInSec: frame.nextBlockInSec,
+      viewDistance: VIEW,
+    });
     if (gd === null) {
       gate.visible = false;
     } else {
