@@ -16,10 +16,14 @@ async function startExperience(page: Page): Promise<void> {
   await page.goto('./#/setup/class-neon-grid-45?exp=neon-grid-45');
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
-  await page.keyboard.press('Space');
-  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
-    timeout: 10_000,
-  });
+  // The keydown binding can land just after the screen shows; press again until it starts.
+  await expect(async () => {
+    if ((await page.getByTestId('training-screen').getAttribute('data-status')) === 'idle')
+      await page.keyboard.press('Space');
+    await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
+      timeout: 1500,
+    });
+  }).toPass({ timeout: 20_000 });
 }
 
 interface Problem {
