@@ -5,7 +5,17 @@ import {
   type EffortLevel,
   type EffortTable,
 } from './effort';
+import { EFFORT_OPTS, PCT_OPTS, quantizeRamp, quantizeRampExact, type RampStep } from './quantize';
+import type { ResistanceMode } from './settings';
 import type { Block, Intensity, Position, RampBlock, SteadyBlock, Workout } from './workout';
+
+/** One steady stretch inside a stepped ramp segment (derived, never stored). */
+export interface Step {
+  offsetSec: number;
+  durationSec: number;
+  ftpPct: number;
+  effort: EffortLevel;
+}
 
 export interface Segment {
   index: number;
@@ -17,7 +27,10 @@ export interface Segment {
   effortStart: EffortLevel;
   effortEnd: EffortLevel;
   rpm?: number;
+  /** Always set by flattenWorkout (default 'seated'); optional only so older fixtures still type. */
   position?: Position;
+  /** Present on ramp segments flattened for a stepped mode; absent = continuous. */
+  steps?: Step[];
   cue?: string;
   label?: string;
   blockId: string;
@@ -32,7 +45,58 @@ function resolveFtpPct(i: Intensity, table: EffortTable): number {
   throw new Error('Intensity needs effort or ftpPct');
 }
 
-export function flattenWorkout(w: Workout, table: EffortTable = DEFAULT_EFFORT_TABLE): Segment[] {
+const clampEffort = (v: number): EffortLevel =>
+  Math.min(10, Math.max(1, Math.round(v))) as EffortLevel;
+
+/** Derives the steps of one ramp. `knob` quantises on the effort scale, `knobPower` on %FTP. */
+function deriveSteps(
+  b: RampBlock,
+  ftpPctStart: number,
+  ftpPctEnd: number,
+  effortStart: EffortLevel,
+  effortEnd: EffortLevel,
+  mode: ResistanceMode,
+  table: EffortTable,
+): Step[] {
+  const override = b.steps !== undefined && b.steps >= 1 ? b.steps : 0;
+  if (mode === 'knobPower') {
+    const raw: RampStep[] = override
+      ? quantizeRampExact(ftpPctStart, ftpPctEnd, b.durationSec, override, PCT_OPTS)
+      : quantizeRamp(ftpPctStart, ftpPctEnd, b.durationSec, PCT_OPTS);
+    return raw.map((s) => ({
+      offsetSec: s.offsetSec,
+      durationSec: s.durationSec,
+      ftpPct: s.value,
+      effort: ftpPctToEffort(s.value, table),
+    }));
+  }
+  const raw: RampStep[] = override
+    ? quantizeRampExact(effortStart, effortEnd, b.durationSec, override, EFFORT_OPTS)
+    : quantizeRamp(effortStart, effortEnd, b.durationSec, EFFORT_OPTS);
+  return raw.map((s) => {
+    const effort = clampEffort(s.value);
+    return {
+      offsetSec: s.offsetSec,
+      durationSec: s.durationSec,
+      ftpPct: effortToFtpPct(effort, table),
+      effort,
+    };
+  });
+}
+
+export function positionOf(seg: Pick<Segment, 'position'>): Position {
+  return seg.position ?? 'seated';
+}
+
+/**
+ * `mode` defaults to 'smart' (continuous ramps, today's behaviour) so callers that only
+ * display or measure are unchanged; the training path passes the rider's resistance mode.
+ */
+export function flattenWorkout(
+  w: Workout,
+  table: EffortTable = DEFAULT_EFFORT_TABLE,
+  mode: ResistanceMode = 'smart',
+): Segment[] {
   const segments: Segment[] = [];
   let cursor = 0;
 
@@ -54,7 +118,19 @@ export function flattenWorkout(w: Workout, table: EffortTable = DEFAULT_EFFORT_T
       reps,
     };
     if (b.rpm !== undefined) seg.rpm = b.rpm;
-    if (b.position !== undefined) seg.position = b.position;
+    seg.position = b.position ?? 'seated';
+    if (b.kind === 'ramp' && mode !== 'smart') {
+      const steps = deriveSteps(
+        b,
+        ftpPctStart,
+        ftpPctEnd,
+        seg.effortStart,
+        seg.effortEnd,
+        mode,
+        table,
+      );
+      if (steps.length > 0) seg.steps = steps;
+    }
     if (b.cue !== undefined) seg.cue = b.cue;
     if (b.label !== undefined) seg.label = b.label;
     segments.push(seg);
@@ -75,12 +151,38 @@ export function flattenWorkout(w: Workout, table: EffortTable = DEFAULT_EFFORT_T
   return segments;
 }
 
+function stepIndexAt(steps: readonly Step[], t: number): number {
+  let idx = 0;
+  for (let i = 0; i < steps.length; i++) {
+    if ((steps[i]?.offsetSec ?? 0) <= t) idx = i;
+    else break;
+  }
+  return idx;
+}
+
+/** Which step of a segment is active, how many there are, and seconds until the next one. */
+export function stepAt(
+  seg: Segment,
+  segElapsedSec: number,
+): { index: number; count: number; nextInSec: number | null } {
+  const steps = seg.steps;
+  if (!steps || steps.length === 0) return { index: 0, count: 1, nextInSec: null };
+  const t = Math.min(Math.max(segElapsedSec, 0), seg.durationSec);
+  const index = stepIndexAt(steps, t);
+  const next = steps[index + 1];
+  return { index, count: steps.length, nextInSec: next ? next.offsetSec - t : null };
+}
+
 export function intensityAt(
   seg: Segment,
   segElapsedSec: number,
   table: EffortTable = DEFAULT_EFFORT_TABLE,
 ): { ftpPct: number; effort: EffortLevel } {
   const t = Math.min(Math.max(segElapsedSec, 0), seg.durationSec);
+  if (seg.steps && seg.steps.length > 0) {
+    const step = seg.steps[stepIndexAt(seg.steps, t)];
+    if (step) return { ftpPct: step.ftpPct, effort: step.effort };
+  }
   const ftpPct =
     seg.kind === 'ramp'
       ? seg.ftpPctStart + ((seg.ftpPctEnd - seg.ftpPctStart) * t) / seg.durationSec

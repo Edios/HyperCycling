@@ -27,6 +27,8 @@ export interface RampBlock {
   durationSec: number;
   from: Intensity;
   to: Intensity;
+  /** Step override for stepped effort: absent/0 = auto, 1 = hold the mean, 2..8 = exactly that many. */
+  steps?: number;
   rpm?: number;
   position?: Position;
   cue?: string;
@@ -118,6 +120,7 @@ const rampSchema = z.object({
   ...blockCommon,
   from: intensitySchema,
   to: intensitySchema,
+  steps: z.number().int().min(0).max(8).optional(),
 });
 
 const repeatSchema = z.object({

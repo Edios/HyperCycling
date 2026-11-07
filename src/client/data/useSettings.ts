@@ -1,6 +1,11 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import { DEFAULT_SETTINGS, parseWorldSetting, type Settings } from '../../domain/settings';
+import {
+  DEFAULT_SETTINGS,
+  parseWorldSetting,
+  resolveResistanceMode,
+  type Settings,
+} from '../../domain/settings';
 import { getRepositories } from './repositories';
 
 interface SettingsStore {
@@ -23,6 +28,8 @@ function mergeSettings(stored: Partial<Settings>): Settings {
     equipment: { ...DEFAULT_SETTINGS.equipment, ...stored.equipment },
     // A world id this build does not know (e.g. written by a newer version) shows the default.
     hyperrideWorld: parseWorldSetting(stored.hyperrideWorld),
+    // Stored before stepped effort existed: keep smooth ramps, do not inherit the new default.
+    resistanceMode: resolveResistanceMode(stored),
   };
 }
 

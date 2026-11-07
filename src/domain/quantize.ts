@@ -144,3 +144,34 @@ export function quantizeRamp(
   }
   return withOffsets(merged);
 }
+
+/**
+ * Exactly `n` equal-duration steps (RampBlock.steps override). `n` is capped by the
+ * duration so no step is shorter than one second; 1 holds the mean; equal neighbours
+ * produced by a coarse grid are merged.
+ */
+export function quantizeRampExact(
+  from: number,
+  to: number,
+  durationSec: number,
+  n: number,
+  opts: QuantizeOptions,
+): RampStep[] {
+  if (!Number.isFinite(from) || !Number.isFinite(to) || !Number.isFinite(durationSec)) return [];
+  const T = Math.round(durationSec);
+  if (T <= 0) return [];
+  const fine = opts.grid[0] ?? 1;
+  const L = Math.max(1, Math.min(Math.floor(n), T));
+  if (L === 1) return withOffsets([{ durationSec: T, value: roundTo((from + to) / 2, fine) }]);
+  const base = Math.floor(T / L);
+  const rem = T - base * L;
+  const merged: { durationSec: number; value: number }[] = [];
+  for (let k = 0; k < L; k++) {
+    const value = roundTo((from * (L - 1 - k) + to * k) / (L - 1), fine);
+    const dur = base + (k >= L - rem ? 1 : 0);
+    const last = merged[merged.length - 1];
+    if (last && last.value === value) last.durationSec += dur;
+    else merged.push({ durationSec: dur, value });
+  }
+  return withOffsets(merged);
+}

@@ -4,6 +4,7 @@ import {
   PCT_OPTS,
   WATT_OPTS,
   quantizeRamp,
+  quantizeRampExact,
   type QuantizeOptions,
   type RampStep,
 } from './quantize';
@@ -181,8 +182,37 @@ describe('quantizeRamp properties (2,000 seeded random cases per preset)', () =>
         expect(quantizeRamp(from, to, T, opts), ctx).toEqual(s);
         // mirror symmetry
         const mirror = quantizeRamp(to, from, T, opts);
-        expect(mirror.map((x) => x.value), ctx).toEqual(values(s).reverse());
+        expect(
+          mirror.map((x) => x.value),
+          ctx,
+        ).toEqual(values(s).reverse());
       }
     });
   }
+});
+
+describe('quantizeRampExact (RampBlock.steps override)', () => {
+  it('1 step holds the mean', () => {
+    expect(quantizeRampExact(150, 300, 180, 1, WATT_OPTS)).toEqual([
+      { offsetSec: 0, durationSec: 180, value: 225 },
+    ]);
+  });
+
+  it('n steps are equal-duration and include the endpoints', () => {
+    const s = quantizeRampExact(150, 300, 180, 4, WATT_OPTS);
+    expect(values(s)).toEqual([150, 200, 250, 300]);
+    expect(durations(s)).toEqual([45, 45, 45, 45]);
+  });
+
+  it('never makes a zero-length step: n is capped by the duration', () => {
+    const s = quantizeRampExact(150, 300, 3, 8, WATT_OPTS);
+    expect(s.every((x) => x.durationSec >= 1)).toBe(true);
+    expect(sum(durations(s))).toBe(3);
+  });
+
+  it('merges equal neighbours on a coarse grid (effort 3 to 4 asked for 5 steps)', () => {
+    const s = quantizeRampExact(3, 4, 100, 5, EFFORT_OPTS);
+    expect(values(s)).toEqual([3, 4]);
+    expect(sum(durations(s))).toBe(100);
+  });
 });

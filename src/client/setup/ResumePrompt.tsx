@@ -7,6 +7,7 @@ import { isActiveSessionFresh, type ActiveSession } from '../../domain/session-l
 import { builtinWorkouts } from '../data/builtin';
 import { localizedText } from '../data/localized';
 import { getRepositories } from '../data/repositories';
+import { resolveResistanceMode } from '../../domain/settings';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT } from '../i18n';
 import { formatClock } from '../training/format';
@@ -40,8 +41,10 @@ export function ResumePrompt() {
   const navigate = useNavigate();
   const { settings, loaded } = useSettings();
   const effortTable = useRef(settings.effortTable);
+  const resistanceMode = useRef(resolveResistanceMode(settings));
   useEffect(() => {
     effortTable.current = settings.effortTable;
+    resistanceMode.current = resolveResistanceMode(settings);
   });
   const [pending, setPending] = useState<Pending | undefined>();
   // Never replace a session that is already on screen.
@@ -82,7 +85,7 @@ export function ResumePrompt() {
             return;
           }
         }
-        const segments = flattenWorkout(ridden, effortTable.current);
+        const segments = flattenWorkout(ridden, effortTable.current, resistanceMode.current);
         if (!snapshotFits(segments, active.snapshot)) {
           await clearActive();
           return;
