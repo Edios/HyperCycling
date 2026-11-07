@@ -48,10 +48,25 @@
 
 .posRow {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  gap: calc(1.2 * var(--u)) calc(1.8 * var(--u));
+  /* Compact: the badge tucks under the ring name and adds as little height as possible. */
+  gap: calc(1.2 * var(--u));
+  margin-top: calc(-1.2 * var(--u));
+  --lbl: clamp(11px, calc(2 * var(--u)), 30px);
+}
+
+.posRow > [data-testid='position-badge'] {
+  padding: calc(0.3 * var(--u)) calc(1.2 * var(--u));
+  border-width: 1.5px;
+}
+
+@media (orientation: landscape) and (max-height: 450px) {
+  /* Short phone screens: the badge stays, the step line is the first thing to give way. */
+  .step {
+    display: none;
+  }
 }
 
 .step {

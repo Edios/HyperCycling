@@ -108,14 +108,14 @@ export function EffortGroup({
             {t('training.effort')}
           </div>
         )}
-      </div>
-      <div className={styles.posRow}>
-        <PositionBadge position={position} />
-        {step && step.count > 1 && (
-          <div className={`${hud.lbl} ${styles.step}`} data-testid="step-line">
-            {t('training.step', { n: step.index + 1, total: step.count })}
-          </div>
-        )}
+        <div className={styles.posRow}>
+          <PositionBadge position={position} />
+          {step && step.count > 1 && (
+            <div className={`${hud.lbl} ${styles.step}`} data-testid="step-line">
+              {t('training.step', { n: step.index + 1, total: step.count })}
+            </div>
+          )}
+        </div>
       </div>
       <DashLine className={styles.dash} />
       <div
