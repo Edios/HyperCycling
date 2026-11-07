@@ -234,7 +234,7 @@ describe('PlanWizard recommendation', () => {
     next(); // heart-rate step (skipped)
     next();
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
-    expect((await screen.findByTestId('where')).textContent).toBe('/');
+    expect((await screen.findByTestId('where')).textContent).toBe('/plan');
     expect(db.puts.progress).toHaveLength(1);
     expect(db.puts.progress[0]?.planId).toBe('build-form');
     expect(db.puts.settings.at(-1)?.activePlanId).toBe('build-form');
@@ -289,7 +289,7 @@ describe('PlanWizard recommendation', () => {
     expect(within(dialog).getByText('Switch plan?')).toBeInTheDocument();
     expect(db.puts.progress).toHaveLength(0);
     fireEvent.click(within(dialog).getByRole('button', { name: /Start Build Form/ }));
-    expect((await screen.findByTestId('where')).textContent).toBe('/');
+    expect((await screen.findByTestId('where')).textContent).toBe('/plan');
     expect(db.puts.progress[0]?.planId).toBe('build-form');
   });
 

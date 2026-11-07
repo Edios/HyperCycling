@@ -1,5 +1,5 @@
 import { resolveResistanceMode } from '../../domain/settings';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { DEFAULT_PLAN_SETTINGS, type Plan, type PlanProgress } from '../../domain/plan';
 import { FTP_TESTS, ftpTestKindOf, type FtpTestKind } from '../../domain/ftp-test';
@@ -104,9 +104,18 @@ function Summary({ result }: { result: LastResult }) {
   }, [result, target, counted, restored]);
   const tooShort = result.riddenSec < MIN_COUNT_SEC && result.plan !== undefined;
 
+  // The result is cleared only once this screen has unmounted: clearing it while the route is
+  // still /summary would trigger the "no result" redirect to / and override our own navigation.
+  const clearOnUnmount = useRef(false);
+  useEffect(
+    () => () => {
+      if (clearOnUnmount.current) useLastResult.getState().clear();
+    },
+    [],
+  );
   const leave = (to: string, clear: boolean): void => {
+    clearOnUnmount.current = clear;
     navigate(to);
-    if (clear) useLastResult.getState().clear();
   };
 
   const name = localizedText(result.workout, lang).name;
@@ -168,7 +177,7 @@ function Summary({ result }: { result: LastResult }) {
 
         <div className={styles.buttons}>
           <Button onClick={() => leave(setupPath(result), false)}>{t('summary.again')}</Button>
-          <Button variant="primary" onClick={() => leave('/', true)}>
+          <Button variant="primary" onClick={() => leave('/plan', true)}>
             {t('summary.backToPlan')}
           </Button>
         </div>

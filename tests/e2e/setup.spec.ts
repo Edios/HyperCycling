@@ -8,10 +8,10 @@ async function seedSettings(page: Page, info: TestInfo, activePlanId: string): P
   if (info.project.name.startsWith('local')) {
     const res = await page.request.put('/api/settings', { data: settings });
     expect(res.ok()).toBe(true);
-    await page.goto('./');
+    await page.goto('./#/plan');
     return;
   }
-  await page.goto('./');
+  await page.goto('./#/plan');
   await expect(page.getByTestId('plan-empty').or(page.getByTestId('next-session'))).toBeVisible();
   await page.evaluate(
     (value) =>

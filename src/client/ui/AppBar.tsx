@@ -17,7 +17,7 @@ export function AppBar() {
         <Wordmark />
       </Link>
       <nav className={styles.tabs}>
-        <NavLink to="/" end className={tab('plan')}>
+        <NavLink to="/plan" className={tab('plan')}>
           <ModeIcon mode="plan" />
           {t('nav.plan')}
         </NavLink>

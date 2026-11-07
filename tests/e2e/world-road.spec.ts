@@ -20,10 +20,10 @@ async function seedSettings(page: Page, info: TestInfo, settings: Settings): Pro
   if (info.project.name.startsWith('local')) {
     const res = await page.request.put('/api/settings', { data: settings });
     expect(res.ok()).toBe(true);
-    await page.goto('./');
+    await page.goto('./#/plan');
     return;
   }
-  await page.goto('./');
+  await page.goto('./#/plan');
   await expect(page.getByTestId('plan-empty').or(page.getByTestId('next-session'))).toBeVisible();
   await page.evaluate(
     (value) =>
@@ -169,12 +169,9 @@ for (const quality of ['high', 'low'] as const) {
       await page.setViewportSize(size);
       await startRoad(page, info, quality);
       await expect
-        .poll(
-          () => page.getByTestId('world-canvas').evaluate((c: HTMLCanvasElement) => c.width),
-          {
-            timeout: 15_000,
-          },
-        )
+        .poll(() => page.getByTestId('world-canvas').evaluate((c: HTMLCanvasElement) => c.width), {
+          timeout: 15_000,
+        })
         .toBeGreaterThan(300);
       await page.waitForTimeout(3000);
       mkdirSync(shotsDir!, { recursive: true });

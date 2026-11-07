@@ -179,7 +179,7 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
       setError(t('plans.saveFailed'));
       return;
     }
-    navigate('/');
+    navigate('/plan');
   }
 
   const doneCount = data.progress?.entries.filter((e) => e.status === 'done').length ?? 0;

@@ -163,9 +163,7 @@ test('Spotify: connect, pick a device, search in the editor, play with a now-pla
   const device = page.getByTestId('spotify-device');
   await expect(device.locator('option')).toHaveCount(3);
   await device.selectOption('D-KITCHEN');
-  await expect(page.getByTestId('redirect-uri').first()).toHaveText(
-    'http://127.0.0.1:5176/',
-  );
+  await expect(page.getByTestId('redirect-uri').first()).toHaveText('http://127.0.0.1:5176/');
   await shot(page, 'settings-music');
 
   const name = `E2E Music ${Date.now()}`;

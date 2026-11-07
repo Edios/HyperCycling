@@ -31,6 +31,7 @@ const NOT_FETCHED = new Set([
   'https://youtu.be', // link shown to the user
   'https://getsongbpm.com', // attribution link and song links shown to the user
   'https://hypercycling.app', // Spotify redirect URI hint text
+  'https://getsongbpm.com', // attribution link in the Home footer (navigation only)
   'https://edios.github.io', // old Pages address, kept in the redirect URI hint
 ]);
 
