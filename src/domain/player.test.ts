@@ -22,6 +22,18 @@ describe('playerSchema', () => {
   });
 });
 
+describe('playerSchema hrMax', () => {
+  const base = { id: 'p1', name: 'A', ftp: 200 };
+  it('accepts a missing hrMax and the bounds', () => {
+    expect(playerSchema.safeParse(base).success).toBe(true);
+    expect(playerSchema.safeParse({ ...base, hrMax: 100 }).success).toBe(true);
+    expect(playerSchema.safeParse({ ...base, hrMax: 230 }).success).toBe(true);
+  });
+  it.each([99, 231, 250, 150.5])('rejects hrMax %s', (hrMax) => {
+    expect(playerSchema.safeParse({ ...base, hrMax }).success).toBe(false);
+  });
+});
+
 describe('validatePlayers', () => {
   const p = (id: string, isMe?: boolean) => ({ id, name: id, ftp: 200, ...(isMe ? { isMe } : {}) });
   it('allows zero or one isMe', () => {

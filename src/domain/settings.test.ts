@@ -101,3 +101,13 @@ describe('settingsSchema diagnostics and automatic quality', () => {
     ).toBe(false);
   });
 });
+
+describe('settingsSchema showHrZones', () => {
+  it('parses without showHrZones and with a boolean', () => {
+    expect(settingsSchema.safeParse(DEFAULT_SETTINGS).success).toBe(true);
+    expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, showHrZones: false }).success).toBe(
+      true,
+    );
+    expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, showHrZones: 'x' }).success).toBe(false);
+  });
+});

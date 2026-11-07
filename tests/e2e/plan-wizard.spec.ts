@@ -11,7 +11,7 @@ async function walk(page: Page, ftp: 'unknown' | number, shots = false): Promise
   await page.goto('./#/plans');
   await page.getByRole('link', { name: 'Plan wizard' }).click();
   await expect(page.getByTestId('plan-wizard')).toBeVisible();
-  await expect(page.getByTestId('wizard-step')).toHaveCount(4);
+  await expect(page.getByTestId('wizard-step')).toHaveCount(5);
 
   await expect(page.getByRole('radio')).toHaveCount(4);
   await page.getByRole('radio', { name: /Build Form/ }).check({ force: true });
@@ -30,6 +30,11 @@ async function walk(page: Page, ftp: 'unknown' | number, shots = false): Promise
     await page.getByLabel('FTP in watts').fill(String(ftp));
   }
   if (shots) await shot(page, '3-ftp');
+  await page.getByRole('button', { name: 'Next', exact: true }).click();
+
+  // Optional heart-rate step: skipped here.
+  await expect(page.getByLabel('Max heart rate')).toBeVisible();
+  if (shots) await shot(page, '3b-hr');
   await page.getByRole('button', { name: 'Next', exact: true }).click();
 }
 
@@ -111,6 +116,7 @@ test('optional training days: chosen weekdays shape the calendar, none keeps the
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await page.getByRole('radio', { name: /I don.t know it/ }).check({ force: true });
   await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await page.getByRole('button', { name: 'Next', exact: true }).click(); // heart-rate step
 
   const week = page.getByTestId('calendar-week').first();
   const cells = week.getByRole('cell');

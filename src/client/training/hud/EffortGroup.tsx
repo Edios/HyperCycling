@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { DashLine, EffortRing } from '../../brand';
 import { useT } from '../../i18n';
 import type { Segment } from '../../../domain/segments';
@@ -27,6 +27,8 @@ export interface EffortGroupProps {
   section?: boolean;
   /** Ring motion on an effort change (off for reduced motion / Effects off). */
   motion?: boolean;
+  /** Optional heart-rate target chip under the effort name. */
+  hr?: ReactNode;
   className?: string;
 }
 
@@ -40,6 +42,7 @@ export function EffortGroup({
   glass = false,
   section = false,
   motion = false,
+  hr,
   className,
 }: EffortGroupProps) {
   const t = useT();
@@ -95,6 +98,7 @@ export function EffortGroup({
         <div className={`${hud.lbl} ${styles.name}${wordInside ? ` ${styles.nameLow}` : ''}`}>
           {label} · {t('training.ftpApprox', { pct: Math.round(ftpPct) })}
         </div>
+        {hr && <div className={styles.hr}>{hr}</div>}
         {!wordInside && (
           <div className={`${hud.lbl} ${styles.caption}`} data-testid="effort-caption">
             {t('training.effort')}

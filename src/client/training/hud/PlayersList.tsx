@@ -1,6 +1,9 @@
 import { targetWatts } from '../../../domain/effort';
+import { hrTargetFor } from '../../../domain/hr-zones';
+import type { Segment } from '../../../domain/segments';
 import type { Player } from '../../../domain/player';
 import { useT } from '../../i18n';
+import { useShowHrZones } from '../../settings/useShowHrZones';
 import hud from './hud.module.css';
 import styles from './PlayersList.module.css';
 
@@ -10,6 +13,8 @@ export interface PlayersListProps {
   /** Block effort on the 1-10 scale; shown once when the bike has no watts. */
   effort: number;
   showsWatts: boolean;
+  /** Current block and seconds into it: adds each rider's bpm band when they have an HRmax. */
+  hr?: { segment: Segment; elapsedInSegSec: number };
   className?: string;
 }
 
@@ -19,8 +24,16 @@ function safeWatts(ftp: number, ftpPct: number, unit: string): string {
 }
 
 /** Group R: the riders with their target watts (or only their names when the bike has none). */
-export function PlayersList({ players, ftpPct, effort, showsWatts, className }: PlayersListProps) {
+export function PlayersList({
+  players,
+  ftpPct,
+  effort,
+  showsWatts,
+  hr,
+  className,
+}: PlayersListProps) {
   const t = useT();
+  const showHr = useShowHrZones();
   return (
     <div
       data-testid="players-list"
@@ -51,6 +64,17 @@ export function PlayersList({ players, ftpPct, effort, showsWatts, className }: 
                     {t('training.playerFtpMissing')}
                   </span>
                 ))}
+              {showHr &&
+                hr &&
+                p.hrMax !== undefined &&
+                (() => {
+                  const bpm = hrTargetFor(hr.segment, hr.elapsedInSegSec, p.hrMax)?.bpm;
+                  return bpm ? (
+                    <span className={styles.ftp} data-testid="player-hr">
+                      {bpm.min}–{bpm.max} {t('hr.bpm')}
+                    </span>
+                  ) : null;
+                })()}
             </span>
             {showsWatts && (
               <span className={`${hud.big} ${styles.watts}`}>

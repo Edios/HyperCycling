@@ -561,10 +561,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       )}
       <ToastStack>
         {wantsWorld && worldFailed && !unavailableDismissed && (
-          <Toast
-            message={t('world.unavailable')}
-            onClose={() => setUnavailableDismissed(true)}
-          />
+          <Toast message={t('world.unavailable')} onClose={() => setUnavailableDismissed(true)} />
         )}
         {wantsYoutube && youtube === null && !youtubeToastDismissed && (
           <Toast
