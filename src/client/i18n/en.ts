@@ -760,6 +760,8 @@ export const en = {
     start: 'Start',
     showScenario: 'Show scenario',
     hideScenario: 'Hide scenario',
+    lite: 'Lite / no visuals',
+    liteHint: 'A fallback for a weak device: plain screen, same workout and music.',
     setupBadge: 'Experience: {title}. The world and its scenes are set for you.',
     kicker: 'Experience',
     seeScenario: 'See scenario',

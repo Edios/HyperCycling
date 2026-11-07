@@ -159,7 +159,8 @@
   grid-template-areas:
     'label'
     'ring'
-    'time';
+    'time'
+    'pos';
   grid-template-columns: auto;
   row-gap: calc(0.8 * var(--u));
   justify-items: start;
@@ -192,7 +193,8 @@
     grid-template-areas:
       'label'
       'ring'
-      'time';
+      'time'
+      'pos';
     grid-template-columns: auto;
     row-gap: 1.2vw;
     justify-items: start;
@@ -236,7 +238,8 @@
     grid-template-areas:
       'label'
       'ring'
-      'time';
+      'time'
+      'pos';
     grid-template-columns: auto;
     row-gap: calc(0.5 * var(--u));
     justify-items: start;

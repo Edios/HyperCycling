@@ -26,13 +26,18 @@ export function layoutKindOf(hud: Hud, background: Background): LayoutKind {
 }
 
 /** Layouts the rider may pick (and H cycles through) for a background. */
-export function layoutChoices(background: Background): readonly LayoutKind[] {
-  return background === 'basic' ? ['classic', ...OVERLAYS] : OVERLAYS;
+export function layoutChoices(background: Background, experience = false): readonly LayoutKind[] {
+  // An Experience is always shown as an overlay (also in Lite): no tiled Classic there.
+  return background === 'basic' && !experience ? ['classic', ...OVERLAYS] : OVERLAYS;
 }
 
 /** The next layout (H); one that is not offered on this background falls back to the first. */
-export function nextLayout(current: LayoutKind, background: Background): LayoutKind {
-  const list = layoutChoices(background);
+export function nextLayout(
+  current: LayoutKind,
+  background: Background,
+  experience = false,
+): LayoutKind {
+  const list = layoutChoices(background, experience);
   const i = list.indexOf(current);
   return list[(i + 1) % list.length] ?? 'immersive';
 }

@@ -152,8 +152,12 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const wantsOverlay = wantsWorld || wantsYoutube;
   const overlay = world || youtube !== null;
   const onYoutubeFail = useCallback((reason: YoutubeFailure) => setYoutubeFailure(reason), []);
+  // An Experience carries its own background; its menus offer only the layout and Lite.
+  const isExperience = runtime.options?.experienceId !== undefined;
   const [kind, setKind] = useState<LayoutKind>(() =>
-    layoutKindOf(runtime.config.hud, runtime.config.background),
+    isExperience && runtime.config.background === 'basic' && runtime.config.hud === 'solo'
+      ? 'immersive'
+      : layoutKindOf(runtime.config.hud, runtime.config.background),
   );
   // Saved Solo means "no riders panel"; every other stored layout shows riders when there are any.
   const [showPlayers, setShowPlayers] = useState(
@@ -363,8 +367,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
 
   const background = runtime.config.background;
   const cycleLayout = useCallback(() => {
-    setKind((k) => nextLayout(k, background));
-  }, [background]);
+    setKind((k) => nextLayout(k, background, isExperience));
+  }, [background, isExperience]);
 
   // An Experience's theme for the Scenes world; built once per ride, not per frame.
   const experienceId = runtime.options?.experienceId;
@@ -416,7 +420,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     setYoutubeToastDismissed(false);
     // Every layout works on every background; only the Basic tiles (Classic) stay on Basic.
     let next = kind;
-    if (bg !== 'basic' && kind === 'classic') {
+    if ((bg !== 'basic' || isExperience) && kind === 'classic') {
       next = 'immersive';
       setKind(next);
     }
@@ -663,7 +667,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           background={background}
           youtubeAvailable={youtubeUrl !== undefined}
           layout={kind}
-          layoutChoices={layoutChoices(background)}
+          layoutChoices={layoutChoices(background, isExperience)}
+          experience={isExperience}
           riders={playersOn}
           ridersHint={ridersHintKey(kind, hasPlayers)}
           onRiders={(on) => {
