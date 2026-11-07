@@ -44,6 +44,7 @@ import {
   type Background,
 } from './model';
 import { layoutKindOf, type LayoutKind } from '../training/overlay-layouts';
+import { BikeCard } from '../bike/BikeCard';
 import styles from './SetupScreen.module.css';
 
 const BACKGROUNDS: readonly { value: Background; labelKey: MessageKey }[] = [
@@ -278,6 +279,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
         </Card>
 
         <div className={styles.options}>
+          <BikeCard onSkipRide={start} />
           <section>
             <h2 className={styles.label}>{t('setup.background')}</h2>
             <div className={styles.tiles}>
