@@ -98,7 +98,14 @@ export async function importFromFile(
     if (download) {
       await download(await exportToFile(repos), exportFileName(now(), 'hypercycling-backup'));
     }
-    await repos.replaceAll(parsed.bundle);
+    // Exports leave the GetSongBPM key out; importing must not wipe the one typed on this device.
+    const keep = (await repos.settings.get())?.getSongBpmKey;
+    const incoming = parsed.bundle;
+    const bundle =
+      keep !== undefined && incoming.settings && incoming.settings.getSongBpmKey === undefined
+        ? { ...incoming, settings: { ...incoming.settings, getSongBpmKey: keep } }
+        : incoming;
+    await repos.replaceAll(bundle);
     return { ok: true };
   } catch (err) {
     return {

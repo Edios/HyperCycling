@@ -114,6 +114,22 @@ describe('Settings, Music section on localhost', () => {
   });
 });
 
+describe('Settings, GetSongBPM key', () => {
+  it('saves the key on blur, hides it, credits the service, and clears it when emptied', async () => {
+    renderScreen();
+    const input = (await screen.findByTestId('getsongbpm-key')) as HTMLInputElement;
+    expect(input.type).toBe('password');
+    fireEvent.change(input, { target: { value: '  abc123  ' } });
+    fireEvent.blur(input);
+    await waitFor(() => expect(repo.settings?.getSongBpmKey).toBe('abc123'));
+    const link = screen.getByRole('link', { name: 'Data: GetSongBPM' });
+    expect(link).toHaveAttribute('href', 'https://getsongbpm.com');
+    fireEvent.change(input, { target: { value: '' } });
+    fireEvent.blur(input);
+    await waitFor(() => expect(repo.settings?.getSongBpmKey).toBeUndefined());
+  });
+});
+
 describe('loopbackUrl', () => {
   it('keeps port, path, query and hash', () => {
     expect(

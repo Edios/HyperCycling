@@ -62,6 +62,8 @@ export interface Settings {
   activePlanId?: string;
   lastSession?: SessionConfig;
   spotify?: SpotifySettings;
+  /** GetSongBPM API key for the BPM lookup; a credential: never logged, left out of exports. */
+  getSongBpmKey?: string;
   /** Max 10 entries. */
   recentYoutubeUrls: string[];
 }
@@ -105,6 +107,7 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   activePlanId: z.string().optional(),
   lastSession: sessionConfigSchema.optional(),
   spotify: spotifySettingsSchema.optional(),
+  getSongBpmKey: z.string().optional(),
   recentYoutubeUrls: z.array(z.string()).max(10),
 }) as unknown as z.ZodType<Settings>; // optional-field inference caveat
 

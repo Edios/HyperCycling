@@ -313,3 +313,15 @@ input[aria-invalid='true'] {
     border-top: 1px solid var(--line);
   }
 }
+
+.suggestList {
+  margin: 0.25rem 0 0.5rem;
+  padding-left: 1.25rem;
+  font-size: 0.9375rem;
+}
+
+.suggestList a,
+.caption a {
+  color: inherit;
+  text-decoration: underline;
+}

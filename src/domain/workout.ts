@@ -54,6 +54,8 @@ export interface TrackRef {
   startAtSec: number;
   /** Tempo typed or tapped by the user (no audio analysis); used to match the block's RPM. */
   bpm?: number;
+  /** Where `bpm` came from when it was looked up (absent = typed or tapped by the user). */
+  bpmSource?: 'getsongbpm';
   /** Set by the editor when YouTube reports that the video cannot be embedded. */
   notEmbeddable?: boolean;
 }
@@ -157,6 +159,7 @@ const trackRefSchema = z.object({
   durationSec: z.number().min(0).optional(),
   startAtSec: z.number().min(0),
   bpm: z.number().min(BPM_MIN).max(BPM_MAX).optional(),
+  bpmSource: z.literal('getsongbpm').optional(),
   notEmbeddable: z.boolean().optional(),
 });
 
