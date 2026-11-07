@@ -96,7 +96,10 @@ beforeEach(() => {
   resetSettingsForTests();
   resetGetSongBpmClientForTests();
   // The real Deezer client loads <script> tags; here it knows no song unless a test says otherwise.
-  setDeezerClientForTests({ lookupBpm: () => Promise.resolve(undefined) });
+  setDeezerClientForTests({
+    searchSongs: () => Promise.resolve([]),
+    lookupBpm: () => Promise.resolve(undefined),
+  });
   try {
     localStorage.clear();
   } catch {
@@ -150,7 +153,7 @@ describe('Deezer lookup without a key', () => {
         url: 'https://www.deezer.com/track/1',
       }),
     );
-    setDeezerClientForTests({ lookupBpm });
+    setDeezerClientForTests({ searchSongs: () => Promise.resolve([]), lookupBpm });
     const bpm = await pinTrack();
     fireEvent.click(await screen.findByTestId('bpm-fetch'));
     await waitFor(() => expect(bpm).toHaveValue('212'));
@@ -178,6 +181,7 @@ describe('Deezer lookup without a key', () => {
   it('names Deezer when it cannot be reached', async () => {
     mockYoutube();
     setDeezerClientForTests({
+      searchSongs: () => Promise.resolve([]),
       lookupBpm: () => Promise.reject(new GetSongBpmError('network', 'deezer')),
     });
     await pinTrack();

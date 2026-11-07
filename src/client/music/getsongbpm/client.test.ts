@@ -429,3 +429,30 @@ describe('cleanTitle / trackQuery (W1)', () => {
     ).toEqual({ title: 'Video Killed the Radio Star', artist: 'The Buggles' });
   });
 });
+
+describe('searchSongs (M19d)', () => {
+  it('searches by artist and title, parses tempos and caches the list', async () => {
+    const { client, fetchMock } = setup(() => json({ search: [SONG, { ...SONG, tempo: 'x' }] }));
+    const hits = await client.searchSongs({ artist: 'Metallica', title: 'Master' });
+    expect(hits).toHaveLength(1);
+    expect(hits[0]).toMatchObject({ title: 'Master of Puppets', artist: 'Metallica', bpm: 220 });
+    const url = new URL(String(fetchMock.mock.calls[0]?.[0]));
+    expect(url.searchParams.get('type')).toBe('both');
+    expect(url.searchParams.get('lookup')).toBe('song:Master artist:Metallica');
+    await client.searchSongs({ artist: 'Metallica', title: 'Master' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats "no result" (an object, not a list) as empty and skips empty queries', async () => {
+    const { client, fetchMock } = setup(() => json({ search: { error: 'no result' } }));
+    expect(await client.searchSongs({ title: 'zzz' })).toEqual([]);
+    expect(await client.searchSongs({ title: ' ' })).toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('searches by artist alone', async () => {
+    const { client, fetchMock } = setup(() => json({ search: [SONG] }));
+    await client.searchSongs({ title: '', artist: 'Metallica' });
+    expect(new URL(String(fetchMock.mock.calls[0]?.[0])).searchParams.get('type')).toBe('artist');
+  });
+});

@@ -31,6 +31,8 @@ export interface DeezerHit {
 export interface DeezerClient {
   /** Tempo of one song, or undefined when Deezer does not know it (or has no tempo for it). */
   lookupBpm(query: BpmQuery): Promise<DeezerHit | undefined>;
+  /** Songs matching a free search (artist and/or title), each with a tempo; may be empty. */
+  searchSongs(query: BpmQuery, limit?: number): Promise<DeezerHit[]>;
 }
 
 /** Loads a JSONP URL; `url` builds it for the callback name the loader generated. */
@@ -55,6 +57,7 @@ const MISSING_TTL_MS = 7 * DAY_MS;
 const MAX_ENTRIES = 300;
 const CACHE_KEY = 'hypercycling.deezer.cache';
 const MAX_CANDIDATES = 3;
+const SEARCH_DEFAULT_LIMIT = 5;
 
 let counter = 0;
 
@@ -146,7 +149,8 @@ function candidates(body: unknown, query: BpmQuery): Candidate[] {
   return [...exact, ...same.filter((c) => !exact.includes(c))].slice(0, MAX_CANDIDATES);
 }
 
-type CacheMap = Record<string, { at: number; ttl: number; v: DeezerHit | null }>;
+type CacheValue = DeezerHit | DeezerHit[] | null;
+type CacheMap = Record<string, { at: number; ttl: number; v: CacheValue }>;
 
 export function createDeezerClient(opts: DeezerOptions = {}): DeezerClient {
   const load = opts.jsonp ?? scriptJsonp;
@@ -165,7 +169,10 @@ export function createDeezerClient(opts: DeezerOptions = {}): DeezerClient {
         const o = asRecord(e);
         if (o && typeof o.at === 'number' && typeof o.ttl === 'number') {
           if (o.v === null) out[k] = { at: o.at, ttl: o.ttl, v: null };
-          else if (validHit(o.v)) out[k] = { at: o.at, ttl: o.ttl, v: o.v };
+          else if (k.startsWith('q:')) {
+            if (Array.isArray(o.v) && o.v.every(validHit))
+              out[k] = { at: o.at, ttl: o.ttl, v: o.v };
+          } else if (validHit(o.v)) out[k] = { at: o.at, ttl: o.ttl, v: o.v };
         }
       }
       return out;
@@ -173,7 +180,7 @@ export function createDeezerClient(opts: DeezerOptions = {}): DeezerClient {
       return {};
     }
   };
-  const remember = (key: string, v: DeezerHit | null, ttl: number): void => {
+  const remember = (key: string, v: CacheValue, ttl: number): void => {
     const all = readCache();
     all[key] = { at: now(), ttl, v };
     const keys = Object.keys(all).sort((a, b) => (all[a]?.at ?? 0) - (all[b]?.at ?? 0));
@@ -217,7 +224,7 @@ export function createDeezerClient(opts: DeezerOptions = {}): DeezerClient {
       const artist = query.artist?.trim();
       const key = `s:${identity(title)}|${identity(artist ?? '')}`;
       const hit = readCache()[key];
-      if (hit && now() - hit.at < hit.ttl) return hit.v ?? undefined;
+      if (hit && now() - hit.at < hit.ttl && !Array.isArray(hit.v)) return hit.v ?? undefined;
 
       const found = await request('/search', {
         q: artist ? `${artist} ${title}` : title,
@@ -240,6 +247,42 @@ export function createDeezerClient(opts: DeezerOptions = {}): DeezerClient {
       }
       remember(key, null, MISSING_TTL_MS);
       return undefined;
+    },
+
+    async searchSongs(query, limit = SEARCH_DEFAULT_LIMIT) {
+      const title = query.title.trim();
+      const artist = query.artist?.trim();
+      const text = [artist, title].filter(Boolean).join(' ');
+      if (!text) return [];
+      const n = Math.min(Math.max(Math.round(limit), 1), 10);
+      const key = `q:${identity(text)}|${n}`;
+      const hit = readCache()[key];
+      if (hit && now() - hit.at < hit.ttl && Array.isArray(hit.v)) return hit.v;
+
+      const found = asRecord(await request('/search', { q: text, limit: String(n) }));
+      const data = Array.isArray(found?.data) ? (found.data as unknown[]) : [];
+      const out: DeezerHit[] = [];
+      for (const item of data) {
+        const o = asRecord(item);
+        const id = o?.id;
+        const t = o?.title;
+        if (typeof id !== 'number' || !Number.isInteger(id) || typeof t !== 'string' || !t)
+          continue;
+        const name = asRecord(o?.artist)?.name;
+        const track = asRecord(await request(`/track/${id}`, {}));
+        const bpm = parseDeezerBpm(track?.bpm);
+        const url = safeUrl(track?.link);
+        // No tempo in Deezer's data: nothing to offer for this one.
+        if (bpm === undefined || !url) continue;
+        out.push({
+          title: t,
+          ...(typeof name === 'string' && name ? { artist: name } : {}),
+          bpm,
+          url,
+        });
+      }
+      remember(key, out, out.length > 0 ? FOUND_TTL_MS : MISSING_TTL_MS);
+      return out;
     },
   };
 }

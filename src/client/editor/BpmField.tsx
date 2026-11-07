@@ -11,20 +11,13 @@ import {
   type MatchKind,
 } from '../../domain/bpm-match';
 import type { BpmSource, TrackRef } from '../../domain/workout';
-import { useT, type MessageKey } from '../i18n';
+import { useT } from '../i18n';
 import { useBpmLookup } from '../music/bpmLookup';
-import { DEEZER_SITE } from '../music/deezer/client';
-import {
-  GETSONGBPM_SITE,
-  GetSongBpmError,
-  type BpmHit,
-  type GetSongBpmErrorKind,
-} from '../music/getsongbpm/client';
+import { type BpmHit } from '../music/getsongbpm/client';
+import { BRAND, errorInfo, errorText, SITE, type ErrorInfo } from '../music/provider-labels';
 import { trackQuery } from '../music/getsongbpm/query';
 import { Button } from '../ui/Button';
 import styles from './Inspector.module.css';
-
-type ErrorInfo = { kind: GetSongBpmErrorKind; provider: BpmSource };
 
 type LookupState =
   | { status: 'idle' }
@@ -38,35 +31,7 @@ type SuggestState =
   | ({ status: 'error' } & ErrorInfo)
   | { status: 'done'; groups: { kind: MatchKind; bpm: number; hits: BpmHit[] }[] };
 
-const ERROR_KEY = {
-  'no-key': 'editor.bpm.err.noKey',
-  forbidden: 'editor.bpm.err.forbidden',
-  unauthorized: 'editor.bpm.err.unauthorized',
-  'rate-limited': 'editor.bpm.err.rateLimited',
-  blocked: 'editor.bpm.err.blocked',
-  network: 'editor.bpm.err.network',
-  'bad-response': 'editor.bpm.err.badResponse',
-} as const;
-
 const SUGGESTIONS_PER_GROUP = 6;
-const BRAND: Record<BpmSource, string> = { getsongbpm: 'GetSongBPM', deezer: 'Deezer' };
-const SITE: Record<BpmSource, string> = { getsongbpm: GETSONGBPM_SITE, deezer: DEEZER_SITE };
-
-/** Deezer-specific wording for the two errors a keyless rider can meet; the rest is generic. */
-function errorText(t: (key: MessageKey) => string, e: ErrorInfo): string {
-  if (e.provider === 'deezer') {
-    if (e.kind === 'network') return t('editor.bpm.err.deezerNetwork');
-    if (e.kind === 'bad-response') return t('editor.bpm.err.deezerBadResponse');
-    if (e.kind === 'rate-limited') return t('editor.bpm.err.deezerRateLimited');
-  }
-  return t(ERROR_KEY[e.kind]);
-}
-
-function errorInfo(err: unknown): ErrorInfo {
-  return err instanceof GetSongBpmError
-    ? { kind: err.kind, provider: err.provider }
-    : { kind: 'network', provider: 'getsongbpm' };
-}
 
 /**
  * Tempo of the pinned track and how well it fits the block's cadence: 2 BPM = 1 RPM, half and

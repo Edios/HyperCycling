@@ -59,6 +59,20 @@ export function matchBpm(bpm: number, rpm: number): BpmMatch | undefined {
   return best;
 }
 
+/**
+ * How a song tempo relates to a wanted BPM range (a song slot's): inside it, half its speed
+ * (the song's BPM doubled falls inside) or double. The first that holds wins; undefined = no fit.
+ */
+export function fitToRange(bpm: number, range: readonly [number, number]): MatchKind | undefined {
+  if (!validNumber(bpm)) return undefined;
+  const [lo, hi] = range;
+  const inside = (v: number): boolean => v >= lo && v <= hi;
+  if (inside(bpm)) return 'exact';
+  if (inside(bpm * 2)) return 'half';
+  if (inside(bpm / 2)) return 'double';
+  return undefined;
+}
+
 /** BPM from tap timestamps (ms): median interval of the last 12 taps, so one stray tap is ignored. */
 export function tapTempoBpm(tapsMs: number[]): number | undefined {
   const taps = tapsMs.slice(-12);
