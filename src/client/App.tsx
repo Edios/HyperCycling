@@ -3,6 +3,7 @@ import { Intro } from './brand/Intro';
 import { EditorScreen } from './editor/EditorScreen';
 import { ExperiencePicker } from './experience/ExperiencePicker';
 import { Home } from './home/Home';
+import { NoticePage } from './screens/NoticePage';
 import { DevHome } from './screens/DevHome';
 import { SettingsEffects } from './settings/SettingsEffects';
 import { SettingsScreen } from './settings/SettingsScreen';
@@ -98,7 +99,10 @@ function routes(): RouteObject[] {
         { path: '/settings', element: <SettingsScreen /> },
         // Developer shortcut (see DEV_ROUTE): rides any built-in workout with demo players.
         ...(DEV_ROUTE ? [{ path: '/dev', element: <DevHome /> }] : []),
-        { path: '*', element: homePage },
+        {
+          path: '*',
+          element: <NoticePage titleKey="notice.notFoundTitle" bodyKey="notice.notFoundBody" />,
+        },
       ],
     },
   ];

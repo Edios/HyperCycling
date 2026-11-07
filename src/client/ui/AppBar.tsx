@@ -28,13 +28,13 @@ export function AppBar() {
       </nav>
       <div className={styles.sp} />
       <Link to="/editor/new" className={styles.ico}>
-        <span aria-hidden="true">✎</span> {t('nav.editor')}
+        <span aria-hidden="true">✎</span> <span className={styles.lbl}>{t('nav.editor')}</span>
       </Link>
       <Link to="/players" className={styles.ico}>
-        <span aria-hidden="true">👥</span> {t('nav.players')}
+        <span aria-hidden="true">👥</span> <span className={styles.lbl}>{t('nav.players')}</span>
       </Link>
       <Link to="/settings" className={styles.ico}>
-        <span aria-hidden="true">⚙</span> {t('nav.settings')}
+        <span aria-hidden="true">⚙</span> <span className={styles.lbl}>{t('nav.settings')}</span>
       </Link>
     </header>
   );

@@ -39,23 +39,29 @@
   font-size: calc(3.2 * var(--u));
 }
 
+/* Phone portrait: an even 4-column grid (4 + 4, or 4 + 3), never a lone button on a second row. */
 @media (max-width: 760px) and (orientation: portrait) {
   .bar {
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    justify-items: center;
     gap: 2vw;
-    max-width: 96vw;
+    width: 86vw;
   }
 
   .bar button {
     width: 12vw;
     height: 12vw;
+    min-width: 44px;
+    min-height: 44px;
     font-size: 5vw;
   }
 
   .bar .main {
-    width: 15vw;
-    height: 15vw;
+    width: 12vw;
+    height: 12vw;
     font-size: 6vw;
+    border-color: var(--acc);
+    color: var(--fg);
   }
 }

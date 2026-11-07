@@ -154,6 +154,12 @@
   text-decoration: none;
 }
 
+@media (pointer: coarse), (max-width: 760px) {
+  .wizardLink {
+    min-height: 44px;
+  }
+}
+
 .wizardLink:focus-visible {
   outline: 2px solid var(--fg);
   outline-offset: 2px;

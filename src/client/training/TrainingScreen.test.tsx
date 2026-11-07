@@ -196,7 +196,9 @@ describe('TrainingScreen', () => {
     key('Escape');
     expect(screen.getByRole('dialog')).toHaveTextContent('End workout?');
     expect(useSessionStore.getState().state.status).toBe('paused');
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Back to workout' }),
+    );
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(useSessionStore.getState().state.status).toBe('running');
   });
@@ -210,7 +212,9 @@ describe('TrainingScreen', () => {
     key('Escape');
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(useSessionStore.getState().state.status).toBe('idle');
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Back to workout' }),
+    );
     expect(useSessionStore.getState().state.status).toBe('idle');
     expect(screen.getByText('Press Space or click Start')).toBeInTheDocument();
   });

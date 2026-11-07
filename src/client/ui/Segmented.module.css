@@ -9,6 +9,11 @@
 
 .opt {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  box-sizing: border-box;
   flex: 1;
   text-align: center;
   padding: 0.625rem 0.5rem;
@@ -42,4 +47,16 @@
   inset: 0;
   margin: 0;
   cursor: inherit;
+}
+
+/* Phone: a long option list (the layouts) wraps into rows instead of running off the screen. */
+@media (max-width: 760px) {
+  .seg {
+    flex-wrap: wrap;
+  }
+
+  .opt {
+    flex: 1 1 auto;
+    padding-inline: 0.75rem;
+  }
 }

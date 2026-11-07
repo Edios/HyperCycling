@@ -7,7 +7,7 @@ describe('ShortcutsCard', () => {
   it('lists every training shortcut with its key and description', () => {
     render(<ShortcutsCard />);
     const card = screen.getByTestId('shortcuts-card');
-    expect(within(card).getByText('Controls - shortcuts')).toBeInTheDocument();
+    expect(within(card).getByText('Keyboard shortcuts')).toBeInTheDocument();
     expect(within(card).getAllByRole('listitem')).toHaveLength(TRAINING_SHORTCUTS.length);
     expect(within(card).getByText('Space')).toBeInTheDocument();
     expect(within(card).getByText('Start, pause or resume')).toBeInTheDocument();

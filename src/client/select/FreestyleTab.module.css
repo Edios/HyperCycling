@@ -86,6 +86,7 @@
 .chips button {
   flex: none;
   height: 2.25rem;
+  min-width: 44px;
   padding: 0 0.125rem;
   border: 0;
   border-radius: 0;

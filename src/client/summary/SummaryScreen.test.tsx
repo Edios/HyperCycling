@@ -153,9 +153,15 @@ describe('SummaryScreen', () => {
     expect(screen.getByText('Ania')).toBeInTheDocument();
   });
 
-  it('redirects home without a result', async () => {
+  it('explains that there is no finished ride instead of redirecting', async () => {
     renderSummary();
-    expect(await screen.findByTestId('where')).toHaveTextContent('/');
+    expect(
+      await screen.findByRole('heading', { name: 'No finished ride yet' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to the start page' })).toHaveAttribute(
+      'href',
+      '/',
+    );
   });
 
   it('labels the big time', async () => {
