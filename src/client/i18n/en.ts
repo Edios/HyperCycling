@@ -536,6 +536,15 @@ export const en = {
       version: 'Version {version}',
       tagline: 'Indoor cycling guided by a 1–10 effort scale.',
       fonts: 'Fonts: Barlow and Barlow Condensed, SIL Open Font License 1.1.',
+      personalTitle: 'Personal use',
+      personal:
+        'HyperCycling is for personal use. Music plays through Spotify or YouTube under their terms. Playing it for a group needs your own venue licence, and any Spotify key or licence is your responsibility.',
+      privacyTitle: 'Privacy',
+      privacy:
+        'Your data stays in this browser: no accounts, no analytics, and your heart rate and FTP are never sent anywhere. Only when you use them, Spotify gets your playback commands, YouTube loads its player, and Deezer and GetSongBPM receive the artist and title you search for.',
+      trademarkTitle: 'Licence and name',
+      trademark:
+        'The code is MIT licensed. The name and logo HyperCycling are not covered by that licence.',
     },
     general: {
       title: 'General',
