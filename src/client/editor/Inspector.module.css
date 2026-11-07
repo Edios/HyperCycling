@@ -319,3 +319,9 @@ input[aria-invalid='true'] {
   padding-left: 1.25rem;
   font-size: 0.9375rem;
 }
+
+.suggestList a,
+.caption a {
+  color: inherit;
+  text-decoration: underline;
+}
