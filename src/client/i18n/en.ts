@@ -721,6 +721,8 @@ export const en = {
     buildPlan: 'Build a plan',
     loading: 'Loading',
     emptyTitle: 'No workout to show yet',
+    bpmCredit: 'Tempo data:',
+    bpmSource: 'GetSongBPM',
     minutes: '{minutes} min',
   },
   welcome: {

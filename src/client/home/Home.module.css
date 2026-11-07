@@ -234,3 +234,22 @@
     display: none;
   }
 }
+
+.footer {
+  padding: 1rem 2.75rem 1.5rem;
+  font: 400 max(14px, 0.9rem) / 1.4 var(--font-body);
+  color: var(--mut);
+  border-top: 1px solid var(--line);
+}
+
+.footer a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 759.98px) {
+  .footer {
+    padding: 1rem 16px 1.5rem;
+  }
+}

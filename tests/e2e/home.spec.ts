@@ -16,6 +16,9 @@ test('fresh profile: hero offers a gentle workout and a way to build a plan', as
   await page.goto('./#/');
   await expect(page.getByTestId('home-ride')).toBeVisible();
   await expect(page.getByTestId('home-tunnel')).toBeVisible();
+  await expect(
+    page.getByTestId('home-footer').getByRole('link', { name: 'GetSongBPM' }),
+  ).toHaveAttribute('href', 'https://getsongbpm.com');
   await expect(page.getByTestId('home-secondary')).toHaveAttribute('href', /plans\/wizard/);
   await expect(page.getByRole('button', { name: /Experience/ })).toBeDisabled();
   await shot(page, `home-fresh-${info.project.name}`);

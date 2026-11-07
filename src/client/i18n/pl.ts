@@ -721,6 +721,8 @@ export const pl: Messages = {
     buildPlan: 'Ułóż plan',
     loading: 'Ładowanie',
     emptyTitle: 'Nie ma jeszcze treningu do pokazania',
+    bpmCredit: 'Dane o tempie utworów:',
+    bpmSource: 'GetSongBPM',
     minutes: '{minutes} min',
   },
   welcome: {

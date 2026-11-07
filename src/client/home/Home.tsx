@@ -178,6 +178,12 @@ export function Home() {
           );
         })}
       </div>
+      <footer className={styles.footer} data-testid="home-footer">
+        {t('home.bpmCredit')}{' '}
+        <a href="https://getsongbpm.com" target="_blank" rel="noopener">
+          {t('home.bpmSource')}
+        </a>
+      </footer>
     </div>
   );
 }
