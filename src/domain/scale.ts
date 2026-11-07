@@ -66,7 +66,8 @@ export function scaleWorkout(
     }
   }
 
-  if (sc) {
+  // Class-format workouts keep their song lengths: stretching the warm-up would distort the slots.
+  if (sc && out.format !== 'songs') {
     const targetSec = opts.targetMinutes * 60;
     const repeat = out.blocks.find(
       (b): b is RepeatBlock => b.kind === 'repeat' && b.id === sc.flexRepeatId,

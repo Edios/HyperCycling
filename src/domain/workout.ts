@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { effortLevelSchema, type EffortLevel } from './effort';
 import { LANGS, type Lang, type Localized } from './lang';
 import { newId } from './ids';
+import { BPM_MAX, BPM_MIN } from './bpm-match';
 
 export type Position = 'seated' | 'standing';
 
@@ -155,7 +156,7 @@ const trackRefSchema = z.object({
   artist: z.string().optional(),
   durationSec: z.number().min(0).optional(),
   startAtSec: z.number().min(0),
-  bpm: z.number().min(40).max(220).optional(),
+  bpm: z.number().min(BPM_MIN).max(BPM_MAX).optional(),
   notEmbeddable: z.boolean().optional(),
 });
 
@@ -169,12 +170,18 @@ const songSlotSchema = z.object({
   id: z.string().min(1),
   firstBlockId: z.string().min(1),
   lastBlockId: z.string().min(1),
-  bpm: z.tuple([z.number().int().min(40).max(220), z.number().int().min(40).max(220)]).optional(),
+  bpm: z
+    .tuple([z.number().int().min(BPM_MIN).max(BPM_MAX), z.number().int().min(BPM_MIN).max(BPM_MAX)])
+    .optional(),
   hint: z.string().max(200).optional(),
   track: trackRefSchema.optional(),
 });
 
-const localizedSchema = z.object({ name: z.string(), description: z.string() });
+const localizedSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  songHints: z.record(z.string(), z.string()).optional(),
+});
 
 export const workoutSchema: z.ZodType<Workout> = z
   .object({
@@ -413,11 +420,17 @@ export function repairSongs(w: Workout, oldOrder: readonly string[]): void {
     const firstId = survivors[0];
     const lastId = survivors[survivors.length - 1];
     if (firstId === undefined || lastId === undefined) continue;
-    const first = newIndex.get(firstId) as number;
+    let first = newIndex.get(firstId) as number;
     const last = newIndex.get(lastId) as number;
-    if (first > last || first <= prevLast) continue;
+    let startId = firstId;
+    if (first <= prevLast) {
+      // An earlier slot grew over our first block: give up the overlapped blocks, keep the rest.
+      first = prevLast + 1;
+      startId = w.blocks[first]?.id ?? '';
+    }
+    if (first > last || startId === '') continue;
     prevLast = last;
-    kept.push({ ...song, firstBlockId: firstId, lastBlockId: lastId });
+    kept.push({ ...song, firstBlockId: startId, lastBlockId: lastId });
   }
   if (kept.length > 0) w.songs = kept;
   else {

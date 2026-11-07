@@ -483,3 +483,47 @@ describe('undo / redo', () => {
     expect(editorReducer(s, { type: 'undo' })).toBe(s);
   });
 });
+
+describe('song slots in the editor', () => {
+  const withSongs = (): EditorState => {
+    const w = base();
+    w.format = 'songs';
+    w.songs = [
+      { id: 's1', firstBlockId: 'wu', lastBlockId: 'rep', hint: 'one' },
+      { id: 's2', firstBlockId: 'mid', lastBlockId: 'cd', hint: 'two' },
+    ];
+    return createEditorState(w, {
+      idFactory: (() => {
+        let n = 0;
+        return () => `n${++n}`;
+      })(),
+      now: () => '2026-02-02T00:00:00.000Z',
+    });
+  };
+  const slots = (s: EditorState): string[] =>
+    (s.workout.songs ?? []).map((x) => `${x.id}:${x.firstBlockId}-${x.lastBlockId}`);
+
+  it('removing an edge block shrinks the slot and undo restores it', () => {
+    const s = run(withSongs(), { type: 'removeBlock', id: 'rep' });
+    expect(slots(s)).toEqual(['s1:wu-wu', 's2:mid-cd']);
+    expect(slots(run(s, { type: 'undo' }))).toEqual(['s1:wu-rep', 's2:mid-cd']);
+  });
+
+  it('removing a whole slot drops it and keeps the workout valid', () => {
+    const s = run(
+      withSongs(),
+      { type: 'removeBlock', id: 'mid' },
+      { type: 'removeBlock', id: 'cd' },
+    );
+    expect(slots(s)).toEqual(['s1:wu-rep']);
+    expect(workoutSchema.safeParse(s.workout).success).toBe(true);
+  });
+
+  it('moving a block keeps both slots valid and duplicating inside a slot keeps its range', () => {
+    const moved = run(withSongs(), { type: 'moveBlock', from: 1, to: 3 });
+    expect(workoutSchema.safeParse(moved.workout).success).toBe(true);
+    expect(moved.workout.songs?.length).toBeGreaterThanOrEqual(1);
+    const dup = run(withSongs(), { type: 'duplicateBlock', id: 'wu' });
+    expect(slots(dup)).toEqual(['s1:wu-rep', 's2:mid-cd']);
+  });
+});

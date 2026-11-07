@@ -1,15 +1,35 @@
 {
   "id": "class-hiit-30",
   "name": "Class: HIIT 30",
-  "description": "Eight songs in 30 minutes: on/off intervals, a ladder, a cadence build and two hills.",
+  "description": "Eight songs in about 30 minutes: on/off intervals, a ladder, a cadence build and two hills.",
   "localized": {
     "en": {
       "name": "Class: HIIT 30",
-      "description": "Eight songs in 30 minutes: on/off intervals, a ladder, a cadence build and two hills."
+      "description": "Eight songs in about 30 minutes: on/off intervals, a ladder, a cadence build and two hills.",
+      "songHints": {
+        "class-hiit-30-s1": "Warm-up song with a relaxed groove, about 4 min. Aim for about 175 BPM.",
+        "class-hiit-30-s2": "Steady four-on-the-floor song; 30 s on / 30 s off follows the beat. Aim for about 175 BPM.",
+        "class-hiit-30-s3": "Song with clear phrase changes so 15/20/30 s intervals land on the beat. Aim for about 179 BPM.",
+        "class-hiit-30-s4": "Song that builds; cadence climbs one step per minute. Aim for about 188 BPM.",
+        "class-hiit-30-s5": "Long song with a big drop: a seated climb and standing bursts. Aim for about 132 BPM.",
+        "class-hiit-30-s6": "Punchy song; every 20 s alternates seated and standing. Aim for about 127 BPM.",
+        "class-hiit-30-s7": "Closing anthem; the last 15 s are a sprint. Aim for about 136 BPM.",
+        "class-hiit-30-s8": "Calm song to slow the heart rate. Aim for about 165 BPM."
+      }
     },
     "pl": {
       "name": "Zajęcia: HIIT 30",
-      "description": "Osiem piosenek w 30 minut: interwały on/off, drabinka, wzrost kadencji i dwa podjazdy."
+      "description": "Osiem piosenek w około 30 minut: interwały on/off, drabinka, wzrost kadencji i dwa podjazdy.",
+      "songHints": {
+        "class-hiit-30-s1": "Rozgrzewkowa piosenka o luźnym groove, ok. 4 min. Szukaj ok. 175 BPM.",
+        "class-hiit-30-s2": "Równa piosenka z czterema uderzeniami na takt; 30 s on / 30 s off idzie z rytmem. Szukaj ok. 175 BPM.",
+        "class-hiit-30-s3": "Piosenka z wyraźnymi zmianami fraz, żeby interwały 15/20/30 s wpadały w rytm. Szukaj ok. 179 BPM.",
+        "class-hiit-30-s4": "Piosenka, która narasta; kadencja rośnie o jeden stopień na minutę. Szukaj ok. 188 BPM.",
+        "class-hiit-30-s5": "Długa piosenka z mocnym wejściem: podjazd na siedząco i zrywy na stojąco. Szukaj ok. 132 BPM.",
+        "class-hiit-30-s6": "Dynamiczna piosenka; co 20 s zmiana: siedząc i stojąc. Szukaj ok. 127 BPM.",
+        "class-hiit-30-s7": "Finałowy hymn; ostatnie 15 s to sprint. Szukaj ok. 136 BPM.",
+        "class-hiit-30-s8": "Spokojna piosenka na uspokojenie tętna. Szukaj ok. 165 BPM."
+      }
     }
   },
   "category": "freestyle",
@@ -56,7 +76,7 @@
           "intensity": {
             "effort": 5
           },
-          "rpm": 80,
+          "rpm": 85,
           "position": "seated"
         }
       ]
@@ -346,57 +366,57 @@
       "id": "class-hiit-30-s1",
       "firstBlockId": "h-wu",
       "lastBlockId": "h-wu",
-      "hint": "Warm-up song, a relaxed groove, about 4 min, 120-128 BPM.",
-      "bpm": [120, 128]
+      "bpm": [172, 178],
+      "hint": "Warm-up song with a relaxed groove, about 4 min. Aim for about 175 BPM."
     },
     {
       "id": "class-hiit-30-s2",
       "firstBlockId": "h-oo",
       "lastBlockId": "h-oo",
-      "hint": "Steady four-on-the-floor song, 124-132 BPM; 30 s on / 30 s off follows the beat.",
-      "bpm": [124, 132]
+      "bpm": [172, 178],
+      "hint": "Steady four-on-the-floor song; 30 s on / 30 s off follows the beat. Aim for about 175 BPM."
     },
     {
       "id": "class-hiit-30-s3",
       "firstBlockId": "h-l1",
       "lastBlockId": "h-l3",
-      "hint": "Song with clear phrase changes, 126-134 BPM, so 15/20/30 s intervals land on the beat.",
-      "bpm": [126, 134]
+      "bpm": [176, 182],
+      "hint": "Song with clear phrase changes so 15/20/30 s intervals land on the beat. Aim for about 179 BPM."
     },
     {
       "id": "class-hiit-30-s4",
       "firstBlockId": "h-c1",
       "lastBlockId": "h-c4",
-      "hint": "Song that builds, 120-136 BPM; cadence climbs one step per minute.",
-      "bpm": [120, 136]
+      "bpm": [185, 191],
+      "hint": "Song that builds; cadence climbs one step per minute. Aim for about 188 BPM."
     },
     {
       "id": "class-hiit-30-s5",
       "firstBlockId": "h-b1",
       "lastBlockId": "h-b7",
-      "hint": "Long song with a big drop, 120-130 BPM: a seated climb and standing bursts.",
-      "bpm": [120, 130]
+      "bpm": [129, 135],
+      "hint": "Long song with a big drop: a seated climb and standing bursts. Aim for about 132 BPM."
     },
     {
       "id": "class-hiit-30-s6",
       "firstBlockId": "h-ih",
       "lastBlockId": "h-ih",
-      "hint": "Punchy song, 124-132 BPM; every 20 s alternates seated and standing.",
-      "bpm": [124, 132]
+      "bpm": [124, 130],
+      "hint": "Punchy song; every 20 s alternates seated and standing. Aim for about 127 BPM."
     },
     {
       "id": "class-hiit-30-s7",
       "firstBlockId": "h-fh",
       "lastBlockId": "h-fh3",
-      "hint": "Closing anthem, 126-136 BPM; the last 15 s are a seated sprint.",
-      "bpm": [126, 136]
+      "bpm": [133, 139],
+      "hint": "Closing anthem; the last 15 s are a sprint. Aim for about 136 BPM."
     },
     {
       "id": "class-hiit-30-s8",
       "firstBlockId": "h-cd",
       "lastBlockId": "h-cd",
-      "hint": "Calm song, 90-105 BPM, to slow the heart rate.",
-      "bpm": [90, 105]
+      "bpm": [162, 168],
+      "hint": "Calm song to slow the heart rate. Aim for about 165 BPM."
     }
   ],
   "scaling": {

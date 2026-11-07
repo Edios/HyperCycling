@@ -5,7 +5,8 @@ import { builtinPlans, builtinWorkouts } from '../client/data/builtin';
 import { planSchema, weeklyLoad, type Plan } from '../domain/plan';
 import { scaleWorkout } from '../domain/scale';
 import { flattenWorkout } from '../domain/segments';
-import { totalDurationSec, workoutSchema, type Workout } from '../domain/workout';
+import { matchBpm } from '../domain/bpm-match';
+import { totalDurationSec, workoutSchema, type SongSlot, type Workout } from '../domain/workout';
 
 const workoutFiles = import.meta.glob<unknown>('./workouts/*.json', {
   eager: true,
@@ -113,6 +114,18 @@ const CATEGORY: Record<string, { ids: string[] } | { tag: string }> = {
     ],
   },
 };
+
+/** The song slot that covers a block id (top-level or a repeat child). */
+function slotOfBlock(w: Workout, id: string): SongSlot | undefined {
+  const top = w.blocks.map((b) => b.id);
+  const owner = w.blocks.find(
+    (b) => b.id === id || (b.kind === 'repeat' && b.blocks.some((c) => c.id === id)),
+  );
+  const at = owner ? top.indexOf(owner.id) : -1;
+  return w.songs?.find(
+    (song) => at >= top.indexOf(song.firstBlockId) && at <= top.indexOf(song.lastBlockId),
+  );
+}
 
 const byId = new Map(builtinWorkouts.map((w) => [w.id, w]));
 const get = (id: string): Workout => {
@@ -437,14 +450,7 @@ describe('built-in workouts', () => {
       // Warm-up spin-up steady blocks are not part of the music script.
       const spin = new Set(w.blocks.filter((b) => b.id.includes('-wu')).map((b) => b.id));
       for (const id of ids.filter((x) => !spin.has(x))) {
-        const slot = w.songs?.find((song) => {
-          const topIds = w.blocks.map((b) => b.id);
-          const owner = w.blocks.find(
-            (b) => b.id === id || (b.kind === 'repeat' && b.blocks.some((c) => c.id === id)),
-          );
-          const at = owner ? topIds.indexOf(owner.id) : -1;
-          return at >= topIds.indexOf(song.firstBlockId) && at <= topIds.indexOf(song.lastBlockId);
-        });
+        const slot = slotOfBlock(w, id);
         expect(w.musicHints?.[id] ?? slot?.hint, `${w.id} block ${id}`).toMatch(/BPM/);
       }
     }
@@ -605,6 +611,40 @@ describe('class-format workouts', () => {
         next = order.indexOf(song.lastBlockId) + 1;
       }
       expect(next, w.id).toBe(order.length);
+    }
+  });
+
+  it('slot tempo suits the cadence for at least half of its time (2 BPM = 1 RPM, half or double time)', () => {
+    for (const w of classes) {
+      for (const song of w.songs ?? []) {
+        const mid = ((song.bpm?.[0] ?? 0) + (song.bpm?.[1] ?? 0)) / 2;
+        let ok = 0;
+        let all = 0;
+        for (const seg of flattenWorkout(w)) {
+          if (slotOfBlock(w, seg.blockId)?.id !== song.id || seg.rpm === undefined) continue;
+          all += seg.durationSec;
+          if (matchBpm(mid, seg.rpm)) ok += seg.durationSec;
+        }
+        expect(ok / all, `${w.id} ${song.id}`).toBeGreaterThanOrEqual(0.5);
+      }
+    }
+  });
+
+  it('has PL and EN hints for every slot and a name that matches the duration', () => {
+    for (const w of classes) {
+      for (const song of w.songs ?? []) {
+        expect(w.localized?.pl?.songHints?.[song.id], `${w.id} ${song.id} pl`).toMatch(/BPM/);
+        expect(w.localized?.en?.songHints?.[song.id], `${w.id} ${song.id} en`).toBe(song.hint);
+      }
+      const named = Number(/(\d+)$/.exec(w.name)?.[1]);
+      expect(Math.abs(totalDurationSec(w) / 60 - named), w.id).toBeLessThanOrEqual(1.5);
+    }
+  });
+
+  it('plan scaling keeps song lengths', () => {
+    for (const w of classes) {
+      const scaled = scaleWorkout(w, { targetMinutes: 60, difficultyPct: 0 });
+      expect(totalDurationSec(scaled), w.id).toBe(totalDurationSec(w));
     }
   });
 });
