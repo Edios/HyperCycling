@@ -59,3 +59,9 @@ test('phone: hero above a stacked dock, no horizontal scroll', async ({ page }, 
   expect(heroBox!.y + heroBox!.height).toBeLessThanOrEqual(dockBox!.y + 1);
   await shot(page, `home-phone-${info.project.name}`);
 });
+
+test('GetSongBPM link is in the static HTML source (no JS needed)', async ({ request }) => {
+  const res = await request.get('./');
+  expect(res.ok()).toBe(true);
+  expect(await res.text()).toContain('<a href="https://getsongbpm.com"');
+});

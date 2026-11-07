@@ -25,7 +25,13 @@
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback content for crawlers and no-JS: React replaces it on start. -->
+      <p>
+        Dane o tempie utworów:
+        <a href="https://getsongbpm.com" target="_blank" rel="noopener">GetSongBPM</a>
+      </p>
+    </div>
     <script type="module" src="/src/client/main.tsx"></script>
   </body>
 </html>
