@@ -68,6 +68,11 @@ export interface Settings {
   spotify?: SpotifySettings;
   /** GetSongBPM API key for the BPM lookup; a credential: never logged, left out of exports. */
   getSongBpmKey?: string;
+  /**
+   * Keyless Deezer tempo lookup (JSONP via a sandboxed frame). Off unless true: it loads a script
+   * from api.deezer.com, so the rider opts in under Settings -> Music.
+   */
+  deezerLookup?: boolean;
   /** Max 10 entries. */
   recentYoutubeUrls: string[];
 }
@@ -114,6 +119,7 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   lastSession: sessionConfigSchema.optional(),
   spotify: spotifySettingsSchema.optional(),
   getSongBpmKey: z.string().optional(),
+  deezerLookup: z.boolean().optional(),
   recentYoutubeUrls: z.array(z.string()).max(10),
 }) as unknown as z.ZodType<Settings>; // optional-field inference caveat
 

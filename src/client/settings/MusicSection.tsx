@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useState } from 'react';
 import type { SpotifySettings } from '../../domain/settings';
 import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
+import { closeDeezerBridge } from '../music/deezer/client';
 import { GETSONGBPM_SITE } from '../music/getsongbpm/client';
 import { useSave } from './save';
 import {
@@ -16,6 +17,7 @@ import { spotifyErrorKey } from '../music/spotify/messages';
 import type { SpotifyDevice } from '../music/spotify/provider';
 import { getSharedSpotifyProvider } from '../music/spotify/shared';
 import { Button } from '../ui/Button';
+import { Toggle } from '../ui/Toggle';
 import styles from './Settings.module.css';
 
 const LOCAL_URI = 'http://127.0.0.1:5175/';
@@ -138,6 +140,11 @@ export function MusicSection() {
     const value = gsbpmKey.trim();
     if (value === (settings.getSongBpmKey ?? '')) return;
     void save_({ getSongBpmKey: value === '' ? undefined : value });
+  };
+
+  const toggleDeezer = (on: boolean): void => {
+    if (!on) closeDeezerBridge(); // drop the sandboxed frame at once
+    void save_({ deezerLookup: on });
   };
 
   const connect = async (): Promise<void> => {
@@ -321,6 +328,17 @@ export function MusicSection() {
             {t('settings.music.gsbpm.link')}
           </a>
         </small>
+      </div>
+
+      <div>
+        <Toggle
+          label={t('settings.music.deezer.label')}
+          checked={settings.deezerLookup === true}
+          onChange={toggleDeezer}
+        />
+        <p className={styles.note} data-testid="deezer-lookup-hint">
+          {t('settings.music.deezer.hint')}
+        </p>
       </div>
 
       <div className={styles.setup}>

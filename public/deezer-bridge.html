@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self' https://api.deezer.com; base-uri 'none'"
+    />
+    <title>Deezer bridge</title>
+  </head>
+  <body>
+    <!-- Runs only inside <iframe sandbox="allow-scripts"> created by the app when the Deezer lookup is on. -->
+    <script src="deezer-bridge.js"></script>
+  </body>
+</html>

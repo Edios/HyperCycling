@@ -92,7 +92,7 @@ const YT_URL = 'https://youtu.be/dQw4w9WgXcQ';
 beforeEach(() => {
   repo.store.clear();
   repo.store.set('user-1', userWorkout());
-  repo.settings = undefined;
+  repo.settings = { ...DEFAULT_SETTINGS, deezerLookup: true };
   resetSettingsForTests();
   resetGetSongBpmClientForTests();
   // The real Deezer client loads <script> tags; here it knows no song unless a test says otherwise.
@@ -108,7 +108,7 @@ beforeEach(() => {
   resetSharedSpotifyProviderForTests();
 });
 
-const withKey: Settings = { ...DEFAULT_SETTINGS, getSongBpmKey: 'TEST-KEY' };
+const withKey: Settings = { ...DEFAULT_SETTINGS, getSongBpmKey: 'TEST-KEY', deezerLookup: true };
 
 const SEARCH_HIT = {
   id: 'o2r0L',

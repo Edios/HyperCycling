@@ -1,6 +1,6 @@
 /**
- * One tempo lookup for the editor: GetSongBPM first when the rider saved a key, Deezer (no key)
- * otherwise or when GetSongBPM does not know the song or fails. Song suggestions by tempo exist
+ * One tempo lookup for the editor: GetSongBPM first when the rider saved a key, Deezer (no key,
+ * opt-in in Settings) after it or instead of it. Without either, tempo is typed by hand. Song suggestions by tempo exist
  * only in GetSongBPM.
  */
 import type { BpmSource } from '../../domain/workout';
@@ -47,6 +47,8 @@ export interface BpmLookup {
   lookup(query: BpmQuery): Promise<TempoResult | undefined>;
   /** Present only with a GetSongBPM key. */
   suggestions: GetSongBpmClient | undefined;
+  /** True when the rider turned the Deezer lookup on. */
+  deezer: boolean;
 }
 
 let deezer: DeezerClient | undefined;
@@ -63,9 +65,13 @@ function toError(err: unknown, provider: BpmSource): GetSongBpmError {
   return err instanceof GetSongBpmError ? err : new GetSongBpmError('network', provider);
 }
 
-export function createBpmLookup(gsbpm: GetSongBpmClient | undefined, dz: DeezerClient): BpmLookup {
+export function createBpmLookup(
+  gsbpm: GetSongBpmClient | undefined,
+  dz: DeezerClient | undefined,
+): BpmLookup {
   return {
     suggestions: gsbpm,
+    deezer: dz !== undefined,
     async search(query, provider = 'auto') {
       const jobs: { source: BpmSource; run: Promise<SongCandidate[]> }[] = [];
       if (gsbpm && provider !== 'deezer') {
@@ -76,7 +82,7 @@ export function createBpmLookup(gsbpm: GetSongBpmClient | undefined, dz: DeezerC
             .then((hs) => hs.map((h) => ({ ...h, source: 'getsongbpm' as const }))),
         });
       }
-      if (provider !== 'getsongbpm') {
+      if (dz && provider !== 'getsongbpm') {
         jobs.push({
           source: 'deezer',
           run: dz
@@ -112,6 +118,10 @@ export function createBpmLookup(gsbpm: GetSongBpmClient | undefined, dz: DeezerC
           firstError = err;
         }
       }
+      if (!dz) {
+        if (firstError) throw firstError;
+        throw new GetSongBpmError('no-key');
+      }
       try {
         const hit = await dz.lookupBpm(query);
         if (hit) return { bpm: hit.bpm, source: 'deezer' };
@@ -129,6 +139,7 @@ export function createBpmLookup(gsbpm: GetSongBpmClient | undefined, dz: DeezerC
 }
 
 export function useBpmLookup(): BpmLookup {
-  const gsbpm = getSharedGetSongBpmClient(useSettings().settings.getSongBpmKey);
-  return createBpmLookup(gsbpm, getSharedDeezerClient());
+  const { getSongBpmKey, deezerLookup } = useSettings().settings;
+  const gsbpm = getSharedGetSongBpmClient(getSongBpmKey);
+  return createBpmLookup(gsbpm, deezerLookup === true ? getSharedDeezerClient() : undefined);
 }

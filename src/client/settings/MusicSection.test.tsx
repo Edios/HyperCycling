@@ -114,6 +114,23 @@ describe('Settings, Music section on localhost', () => {
   });
 });
 
+describe('Settings, Deezer lookup', () => {
+  it('is off by default, explains the script it loads, and persists the choice', async () => {
+    renderScreen();
+    const toggle = (await screen.findByRole('switch', {
+      name: /Deezer tempo lookup/,
+    })) as HTMLInputElement;
+    expect(toggle.checked).toBe(false);
+    expect(screen.getByTestId('deezer-lookup-hint')).toHaveTextContent(
+      'Loads a script from api.deezer.com; off by default',
+    );
+    fireEvent.click(toggle);
+    await waitFor(() => expect(repo.settings?.deezerLookup).toBe(true));
+    fireEvent.click(toggle);
+    await waitFor(() => expect(repo.settings?.deezerLookup).toBe(false));
+  });
+});
+
 describe('Settings, GetSongBPM key', () => {
   it('saves the key on blur, hides it, credits the service, and clears it when emptied', async () => {
     renderScreen();

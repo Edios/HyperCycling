@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { CSP_DIRECTIVES, PAGE_CSP } from './csp';
+import { BRIDGE_CSP, BRIDGE_CSP_DIRECTIVES, CSP_DIRECTIVES, PAGE_CSP, SERVER_CSP } from './csp';
 import { injectCspMeta } from './cspMeta';
 
 const root = path.resolve(__dirname, '..', '..');
@@ -34,6 +34,7 @@ const NOT_FETCHED = new Set([
   'https://getsongbpm.com', // attribution link in the Home footer (navigation only)
   'https://developers.deezer.com', // API docs link in a code comment
   'https://www.deezer.com', // attribution link and track links shown to the user
+  'https://api.deezer.com', // loaded only by the sandboxed bridge page (see the bridge tests)
   'https://edios.github.io', // old Pages address, kept in the redirect URI hint
 ]);
 
@@ -64,5 +65,36 @@ describe('CSP covers every origin the app code uses', () => {
 
   it.each([...used])('%s (%s) is allowed or documentation-only', (origin) => {
     expect(allowed.has(origin) || NOT_FETCHED.has(origin), origin).toBe(true);
+  });
+});
+
+describe('Deezer JSONP is kept out of the page origin', () => {
+  it('lists api.deezer.com nowhere in the page or server policy', () => {
+    for (const csp of [PAGE_CSP, SERVER_CSP]) expect(csp).not.toContain('deezer');
+  });
+
+  it('only lets the page frame itself, YouTube and nothing else', () => {
+    expect(CSP_DIRECTIVES['frame-src']).toEqual([
+      "'self'",
+      'https://www.youtube.com',
+      'https://www.youtube-nocookie.com',
+    ]);
+  });
+
+  it('gives the bridge page a policy with api.deezer.com as the only foreign script host', () => {
+    expect(BRIDGE_CSP_DIRECTIVES['default-src']).toEqual(["'none'"]);
+    expect(BRIDGE_CSP_DIRECTIVES['script-src']).toEqual(["'self'", 'https://api.deezer.com']);
+    expect(Object.keys(BRIDGE_CSP_DIRECTIVES)).not.toContain('connect-src');
+  });
+
+  it('ships a bridge page whose own <meta> policy equals BRIDGE_CSP, and a strict script', () => {
+    const html = readFileSync(path.join(root, 'public', 'deezer-bridge.html'), 'utf8');
+    const meta = /http-equiv="Content-Security-Policy"\s+content="([^"]+)"/.exec(html);
+    expect(meta?.[1]).toBe(BRIDGE_CSP);
+    expect(html).not.toMatch(/<script(?![^>]*\bsrc=)[^>]*>/); // no inline script
+    const js = readFileSync(path.join(root, 'public', 'deezer-bridge.js'), 'utf8');
+    expect(js).toContain("'https://api.deezer.com/'");
+    expect(js).toContain('event.source !== parent');
+    expect(js).not.toMatch(/\beval\b|new Function|innerHTML|localStorage|document\.cookie/);
   });
 });

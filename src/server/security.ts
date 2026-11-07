@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { SERVER_CSP } from '../shared/csp';
+import { BRIDGE_CSP, DEEZER_BRIDGE_FILE, SERVER_CSP } from '../shared/csp';
 
 export interface SecurityOptions {
   /** Port the server listens on; only loopback names with this port are accepted as `Host`. */
@@ -43,12 +43,18 @@ export function registerSecurity(app: FastifyInstance, opts: SecurityOptions): v
   // The built-in text/plain parser would turn a simple cross-site POST into a string body.
   app.removeContentTypeParser('text/plain');
 
-  app.addHook('onSend', async (_req, reply) => {
-    reply.header('content-security-policy', SERVER_CSP);
+  app.addHook('onSend', async (req, reply) => {
+    // The sandboxed Deezer bridge page (and its script) is the one document with another policy:
+    // it may run script from api.deezer.com, and only our own page may frame it.
+    const bridge = new URL(req.url, 'http://localhost').pathname.endsWith(`/${DEEZER_BRIDGE_FILE}`);
+    reply.header(
+      'content-security-policy',
+      bridge ? `${BRIDGE_CSP}; frame-ancestors 'self'` : SERVER_CSP,
+    );
     reply.header('x-content-type-options', 'nosniff');
     reply.header('referrer-policy', 'strict-origin-when-cross-origin');
     reply.header('cross-origin-opener-policy', 'same-origin');
-    reply.header('x-frame-options', 'DENY');
+    reply.header('x-frame-options', bridge ? 'SAMEORIGIN' : 'DENY');
   });
 
   app.addHook('onRequest', async (req, reply) => {
