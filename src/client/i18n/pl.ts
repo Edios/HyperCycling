@@ -754,10 +754,14 @@ export const pl: Messages = {
       gsbpm: {
         title: 'GetSongBPM (wyszukiwanie tempa)',
         key: 'Klucz API GetSongBPM',
-        hint: 'Opcjonalny. Bez klucza tempo przypiętego utworu jest szukane w Deezer. Klucz dodaje GetSongBPM i podpowiedzi utworów w danym tempie. Klucz zostaje na tym urządzeniu i nie trafia do eksportu.',
+        hint: 'Opcjonalny. Klucz włącza wyszukiwanie tempa w GetSongBPM i podpowiedzi utworów w danym tempie. Klucz zostaje na tym urządzeniu i nie trafia do eksportu. Bez klucza i bez Deezer poniżej wpisz tempo ręcznie.',
         placeholder: 'Wklej klucz API',
         get: 'Weź darmowy klucz',
         link: 'Dane: GetSongBPM',
+      },
+      deezer: {
+        label: 'Wyszukiwanie tempa w Deezer (bez klucza)',
+        hint: 'Ładuje skrypt z api.deezer.com; wyłączone domyślnie. Działa w odizolowanej ramce, która nie widzi Twoich danych, i dopiero po włączeniu. Gdy wyłączone, wyszukiwarka utworów używa GetSongBPM (jeśli dodasz klucz) lub tempa wpisanego ręcznie.',
       },
       saveFailed: 'Nie udało się zapisać ustawienia.',
       status: 'Stan',
@@ -1076,7 +1080,8 @@ export const pl: Messages = {
         double: 'podwójne tempo',
       },
       err: {
-        noKey: 'Dodaj klucz API GetSongBPM w Ustawieniach.',
+        noKey:
+          'Żadne wyszukiwanie tempa nie jest włączone. W Ustawieniach, Muzyka, dodaj klucz GetSongBPM lub włącz Deezer, albo wpisz tempo.',
         unauthorized: 'GetSongBPM odrzucił klucz API. Sprawdź go w Ustawieniach.',
         rateLimited: 'Osiągnięto limit zapytań GetSongBPM. Spróbuj później.',
         forbidden:

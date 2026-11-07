@@ -754,10 +754,14 @@ export const en = {
       gsbpm: {
         title: 'GetSongBPM (tempo lookup)',
         key: 'GetSongBPM API key',
-        hint: 'Optional. Without a key, the tempo of a pinned track is looked up on Deezer. A key adds GetSongBPM lookups and a list of songs at a tempo. The key stays on this device and is left out of exports.',
+        hint: 'Optional. A key enables GetSongBPM tempo lookups and a list of songs at a tempo. The key stays on this device and is left out of exports. Without a key and without Deezer below, type the tempo by hand.',
         placeholder: 'Paste the API key',
         get: 'Get a free key',
         link: 'Data: GetSongBPM',
+      },
+      deezer: {
+        label: 'Deezer tempo lookup (no key)',
+        hint: 'Loads a script from api.deezer.com; off by default. It runs in an isolated frame that cannot see your data, and only after you turn it on. When off, the song search uses GetSongBPM (if you added a key) or a tempo you type.',
       },
       saveFailed: 'Could not save the setting.',
       status: 'Status',
@@ -1075,7 +1079,8 @@ export const en = {
         double: 'double time',
       },
       err: {
-        noKey: 'Add a GetSongBPM API key in Settings.',
+        noKey:
+          'No tempo lookup is on. In Settings, Music, add a GetSongBPM key or turn on Deezer, or type the tempo.',
         unauthorized: 'GetSongBPM rejected the API key. Check it in Settings.',
         rateLimited: 'GetSongBPM request limit reached. Try again later.',
         forbidden:

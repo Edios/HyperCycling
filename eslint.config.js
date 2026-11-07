@@ -25,6 +25,11 @@ export default tseslint.config(
     rules: reactHooks.configs.recommended.rules,
   },
   {
+    // Classic browser scripts served as-is (no bundler), e.g. the sandboxed Deezer bridge.
+    files: ['public/**/*.js'],
+    languageOptions: { globals: globals.browser, sourceType: 'script' },
+  },
+  {
     files: ['src/server/**/*.ts', 'scripts/**/*.ts', '*.config.{js,ts}'],
     languageOptions: { globals: globals.node },
   },

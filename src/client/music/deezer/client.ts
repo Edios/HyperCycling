@@ -2,13 +2,16 @@
  * Deezer client (https://developers.deezer.com/api): tempo of a song by title and artist, no key.
  *
  * api.deezer.com sends no CORS headers (checked 2026-11-07), so `fetch` cannot read it from a
- * browser. It does answer JSONP (`output=jsonp&callback=name`), so each request is a short-lived
- * <script> tag; that is why `script-src` lists api.deezer.com (src/shared/csp.ts). The callback
- * name is generated here, never taken from data. `bpm` is optional in Deezer's data and 0 means
+ * browser. It does answer JSONP (`output=jsonp&callback=name`), i.e. it returns script. To keep
+ * that script out of the app's origin, requests go to a sandboxed iframe (opaque origin) with its
+ * own CSP (public/deezer-bridge.html, src/shared/csp.ts); the page's `script-src` does not list
+ * api.deezer.com. The client only exists while Settings -> Music enables it (off by default).
+ * The callback name is generated here, never taken from data. `bpm` is optional in Deezer's data and 0 means
  * "unknown" (treated as not found). Results are cached locally. Terms: non-commercial use, and
  * Deezer's logos are off limits, so the UI shows the plain text "Deezer" with a link only.
  */
 import { BPM_MAX, BPM_MIN } from '../../../domain/bpm-match';
+import { DEEZER_BRIDGE_FILE } from '../../../shared/csp';
 import {
   asRecord,
   GetSongBpmError,
@@ -59,36 +62,99 @@ const CACHE_KEY = 'hypercycling.deezer.cache';
 const MAX_CANDIDATES = 3;
 const SEARCH_DEFAULT_LIMIT = 5;
 
+const BRIDGE_READY_MS = 5_000;
+
+interface Pending {
+  resolve: (data: unknown) => void;
+  reject: (err: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
+const pending = new Map<number, Pending>();
+let frame: HTMLIFrameElement | undefined;
+let ready: Promise<HTMLIFrameElement> | undefined;
+let onReady: (() => void) | undefined;
+let nextId = 0;
+let listening = false;
+
+function onMessage(event: MessageEvent): void {
+  // Only the bridge frame we created may talk to us; its origin is opaque ("null") by design.
+  if (!frame || event.source !== frame.contentWindow) return;
+  const m = asRecord(event.data);
+  if (!m) return;
+  if (m.type === 'hc-ready') {
+    onReady?.();
+  } else if (m.type === 'hc-jsonp-result' && typeof m.id === 'number') {
+    const p = pending.get(m.id);
+    if (!p) return;
+    pending.delete(m.id);
+    clearTimeout(p.timer);
+    if (m.ok === true) p.resolve(m.data);
+    else p.reject(new Error('load'));
+  }
+}
+
+function openBridge(): Promise<HTMLIFrameElement> {
+  if (ready) return ready;
+  if (!listening) {
+    window.addEventListener('message', onMessage);
+    listening = true;
+  }
+  const el = document.createElement('iframe');
+  el.setAttribute('sandbox', 'allow-scripts'); // opaque origin: no storage, tokens or DOM of ours
+  el.referrerPolicy = 'no-referrer';
+  el.hidden = true;
+  el.tabIndex = -1;
+  el.title = 'Deezer bridge';
+  el.setAttribute('aria-hidden', 'true');
+  frame = el;
+  ready = new Promise<HTMLIFrameElement>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      closeDeezerBridge();
+      reject(new Error('bridge'));
+    }, BRIDGE_READY_MS);
+    onReady = () => {
+      clearTimeout(timer);
+      resolve(el);
+    };
+  });
+  el.src = `${import.meta.env.BASE_URL}${DEEZER_BRIDGE_FILE}`;
+  document.body.appendChild(el);
+  return ready;
+}
+
+/** Removes the sandboxed frame and fails whatever is still waiting; used when the setting is turned off. */
+export function closeDeezerBridge(): void {
+  frame?.remove();
+  frame = undefined;
+  ready = undefined;
+  onReady = undefined;
+  for (const p of pending.values()) {
+    clearTimeout(p.timer);
+    p.reject(new Error('closed'));
+  }
+  pending.clear();
+}
+
 let counter = 0;
 
-/** Real loader: a <script> tag and a one-shot global callback, both removed afterwards. */
-export const scriptJsonp: JsonpLoader = (url, timeoutMs) =>
-  new Promise((resolve, reject) => {
+/**
+ * Real loader: the request goes to a sandboxed iframe (public/deezer-bridge.html) that runs the
+ * JSONP <script> under its own CSP, so Deezer's script never runs in the app's origin. The
+ * callback name is generated here, never taken from data.
+ */
+export const bridgeJsonp: JsonpLoader = async (url, timeoutMs) => {
+  const el = await openBridge();
+  return new Promise((resolve, reject) => {
+    const id = nextId++;
     const name = `__hcDeezer${Date.now().toString(36)}${counter++}`;
-    const w = window as unknown as Record<string, unknown>;
-    const script = document.createElement('script');
-    const done = (): void => {
-      clearTimeout(timer);
-      delete w[name];
-      script.remove();
-    };
     const timer = setTimeout(() => {
-      done();
+      pending.delete(id);
       reject(new Error('timeout'));
     }, timeoutMs);
-    w[name] = (data: unknown) => {
-      done();
-      resolve(data);
-    };
-    script.onerror = () => {
-      done();
-      reject(new Error('load'));
-    };
-    script.async = true;
-    script.referrerPolicy = 'no-referrer';
-    script.src = url(name);
-    document.head.appendChild(script);
+    pending.set(id, { resolve, reject, timer });
+    el.contentWindow?.postMessage({ type: 'hc-jsonp', id, name, url: url(name) }, '*');
   });
+};
 
 function defaultStorage(): KeyValueStorage | undefined {
   try {
@@ -105,6 +171,9 @@ function parseDeezerBpm(v: unknown): number | undefined {
   return Number.isFinite(r) && r >= BPM_MIN && r <= BPM_MAX ? r : undefined;
 }
 
+const MAX_TEXT = 200;
+const clip = (v: string): string => v.slice(0, MAX_TEXT);
+
 function safeUrl(v: unknown): string | undefined {
   return typeof v === 'string' && v.startsWith(`${DEEZER_SITE}/`) ? v : undefined;
 }
@@ -115,7 +184,8 @@ function validHit(v: unknown): v is DeezerHit {
     o !== undefined &&
     typeof o.title === 'string' &&
     o.title !== '' &&
-    (o.artist === undefined || typeof o.artist === 'string') &&
+    o.title.length <= MAX_TEXT &&
+    (o.artist === undefined || (typeof o.artist === 'string' && o.artist.length <= MAX_TEXT)) &&
     parseDeezerBpm(o.bpm) === o.bpm &&
     safeUrl(o.url) === o.url
   );
@@ -139,21 +209,23 @@ function candidates(body: unknown, query: BpmQuery): Candidate[] {
     const t = o?.title;
     if (typeof id !== 'number' || !Number.isInteger(id) || typeof t !== 'string') continue;
     const name = asRecord(o?.artist)?.name;
-    list.push({ id, title: t, artist: typeof name === 'string' ? name : undefined });
+    list.push({ id, title: clip(t), artist: typeof name === 'string' ? clip(name) : undefined });
   }
   // A different title is a different song (cover, medley): no match beats somebody else's tempo.
   const same = list.filter((c) => identity(c.title) === title);
   const exact = same.filter(
     (c) => artist !== undefined && c.artist !== undefined && identity(c.artist) === artist,
   );
-  return [...exact, ...same.filter((c) => !exact.includes(c))].slice(0, MAX_CANDIDATES);
+  // With an artist given, a same-title song by somebody else is not the song asked for ("Home",
+  // "Intro", "Stay" exist many times); only when the artist is unknown do same-title songs count.
+  return (artist === undefined ? same : exact).slice(0, MAX_CANDIDATES);
 }
 
 type CacheValue = DeezerHit | DeezerHit[] | null;
 type CacheMap = Record<string, { at: number; ttl: number; v: CacheValue }>;
 
 export function createDeezerClient(opts: DeezerOptions = {}): DeezerClient {
-  const load = opts.jsonp ?? scriptJsonp;
+  const load = opts.jsonp ?? bridgeJsonp;
   const now = opts.now ?? Date.now;
   const storage = 'storage' in opts ? opts.storage : defaultStorage();
   const timeoutMs = opts.timeoutMs ?? 8_000;
@@ -269,14 +341,21 @@ export function createDeezerClient(opts: DeezerOptions = {}): DeezerClient {
         if (typeof id !== 'number' || !Number.isInteger(id) || typeof t !== 'string' || !t)
           continue;
         const name = asRecord(o?.artist)?.name;
-        const track = asRecord(await request(`/track/${id}`, {}));
+        let track: Record<string, unknown> | undefined;
+        try {
+          track = asRecord(await request(`/track/${id}`, {}));
+        } catch (err) {
+          // One failed track must not throw away the ones already found; a spent quota stops all.
+          if (err instanceof GetSongBpmError && err.kind === 'rate-limited') throw err;
+          continue;
+        }
         const bpm = parseDeezerBpm(track?.bpm);
         const url = safeUrl(track?.link);
         // No tempo in Deezer's data: nothing to offer for this one.
         if (bpm === undefined || !url) continue;
         out.push({
-          title: t,
-          ...(typeof name === 'string' && name ? { artist: name } : {}),
+          title: clip(t),
+          ...(typeof name === 'string' && name ? { artist: clip(name) } : {}),
           bpm,
           url,
         });

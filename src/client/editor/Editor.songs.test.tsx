@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Settings } from '../../domain/settings';
+import { DEFAULT_SETTINGS, type Settings } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
 
 const repo = vi.hoisted(() => ({
@@ -88,7 +88,7 @@ const YT_URL = 'https://youtu.be/dQw4w9WgXcQ';
 beforeEach(() => {
   repo.store.clear();
   repo.store.set('user-1', userWorkout());
-  repo.settings = undefined;
+  repo.settings = { ...DEFAULT_SETTINGS, deezerLookup: true };
   resetSettingsForTests();
   resetSharedSpotifyProviderForTests();
   server.use(
@@ -201,6 +201,19 @@ describe('song finder (M19d)', () => {
     fireEvent.click(within(panel).getAllByTestId('finder-pick')[1] as HTMLElement);
     expect(within(panel).getByTestId('song-bpm-min')).toHaveValue('170');
     expect(within(panel).getByTestId('song-hint')).toHaveValue('Band – Slow One');
+  });
+
+  it('without the Deezer setting nor a key: no Deezer option, search says what to turn on', async () => {
+    repo.settings = { ...DEFAULT_SETTINGS };
+    resetSettingsForTests();
+    const searchSongs = vi.fn(() => Promise.resolve([hit('Fast One', 172)]));
+    const panel = await find(searchSongs);
+    expect(within(panel.querySelector('select') as HTMLElement).queryByText('Deezer')).toBeNull();
+    fireEvent.click(within(panel).getByTestId('finder-search'));
+    expect(await within(panel).findByTestId('finder-error')).toHaveTextContent(
+      'No tempo lookup is on',
+    );
+    expect(searchSongs).not.toHaveBeenCalled();
   });
 
   it('says so when nothing is found and shows a provider error', async () => {

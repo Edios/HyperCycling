@@ -19,8 +19,8 @@ const FIT_KEY = {
 } as const satisfies Record<MatchKind, string>;
 
 /**
- * Search a song by artist and/or title (M19d): Deezer needs no key, GetSongBPM is added when the
- * rider saved a key. Only numbers and links are kept; the tempo can be corrected by hand after
+ * Search a song by artist and/or title (M19d): GetSongBPM with the rider's key, Deezer (no key)
+ * when the rider turned it on in Settings. Only numbers and links are kept; the tempo can be corrected by hand after
  * picking. `range` is the slot's wanted BPM range, used to mark which hits fit it.
  */
 export function SongFinder({
@@ -33,6 +33,7 @@ export function SongFinder({
   const t = useT();
   const lookup = useBpmLookup();
   const hasKey = lookup.suggestions !== undefined;
+  const hasDeezer = lookup.deezer;
   const [artist, setArtist] = useState('');
   const [title, setTitle] = useState('');
   const [provider, setProvider] = useState<SongProvider>('auto');
@@ -47,7 +48,10 @@ export function SongFinder({
   }, []);
   const ids = { artist: useId(), title: useId(), provider: useId() };
   // A key removed in Settings while GetSongBPM was chosen falls back to automatic.
-  const effective: SongProvider = provider === 'getsongbpm' && !hasKey ? 'auto' : provider;
+  const effective: SongProvider =
+    (provider === 'getsongbpm' && !hasKey) || (provider === 'deezer' && !hasDeezer)
+      ? 'auto'
+      : provider;
   const canSearch = (title.trim() !== '' || artist.trim() !== '') && state.status !== 'loading';
 
   const search = async (): Promise<void> => {
@@ -101,7 +105,7 @@ export function SongFinder({
             onChange={(e) => setProvider(e.target.value as SongProvider)}
           >
             <option value="auto">{t('editor.songs.finder.auto')}</option>
-            <option value="deezer">{BRAND.deezer}</option>
+            {hasDeezer && <option value="deezer">{BRAND.deezer}</option>}
             {hasKey && <option value="getsongbpm">{BRAND.getsongbpm}</option>}
           </select>
         </label>
@@ -155,7 +159,7 @@ export function SongFinder({
           })}
         </ul>
       )}
-      {state.status === 'done' && (
+      {state.status === 'done' && state.hits.length > 0 && (
         <small className={styles.cap}>
           {t('editor.bpm.dataFrom')}{' '}
           {[...new Set(state.hits.map((h) => h.source))].map((s, i) => (

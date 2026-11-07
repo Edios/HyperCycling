@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS } from '../domain/settings';
-import { SERVER_CSP } from '../shared/csp';
+import { BRIDGE_CSP, SERVER_CSP } from '../shared/csp';
 import { bundle } from '../storage/contract';
 import { buildServer } from './app';
 
@@ -330,5 +330,20 @@ describe('static files and the dev origin', () => {
       payload: player,
     });
     expect(res.statusCode).toBe(403);
+  });
+});
+
+describe('Deezer bridge page headers', () => {
+  it('gets its own policy and may be framed by the app, every other page may not', async () => {
+    const bridge = await app.inject({
+      method: 'GET',
+      url: '/deezer-bridge.html',
+      headers: { host: HOST },
+    });
+    expect(bridge.headers['content-security-policy']).toBe(`${BRIDGE_CSP}; frame-ancestors 'self'`);
+    expect(bridge.headers['x-frame-options']).toBe('SAMEORIGIN');
+    const other = await app.inject({ method: 'GET', url: '/api/health', headers: { host: HOST } });
+    expect(other.headers['content-security-policy']).toBe(SERVER_CSP);
+    expect(other.headers['x-frame-options']).toBe('DENY');
   });
 });
