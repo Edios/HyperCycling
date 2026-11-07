@@ -5,6 +5,8 @@ export interface Player {
   name: string;
   ftp: number;
   isMe?: boolean;
+  /** Maximum heart rate in bpm; optional, enables personal bpm bands. */
+  hrMax?: number;
 }
 
 export const playerSchema: z.ZodType<Player> = z.object({
@@ -12,6 +14,7 @@ export const playerSchema: z.ZodType<Player> = z.object({
   name: z.string().trim().min(1).max(24),
   ftp: z.number().int().min(50).max(600),
   isMe: z.boolean().optional(),
+  hrMax: z.number().int().min(100).max(230).optional(),
 }) as unknown as z.ZodType<Player>; // optional-field inference caveat (exactOptionalPropertyTypes)
 
 /** True when no more than one player is marked `isMe`. */

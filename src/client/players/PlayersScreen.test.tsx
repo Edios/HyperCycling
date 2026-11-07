@@ -89,6 +89,21 @@ describe('PlayersScreen', () => {
     expect(screen.queryByText('Add your first player')).not.toBeInTheDocument();
   });
 
+  it('computes HRmax from age and stores it', async () => {
+    renderScreen();
+    await screen.findByText('Add your first player');
+    const form = screen.getByTestId('add-player-form');
+    setValue(within(form).getByLabelText('Name'), 'Basia');
+    setValue(within(form).getByLabelText('FTP (W)'), '210');
+    setValue(within(form).getByLabelText('Age (not stored)'), '36');
+    fireEvent.click(within(form).getByRole('button', { name: 'Calculate' }));
+    expect(within(form).getByLabelText('Max heart rate (bpm)')).toHaveValue(183);
+    fireEvent.click(within(form).getByRole('button', { name: 'Add' }));
+    await screen.findByText('Basia');
+    expect(db.players[0]).toMatchObject({ hrMax: 183 });
+    expect(db.players[0]).not.toHaveProperty('age');
+  });
+
   it('a double submit in the same tick stores the player once', async () => {
     renderScreen();
     await screen.findByText('Add your first player');

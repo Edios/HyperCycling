@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { estimateHrMax } from '../../domain/hr-zones';
 import { playerSchema, type Player } from '../../domain/player';
 import { DashLine } from '../brand';
 import { getRepositories } from '../data/repositories';
@@ -14,6 +15,7 @@ import styles from './PlayersScreen.module.css';
 interface Errors {
   name?: boolean;
   ftp?: boolean;
+  hrMax?: boolean;
 }
 
 type Repos = Awaited<ReturnType<typeof getRepositories>>;
@@ -23,11 +25,13 @@ function validate(
   id: string,
   name: string,
   ftp: string,
+  hrMax = '',
 ): { ok: true; player: Player } | { ok: false; errors: Errors } {
   const candidate = {
     id,
     name,
     ftp: ftp.trim() === '' ? Number.NaN : Number(ftp),
+    ...(hrMax.trim() === '' ? {} : { hrMax: Number(hrMax) }),
   };
   const r = playerSchema.safeParse(candidate);
   if (r.success) return { ok: true, player: r.data };
@@ -35,6 +39,7 @@ function validate(
   for (const issue of r.error.issues) {
     if (issue.path[0] === 'name') errors.name = true;
     if (issue.path[0] === 'ftp') errors.ftp = true;
+    if (issue.path[0] === 'hrMax') errors.hrMax = true;
   }
   return { ok: false, errors };
 }
@@ -46,13 +51,13 @@ function newId(): string {
 }
 
 function withoutMe(p: Player): Player {
-  return { id: p.id, name: p.name, ftp: p.ftp };
+  return { id: p.id, name: p.name, ftp: p.ftp, ...(p.hrMax !== undefined ? { hrMax: p.hrMax } : {}) };
 }
 
 interface FormProps {
-  initial?: { name: string; ftp: string };
+  initial?: { name: string; ftp: string; hrMax?: string };
   submitLabel: string;
-  onSubmit: (name: string, ftp: string) => Promise<Errors | undefined>;
+  onSubmit: (name: string, ftp: string, hrMax: string) => Promise<Errors | undefined>;
   onCancel?: () => void;
   resetOnSuccess?: boolean;
   autoFocus?: boolean;
@@ -69,6 +74,8 @@ function PlayerForm({
   const t = useT();
   const [name, setName] = useState(initial?.name ?? '');
   const [ftp, setFtp] = useState(initial?.ftp ?? '');
+  const [hrMax, setHrMax] = useState(initial?.hrMax ?? '');
+  const [age, setAge] = useState('');
   const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
   const firstInput = useRef<HTMLInputElement>(null);
@@ -87,7 +94,7 @@ function PlayerForm({
     void (async () => {
       let result: Errors = {};
       try {
-        result = (await onSubmit(name, ftp)) ?? {};
+        result = (await onSubmit(name, ftp, hrMax)) ?? {};
       } finally {
         inFlight.current = false;
         setSaving(false);
@@ -96,6 +103,8 @@ function PlayerForm({
       if (!result.name && !result.ftp && resetOnSuccess) {
         setName('');
         setFtp('');
+        setHrMax('');
+        setAge('');
       }
     })();
   };
@@ -134,6 +143,40 @@ function PlayerForm({
             aria-invalid={errors.ftp ? true : undefined}
             onChange={(e) => setFtp(e.target.value)}
           />
+        )}
+      </Field>
+      <Field
+        label={t('players.hrMax')}
+        {...(errors.hrMax ? { error: t('players.hrMaxError') } : {})}
+      >
+        {(id) => (
+          <input
+            id={id}
+            type="number"
+            inputMode="numeric"
+            value={hrMax}
+            aria-invalid={errors.hrMax ? true : undefined}
+            onChange={(e) => setHrMax(e.target.value)}
+          />
+        )}
+      </Field>
+      <Field label={t('players.hrAge')}>
+        {(id) => (
+          <span className={styles.ageRow}>
+            <input
+              id={id}
+              type="number"
+              inputMode="numeric"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            />
+            <Button
+              disabled={!(Number(age) > 0)}
+              onClick={() => setHrMax(String(estimateHrMax(Number(age))))}
+            >
+              {t('players.hrCompute')}
+            </Button>
+          </span>
         )}
       </Field>
       <div className={styles.formActions}>
@@ -223,19 +266,29 @@ export function PlayersScreen() {
     return next;
   };
 
-  const add = async (name: string, ftp: string): Promise<Errors | undefined> => {
-    const v = validate(newId(), name, ftp);
+  const add = async (name: string, ftp: string, hrMax: string): Promise<Errors | undefined> => {
+    const v = validate(newId(), name, ftp, hrMax);
     if (!v.ok) return v.errors;
     await persist((repos) => repos.players.put(v.player));
     return undefined;
   };
 
-  const save = async (p: Player, name: string, ftp: string): Promise<Errors | undefined> => {
-    const v = validate(p.id, name, ftp);
+  const save = async (
+    p: Player,
+    name: string,
+    ftp: string,
+    hrMax: string,
+  ): Promise<Errors | undefined> => {
+    const v = validate(p.id, name, ftp, hrMax);
     if (!v.ok) return v.errors;
     await persist(async (repos) => {
       const current = await repos.players.get(p.id); // re-read: never write a stale isMe
-      if (current) await repos.players.put({ ...current, name: v.player.name, ftp: v.player.ftp });
+      if (current) {
+        const next: Player = { ...current, name: v.player.name, ftp: v.player.ftp };
+        if (v.player.hrMax !== undefined) next.hrMax = v.player.hrMax;
+        else delete next.hrMax;
+        await repos.players.put(next);
+      }
     });
     closeEdit(p.id);
     return undefined;
@@ -301,9 +354,13 @@ export function PlayersScreen() {
               editingId === p.id ? (
                 <li key={p.id} data-testid="player-edit" className={styles.editRow}>
                   <PlayerForm
-                    initial={{ name: p.name, ftp: String(p.ftp) }}
+                    initial={{
+                      name: p.name,
+                      ftp: String(p.ftp),
+                      ...(p.hrMax !== undefined ? { hrMax: String(p.hrMax) } : {}),
+                    }}
                     submitLabel={t('players.save')}
-                    onSubmit={(n, f) => save(p, n, f)}
+                    onSubmit={(n, f, h) => save(p, n, f, h)}
                     onCancel={() => closeEdit(p.id)}
                     autoFocus
                   />
@@ -313,6 +370,12 @@ export function PlayersScreen() {
                   <span className={styles.name}>{p.name}</span>
                   <span className={styles.ftp}>
                     <b>{p.ftp}</b> <small>{t('players.ftpUnit')}</small>
+                    {p.hrMax !== undefined && (
+                      <>
+                        {' · '}
+                        <b>{p.hrMax}</b> <small>{t('players.hrUnit')}</small>
+                      </>
+                    )}
                   </span>
                   <Button
                     className={styles.me}

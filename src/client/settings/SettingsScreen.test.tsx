@@ -364,6 +364,15 @@ describe('Zones', () => {
     expect(within(zones).getByText('Threshold')).toBeInTheDocument();
   });
 
+  it('shows the HR zone per level and persists the toggle', async () => {
+    renderScreen();
+    const zones = await section('zones');
+    const cells = within(zones).getAllByTestId('zone-hr');
+    expect(cells[5]).toHaveTextContent('Z3 · 70–80 %');
+    fireEvent.click(await within(zones).findByRole('switch', { name: 'Show heart-rate zones' }));
+    await waitFor(() => expect(db.settings?.showHrZones).toBe(true));
+  });
+
   it('saves a valid edit', async () => {
     renderScreen();
     fireEvent.change(await pctInput(1), { target: { value: '40' } });

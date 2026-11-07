@@ -130,3 +130,9 @@
     grid-template-columns: 1fr;
   }
 }
+
+.ageRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

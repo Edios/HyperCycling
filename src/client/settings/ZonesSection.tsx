@@ -1,9 +1,12 @@
 import { useId, useState } from 'react';
 import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
+import { HR_ZONES, zoneForEffort } from '../../domain/hr-zones';
 import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
+import { Toggle } from '../ui/Toggle';
+import { useShowHrZones } from './useShowHrZones';
 import { useSave } from './save';
 import styles from './Settings.module.css';
 import { applyZoneValues, zoneErrors, type ZoneError } from './zones';
@@ -15,11 +18,18 @@ const ERROR_KEY: Record<ZoneError, MessageKey> = {
 
 const SCALE_MAX = 200;
 
+function hrCell(level: number): string {
+  const zone = zoneForEffort(level);
+  const def = HR_ZONES[zone - 1];
+  return def ? `Z${zone} · ${def.minPct}–${def.maxPct} %` : '';
+}
+
 export function ZonesSection() {
   const t = useT();
   const save = useSave();
   const idBase = useId();
   const { settings } = useSettings();
+  const showHr = useShowHrZones();
   const table = settings.effortTable;
   const [typed, setTyped] = useState<string[] | undefined>();
   const [confirming, setConfirming] = useState(false);
@@ -46,12 +56,19 @@ export function ZonesSection() {
   return (
     <div className={styles.stack}>
       <p className={styles.lead}>{t('settings.zones.intro')}</p>
+      <Toggle
+        label={t('settings.zones.showHr')}
+        checked={showHr}
+        onChange={(showHrZones) => void save({ showHrZones })}
+      />
+      <p className={styles.lead}>{t('settings.zones.showHrHint')}</p>
       <table className={styles.zones} data-testid="zones-table">
         <thead>
           <tr>
             <th scope="col">{t('settings.zones.level')}</th>
             <th scope="col">{t('settings.zones.label')}</th>
             <th scope="col">{t('settings.zones.pct')}</th>
+            <th scope="col">{t('settings.zones.hrCol')}</th>
             <th scope="col">{t('settings.zones.color')}</th>
           </tr>
         </thead>
@@ -82,6 +99,7 @@ export function ZonesSection() {
                     </small>
                   )}
                 </td>
+                <td data-testid="zone-hr">{hrCell(row.level)}</td>
                 <td>
                   <span className={styles.swatchTrack} aria-hidden="true">
                     <span

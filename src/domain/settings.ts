@@ -48,6 +48,8 @@ export interface Settings {
   hyperrideWorld: WorldSettingId;
   /** Diagnostics mode: live FPS overlay while training, device info and performance test. */
   diagnostics?: boolean;
+  /** Show heart-rate zones; undefined = on when the "me" player has an HRmax. */
+  showHrZones?: boolean;
   activePlanId?: string;
   lastSession?: SessionConfig;
   spotify?: SpotifySettings;
@@ -89,6 +91,7 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   hyperrideQuality: z.enum(['high', 'low', 'auto']),
   hyperrideWorld: z.enum(WORLD_SETTING_IDS).catch(DEFAULT_WORLD_SETTING),
   diagnostics: z.boolean().optional(),
+  showHrZones: z.boolean().optional(),
   activePlanId: z.string().optional(),
   lastSession: sessionConfigSchema.optional(),
   spotify: spotifySettingsSchema.optional(),
