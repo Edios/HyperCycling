@@ -7,7 +7,10 @@
   --mut: #9aa5b8;
   --muted: var(--mut);
   --line2: #2b3547;
-  --dim: #5d6679;
+  /* Quiet text on the dark surfaces; >= 4.5:1 on --s1 and --s2. */
+  --dim: #8792a6;
+  /* Smallest text size anywhere (meta, axis, captions). */
+  --fs-min: 12px;
   /* Legacy name for the blue accent; now the zone 3-4 blue. Mode accents live in --acc. */
   --act: #35d07f;
   /* Lighter blue for TEXT on the dark surfaces (>= 4.5:1; --act itself is 4.0:1 on --s1). */

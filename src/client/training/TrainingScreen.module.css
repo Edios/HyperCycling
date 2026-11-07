@@ -72,7 +72,7 @@
   font-size: 6vh;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--on-acc);
   background: var(--act);
   border: 0;
   border-radius: 2vh;
@@ -153,14 +153,23 @@
  * the tiles until the ride starts. Stacked above the controls so a clash can never hide Start.
  */
 .promptOverlay {
-  top: 40vh;
+  /* A full-screen scrim with the card centred in it: Start never sits on a single tile. */
+  inset: 0;
+  left: 0;
+  top: 0;
+  transform: none;
+  display: grid;
+  place-items: center;
+  background: rgb(7 10 18 / 0.66);
+  pointer-events: none;
   z-index: 3;
 }
 
 @media (max-width: 760px) and (orientation: portrait) {
   /* The controls wrap into two rows (about 68vh-81vh); the prompt gets slimmer to fit above. */
   .promptOverlay {
-    top: 53vh;
+    top: 0;
+    width: auto;
   }
 
   .promptOverlay .prompt {

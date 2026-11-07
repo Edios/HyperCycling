@@ -187,11 +187,11 @@ describe('FreestyleTab', () => {
     expect(list).not.toHaveTextContent('zero-length block dropped');
   });
 
-  it('the preview has a Duplicate button that saves a copy and opens it', async () => {
+  it('the preview has a Duplicate and edit button that saves a copy and opens it', async () => {
     renderTab();
     await screen.findAllByTestId('workout-card');
     const first = builtinWorkouts[0] as Workout;
-    const buttons = screen.getAllByRole('button', { name: /^Duplicate:/ });
+    const buttons = screen.getAllByRole('button', { name: /^Duplicate and edit:/ });
     expect(buttons).toHaveLength(1);
     fireEvent.click(buttons[0] as HTMLElement);
     await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
@@ -238,7 +238,7 @@ describe('FreestyleTab edit button (H3)', () => {
       const edit = await screen.findAllByRole('link', { name: /^Edit: / });
       expect(edit).toHaveLength(1);
       expect(edit[0]).toHaveAttribute('href', '/editor/mine-1');
-      expect(screen.getAllByRole('button', { name: /^Duplicate: / })).toHaveLength(1);
+      expect(screen.getAllByRole('button', { name: /^Duplicate and edit: / })).toHaveLength(1);
     } finally {
       mine.list = [];
     }

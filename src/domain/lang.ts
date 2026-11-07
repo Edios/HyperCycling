@@ -5,4 +5,6 @@ export type Lang = (typeof LANGS)[number];
 export interface Localized {
   name: string;
   description: string;
+  /** Per song-slot hint text (slot id -> text) for class-format workouts. */
+  songHints?: Record<string, string>;
 }

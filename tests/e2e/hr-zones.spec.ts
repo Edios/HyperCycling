@@ -38,8 +38,8 @@ test('plan wizard: the heart-rate step previews zones from the age', async ({ pa
   await page.getByRole('radio', { name: /I don.t know it/ }).check({ force: true });
   await page.getByRole('button', { name: 'Next', exact: true }).click();
 
-  await page.getByLabel('Age (not stored)').fill('36');
-  await page.getByRole('button', { name: 'From age' }).click();
+  await page.getByLabel('Age', { exact: true }).fill('36');
+  await page.getByRole('button', { name: 'Suggest from age' }).click();
   await expect(page.getByLabel('Max heart rate')).toHaveValue('183');
   await expect(page.getByTestId('hr-preview')).toContainText('128–146 bpm');
 });

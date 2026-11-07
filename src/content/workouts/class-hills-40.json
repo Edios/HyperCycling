@@ -1,0 +1,291 @@
+{
+  "id": "class-hills-40",
+  "name": "Class: Hills 40",
+  "description": "Steady incline, rolling hills, switchbacks and a long climb (about 41 minutes). Standing stays under 7 minutes.",
+  "localized": {
+    "en": {
+      "name": "Class: Hills 40",
+      "description": "Steady incline, rolling hills, switchbacks and a long climb (about 41 minutes). Standing stays under 7 minutes.",
+      "songHints": {
+        "class-hills-40-s1": "Easy warm-up song, about 7 min. Aim for about 175 BPM.",
+        "class-hills-40-s2": "Slow, heavy song; two beats per pedal stroke on the incline. Aim for about 146 BPM.",
+        "class-hills-40-s3": "Song with a strong beat; stand for 45 s, sit for 45 s. Aim for about 136 BPM.",
+        "class-hills-40-s4": "Song with a punchy chorus; attack on the chorus. Aim for about 146 BPM.",
+        "class-hills-40-s5": "Light song to recover. Aim for about 185 BPM.",
+        "class-hills-40-s6": "Long build song, the climb of the class, about 8 min. Aim for about 140 BPM.",
+        "class-hills-40-s7": "Slow cool-down song, about 5 min. Aim for about 165 BPM."
+      }
+    },
+    "pl": {
+      "name": "Zajęcia: podjazdy 40",
+      "description": "Podjazd stały, pagórki, serpentyny i długa wspinaczka (około 41 minut). Stanie poniżej 7 minut.",
+      "songHints": {
+        "class-hills-40-s1": "Lekka piosenka na rozgrzewkę, ok. 7 min. Szukaj ok. 175 BPM.",
+        "class-hills-40-s2": "Wolna, ciężka piosenka; dwa uderzenia na jeden obrót korby na podjeździe. Szukaj ok. 146 BPM.",
+        "class-hills-40-s3": "Piosenka z mocnym rytmem; 45 s stania, 45 s siedzenia. Szukaj ok. 136 BPM.",
+        "class-hills-40-s4": "Piosenka z mocnym refrenem; atak na refrenie. Szukaj ok. 146 BPM.",
+        "class-hills-40-s5": "Lekka piosenka na odpoczynek. Szukaj ok. 185 BPM.",
+        "class-hills-40-s6": "Długa, narastająca piosenka, główny podjazd zajęć, ok. 8 min. Szukaj ok. 140 BPM.",
+        "class-hills-40-s7": "Wolna piosenka na schłodzenie, ok. 5 min. Szukaj ok. 165 BPM."
+      }
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "climb", "tempo"],
+  "source": {
+    "kind": "builtin",
+    "file": "class-hills-40.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "l-wu",
+      "durationSec": 420,
+      "from": {
+        "effort": 2
+      },
+      "to": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "ramp",
+      "id": "l-s1",
+      "durationSec": 150,
+      "from": {
+        "effort": 5
+      },
+      "to": {
+        "effort": 6
+      },
+      "rpm": 75,
+      "position": "seated",
+      "label": "@climb"
+    },
+    {
+      "kind": "ramp",
+      "id": "l-s2",
+      "durationSec": 150,
+      "from": {
+        "effort": 6
+      },
+      "to": {
+        "effort": 7
+      },
+      "rpm": 72,
+      "position": "seated",
+      "label": "@climb"
+    },
+    {
+      "kind": "repeat",
+      "id": "l-rh",
+      "times": 4,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "l-rha",
+          "durationSec": 45,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 70,
+          "position": "standing",
+          "cue": "@standUp"
+        },
+        {
+          "kind": "steady",
+          "id": "l-rhb",
+          "durationSec": 45,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 80,
+          "position": "seated",
+          "cue": "@sitDown"
+        }
+      ]
+    },
+    {
+      "kind": "repeat",
+      "id": "l-sw",
+      "times": 5,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "l-swa",
+          "durationSec": 45,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 75,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "l-swb",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 8
+          },
+          "rpm": 70,
+          "position": "standing",
+          "cue": "@attack"
+        },
+        {
+          "kind": "steady",
+          "id": "l-swc",
+          "durationSec": 10,
+          "intensity": {
+            "effort": 4
+          },
+          "rpm": 95,
+          "position": "seated",
+          "cue": "@sitDown"
+        }
+      ]
+    },
+    {
+      "kind": "steady",
+      "id": "l-rf",
+      "durationSec": 240,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "steady",
+      "id": "l-c1",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 72,
+      "position": "seated",
+      "label": "@climb"
+    },
+    {
+      "kind": "steady",
+      "id": "l-c2",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 65,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "l-c3",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 72,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "steady",
+      "id": "l-c4",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 8
+      },
+      "rpm": 65,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "l-c5",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 8
+      },
+      "rpm": 70,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "ramp",
+      "id": "l-cd",
+      "durationSec": 300,
+      "from": {
+        "effort": 4
+      },
+      "to": {
+        "effort": 1
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "format": "songs",
+  "songs": [
+    {
+      "id": "class-hills-40-s1",
+      "firstBlockId": "l-wu",
+      "lastBlockId": "l-wu",
+      "bpm": [172, 178],
+      "hint": "Easy warm-up song, about 7 min. Aim for about 175 BPM."
+    },
+    {
+      "id": "class-hills-40-s2",
+      "firstBlockId": "l-s1",
+      "lastBlockId": "l-s2",
+      "bpm": [143, 149],
+      "hint": "Slow, heavy song; two beats per pedal stroke on the incline. Aim for about 146 BPM."
+    },
+    {
+      "id": "class-hills-40-s3",
+      "firstBlockId": "l-rh",
+      "lastBlockId": "l-rh",
+      "bpm": [133, 139],
+      "hint": "Song with a strong beat; stand for 45 s, sit for 45 s. Aim for about 136 BPM."
+    },
+    {
+      "id": "class-hills-40-s4",
+      "firstBlockId": "l-sw",
+      "lastBlockId": "l-sw",
+      "bpm": [143, 149],
+      "hint": "Song with a punchy chorus; attack on the chorus. Aim for about 146 BPM."
+    },
+    {
+      "id": "class-hills-40-s5",
+      "firstBlockId": "l-rf",
+      "lastBlockId": "l-rf",
+      "bpm": [182, 188],
+      "hint": "Light song to recover. Aim for about 185 BPM."
+    },
+    {
+      "id": "class-hills-40-s6",
+      "firstBlockId": "l-c1",
+      "lastBlockId": "l-c5",
+      "bpm": [137, 143],
+      "hint": "Long build song, the climb of the class, about 8 min. Aim for about 140 BPM."
+    },
+    {
+      "id": "class-hills-40-s7",
+      "firstBlockId": "l-cd",
+      "lastBlockId": "l-cd",
+      "bpm": [162, 168],
+      "hint": "Slow cool-down song, about 5 min. Aim for about 165 BPM."
+    }
+  ],
+  "scaling": {
+    "warmupBlockId": "l-wu",
+    "cooldownBlockId": "l-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-07T00:00:00.000Z"
+}

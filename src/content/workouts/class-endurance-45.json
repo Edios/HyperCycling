@@ -1,0 +1,331 @@
+{
+  "id": "class-endurance-45",
+  "name": "Class: Endurance 45",
+  "description": "Seated tempo songs with small resistance steps and short standing breaks (about 44 minutes).",
+  "localized": {
+    "en": {
+      "name": "Class: Endurance 45",
+      "description": "Seated tempo songs with small resistance steps and short standing breaks (about 44 minutes).",
+      "songHints": {
+        "class-endurance-45-s1": "Easy warm-up song, about 6 min. Aim for about 175 BPM.",
+        "class-endurance-45-s2": "Mid-tempo song with a steady groove for a seated tempo. Aim for about 175 BPM.",
+        "class-endurance-45-s3": "Mid-tempo song; keep the beat even. Aim for about 179 BPM.",
+        "class-endurance-45-s4": "Song with a lift in the second half; push a little harder. Aim for about 175 BPM.",
+        "class-endurance-45-s5": "Light, spinning song to recover. Aim for about 185 BPM.",
+        "class-endurance-45-s6": "Rolling song; resistance builds slowly across 6 min. Aim for about 171 BPM.",
+        "class-endurance-45-s7": "Familiar song for the last tempo effort. Aim for about 179 BPM.",
+        "class-endurance-45-s8": "Slow cool-down song, about 5 min. Aim for about 165 BPM."
+      }
+    },
+    "pl": {
+      "name": "Zajęcia: wytrzymałość 45",
+      "description": "Piosenki tempo na siedząco z małymi krokami oporu i krótkimi przerwami na stojąco (około 44 minuty).",
+      "songHints": {
+        "class-endurance-45-s1": "Lekka piosenka na rozgrzewkę, ok. 6 min. Szukaj ok. 175 BPM.",
+        "class-endurance-45-s2": "Piosenka o średnim tempie i równym groove do tempa na siedząco. Szukaj ok. 175 BPM.",
+        "class-endurance-45-s3": "Piosenka o średnim tempie; trzymaj równy rytm. Szukaj ok. 179 BPM.",
+        "class-endurance-45-s4": "Piosenka z przyspieszeniem w drugiej połowie; dociśnij trochę mocniej. Szukaj ok. 175 BPM.",
+        "class-endurance-45-s5": "Lekka, kręcąca piosenka na odpoczynek. Szukaj ok. 185 BPM.",
+        "class-endurance-45-s6": "Płynąca piosenka; opór rośnie powoli przez 6 min. Szukaj ok. 171 BPM.",
+        "class-endurance-45-s7": "Znana piosenka na ostatni wysiłek tempo. Szukaj ok. 179 BPM.",
+        "class-endurance-45-s8": "Wolna piosenka na schłodzenie, ok. 5 min. Szukaj ok. 165 BPM."
+      }
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "endurance", "tempo"],
+  "source": {
+    "kind": "builtin",
+    "file": "class-endurance-45.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "e-wu",
+      "durationSec": 360,
+      "from": {
+        "effort": 2
+      },
+      "to": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t1a",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t1b",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t1c",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 70,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t1d",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t2a",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 92,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t2b",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t2c",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 70,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t2d",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t3a",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t3b",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 88,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t3c",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 70,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t3d",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 88,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "steady",
+      "id": "e-r",
+      "durationSec": 180,
+      "intensity": {
+        "effort": 3
+      },
+      "rpm": 95,
+      "position": "seated",
+      "label": "@recovery"
+    },
+    {
+      "kind": "ramp",
+      "id": "e-rl",
+      "durationSec": 360,
+      "from": {
+        "effort": 5
+      },
+      "to": {
+        "effort": 7
+      },
+      "rpm": 88,
+      "position": "seated",
+      "label": "@steady"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t4a",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 92,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t4b",
+      "durationSec": 120,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t4c",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 70,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "e-t4d",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 90,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "ramp",
+      "id": "e-cd",
+      "durationSec": 300,
+      "from": {
+        "effort": 4
+      },
+      "to": {
+        "effort": 1
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "format": "songs",
+  "songs": [
+    {
+      "id": "class-endurance-45-s1",
+      "firstBlockId": "e-wu",
+      "lastBlockId": "e-wu",
+      "bpm": [172, 178],
+      "hint": "Easy warm-up song, about 6 min. Aim for about 175 BPM."
+    },
+    {
+      "id": "class-endurance-45-s2",
+      "firstBlockId": "e-t1a",
+      "lastBlockId": "e-t1d",
+      "bpm": [172, 178],
+      "hint": "Mid-tempo song with a steady groove for a seated tempo. Aim for about 175 BPM."
+    },
+    {
+      "id": "class-endurance-45-s3",
+      "firstBlockId": "e-t2a",
+      "lastBlockId": "e-t2d",
+      "bpm": [176, 182],
+      "hint": "Mid-tempo song; keep the beat even. Aim for about 179 BPM."
+    },
+    {
+      "id": "class-endurance-45-s4",
+      "firstBlockId": "e-t3a",
+      "lastBlockId": "e-t3d",
+      "bpm": [172, 178],
+      "hint": "Song with a lift in the second half; push a little harder. Aim for about 175 BPM."
+    },
+    {
+      "id": "class-endurance-45-s5",
+      "firstBlockId": "e-r",
+      "lastBlockId": "e-r",
+      "bpm": [182, 188],
+      "hint": "Light, spinning song to recover. Aim for about 185 BPM."
+    },
+    {
+      "id": "class-endurance-45-s6",
+      "firstBlockId": "e-rl",
+      "lastBlockId": "e-rl",
+      "bpm": [168, 174],
+      "hint": "Rolling song; resistance builds slowly across 6 min. Aim for about 171 BPM."
+    },
+    {
+      "id": "class-endurance-45-s7",
+      "firstBlockId": "e-t4a",
+      "lastBlockId": "e-t4d",
+      "bpm": [176, 182],
+      "hint": "Familiar song for the last tempo effort. Aim for about 179 BPM."
+    },
+    {
+      "id": "class-endurance-45-s8",
+      "firstBlockId": "e-cd",
+      "lastBlockId": "e-cd",
+      "bpm": [162, 168],
+      "hint": "Slow cool-down song, about 5 min. Aim for about 165 BPM."
+    }
+  ],
+  "scaling": {
+    "warmupBlockId": "e-wu",
+    "cooldownBlockId": "e-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-07T00:00:00.000Z"
+}

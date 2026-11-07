@@ -1,0 +1,428 @@
+{
+  "id": "class-hiit-30",
+  "name": "Class: HIIT 30",
+  "description": "Eight songs in about 30 minutes: on/off intervals, a ladder, a cadence build and two hills.",
+  "localized": {
+    "en": {
+      "name": "Class: HIIT 30",
+      "description": "Eight songs in about 30 minutes: on/off intervals, a ladder, a cadence build and two hills.",
+      "songHints": {
+        "class-hiit-30-s1": "Warm-up song with a relaxed groove, about 4 min. Aim for about 175 BPM.",
+        "class-hiit-30-s2": "Steady four-on-the-floor song; 30 s on / 30 s off follows the beat. Aim for about 175 BPM.",
+        "class-hiit-30-s3": "Song with clear phrase changes so 15/20/30 s intervals land on the beat. Aim for about 179 BPM.",
+        "class-hiit-30-s4": "Song that builds; cadence climbs one step per minute. Aim for about 188 BPM.",
+        "class-hiit-30-s5": "Long song with a big drop: a seated climb and standing bursts. Aim for about 132 BPM.",
+        "class-hiit-30-s6": "Punchy song; every 20 s alternates seated and standing. Aim for about 127 BPM.",
+        "class-hiit-30-s7": "Closing anthem; the last 15 s are a sprint. Aim for about 136 BPM.",
+        "class-hiit-30-s8": "Calm song to slow the heart rate. Aim for about 165 BPM."
+      }
+    },
+    "pl": {
+      "name": "Zajęcia: HIIT 30",
+      "description": "Osiem piosenek w około 30 minut: interwały on/off, drabinka, wzrost kadencji i dwa podjazdy.",
+      "songHints": {
+        "class-hiit-30-s1": "Rozgrzewkowa piosenka o luźnym groove, ok. 4 min. Szukaj ok. 175 BPM.",
+        "class-hiit-30-s2": "Równa piosenka z czterema uderzeniami na takt; 30 s on / 30 s off idzie z rytmem. Szukaj ok. 175 BPM.",
+        "class-hiit-30-s3": "Piosenka z wyraźnymi zmianami fraz, żeby interwały 15/20/30 s wpadały w rytm. Szukaj ok. 179 BPM.",
+        "class-hiit-30-s4": "Piosenka, która narasta; kadencja rośnie o jeden stopień na minutę. Szukaj ok. 188 BPM.",
+        "class-hiit-30-s5": "Długa piosenka z mocnym wejściem: podjazd na siedząco i zrywy na stojąco. Szukaj ok. 132 BPM.",
+        "class-hiit-30-s6": "Dynamiczna piosenka; co 20 s zmiana: siedząc i stojąc. Szukaj ok. 127 BPM.",
+        "class-hiit-30-s7": "Finałowy hymn; ostatnie 15 s to sprint. Szukaj ok. 136 BPM.",
+        "class-hiit-30-s8": "Spokojna piosenka na uspokojenie tętna. Szukaj ok. 165 BPM."
+      }
+    }
+  },
+  "category": "freestyle",
+  "tags": ["music", "hiit", "climb"],
+  "source": {
+    "kind": "builtin",
+    "file": "class-hiit-30.json"
+  },
+  "blocks": [
+    {
+      "kind": "ramp",
+      "id": "h-wu",
+      "durationSec": 240,
+      "from": {
+        "effort": 2
+      },
+      "to": {
+        "effort": 4
+      },
+      "rpm": 90,
+      "position": "seated",
+      "label": "@warmup"
+    },
+    {
+      "kind": "repeat",
+      "id": "h-oo",
+      "times": 4,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "h-on",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 90,
+          "position": "seated",
+          "cue": "@spinUp"
+        },
+        {
+          "kind": "steady",
+          "id": "h-off",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 5
+          },
+          "rpm": 85,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "repeat",
+      "id": "h-l1",
+      "times": 3,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "h-l1a",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 7
+          },
+          "rpm": 95,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "h-l1b",
+          "durationSec": 15,
+          "intensity": {
+            "effort": 4
+          },
+          "rpm": 85,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "repeat",
+      "id": "h-l2",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "h-l2a",
+          "durationSec": 20,
+          "intensity": {
+            "effort": 7
+          },
+          "rpm": 95,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "h-l2b",
+          "durationSec": 20,
+          "intensity": {
+            "effort": 4
+          },
+          "rpm": 85,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "repeat",
+      "id": "h-l3",
+      "times": 2,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "h-l3a",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 7
+          },
+          "rpm": 95,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "h-l3b",
+          "durationSec": 30,
+          "intensity": {
+            "effort": 4
+          },
+          "rpm": 85,
+          "position": "seated"
+        }
+      ]
+    },
+    {
+      "kind": "steady",
+      "id": "h-c1",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 90,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "h-c2",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 95,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "h-c3",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 100,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "h-c4",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 105,
+      "position": "seated"
+    },
+    {
+      "kind": "steady",
+      "id": "h-b1",
+      "durationSec": 60,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 75,
+      "position": "seated",
+      "cue": "@holdIt"
+    },
+    {
+      "kind": "steady",
+      "id": "h-b2",
+      "durationSec": 40,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 65,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "h-b3",
+      "durationSec": 40,
+      "intensity": {
+        "effort": 6
+      },
+      "rpm": 75,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "steady",
+      "id": "h-b4",
+      "durationSec": 40,
+      "intensity": {
+        "effort": 8
+      },
+      "rpm": 65,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "h-b5",
+      "durationSec": 40,
+      "intensity": {
+        "effort": 7
+      },
+      "rpm": 70,
+      "position": "seated",
+      "cue": "@sitDown"
+    },
+    {
+      "kind": "steady",
+      "id": "h-b6",
+      "durationSec": 40,
+      "intensity": {
+        "effort": 9
+      },
+      "rpm": 65,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "h-b7",
+      "durationSec": 40,
+      "intensity": {
+        "effort": 5
+      },
+      "rpm": 85,
+      "position": "seated",
+      "cue": "@sitDown",
+      "label": "@recovery"
+    },
+    {
+      "kind": "repeat",
+      "id": "h-ih",
+      "times": 5,
+      "blocks": [
+        {
+          "kind": "steady",
+          "id": "h-iha",
+          "durationSec": 20,
+          "intensity": {
+            "effort": 6
+          },
+          "rpm": 75,
+          "position": "seated"
+        },
+        {
+          "kind": "steady",
+          "id": "h-ihb",
+          "durationSec": 20,
+          "intensity": {
+            "effort": 7
+          },
+          "rpm": 65,
+          "position": "standing"
+        }
+      ]
+    },
+    {
+      "kind": "ramp",
+      "id": "h-fh",
+      "durationSec": 120,
+      "from": {
+        "effort": 6
+      },
+      "to": {
+        "effort": 8
+      },
+      "rpm": 70,
+      "position": "seated",
+      "label": "@climb"
+    },
+    {
+      "kind": "steady",
+      "id": "h-fh2",
+      "durationSec": 45,
+      "intensity": {
+        "effort": 9
+      },
+      "rpm": 65,
+      "position": "standing",
+      "cue": "@standUp"
+    },
+    {
+      "kind": "steady",
+      "id": "h-fh3",
+      "durationSec": 15,
+      "intensity": {
+        "effort": 9
+      },
+      "rpm": 100,
+      "position": "seated",
+      "cue": "@sprint"
+    },
+    {
+      "kind": "ramp",
+      "id": "h-cd",
+      "durationSec": 150,
+      "from": {
+        "effort": 4
+      },
+      "to": {
+        "effort": 1
+      },
+      "rpm": 85,
+      "position": "seated",
+      "label": "@cooldown"
+    }
+  ],
+  "musicCues": [],
+  "fallbackPlaylist": [],
+  "format": "songs",
+  "songs": [
+    {
+      "id": "class-hiit-30-s1",
+      "firstBlockId": "h-wu",
+      "lastBlockId": "h-wu",
+      "bpm": [172, 178],
+      "hint": "Warm-up song with a relaxed groove, about 4 min. Aim for about 175 BPM."
+    },
+    {
+      "id": "class-hiit-30-s2",
+      "firstBlockId": "h-oo",
+      "lastBlockId": "h-oo",
+      "bpm": [172, 178],
+      "hint": "Steady four-on-the-floor song; 30 s on / 30 s off follows the beat. Aim for about 175 BPM."
+    },
+    {
+      "id": "class-hiit-30-s3",
+      "firstBlockId": "h-l1",
+      "lastBlockId": "h-l3",
+      "bpm": [176, 182],
+      "hint": "Song with clear phrase changes so 15/20/30 s intervals land on the beat. Aim for about 179 BPM."
+    },
+    {
+      "id": "class-hiit-30-s4",
+      "firstBlockId": "h-c1",
+      "lastBlockId": "h-c4",
+      "bpm": [185, 191],
+      "hint": "Song that builds; cadence climbs one step per minute. Aim for about 188 BPM."
+    },
+    {
+      "id": "class-hiit-30-s5",
+      "firstBlockId": "h-b1",
+      "lastBlockId": "h-b7",
+      "bpm": [129, 135],
+      "hint": "Long song with a big drop: a seated climb and standing bursts. Aim for about 132 BPM."
+    },
+    {
+      "id": "class-hiit-30-s6",
+      "firstBlockId": "h-ih",
+      "lastBlockId": "h-ih",
+      "bpm": [124, 130],
+      "hint": "Punchy song; every 20 s alternates seated and standing. Aim for about 127 BPM."
+    },
+    {
+      "id": "class-hiit-30-s7",
+      "firstBlockId": "h-fh",
+      "lastBlockId": "h-fh3",
+      "bpm": [133, 139],
+      "hint": "Closing anthem; the last 15 s are a sprint. Aim for about 136 BPM."
+    },
+    {
+      "id": "class-hiit-30-s8",
+      "firstBlockId": "h-cd",
+      "lastBlockId": "h-cd",
+      "bpm": [162, 168],
+      "hint": "Calm song to slow the heart rate. Aim for about 165 BPM."
+    }
+  ],
+  "scaling": {
+    "warmupBlockId": "h-wu",
+    "cooldownBlockId": "h-cd"
+  },
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-07T00:00:00.000Z"
+}
