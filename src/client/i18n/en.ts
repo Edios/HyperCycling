@@ -478,6 +478,31 @@ export const en = {
     resetYes: 'Erase and start over',
     cancel: 'Cancel',
   },
+  dose: {
+    title: 'Dosing notes',
+    count: 'Notes: {n}',
+    hint: 'Advice only, it does not block saving.',
+    gentle: 'Gentle limits (beginners, comeback)',
+    at: 'at {time}',
+    info: 'Worth a look',
+    warn: 'Check',
+    'rpm-low':
+      'Cadence {rpm} rpm is below {min}: too heavy for the knees, lower the load or raise the cadence.',
+    'rpm-high':
+      'Cadence {rpm} rpm is too fast: above {max} rpm only up to {sec} s, otherwise add load.',
+    'standing-rpm':
+      'Standing at {rpm} rpm: standing needs load and a slow cadence, up to {max} rpm.',
+    'standing-light': 'Standing at about {pct}% FTP: add load before standing up.',
+    'standing-bout': 'Standing for {sec} s in one go: keep standing bouts to {max} s.',
+    'standing-total':
+      'Standing for {min} min in total: a practical ceiling is {max} min per class.',
+    'sprint-long': 'An all-out effort of {sec} s: keep sprints to {max} s.',
+    'rest-short':
+      'Rest of {rest} s after {work} s of hard work: rest should be at least as long as the work.',
+    'warmup-short':
+      'The first hard effort comes after {have} min: warm up for at least {min} min first.',
+    'cooldown-short': 'Cool-down of {have} min: close with at least {min} min of easy spinning.',
+  },
   card: {
     title: 'Class card',
     summary: '{n} songs · {time}',

@@ -5,6 +5,7 @@ import { songHint } from '../data/localized';
 import { useT } from '../i18n';
 import { intensityEffort, blockTotalSec } from '../editor/model';
 import { formatClock } from '../training/format';
+import { DoseWarnings } from './DoseWarnings';
 import styles from './ClassCard.module.css';
 
 interface Row {
@@ -121,6 +122,7 @@ export function ClassCard({
           </li>
         ))}
       </ol>
+      <DoseWarnings workout={workout} table={table} />
     </article>
   );
 }

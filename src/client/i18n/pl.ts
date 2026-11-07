@@ -481,6 +481,30 @@ export const pl: Messages = {
     resetYes: 'Wymaż i zacznij od nowa',
     cancel: 'Anuluj',
   },
+  dose: {
+    title: 'Uwagi o dawkowaniu',
+    count: 'Uwagi: {n}',
+    hint: 'To tylko podpowiedź, nie blokuje zapisu.',
+    gentle: 'Łagodniejsze progi (początkujący, powrót do formy)',
+    at: 'od {time}',
+    info: 'Warto sprawdzić',
+    warn: 'Sprawdź',
+    'rpm-low':
+      'Kadencja {rpm} obr./min jest poniżej {min}: za ciężko dla kolan, zmniejsz opór albo podnieś kadencję.',
+    'rpm-high':
+      'Kadencja {rpm} obr./min jest za szybka: powyżej {max} obr./min tylko do {sec} s, inaczej dodaj opór.',
+    'standing-rpm':
+      'Stanie przy {rpm} obr./min: stanie wymaga oporu i wolnej kadencji, do {max} obr./min.',
+    'standing-light': 'Stanie przy ok. {pct}% FTP: dodaj opór, zanim wstaniesz.',
+    'standing-bout': 'Stanie {sec} s bez przerwy: trzymaj się {max} s na jedno wstanie.',
+    'standing-total': 'Stanie łącznie {min} min: praktyczny limit to {max} min na zajęcia.',
+    'sprint-long': 'Wysiłek maksymalny {sec} s: sprinty do {max} s.',
+    'rest-short':
+      'Odpoczynek {rest} s po {work} s ciężkiej pracy: odpoczynek powinien być co najmniej tak długi jak praca.',
+    'warmup-short':
+      'Pierwszy mocny wysiłek po {have} min: najpierw rozgrzewka co najmniej {min} min.',
+    'cooldown-short': 'Wyciszenie {have} min: zakończ co najmniej {min} min lekkiego kręcenia.',
+  },
   card: {
     title: 'Karta zajęć',
     summary: 'Utwory: {n} · {time}',
