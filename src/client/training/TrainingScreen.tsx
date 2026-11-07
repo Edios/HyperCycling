@@ -10,7 +10,9 @@ import {
 import { DiagnosticsOverlay } from '../diagnostics/DiagnosticsOverlay';
 import { WorldCanvas } from '../world/WorldCanvas';
 import { resolveWorld } from '../world/world-options';
-import type { FrameInput } from '../world/world';
+import type { FrameInput, WorldTheme } from '../world/world';
+import { getExperience } from '../data/builtin';
+import { resolveChapters } from '../../domain/experience';
 import { useMusicDirector } from '../music/useMusicDirector';
 import { Toast, ToastStack } from '../ui/Toast';
 import { getSettingsSnapshot } from '../data/useSettings';
@@ -363,13 +365,21 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     setKind((k) => nextLayout(k, background));
   }, [background]);
 
+  // An Experience's theme for the Scenes world; built once per ride, not per frame.
+  const experienceId = runtime.options?.experienceId;
+  const worldTheme = useMemo((): WorldTheme | undefined => {
+    const exp = experienceId ? getExperience(experienceId) : undefined;
+    if (!exp || exp.worldTheme.theme === 'abstract') return undefined;
+    return { id: exp.worldTheme.theme, chapters: resolveChapters(exp, runtime.workout) };
+  }, [experienceId, runtime.workout]);
   const getFrameInput = useCallback(
     (): FrameInput => ({
       segments: runtime.segments,
       state: useSessionStore.getState().state,
       table: settingsRef.current.effortTable,
+      theme: worldTheme,
     }),
-    [runtime.segments],
+    [runtime.segments, worldTheme],
   );
   const motionOn = !reducedMotion;
   const onSway = useCallback((x: number, y: number) => {

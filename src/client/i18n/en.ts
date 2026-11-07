@@ -277,7 +277,8 @@ export const en = {
       ageUnit: 'years',
       inputPlaceholder: 'e.g. 185',
       agePlaceholder: 'e.g. 35',
-      ageHelp: "Don't know your max heart rate? Enter your age and we'll suggest one (age is not stored).",
+      ageHelp:
+        "Don't know your max heart rate? Enter your age and we'll suggest one (age is not stored).",
       fromAge: 'Suggest from age',
       skipHint: 'No monitor? Leave it empty and go on.',
     },
@@ -718,6 +719,24 @@ export const en = {
     embedBlocked: 'This video cannot be embedded. Using the Basic background.',
     unavailable: 'The video cannot be played. Using the Basic background.',
   },
+  experience: {
+    title: 'Experience',
+    intro:
+      'A ready-made ride: a class-style workout, a world and a music path. Pick one and press Start.',
+    filterLabel: 'Filter by level',
+    filters: { all: 'All', easy: 'Easy', medium: 'Medium', hard: 'Hard' },
+    level: { easy: 'Easy', medium: 'Medium', hard: 'Hard' },
+    theme: { abstract: 'Abstract', 'neon-grid': 'Neon Grid' },
+    cardMeta: '{minutes} min · {steps} resistance steps · {songs} songs',
+    songRow: 'Song {n}: {minutes} min',
+    start: 'Start',
+    showScenario: 'Show scenario',
+    hideScenario: 'Hide scenario',
+    setupBadge: 'Experience: {title}. The world and its scenes are set for you.',
+    kicker: 'Experience',
+    seeScenario: 'See scenario',
+    empty: 'No Experience is available yet',
+  },
   home: {
     dockLabel: 'Ways to ride',
     plan: 'Plan',
@@ -920,8 +939,10 @@ export const en = {
         noKey: 'Add a GetSongBPM API key in Settings.',
         unauthorized: 'GetSongBPM rejected the API key. Check it in Settings.',
         rateLimited: 'GetSongBPM request limit reached. Try again later.',
-        forbidden: 'GetSongBPM refused the key or the account (403). Check the key in Settings; a new key is tried at once.',
-        blocked: 'GetSongBPM is not answering this key for now (up to an hour, or until you change the key). Type or tap the tempo meanwhile.',
+        forbidden:
+          'GetSongBPM refused the key or the account (403). Check the key in Settings; a new key is tried at once.',
+        blocked:
+          'GetSongBPM is not answering this key for now (up to an hour, or until you change the key). Type or tap the tempo meanwhile.',
         network: 'Cannot reach GetSongBPM.',
         badResponse: 'GetSongBPM sent an unexpected answer.',
       },

@@ -10,6 +10,8 @@ import { localizedText } from '../data/localized';
 import { useLibrary } from '../data/useLibrary';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
+import { getExperience } from '../data/builtin';
+import { experienceText, withExperiencePins, type Experience } from '../../domain/experience';
 import { WORLD_CHOICES } from '../world/world-options';
 import { useSessionStore } from '../training/session-store';
 import { formatClock } from '../training/format';
@@ -57,6 +59,8 @@ export function SetupScreen() {
   const { loaded: settingsLoaded } = useSettings();
   const plan = useMemo(() => parsePlanRef(params), [params]);
   const planId = plan?.planId;
+  const expId = params.get('exp');
+  const experience = useMemo(() => (expId ? getExperience(expId) : undefined), [expId]);
 
   const [players, setPlayers] = useState<Player[] | undefined>();
   const [planSettings, setPlanSettings] = useState<PlanSettings | undefined>();
@@ -97,6 +101,7 @@ export function SetupScreen() {
       key={workout.id}
       workout={workout}
       plan={plan}
+      experience={experience}
       planSettings={plan ? planSettings : DEFAULT_PLAN_SETTINGS}
       initialPlayers={players}
     />
@@ -106,11 +111,12 @@ export function SetupScreen() {
 interface SetupFormProps {
   workout: ReturnType<typeof useLibrary>['workouts'][number];
   plan: ReturnType<typeof parsePlanRef>;
+  experience: Experience | undefined;
   planSettings: PlanSettings;
   initialPlayers: Player[];
 }
 
-function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormProps) {
+function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: SetupFormProps) {
   const t = useT();
   const [lang] = useLang();
   const navigate = useNavigate();
@@ -118,7 +124,9 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const last = settings.lastSession;
 
   const [players, setPlayers] = useState(initialPlayers);
-  const [background, setBackground] = useState<Background>(last?.background ?? 'basic');
+  const [background, setBackground] = useState<Background>(
+    experience ? 'hyperride' : (last?.background ?? 'basic'),
+  );
   // The Settings default layout, also with a preselected rider.
   const [chosenHud, setChosenHud] = useState<LayoutKind | undefined>(
     last ? layoutKindOf(last.hud, last.background) : undefined,
@@ -132,15 +140,17 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
   const [beeps, setBeeps] = useState(settings.sounds);
   const [coach, setCoach] = useState(settings.coach);
   const [music, setMusic] = useState(last?.music ?? false);
-  const [world, setWorld] = useState<WorldSettingId>(settings.hyperrideWorld);
+  const [world, setWorld] = useState<WorldSettingId>(
+    experience ? 'scenes' : settings.hyperrideWorld,
+  );
   const [adding, setAdding] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState(last?.youtubeUrl ?? '');
 
   // The plan's session length and difficulty apply to what is shown and to what is ridden.
-  const scaled = useMemo(
-    () => (plan ? applyPlanSettings(workout, planSettings) : workout),
-    [workout, plan, planSettings],
-  );
+  const scaled = useMemo(() => {
+    const base = plan ? applyPlanSettings(workout, planSettings) : workout;
+    return experience ? withExperiencePins(base, experience) : base;
+  }, [workout, plan, planSettings, experience]);
   const segments = useMemo(
     () => flattenWorkout(scaled, settings.effortTable, resolveResistanceMode(settings)),
     [scaled, settings],
@@ -198,7 +208,14 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
     }
     useSessionStore.getState().load({
       ...runtime,
-      options: { sounds: beeps, coach, ...(background === 'hyperride' ? { world } : {}) },
+      options: {
+        sounds: beeps,
+        coach,
+        ...(background === 'hyperride' ? { world } : {}),
+        ...(experience && background === 'hyperride' && world === 'scenes'
+          ? { experienceId: experience.id }
+          : {}),
+      },
     });
     navigate('/train');
   };
@@ -223,6 +240,11 @@ function SetupForm({ workout, plan, planSettings, initialPlayers }: SetupFormPro
             </span>
           )}
           <h1>{text.name}</h1>
+          {experience && (
+            <p className={styles.music} data-testid="setup-experience">
+              {t('experience.setupBadge', { title: experienceText(experience, lang).title })}
+            </p>
+          )}
           {workout.source.kind === 'user' && (
             <Link
               to={`/editor/${encodeURIComponent(workout.id)}`}

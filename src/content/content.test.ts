@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { en } from '../client/i18n/en';
 import { pl } from '../client/i18n/pl';
-import { builtinPlans, builtinWorkouts } from '../client/data/builtin';
+import { builtinExperiences, builtinPlans, builtinWorkouts } from '../client/data/builtin';
+import { experienceProblems, experienceText } from '../domain/experience';
+import { THEMES } from '../client/world/worlds/scenes-themes';
 import { planSchema, weeklyLoad, type Plan } from '../domain/plan';
 import { scaleWorkout } from '../domain/scale';
 import { flattenWorkout } from '../domain/segments';
@@ -647,4 +649,35 @@ describe('class-format workouts', () => {
       expect(totalDurationSec(scaled), w.id).toBe(totalDurationSec(w));
     }
   });
+});
+
+describe('built-in experiences', () => {
+  it('has at least one and unique ids', () => {
+    expect(builtinExperiences.length).toBeGreaterThan(0);
+    expect(new Set(builtinExperiences.map((e) => e.id)).size).toBe(builtinExperiences.length);
+  });
+  for (const e of builtinExperiences) {
+    describe(e.id, () => {
+      const workout = builtinWorkouts.find((w) => w.id === e.workoutRef.id);
+      it('references an existing built-in class workout without problems', () => {
+        expect(workout, 'workout').toBeDefined();
+        expect(experienceProblems(e, workout!)).toEqual([]);
+      });
+      it('has Polish and English text', () => {
+        for (const lang of ['pl', 'en'] as const) {
+          const text = experienceText(e, lang);
+          expect(text.title.trim(), lang).not.toBe('');
+          expect(text.description.trim(), lang).not.toBe('');
+        }
+        expect(e.localized?.pl).toBeDefined();
+      });
+      it('uses only looks the theme defines', () => {
+        const theme = THEMES[e.worldTheme.theme];
+        if (!theme) return;
+        for (const c of e.worldTheme.chapters ?? []) {
+          expect(Object.keys(theme.looks), c.look).toContain(c.look);
+        }
+      });
+    });
+  }
 });

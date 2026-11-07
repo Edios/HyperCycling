@@ -1,3 +1,4 @@
+import { experienceSchema, type Experience } from '../../domain/experience';
 import { planSchema, type Plan } from '../../domain/plan';
 import { workoutSchema, type Workout } from '../../domain/workout';
 
@@ -6,6 +7,11 @@ const workoutFiles = import.meta.glob<unknown>('../../content/workouts/*.json', 
   import: 'default',
 });
 const planFiles = import.meta.glob<unknown>('../../content/plans/*.json', {
+  eager: true,
+  import: 'default',
+});
+
+const experienceFiles = import.meta.glob<unknown>('../../content/experiences/*.json', {
   eager: true,
   import: 'default',
 });
@@ -28,9 +34,21 @@ function load<T>(kind: string, files: Record<string, unknown>, schema: Parser<T>
 export const builtinWorkouts: Workout[] = load('workout', workoutFiles, workoutSchema);
 export const builtinPlans: Plan[] = load('plan', planFiles, planSchema);
 
+export const builtinExperiences: Experience[] = load(
+  'experience',
+  experienceFiles,
+  experienceSchema,
+);
+
 const byId = new Map(builtinWorkouts.map((w) => [w.id, w]));
 
 /** Built-in workouts only; user workouts live in the repositories. */
 export function getWorkout(id: string): Workout | undefined {
   return byId.get(id);
+}
+
+const experienceById = new Map(builtinExperiences.map((e) => [e.id, e]));
+
+export function getExperience(id: string): Experience | undefined {
+  return experienceById.get(id);
 }
