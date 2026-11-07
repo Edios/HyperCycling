@@ -114,8 +114,8 @@ export function WorkoutPreview({
           type="button"
           className={styles.ib}
           disabled={busy}
-          aria-label={`${t('editor.duplicate')}: ${name}`}
-          title={t('editor.duplicate')}
+          aria-label={`${t('editor.duplicateAndEdit')}: ${name}`}
+          title={t('editor.duplicateAndEdit')}
           onClick={() => void duplicate()}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" {...ICON}>

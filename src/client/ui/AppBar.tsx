@@ -27,6 +27,9 @@ export function AppBar() {
         </NavLink>
       </nav>
       <div className={styles.sp} />
+      <Link to="/editor/new" className={styles.ico}>
+        <span aria-hidden="true">✎</span> {t('nav.editor')}
+      </Link>
       <Link to="/players" className={styles.ico}>
         <span aria-hidden="true">👥</span> {t('nav.players')}
       </Link>
