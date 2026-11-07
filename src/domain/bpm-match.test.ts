@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  fitToRange,
   GENRES,
   genresForRpm,
   matchBpm,
@@ -131,5 +132,15 @@ describe('parseBpmInput', () => {
   it('rejects hex, exponent, signs, text and out-of-range values', () => {
     for (const bad of ['0x50', '1e2', '-90', '+90', '12abc', '', '39', '221', '1000', 'NaN'])
       expect(parseBpmInput(bad), bad).toBeUndefined();
+  });
+});
+
+describe('fitToRange', () => {
+  it('tells inside, half and double time', () => {
+    expect(fitToRange(128, [120, 130])).toBe('exact');
+    expect(fitToRange(64, [120, 130])).toBe('half');
+    expect(fitToRange(250, [120, 130])).toBe('double');
+    expect(fitToRange(100, [120, 130])).toBeUndefined();
+    expect(fitToRange(0, [120, 130])).toBeUndefined();
   });
 });

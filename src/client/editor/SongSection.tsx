@@ -3,6 +3,8 @@ import { BPM_MAX, BPM_MIN } from '../../domain/bpm-match';
 import type { Lang } from '../../domain/lang';
 import { cooldownBlockOf, type SongSlot, type TrackRef, type Workout } from '../../domain/workout';
 import { songHint } from '../data/localized';
+import type { SongCandidate } from '../music/bpmLookup';
+import { SongFinder } from './SongFinder';
 import { useT } from '../i18n';
 import { parseClock, parseTrackUrl } from '../music/parse-track-url';
 import { lookupSpotifyTrack } from '../music/spotify/track-info';
@@ -200,6 +202,18 @@ function SongPanel({
   };
   const span = spanOf(workout, song.firstBlockId, song.lastBlockId);
   const hintId = useId();
+  /** A found song names the slot; an empty tempo range takes the song's tempo (still editable). */
+  const pick = (hit: SongCandidate): void => {
+    const name = (hit.artist ? `${hit.artist} – ${hit.title}` : hit.title).slice(0, 200);
+    setHint(name);
+    const patch: { hint: string; bpm?: [number, number] } = { hint: name };
+    if (!song.bpm) {
+      patch.bpm = [hit.bpm, hit.bpm];
+      setLo(String(hit.bpm));
+      setHi(String(hit.bpm));
+    }
+    dispatch({ type: 'updateSong', id: song.id, patch });
+  };
   return (
     <div className={styles.panel} data-testid="song-panel">
       <div className={styles.panelHead}>
@@ -276,6 +290,7 @@ function SongPanel({
           </small>
         )}
       </div>
+      {!readOnly && <SongFinder range={song.bpm} onPick={pick} />}
       <TrackPin
         key={song.track ? `${song.track.id}:${song.track.title}` : 'none'}
         track={song.track}

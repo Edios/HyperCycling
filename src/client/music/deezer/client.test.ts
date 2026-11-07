@@ -169,11 +169,13 @@ describe('Deezer client', () => {
 
 describe('createBpmLookup', () => {
   const dz = (bpm?: number) => ({
+    searchSongs: () => Promise.resolve([]),
     lookupBpm: vi.fn(() =>
       Promise.resolve(bpm ? { title: 't', bpm, url: 'https://www.deezer.com/track/1' } : undefined),
     ),
   });
   const gs = (bpm?: number) => ({
+    searchSongs: () => Promise.resolve([]),
     lookupBpm: vi.fn(() =>
       Promise.resolve(
         bpm ? { title: 't', bpm, url: 'https://getsongbpm.com/song/t/x' } : undefined,
@@ -201,6 +203,7 @@ describe('createBpmLookup', () => {
     expect((await createBpmLookup(gs(), dz(99)).lookup({ title: 't' }))?.source).toBe('deezer');
     const failing = {
       ...gs(),
+      searchSongs: () => Promise.resolve([]),
       lookupBpm: () => Promise.reject(new GetSongBpmError('unauthorized')),
     };
     expect((await createBpmLookup(failing, dz(99)).lookup({ title: 't' }))?.source).toBe('deezer');
@@ -209,11 +212,132 @@ describe('createBpmLookup', () => {
   it('reports the key error when both fail to find anything', async () => {
     const failing = {
       ...gs(),
+      searchSongs: () => Promise.resolve([]),
       lookupBpm: () => Promise.reject(new GetSongBpmError('unauthorized')),
     };
     await expect(createBpmLookup(failing, dz()).lookup({ title: 't' })).rejects.toMatchObject({
       kind: 'unauthorized',
     });
     expect(await createBpmLookup(gs(), dz()).lookup({ title: 't' })).toBeUndefined();
+  });
+});
+
+describe('Deezer searchSongs (M19d)', () => {
+  const two = {
+    '/search': search(
+      { id: 1, title: 'Song A', artist: 'Band' },
+      { id: 2, title: 'Song B', artist: 'Band' },
+      { id: 3, title: 'No Tempo', artist: 'Band' },
+    ),
+    '/track/1': track(1, 128),
+    '/track/2': track(2, 64.4),
+    '/track/3': track(3, 0),
+  };
+
+  it('lists songs with a tempo, skipping those Deezer has no tempo for', async () => {
+    const { client, urls } = setup(two);
+    const hits = await client.searchSongs({ artist: 'Band', title: 'Song' });
+    expect(hits.map((h) => [h.title, h.bpm])).toEqual([
+      ['Song A', 128],
+      ['Song B', 64],
+    ]);
+    expect(urls[0]?.searchParams.get('q')).toBe('Band Song');
+  });
+
+  it('serves a repeated search from the local cache, in storage', async () => {
+    const { client, urls, storage } = setup(two);
+    await client.searchSongs({ artist: 'Band', title: 'Song' });
+    const asked = urls.length;
+    expect((await client.searchSongs({ artist: 'Band', title: 'Song' })).length).toBe(2);
+    expect(urls.length).toBe(asked);
+    expect([...storage.data.values()].join()).not.toMatch(/audio|preview/i);
+  });
+
+  it('does not mix a cached search with a single lookup of the same words', async () => {
+    const { client } = setup({
+      ...two,
+      '/search': search({ id: 1, title: 'Song A', artist: 'Band' }),
+    });
+    await client.searchSongs({ title: 'Song A', artist: 'Band' });
+    expect((await client.lookupBpm({ title: 'Song A', artist: 'Band' }))?.bpm).toBe(128);
+  });
+
+  it('returns nothing for an empty query without asking Deezer', async () => {
+    const { client, urls } = setup(two);
+    expect(await client.searchSongs({ title: ' ' })).toEqual([]);
+    expect(urls).toHaveLength(0);
+  });
+
+  it('ignores a corrupt cached list', async () => {
+    const { client, storage } = setup(two);
+    storage.data.set(
+      'hypercycling.deezer.cache',
+      JSON.stringify({ 'q:band song|5': { at: Date.now(), ttl: 1e12, v: [{ title: 1 }] } }),
+    );
+    expect((await client.searchSongs({ artist: 'Band', title: 'Song' })).length).toBe(2);
+  });
+});
+
+describe('createBpmLookup.search (M19d)', () => {
+  const dzHit = { title: 'Same', artist: 'X', bpm: 120, url: 'https://www.deezer.com/track/1' };
+  const gsHit = { title: 'Same', artist: 'X', bpm: 120, url: 'https://getsongbpm.com/song/s/1' };
+  const dz = (impl: () => Promise<(typeof dzHit)[]>) => ({
+    lookupBpm: vi.fn(),
+    searchSongs: vi.fn(impl),
+  });
+  const gs = (impl: () => Promise<(typeof gsHit)[]>) => ({
+    lookupBpm: vi.fn(),
+    findByBpm: vi.fn(),
+    searchSongs: vi.fn(impl),
+  });
+
+  it('uses Deezer alone without a key', async () => {
+    const lookup = createBpmLookup(
+      undefined,
+      dz(() => Promise.resolve([dzHit])),
+    );
+    const res = await lookup.search({ title: 'Same' });
+    expect(res.hits).toEqual([{ ...dzHit, source: 'deezer' }]);
+  });
+
+  it('merges providers and lists the same song and tempo once, GetSongBPM first', async () => {
+    const lookup = createBpmLookup(
+      gs(() => Promise.resolve([gsHit])),
+      dz(() => Promise.resolve([dzHit, { ...dzHit, title: 'Other', bpm: 90 }])),
+    );
+    const res = await lookup.search({ title: 'Same' });
+    expect(res.hits.map((h) => [h.title, h.source])).toEqual([
+      ['Same', 'getsongbpm'],
+      ['Other', 'deezer'],
+    ]);
+  });
+
+  it('falls back to the other provider when one fails, and reports it', async () => {
+    const lookup = createBpmLookup(
+      gs(() => Promise.reject(new GetSongBpmError('unauthorized'))),
+      dz(() => Promise.resolve([dzHit])),
+    );
+    const res = await lookup.search({ title: 'Same' });
+    expect(res.hits).toHaveLength(1);
+    expect(res.errors.map((e) => e.kind)).toEqual(['unauthorized']);
+  });
+
+  it('can be limited to one provider', async () => {
+    const d = dz(() => Promise.resolve([dzHit]));
+    const g = gs(() => Promise.resolve([gsHit]));
+    const res = await createBpmLookup(g, d).search({ title: 'Same' }, 'getsongbpm');
+    expect(res.hits.map((h) => h.source)).toEqual(['getsongbpm']);
+    expect(d.searchSongs).not.toHaveBeenCalled();
+    await expect(
+      createBpmLookup(undefined, d).search({ title: 'x' }, 'getsongbpm'),
+    ).rejects.toMatchObject({ kind: 'no-key' });
+  });
+
+  it('throws when every asked provider failed', async () => {
+    const lookup = createBpmLookup(
+      undefined,
+      dz(() => Promise.reject(new GetSongBpmError('network', 'deezer'))),
+    );
+    await expect(lookup.search({ title: 'x' })).rejects.toMatchObject({ kind: 'network' });
   });
 });

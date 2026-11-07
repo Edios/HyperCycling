@@ -40,6 +40,8 @@ vi.mock('../data/repositories', () => ({
 vi.setConfig({ testTimeout: 20_000 });
 
 import { resetSettingsForTests } from '../data/useSettings';
+import { setDeezerClientForTests } from '../music/bpmLookup';
+import { GetSongBpmError } from '../music/getsongbpm/client';
 import { resetSharedSpotifyProviderForTests } from '../music/spotify/shared';
 import { EditorScreen } from './EditorScreen';
 
@@ -152,5 +154,72 @@ describe('song slots and the cool-down lane (M16 / M19c)', () => {
     expect(within(panel).getByRole('alert')).toHaveTextContent('from 40 to');
     fireEvent.click(within(panel).getByRole('button', { name: 'Remove song' }));
     await waitFor(() => expect(screen.queryByTestId('song-pill')).not.toBeInTheDocument());
+  });
+});
+
+describe('song finder (M19d)', () => {
+  const hit = (title: string, bpm: number) => ({
+    title,
+    artist: 'Band',
+    bpm,
+    url: `https://www.deezer.com/track/${bpm}`,
+  });
+  const find = async (searchSongs: () => Promise<ReturnType<typeof hit>[]>) => {
+    setDeezerClientForTests({ searchSongs, lookupBpm: () => Promise.resolve(undefined) });
+    await openEditor();
+    select(0);
+    fireEvent.click(screen.getByTestId('song-add'));
+    const panel = await screen.findByTestId('song-panel');
+    fireEvent.change(within(panel).getByTestId('finder-artist'), { target: { value: 'Band' } });
+    fireEvent.change(within(panel).getByTestId('finder-title'), { target: { value: 'One' } });
+    return panel;
+  };
+
+  it('searches and fills hint and the empty tempo range from the picked song', async () => {
+    const searchSongs = vi.fn(() => Promise.resolve([hit('Fast One', 172), hit('Slow One', 86)]));
+    const panel = await find(searchSongs);
+    fireEvent.click(within(panel).getByTestId('finder-search'));
+    const list = await within(panel).findByTestId('finder-results');
+    expect(searchSongs).toHaveBeenCalledWith({ title: 'One', artist: 'Band' });
+    expect(list).toHaveTextContent('172 BPM · Deezer');
+    fireEvent.click(within(panel).getAllByTestId('finder-pick')[0] as HTMLElement);
+    expect(within(panel).getByTestId('song-hint')).toHaveValue('Band – Fast One');
+    expect(within(panel).getByTestId('song-bpm-min')).toHaveValue('172');
+    expect(within(panel).getByTestId('song-bpm-max')).toHaveValue('172');
+    expect(screen.getByTestId('song-pill')).toHaveTextContent('Band – Fast One');
+  });
+
+  it('marks hits that fit a typed range, also as half time, and keeps that range on pick', async () => {
+    const panel = await find(() => Promise.resolve([hit('Fast One', 172), hit('Slow One', 86)]));
+    fireEvent.change(within(panel).getByTestId('song-bpm-min'), { target: { value: '170' } });
+    fireEvent.change(within(panel).getByTestId('song-bpm-max'), { target: { value: '176' } });
+    fireEvent.blur(within(panel).getByTestId('song-bpm-max'));
+    fireEvent.click(within(panel).getByTestId('finder-search'));
+    const list = await within(panel).findByTestId('finder-results');
+    expect(list).toHaveTextContent('fits your range');
+    expect(list).toHaveTextContent('fits as half time');
+    fireEvent.click(within(panel).getAllByTestId('finder-pick')[1] as HTMLElement);
+    expect(within(panel).getByTestId('song-bpm-min')).toHaveValue('170');
+    expect(within(panel).getByTestId('song-hint')).toHaveValue('Band – Slow One');
+  });
+
+  it('says so when nothing is found and shows a provider error', async () => {
+    const calls = vi
+      .fn<() => Promise<ReturnType<typeof hit>[]>>()
+      .mockResolvedValueOnce([])
+      .mockRejectedValueOnce(new GetSongBpmError('network', 'deezer'));
+    const panel = await find(calls);
+    fireEvent.click(within(panel).getByTestId('finder-search'));
+    expect(await within(panel).findByTestId('finder-empty')).toBeInTheDocument();
+    fireEvent.click(within(panel).getByTestId('finder-search'));
+    expect(await within(panel).findByTestId('finder-error')).toHaveTextContent(
+      'Cannot reach Deezer',
+    );
+  });
+
+  it('offers only Deezer without a GetSongBPM key', async () => {
+    const panel = await find(() => Promise.resolve([]));
+    const options = within(within(panel).getByTestId('finder-provider')).getAllByRole('option');
+    expect(options.map((o) => o.textContent)).toEqual(['All available', 'Deezer']);
   });
 });

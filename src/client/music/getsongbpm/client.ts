@@ -58,6 +58,8 @@ export interface GetSongBpmClient {
   lookupBpm(query: BpmQuery): Promise<BpmHit | undefined>;
   /** Popular songs at this tempo (40-220). */
   findByBpm(bpm: number, limit?: number): Promise<BpmHit[]>;
+  /** Songs matching a free search (artist and/or title), each with a tempo; may be empty. */
+  searchSongs(query: BpmQuery, limit?: number): Promise<BpmHit[]>;
 }
 
 const HOUR_MS = 3_600_000;
@@ -177,7 +179,7 @@ function validHit(v: unknown): v is BpmHit {
 
 /** A cached value is used only when it has the shape its key promises (single hit/miss or a list). */
 function validCached(key: string, v: unknown): boolean {
-  if (key.startsWith('t:')) return Array.isArray(v) && v.every(validHit);
+  if (key.startsWith('t:') || key.startsWith('q:')) return Array.isArray(v) && v.every(validHit);
   return v === null || validHit(v);
 }
 
@@ -324,6 +326,28 @@ export function createGetSongBpmClient(opts: ClientOptions): GetSongBpmClient {
         ? list.map((x) => toHit(x, 'tempo')).filter((h): h is BpmHit => h !== undefined)
         : [];
       remember(key, hits, LIST_TTL_MS);
+      return hits;
+    },
+
+    async searchSongs(query, limit = 5) {
+      const title = query.title.trim();
+      const artist = query.artist?.trim();
+      if (!title && !artist) return [];
+      const n = Math.min(Math.max(Math.round(limit), 1), 10);
+      const key = `q:${identity(`${artist ?? ''} ${title}`)}|${n}`;
+      const hit = cached(key);
+      if (hit) return hit.v as BpmHit[];
+      const lookup = [title && `song:${title}`, artist && `artist:${artist}`].filter(Boolean);
+      const body = await request('/search/', {
+        type: title && artist ? 'both' : title ? 'song' : 'artist',
+        lookup: lookup.join(' '),
+        limit: String(n),
+      });
+      const list = asRecord(body)?.search;
+      const hits = Array.isArray(list)
+        ? list.map((x) => toHit(x, 'search')).filter((h): h is BpmHit => h !== undefined)
+        : [];
+      remember(key, hits, hits.length > 0 ? FOUND_TTL_MS : MISSING_TTL_MS);
       return hits;
     },
   };

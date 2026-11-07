@@ -116,3 +116,52 @@
 .err {
   color: var(--z9);
 }
+.hits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.375rem;
+}
+.hit {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.hitText {
+  display: grid;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.finderInputs {
+  display: flex;
+  gap: 0.5rem;
+}
+.finderInputs input {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+}
+.inline select {
+  box-sizing: border-box;
+  height: 2.75rem;
+  padding: 0 0.75rem;
+  border-radius: 0.625rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font: inherit;
+  font-size: 1rem;
+  color: var(--fg);
+}
+.hitText a,
+.cap a {
+  color: var(--act);
+  text-underline-offset: 2px;
+}
+.panel {
+  grid-template-columns: minmax(0, 1fr);
+}
+.group {
+  grid-template-columns: minmax(0, 1fr);
+}
