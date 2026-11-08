@@ -9,6 +9,8 @@ import {
   choiceCues,
   rankHits,
   resolveAll,
+  resolveAllQueues,
+  resolveHintQueue,
   resolveSlot,
   searchQuery,
   withUserMusic,
@@ -111,7 +113,7 @@ describe('resolveSlot', () => {
 
   it('reports none when Spotify has nothing', async () => {
     const m = await resolveSlot(NIGHTCALL, fake({}));
-    expect(m).toEqual({ slot: 0, status: 'none', options: [] });
+    expect(m).toEqual({ slot: 0, status: 'none', options: [], candidates: [] });
   });
 
   it('falls back to an alternative when the main song is missing', async () => {
@@ -227,9 +229,15 @@ describe('applying the choices', () => {
   };
 
   it('puts the track on the first block of the slot', () => {
-    const cues = choiceCues(w, { [w.songs![0]!.id]: ref });
+    const cues = choiceCues(w, { [w.songs![0]!.id]: [ref] });
     expect(cues).toHaveLength(1);
     expect(cues[0]).toMatchObject({ blockId: w.songs![0]!.firstBlockId, rep: 1, track: ref });
+  });
+
+  it('puts a queue on the first block: first track plus the rest', () => {
+    const second = { ...ref, id: 'ab000000000' };
+    const cues = choiceCues(w, { [w.songs![0]!.id]: [ref, second] });
+    expect(cues[0]).toMatchObject({ track: ref, queue: [second] });
   });
 
   it('adds nothing without choices', () => {
@@ -237,8 +245,87 @@ describe('applying the choices', () => {
   });
 
   it("gives the ride the rider's track and no embedded id exists", () => {
-    const ride = withUserMusic(w, exp, { [w.songs![2]!.id]: ref });
+    const ride = withUserMusic(w, exp, { [w.songs![2]!.id]: [ref] });
     expect(ride.musicCues).toHaveLength(1);
     expect(exp.musicPins).toEqual([]);
+  });
+});
+
+describe('resolveHintQueue (authored queue)', () => {
+  const fakeFor =
+    (table: Record<string, SpotifyTrackHit[]>): SearchFn =>
+    async (q) => {
+      const m = /^track:(.*) artist:(.*)$/.exec(q)!;
+      return table[m[1]!] ?? [];
+    };
+  const DYWC: MusicHint = {
+    slot: 4,
+    artist: 'Swedish House Mafia',
+    title: "Don't You Worry Child",
+    version: 'extended',
+    queue: [{ artist: 'Zedd', title: 'Clarity', startOffsetSec: 12 }],
+    alternatives: [{ artist: 'Avicii', title: 'Waiting For Love', bpm: 128 }],
+  };
+  const dy = (id: string, extra: string, d: number, more: Partial<SpotifyTrackHit> = {}) =>
+    hit(id, `Don't You Worry Child${extra}`, 'Swedish House Mafia', { durationSec: d, ...more });
+
+  it('takes the longer version over the radio edit and applies the author offset', async () => {
+    const m = await resolveHintQueue(
+      DYWC,
+      fakeFor({
+        "Don't You Worry Child": [dy('rad', ' - Radio Edit', 213), dy('alb', '', 352)],
+        Clarity: [hit('cla', 'Clarity', 'Zedd', { durationSec: 271 })],
+      }),
+      360,
+    );
+    expect(m.queue.map((t) => t.id)).toEqual(['alb', 'cla']);
+    expect(m.queue[1]?.startAtSec).toBe(12);
+    expect(m.items.map((i) => i.how)).toEqual(['longer', 'found']);
+  });
+
+  it('never adds songs beyond the authored queue, even when it is short', async () => {
+    const m = await resolveHintQueue(
+      { ...DYWC, queue: undefined },
+      fakeFor({
+        "Don't You Worry Child": [dy('rad', ' - Radio Edit', 213)],
+        'Waiting For Love': [hit('wfl', 'Waiting For Love', 'Avicii')],
+      }),
+      360,
+    );
+    expect(m.queue.map((t) => t.id)).toEqual(['rad']);
+  });
+
+  it('stands in the nearest reserve song when a song is not playable in the region', async () => {
+    const m = await resolveHintQueue(
+      DYWC,
+      fakeFor({
+        "Don't You Worry Child": [dy('alb', '', 352, { playable: false })],
+        Clarity: [hit('cla', 'Clarity', 'Zedd')],
+        'Waiting For Love': [hit('wfl', 'Waiting For Love', 'Avicii', { playable: undefined })],
+      }),
+      360,
+    );
+    expect(m.items[0]).toMatchObject({ how: 'replaced', regionUnverified: true });
+    expect(m.items[0]?.stoodInFor?.title).toBe("Don't You Worry Child");
+    expect(m.queue.map((t) => t.id)).toEqual(['wfl', 'cla']);
+  });
+
+  it('does not stand in the same reserve song in two slots', async () => {
+    const search = fakeFor({
+      "Don't You Worry Child": [dy('alb', '', 352, { playable: false })],
+      Clarity: [hit('cla', 'Clarity', 'Zedd')],
+      'Waiting For Love': [hit('wfl', 'Waiting For Love', 'Avicii')],
+    });
+    const out = await resolveAllQueues([DYWC, { ...DYWC, slot: 7 }], search, () => 360);
+    expect(out[0]?.items[0]?.how).toBe('replaced');
+    expect(out[1]?.items[0]?.how).toBe('missing');
+  });
+
+  it('reports a missing song when there is no reserve either, and is deterministic', async () => {
+    const search = fakeFor({ Clarity: [hit('cla', 'Clarity', 'Zedd')] });
+    const a = await resolveHintQueue({ ...DYWC, alternatives: [] }, search, 360);
+    const b = await resolveHintQueue({ ...DYWC, alternatives: [] }, search, 360);
+    expect(a.items.map((i) => i.how)).toEqual(['missing', 'found']);
+    expect(a).toEqual(b);
   });
 });

@@ -171,3 +171,56 @@ describe('nextTrackChange', () => {
     expect(r?.atSec).toBe(100);
   });
 });
+
+describe('slot queue (cue.queue)', () => {
+  // b spans 100-300 (200 s); queue of 120 s + 100 s + 90 s
+  const queued: MusicCue = {
+    blockId: 'b',
+    rep: 1,
+    track: tr('Q1', 120),
+    queue: [tr('Q2', 100), tr('Q3', 90)],
+  };
+
+  it('plays the next track right when the previous one ends', () => {
+    const at = (t: number) => musicAt({ segments, cues: [queued], fallback: [], tSec: t });
+    expect(at(100)?.track.id).toBe('Q1');
+    expect(at(219)?.track.id).toBe('Q1');
+    expect(at(220)).toMatchObject({ offsetSec: 0, key: 'cue:b:1:1' });
+    expect(at(220)?.track.id).toBe('Q2');
+    expect(nextTrackChange({ segments, cues: [queued], fallback: [], tSec: 150 })).toMatchObject({
+      atSec: 220,
+    });
+  });
+
+  it('cuts a track that runs past the slot end and starts nothing after it', () => {
+    const cues = [queued, cue('c', tr('C', 1000))];
+    // Q3 would start at 320 but block c (300) takes over, so Q2 (220-320) is cut at 300.
+    expect(musicAt({ segments, cues, fallback: [], tSec: 299 })?.track.id).toBe('Q2');
+    expect(musicAt({ segments, cues, fallback: [], tSec: 300 })?.track.id).toBe('C');
+    expect(nextTrackChange({ segments, cues, fallback: [], tSec: 250 })).toMatchObject({
+      atSec: 300,
+    });
+  });
+
+  it('honours the start offset of each queued track', () => {
+    const q: MusicCue = { blockId: 'a', rep: 1, track: tr('A', 60, 10), queue: [tr('B', 100, 30)] };
+    // A plays 50 s of audio (0-50), B starts at 50 from its 30 s mark.
+    expect(musicAt({ segments, cues: [q], fallback: [], tSec: 0 })?.offsetSec).toBe(10);
+    expect(musicAt({ segments, cues: [q], fallback: [], tSec: 60 })).toMatchObject({
+      offsetSec: 40,
+    });
+  });
+
+  it('jumping to the block start (a skip) restarts the queue from its first track', () => {
+    const seek = (t: number) => musicAt({ segments, cues: [queued], fallback: [], tSec: t });
+    expect(seek(250)?.track.id).toBe('Q2');
+    expect(seek(100)).toMatchObject({ offsetSec: 0, key: 'cue:b:1' });
+  });
+
+  it('falls back after a queue that ends before the slot', () => {
+    const short: MusicCue = { blockId: 'b', rep: 1, track: tr('S1', 50), queue: [tr('S2', 50)] };
+    expect(
+      musicAt({ segments, cues: [short], fallback: [tr('F', 1000)], tSec: 210 })?.track.id,
+    ).toBe('F');
+  });
+});

@@ -67,6 +67,8 @@ export interface MusicCue {
   blockId: string;
   rep: number;
   track: TrackRef;
+  /** Tracks that follow `track` without a break, in order (a slot's queue). Absent = just `track`. */
+  queue?: TrackRef[];
 } // rep >= 1
 
 /** A song slot: a contiguous run of TOP-LEVEL blocks that one track covers. */
@@ -77,7 +79,10 @@ export interface SongSlot {
   lastBlockId: string;
   bpm?: [number, number];
   hint?: string;
+  /** Legacy single track; read as a one-element queue. New data uses `tracks`. */
   track?: TrackRef;
+  /** The slot's queue: played in order, the last one fades at the end of the slot. */
+  tracks?: TrackRef[];
 }
 
 /** Hints for scaleWorkout: which blocks stretch and which repeat absorbs extra reps. */
@@ -158,6 +163,9 @@ const repeatSchema = z.object({
 
 const blockSchema = z.discriminatedUnion('kind', [steadySchema, rampSchema, repeatSchema]);
 
+/** Most tracks queued behind the first one in a slot. */
+const MAX_QUEUE = 12;
+
 const trackRefSchema = z.object({
   provider: z.enum(['spotify', 'youtube']),
   id: z.string().min(1),
@@ -174,6 +182,7 @@ const musicCueSchema = z.object({
   blockId: z.string().min(1),
   rep: z.number().int().min(1),
   track: trackRefSchema,
+  queue: z.array(trackRefSchema).max(MAX_QUEUE).optional(),
 });
 
 const songSlotSchema = z.object({
@@ -185,6 +194,10 @@ const songSlotSchema = z.object({
     .optional(),
   hint: z.string().max(200).optional(),
   track: trackRefSchema.optional(),
+  tracks: z
+    .array(trackRefSchema)
+    .max(MAX_QUEUE + 1)
+    .optional(),
 });
 
 const localizedSchema = z.object({
@@ -455,13 +468,27 @@ export function repairSongs(w: Workout, oldOrder: readonly string[]): void {
 export function compileSongCues(w: Workout): MusicCue[] {
   const cues: MusicCue[] = [];
   for (const song of w.songs ?? []) {
-    if (!song.track) continue;
+    const [first, ...rest] = slotTracks(song);
+    if (!first) continue;
     const block = w.blocks.find((b) => b.id === song.firstBlockId);
     if (!block) continue;
     const target = block.kind === 'repeat' ? block.blocks[0] : block;
-    if (target) cues.push({ blockId: target.id, rep: 1, track: song.track });
+    if (target) {
+      cues.push({
+        blockId: target.id,
+        rep: 1,
+        track: first,
+        ...(rest.length ? { queue: rest } : {}),
+      });
+    }
   }
   return cues;
+}
+
+/** The slot's queue: `tracks`, else the legacy single `track` as a one-element list. */
+export function slotTracks(song: Pick<SongSlot, 'track' | 'tracks'>): TrackRef[] {
+  if (song.tracks && song.tracks.length > 0) return song.tracks;
+  return song.track ? [song.track] : [];
 }
 
 /** Duration of one song slot in seconds (repeats expanded). */

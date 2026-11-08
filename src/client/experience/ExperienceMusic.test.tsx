@@ -89,16 +89,16 @@ describe('ExperienceMusic', () => {
     expect(screen.getByTestId('exp-music-match')).toBeTruthy();
   });
 
-  it('marks a slot with no result and lets the rider leave it empty', async () => {
+  it('marks songs with no result as missing', async () => {
     setup({ provider: providerFor(() => []) });
     fireEvent.click(screen.getByTestId('exp-music-match'));
     await screen.findByTestId('exp-music-review');
-    expect(screen.getAllByTestId('exp-music-status')).toHaveLength(11);
-    const onChoices = vi.fn();
-    expect(onChoices).not.toHaveBeenCalled();
+    const items = screen.getAllByTestId('exp-music-item');
+    expect(items.length).toBeGreaterThanOrEqual(11);
+    expect(items.every((i) => i.getAttribute('data-how') === 'missing')).toBe(true);
   });
 
-  it('does not offer a song that is not playable in the region', async () => {
+  it('stands in a reserve song when the first one is not playable in the region', async () => {
     setup({
       provider: providerFor((q) =>
         q.includes('Kavinsky')
@@ -108,10 +108,10 @@ describe('ExperienceMusic', () => {
     });
     fireEvent.click(screen.getByTestId('exp-music-match'));
     await screen.findByTestId('exp-music-review');
-    const first = screen.getAllByTestId('exp-music-select')[0] as HTMLSelectElement;
-    const blocked = within(first).getByRole('option', { name: /Nightcall/ }) as HTMLOptionElement;
-    expect(blocked.disabled).toBe(true);
-    expect(first.value).not.toBe('0'); // an alternative took its place
+    const first = screen.getAllByTestId('exp-music-row')[0]!;
+    const item = within(first).getAllByTestId('exp-music-item')[0]!;
+    expect(item.getAttribute('data-how')).toBe('replaced');
+    expect(item.textContent).toMatch(/Faded/); // 90 BPM is nearest to Nightcall's 91
   });
 
   it('shows "region not verified" when Spotify sent no availability', async () => {
@@ -120,7 +120,7 @@ describe('ExperienceMusic', () => {
     });
     fireEvent.click(screen.getByTestId('exp-music-match'));
     await screen.findByTestId('exp-music-review');
-    expect(screen.getAllByTestId('exp-music-region')).toHaveLength(11);
+    expect(screen.getAllByTestId('exp-music-region').length).toBeGreaterThanOrEqual(11);
   });
 
   it('shows no region note when availability is known', async () => {
@@ -130,15 +130,28 @@ describe('ExperienceMusic', () => {
     expect(screen.queryByTestId('exp-music-region')).toBeNull();
   });
 
-  it('lets the rider switch to an alternative', async () => {
+  it('keeps manual changes in the advanced section: removing a song leaves that slot empty', async () => {
     const onChoices = setup({ provider: providerFor(everything) });
     fireEvent.click(screen.getByTestId('exp-music-match'));
     await screen.findByTestId('exp-music-review');
-    const first = screen.getAllByTestId('exp-music-select')[0] as HTMLSelectElement;
-    fireEvent.change(first, { target: { value: '1' } });
+    const first = screen.getAllByTestId('exp-music-row')[0]!;
+    fireEvent.click(within(first).getAllByTestId('exp-music-edit-remove')[0]!);
     fireEvent.click(screen.getByTestId('exp-music-approve'));
     const saved = vi.mocked(onChoices).mock.calls[0]![0];
-    expect(saved[workout.songs![0]!.id]?.title).toBe('Awake');
+    expect(saved[workout.songs![0]!.id]).toBeUndefined();
+    expect(Object.keys(saved)).toHaveLength(10);
+  });
+
+  it('saves the authored queue of two songs for a slot, in order', async () => {
+    const onChoices = setup({ provider: providerFor(everything) });
+    fireEvent.click(screen.getByTestId('exp-music-match'));
+    await screen.findByTestId('exp-music-review');
+    fireEvent.click(screen.getByTestId('exp-music-approve'));
+    const saved = vi.mocked(onChoices).mock.calls[0]![0];
+    expect(saved[workout.songs![9]!.id]?.map((x: { title: string }) => x.title)).toEqual([
+      'Basket Case',
+      'Tidal Wave',
+    ]);
   });
 
   it('warns when a song is shorter than its slot', async () => {
@@ -149,7 +162,8 @@ describe('ExperienceMusic', () => {
     });
     fireEvent.click(screen.getByTestId('exp-music-match'));
     await screen.findByTestId('exp-music-review');
-    expect(screen.getAllByTestId('exp-music-short').length).toBeGreaterThan(0);
+    const msgs = screen.getAllByTestId('exp-music-queue-status').map((e) => e.textContent);
+    expect(msgs.some((m) => /Brakuje|Missing/.test(m ?? ''))).toBe(true);
   });
 
   it('shows an error and no list when there is no token', async () => {
@@ -174,7 +188,7 @@ describe('ExperienceMusic', () => {
       title: 'Nightcall',
       startAtSec: 0,
     } as const;
-    const onChoices = setup({ choices: { [workout.songs![0]!.id]: track } });
+    const onChoices = setup({ choices: { [workout.songs![0]!.id]: [track] } });
     expect(screen.getByTestId('exp-music-state').textContent).toMatch(/1/);
     fireEvent.click(screen.getByTestId('exp-music-clear'));
     expect(onChoices).toHaveBeenCalledWith({});

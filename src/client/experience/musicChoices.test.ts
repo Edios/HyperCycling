@@ -20,8 +20,8 @@ const track = {
 describe('musicChoices', () => {
   it('round-trips per experience', () => {
     const s = memory();
-    expect(saveChoices('a', { s1: track }, s)).toBe(true);
-    expect(loadChoices('a', s)).toEqual({ s1: track });
+    expect(saveChoices('a', { s1: [track] }, s)).toBe(true);
+    expect(loadChoices('a', s)).toEqual({ s1: [track] });
     expect(loadChoices('b', s)).toEqual({});
   });
 
@@ -33,14 +33,23 @@ describe('musicChoices', () => {
         a: { ok: track, bad: { provider: 'youtube', id: 'x', title: 't' }, id: 5 },
       }),
     );
-    expect(loadChoices('a', s)).toEqual({ ok: track });
+    expect(loadChoices('a', s)).toEqual({ ok: [track] });
     s.setItem('hypercycling.experience.music', '{nope');
     expect(loadChoices('a', s)).toEqual({});
   });
 
+  it('reads an older single-track save as a one-track queue and keeps queues with offsets', () => {
+    const s = memory();
+    s.setItem('hypercycling.experience.music', JSON.stringify({ a: { one: track } }));
+    expect(loadChoices('a', s)).toEqual({ one: [track] });
+    const second = { ...track, id: 'ab000000000', startAtSec: 12, durationSec: 200 };
+    saveChoices('a', { q: [track, second] }, s);
+    expect(loadChoices('a', s)).toEqual({ q: [track, second] });
+  });
+
   it('removes an experience when its choices are empty', () => {
     const s = memory();
-    saveChoices('a', { s1: track }, s);
+    saveChoices('a', { s1: [track] }, s);
     saveChoices('a', {}, s);
     expect(loadChoices('a', s)).toEqual({});
   });
@@ -50,6 +59,6 @@ describe('musicChoices', () => {
     s.setItem = () => {
       throw new Error('full');
     };
-    expect(saveChoices('a', { s1: track }, s)).toBe(false);
+    expect(saveChoices('a', { s1: [track] }, s)).toBe(false);
   });
 });

@@ -4,31 +4,21 @@ import { duplicateHintSlots, type Experience } from '../../domain/experience';
 import type { TrackRef, Workout } from '../../domain/workout';
 import { useT, type MessageKey } from '../i18n';
 import { parseTrackUrl } from '../music/parse-track-url';
-import { getSharedLibraryStore } from '../music/library/library';
 import { getSharedSpotifyProvider } from '../music/spotify/shared';
 import { spotifyErrorKey } from '../music/spotify/messages';
 import type { SpotifyProvider } from '../music/spotify';
 import { lookupSpotifyTrack } from '../music/spotify/track-info';
+import { SlotQueue } from '../music/SlotQueue';
 import { Button } from '../ui/Button';
 import { formatSongTime } from './model';
 import { saveChoices, type Choices } from './musicChoices';
-import {
-  annotate,
-  resolveAll,
-  slotInfo,
-  type Annotation,
-  type MatchOption,
-  type SlotMatch,
-} from './musicMatch';
+import { resolveAllQueues, slotInfo, type ItemHow, type QueueMatch } from './musicMatch';
 import styles from './ExperienceMusic.module.css';
-
-/** Per slot: index of the chosen option, 'none', or a track the rider typed in. */
-type Pick = number | 'none' | { manual: TrackRef };
 
 type Phase =
   | { kind: 'idle' }
   | { kind: 'working'; done: number; total: number }
-  | { kind: 'review'; matches: SlotMatch[]; picks: Record<number, Pick> }
+  | { kind: 'review'; matches: QueueMatch[]; queues: Record<number, TrackRef[]> }
   | { kind: 'error'; key: MessageKey };
 
 interface Props {
@@ -46,12 +36,16 @@ interface Props {
 const name = (o: { artist?: string; title: string }): string =>
   o.artist ? `${o.artist} – ${o.title}` : o.title;
 
-function pickedRef(m: SlotMatch, p: Pick | undefined): TrackRef | undefined {
-  if (p === undefined) return m.chosen === undefined ? undefined : m.options[m.chosen]?.ref;
-  if (p === 'none') return undefined;
-  if (typeof p === 'number') return m.options[p]?.ref;
-  return p.manual;
-}
+/** Wanted tempo of a slot: the middle of its BPM range. */
+const targetBpmOf = (range: readonly [number, number] | undefined): number | undefined =>
+  range ? (range[0] + range[1]) / 2 : undefined;
+
+const HOW_KEY: Record<ItemHow, MessageKey> = {
+  found: 'experience.music.how.found',
+  longer: 'experience.music.how.longer',
+  replaced: 'experience.music.how.replaced',
+  missing: 'experience.music.how.missing',
+};
 
 /**
  * "Match songs from Spotify" for an Experience (setup screen): turns the scenario's song
@@ -104,14 +98,19 @@ export function ExperienceMusic({
     const api = provider ?? getSharedSpotifyProvider();
     setPhase({ kind: 'working', done: 0, total: hints.length });
     try {
-      const matches = await resolveAll(
+      const matches = await resolveAllQueues(
         hints,
         (q, limit) => api.searchTracks(q, limit),
+        (slot) => slotInfo(workout, slot)?.sec ?? 0,
         (done, total) => {
           if (alive.current && mine === run.current) setPhase({ kind: 'working', done, total });
         },
       );
-      if (alive.current && mine === run.current) setPhase({ kind: 'review', matches, picks: {} });
+      if (alive.current && mine === run.current) {
+        const queues: Record<number, TrackRef[]> = {};
+        for (const m of matches) queues[m.slot] = m.queue;
+        setPhase({ kind: 'review', matches, queues });
+      }
     } catch (err) {
       if (alive.current && mine === run.current) {
         setPhase({ kind: 'error', key: spotifyErrorKey(err) });
@@ -119,9 +118,9 @@ export function ExperienceMusic({
     }
   };
 
-  const setPick = (slot: number, p: Pick): void => {
+  const setQueue = (slot: number, tracks: TrackRef[]): void => {
     setPhase((cur) =>
-      cur.kind === 'review' ? { ...cur, picks: { ...cur.picks, [slot]: p } } : cur,
+      cur.kind === 'review' ? { ...cur, queues: { ...cur.queues, [slot]: tracks } } : cur,
     );
   };
 
@@ -134,15 +133,18 @@ export function ExperienceMusic({
     setManualErr(undefined);
     const info = await lookupSpotifyTrack(parsed.id);
     if (!alive.current) return;
-    setPick(slot, {
-      manual: {
-        provider: 'spotify',
-        id: parsed.id,
-        title: info?.title ?? parsed.id,
-        ...(info?.artist ? { artist: info.artist } : {}),
-        startAtSec: 0,
-      },
-    });
+    const added: TrackRef = {
+      provider: 'spotify',
+      id: parsed.id,
+      title: info?.title ?? parsed.id,
+      ...(info?.artist ? { artist: info.artist } : {}),
+      startAtSec: 0,
+    };
+    setPhase((cur) =>
+      cur.kind === 'review'
+        ? { ...cur, queues: { ...cur.queues, [slot]: [...(cur.queues[slot] ?? []), added] } }
+        : cur,
+    );
   };
 
   const approve = (): void => {
@@ -150,8 +152,8 @@ export function ExperienceMusic({
     const next: Choices = {};
     for (const m of phase.matches) {
       const slot = workout.songs?.[m.slot];
-      const ref = pickedRef(m, phase.picks[m.slot]);
-      if (slot && ref) next[slot.id] = ref;
+      const queue = phase.queues[m.slot] ?? [];
+      if (slot && queue.length > 0) next[slot.id] = queue;
     }
     saveChoices(experience.id, next);
     onChoices(next);
@@ -162,12 +164,6 @@ export function ExperienceMusic({
     saveChoices(experience.id, {});
     onChoices({});
   };
-
-  const cache = new Map(
-    getSharedLibraryStore()
-      .get()
-      .flatMap((x) => (x.bpm !== undefined ? [[x.id, x.bpm] as const] : [])),
-  );
 
   return (
     <section className={styles.panel} data-testid="exp-music">
@@ -220,110 +216,91 @@ export function ExperienceMusic({
               const hint = hints.find((h) => h.slot === m.slot);
               const info = slotInfo(workout, m.slot);
               if (!hint || !info) return null;
-              const pick = phase.picks[m.slot];
-              const ref = pickedRef(m, pick);
-              const chosenOption: MatchOption | undefined =
-                typeof pick === 'object'
-                  ? undefined
-                  : m.options[typeof pick === 'number' ? pick : (m.chosen ?? -1)];
-              const ann: Annotation | undefined =
-                ref && chosenOption
-                  ? annotate(chosenOption, hint, info.sec, info.range, cache)
-                  : undefined;
-              const value =
-                typeof pick === 'object'
-                  ? 'manual'
-                  : pick === 'none'
-                    ? 'none'
-                    : String(pick ?? m.chosen ?? 'none');
+              const queue = phase.queues[m.slot] ?? [];
+              const others = new Set(
+                Object.entries(phase.queues).flatMap(([k, v]) =>
+                  Number(k) === m.slot ? [] : v.map((x) => x.id),
+                ),
+              );
               return (
                 <li key={m.slot} className={styles.row} data-testid="exp-music-row">
                   <div className={styles.head}>
                     <b>
                       {t('experience.songRow', { n: m.slot + 1, time: formatSongTime(info.sec) })}
                     </b>
-                    <span className={styles.want}>{name(hint)}</span>
                   </div>
-                  {m.status !== 'ok' && (
-                    <small className={styles.warn} data-testid="exp-music-status">
-                      {t(
-                        m.status === 'none'
-                          ? 'experience.music.notFound'
-                          : 'experience.music.unavailable',
-                      )}
-                    </small>
-                  )}
-                  <select
-                    className={styles.select}
-                    aria-label={t('experience.music.choose', { n: m.slot + 1 })}
-                    value={value}
-                    data-testid="exp-music-select"
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (v === 'manual') return;
-                      setPick(m.slot, v === 'none' ? 'none' : Number(v));
-                    }}
-                  >
-                    {m.options.map((o, i) => (
-                      <option key={o.ref.id} value={i} disabled={o.playable === false}>
-                        {name(o.ref)}
-                        {o.ref.durationSec !== undefined
-                          ? ` (${formatSongTime(o.ref.durationSec)})`
-                          : ''}
-                        {o.playable === false ? ` · ${t('experience.music.notInRegion')}` : ''}
-                        {o.explicit ? ` · ${t('experience.music.explicit')}` : ''}
-                      </option>
+                  <ul className={styles.items}>
+                    {m.items.map((it, i) => (
+                      <li key={i} data-testid="exp-music-item" data-how={it.how}>
+                        <span>{name(it.want)}</span>
+                        {it.ref && (
+                          <span className={styles.cap}>
+                            {' '}
+                            {it.how === 'replaced' ? `→ ${name(it.ref)}` : ''}
+                            {it.ref.durationSec !== undefined
+                              ? ` (${formatSongTime(it.ref.durationSec - it.ref.startAtSec)})`
+                              : ''}
+                          </span>
+                        )}
+                        <small
+                          className={
+                            it.how === 'missing' || it.how === 'replaced' ? styles.warn : styles.cap
+                          }
+                        >
+                          {' · '}
+                          {t(HOW_KEY[it.how])}
+                        </small>
+                        {it.regionUnverified && (
+                          <small className={styles.cap} data-testid="exp-music-region">
+                            {' · '}
+                            {t('experience.music.regionUnknown')}
+                          </small>
+                        )}
+                      </li>
                     ))}
-                    {typeof pick === 'object' && (
-                      <option value="manual">{name(pick.manual)}</option>
-                    )}
-                    <option value="none">{t('experience.music.noTrack')}</option>
-                  </select>
-                  {chosenOption && ref && chosenOption.playable === undefined && (
-                    <small className={styles.cap} data-testid="exp-music-region">
-                      {t('experience.music.regionUnknown')}
-                    </small>
-                  )}
-                  {ann?.shortBySec !== undefined && (
-                    <small className={styles.warn} data-testid="exp-music-short">
-                      {t('experience.music.short', { time: formatSongTime(ann.shortBySec) })}
-                    </small>
-                  )}
-                  {ann?.bpm !== undefined && (
-                    <small
-                      className={ann.bpmFit === 'off' ? styles.warn : styles.cap}
-                      data-testid="exp-music-bpm"
-                    >
-                      {t(
-                        ann.bpmFit === 'off'
-                          ? 'experience.music.bpmOff'
-                          : 'experience.music.bpmFits',
-                        { bpm: ann.bpm },
-                      )}
-                      {ann.bpmFrom === 'library' ? ` · ${t('experience.music.fromLibrary')}` : ''}
-                    </small>
-                  )}
-                  <div className={styles.manual}>
-                    <input
-                      aria-label={t('experience.music.manualLabel', { n: m.slot + 1 })}
-                      placeholder={t('experience.music.manualPlaceholder')}
-                      value={manual[m.slot] ?? ''}
-                      maxLength={200}
-                      data-testid="exp-music-manual"
-                      onChange={(e) => setManual((cur) => ({ ...cur, [m.slot]: e.target.value }))}
+                  </ul>
+                  <SlotQueue
+                    tracks={queue}
+                    slotSec={info.sec}
+                    targetBpm={targetBpmOf(info.range)}
+                    rest={hint.noBeat === true}
+                    readOnly
+                    testId="exp-music-queue"
+                  />
+                  <details className={styles.advanced} data-testid="exp-music-advanced">
+                    <summary>{t('experience.music.advanced')}</summary>
+                    <SlotQueue
+                      tracks={queue}
+                      slotSec={info.sec}
+                      targetBpm={targetBpmOf(info.range)}
+                      rest={hint.noBeat === true}
+                      candidates={m.candidates}
+                      usedIds={others}
+                      onChange={(next) => setQueue(m.slot, next)}
+                      testId="exp-music-edit"
                     />
-                    <Button
-                      onClick={() => void applyManual(m.slot)}
-                      disabled={!(manual[m.slot] ?? '').trim()}
-                    >
-                      {t('experience.music.manualUse')}
-                    </Button>
-                  </div>
-                  {manualErr === m.slot && (
-                    <small role="alert" className={styles.warn}>
-                      {t('experience.music.manualBad')}
-                    </small>
-                  )}
+                    <div className={styles.manual}>
+                      <input
+                        aria-label={t('experience.music.manualLabel', { n: m.slot + 1 })}
+                        placeholder={t('experience.music.manualPlaceholder')}
+                        value={manual[m.slot] ?? ''}
+                        maxLength={200}
+                        data-testid="exp-music-manual"
+                        onChange={(e) => setManual((cur) => ({ ...cur, [m.slot]: e.target.value }))}
+                      />
+                      <Button
+                        onClick={() => void applyManual(m.slot)}
+                        disabled={!(manual[m.slot] ?? '').trim()}
+                      >
+                        {t('experience.music.manualUse')}
+                      </Button>
+                    </div>
+                    {manualErr === m.slot && (
+                      <small role="alert" className={styles.warn}>
+                        {t('experience.music.manualBad')}
+                      </small>
+                    )}
+                  </details>
                 </li>
               );
             })}

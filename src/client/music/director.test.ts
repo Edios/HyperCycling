@@ -871,3 +871,62 @@ describe('music director: closing silence', () => {
     expect(() => director.dispose()).not.toThrow();
   });
 });
+
+describe('music director: slot queue', () => {
+  const queued: MusicCue = {
+    blockId: 'b',
+    rep: 1,
+    track: track('Q1', 'spotify', 120),
+    queue: [track('Q2', 'spotify', 100)],
+  };
+
+  it('starts the next queued track as soon as the first one ends', async () => {
+    make({ cues: [queued] }).start();
+    await runAt(100);
+    expect(spotify.log).toEqual(['play:Q1@0']);
+    await runAt(219);
+    expect(spotify.log).toEqual(['play:Q1@0']);
+    await runAt(220);
+    await advance(1500);
+    expect(spotify.log).toContain('play:Q2@0');
+  });
+
+  it('wakes at the track boundary without waiting for the poll', async () => {
+    engine.set({ status: 'running', workoutElapsedSec: 219.6 });
+    make({ cues: [queued], pollMs: 60_000 }).start();
+    await settle();
+    expect(spotify.log).toEqual(['play:Q1@120']);
+    engine.set({ workoutElapsedSec: 220 });
+    await advance(500);
+    await advance(1500);
+    expect(spotify.log).toContain('play:Q2@0');
+  });
+
+  it('a block skip back to the slot start plays the queue from its first track', async () => {
+    make({ cues: [queued] }).start();
+    await runAt(250);
+    await runAt(100);
+    await advance(1500);
+    expect(spotify.log.filter((l) => l.startsWith('play:'))).toEqual(['play:Q2@30', 'play:Q1@0']);
+  });
+
+  it('pause and resume keep the queued track in place', async () => {
+    make({ cues: [queued] }).start();
+    await runAt(250);
+    engine.set({ status: 'paused' });
+    await settle();
+    engine.set({ status: 'running' });
+    await settle();
+    expect(spotify.log).toEqual(['play:Q2@30', 'pause', 'resume']);
+  });
+
+  it('fades the last track out when the slot ends (the next block has no music of its own)', async () => {
+    make({ cues: [queued], silenceLastSec: 0 }).start();
+    await runAt(299);
+    expect(spotify.log).toEqual(['play:Q2@79']);
+    engine.set({ status: 'finished', workoutElapsedSec: 600 });
+    engine.emit({ type: 'segmentChanged', from: 1, to: 2, skipped: false });
+    await advance(1500);
+    expect(spotify.log.some((l) => l.startsWith('fadeOut'))).toBe(true);
+  });
+});
