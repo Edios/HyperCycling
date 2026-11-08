@@ -1024,7 +1024,7 @@ export const en = {
     preCadence: 'In {s} s: cadence {rpm}',
     closingEffort: 'Good. Hold it.',
     closingPosition: 'Good. Keep it steady.',
-    silenceAhead: 'In {s} s the music goes quiet. Last minute in silence.',
+    silenceAhead: 'In {s} s the music goes quiet. Last {q} s in silence.',
     cadenceUp: 'Faster!',
     cadenceDown: 'Slower',
     sprint: 'Sprint!',

@@ -66,12 +66,15 @@ describe.each(VARIANTS)('Neon Grid variant $id', (v) => {
     const w = workout!;
     const starts = songStartsSec(w);
     (w.songs ?? []).forEach((s, i) => {
-      if (!/^ng[48]r-a$/.test(s.firstBlockId) && !/^ng6r-a$/.test(s.firstBlockId)) return;
+      if (!REST_SONG_FIRST_BLOCKS.has(s.firstBlockId)) return;
       const end = starts[i + 1] ?? totalDurationSec(w);
       expect(end - (starts[i] ?? 0), s.id).toBeGreaterThanOrEqual(3 * 60);
     });
   });
 });
+
+/** First blocks of the rest songs (the long recoveries) in the Neon Grid variants. */
+const REST_SONG_FIRST_BLOCKS = new Set(['ng4r-a', 'ng8r-a', 'ng6r-a']);
 
 describe('Neon Grid variants differ as designed', () => {
   const ids = (id: string): string[] => getWorkout(id)!.blocks.map((b) => b.id);
@@ -87,7 +90,10 @@ describe('Neon Grid variants differ as designed', () => {
 
   it('the 30 rests at least 3:00 after the summit before the sprints', () => {
     const segs = flattenWorkout(getWorkout('class-neon-grid-30')!);
-    const summitEnd = segs.reduce((m, s) => (s.effortStart >= 9 ? s.startSec + s.durationSec : m), 0);
+    const summitEnd = segs.reduce(
+      (m, s) => (s.effortStart >= 9 ? s.startSec + s.durationSec : m),
+      0,
+    );
     const sprintStart = segs.find((s) => s.blockId === 'ng10-s1')!.startSec;
     expect(sprintStart - summitEnd).toBeGreaterThanOrEqual(3 * 60);
   });

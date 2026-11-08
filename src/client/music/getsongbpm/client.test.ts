@@ -69,6 +69,19 @@ describe('lookupBpm', () => {
     );
   });
 
+  it('answers undefined for a same-title song by another artist (cover)', async () => {
+    const cover = { ...SONG, artist: { id: 'c', name: 'Some Cover Band' } };
+    const { client } = setup(() => json({ search: [cover] }));
+    expect(
+      await client.lookupBpm({ title: 'Master of Puppets', artist: 'Metallica' }),
+    ).toBeUndefined();
+  });
+
+  it('still takes the first same-title result when no artist is known', async () => {
+    const { client } = setup(() => json({ search: [SONG] }));
+    expect((await client.lookupBpm({ title: 'Master of Puppets' }))?.bpm).toBe(220);
+  });
+
   it('answers undefined when the database has no result (object instead of array)', async () => {
     const { client } = setup(() => json({ search: { error: 'no result' } }));
     expect(await client.lookupBpm({ title: 'Nothing' })).toBeUndefined();

@@ -1024,7 +1024,7 @@ export const pl: Messages = {
     preCadence: 'Za {s} s: kadencja {rpm}',
     closingEffort: 'Dobrze. Trzymaj.',
     closingPosition: 'Dobrze. Trzymaj równo.',
-    silenceAhead: 'Za {s} s muzyka cichnie. Ostatnia minuta w ciszy.',
+    silenceAhead: 'Za {s} s muzyka cichnie. Ostatnie {q} s w ciszy.',
     cadenceUp: 'Szybciej!',
     cadenceDown: 'Wolniej',
     sprint: 'Sprint!',

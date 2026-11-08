@@ -152,17 +152,17 @@ function toHit(item: unknown, kind: 'search' | 'tempo'): BpmHit | undefined {
 }
 
 /**
- * The result with the same title as the query (artist breaks ties). A different title is a
+ * The result with the same title as the query (and the same artist, when the query has one). A different title is a
  * different song (cover, medley): no match is better than somebody else's tempo.
  */
 function pickBest(hits: BpmHit[], query: BpmQuery): BpmHit | undefined {
   const title = identity(query.title);
   const artist = query.artist ? identity(query.artist) : undefined;
   const sameTitle = hits.filter((h) => identity(h.title) === title);
-  const exact = sameTitle.find(
-    (h) => artist !== undefined && h.artist && identity(h.artist) === artist,
-  );
-  return exact ?? sameTitle[0];
+  // With an artist given, a same-title song by somebody else (cover, namesake) is not the song
+  // asked for: no data beats a wrong tempo. Without an artist the first same-title hit counts.
+  if (artist === undefined) return sameTitle[0];
+  return sameTitle.find((h) => h.artist !== undefined && identity(h.artist) === artist);
 }
 
 function validHit(v: unknown): v is BpmHit {

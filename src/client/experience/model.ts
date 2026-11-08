@@ -19,7 +19,16 @@ export function scenarioRows(w: Workout): { id: string; time: string }[] {
   return (w.songs ?? []).map((s) => ({ id: s.id, time: formatSongTime(songDurationSec(w, s)) }));
 }
 
-/** The experience to feature on the start page: the longest full one, then the first by id. */
+/** The experience to feature on the start page: the longest one; a tie goes to the first by id (explicit, not by accident). */
 export function featuredExperience(list: readonly Experience[]): Experience | undefined {
-  return [...list].sort((a, b) => b.lengthMin - a.lengthMin || a.id.localeCompare(b.id))[0];
+  let best: Experience | undefined;
+  for (const e of list) {
+    if (
+      !best ||
+      e.lengthMin > best.lengthMin ||
+      (e.lengthMin === best.lengthMin && e.id.localeCompare(best.id) < 0)
+    )
+      best = e;
+  }
+  return best;
 }
