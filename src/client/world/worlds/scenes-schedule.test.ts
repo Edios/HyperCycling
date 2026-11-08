@@ -229,6 +229,31 @@ describe('sceneChangeAllowed', () => {
     ]);
     expect(out).toHaveLength(1);
   });
+  it('refuses a change whose wash window reaches back into a hard block (1–2.5 s after it)', () => {
+    const hard = { ...blocks([60], 9)[0]!, startSec: 300 };
+    const rest = { ...blocks([120], 3)[0]!, startSec: 360 };
+    const all = [...blocks([300], 5), hard, rest];
+    expect(sceneChangeAllowed(all, 361.5)).toBe(false);
+    expect(sceneChangeAllowed(all, 362.4)).toBe(false);
+    expect(sceneChangeAllowed(all, 362.5)).toBe(true); // window [360, 365] just clears the hard block
+    expect(sceneChangeAllowed(all, 400)).toBe(true);
+  });
+  it('checks the window forward too: a short rest block before a hard one is no refuge', () => {
+    const rest = { ...blocks([2], 3)[0]!, startSec: 300 };
+    const hard = { ...blocks([60], 9)[0]!, startSec: 302 };
+    const all = [...blocks([300], 5), rest, hard];
+    expect(sceneChangeAllowed(all, 300)).toBe(false); // moderate -> short rest: the wash reaches 302.5, into the effort
+    expect(sceneChangeAllowed(all, 301.2)).toBe(false); // inside the rest, the wash overlaps the effort
+    expect(sceneChangeAllowed(all, 299.5)).toBe(true); // window [297, 302] ends exactly at the hard start
+    expect(sceneChangeAllowed(all, 299.8)).toBe(false); // window [297.3, 302.3] reaches 0.3 s into it
+  });
+  it('treats the sprint cadence like effort 9 for the window, and the first block like any other', () => {
+    const sprint = { ...blocks([30], 6)[0]!, startSec: 0, rpm: 110 };
+    const rest = { ...blocks([100], 3)[0]!, startSec: 30 };
+    const all = [sprint, rest];
+    expect(sceneChangeAllowed(all, 31)).toBe(false);
+    expect(sceneChangeAllowed(all, 33)).toBe(true);
+  });
   it('never puts a scene-change wash over the middle of a hard block, in any built-in workout', () => {
     for (const w of builtinWorkouts) {
       const segs = flattenWorkout(w);

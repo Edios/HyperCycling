@@ -638,6 +638,11 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       st.variantMix >= 1
         ? toLook
         : lerpLookInto(lookBuf as unknown as SceneLook, fromLook, toLook, st.variantMix);
+    // `construct` is an enum id, not a quantity: lerping it would sweep through unrelated
+    // constructions (gate -> city passes corridor, terraces...), so it snaps at the midpoint
+    if (look === (lookBuf as unknown as SceneLook)) {
+      look.construct = st.variantMix < 0.5 ? fromLook.construct : toLook.construct;
+    }
 
     // the look sets how fast the scenery streams (eased, so a chapter change never jerks) and how
     // strongly it pulses; both are off under reduced motion
