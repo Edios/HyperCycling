@@ -47,7 +47,45 @@ export type SceneLook = {
   /** Colours of the scene extra (curtains, tower light strips). */
   extraA: string;
   extraB: string;
+  /**
+   * "Trip" channels (Experience themes; the plain scenes keep PLAIN_FX, i.e. nothing changes).
+   * Everything is a number or a colour, so looks still lerp field by field.
+   */
+  /** Second line colour: bands of it travel through the terrain pattern (`band` is their share, 0..1). */
+  lineB: string;
+  band: number;
+  /** Scenery speed relative to the ride (eased). */
+  speedMul: number;
+  /** Beat pulse: strength 0..1 of the brightness swell, and its rate in Hz (about half the song tempo). */
+  pulse: number;
+  pulseHz: number;
+  /** Flowing nebula in the sky (0 = off; Lite quality uses a cheaper version). */
+  warp: number;
+  /** Scenery objects (pylons, arches): density 0..1, height factor, share of slots with an arch 0..1. */
+  objDensity: number;
+  objHeight: number;
+  objArch: number;
+  /** Always-on speed streaks 0..1 (a sprint adds more) and darkened screen edges 0..1 (Standard only). */
+  streak: number;
+  vignette: number;
 };
+
+/** The "Trip" channels switched off: what every plain scene uses. */
+export function plainFx(line: string) {
+  return {
+    lineB: line,
+    band: 0,
+    speedMul: 1,
+    pulse: 0,
+    pulseHz: 1,
+    warp: 0,
+    objDensity: 0,
+    objHeight: 1,
+    objArch: 0,
+    streak: 0,
+    vignette: 0,
+  };
+}
 
 export type SceneExtraId = 'aurora' | 'towers' | 'pylons';
 
@@ -84,6 +122,7 @@ const SYNTH: SceneLook = {
   roughness: 0.85,
   extraA: '#ffffff',
   extraB: '#ffffff',
+  ...plainFx('#ff3df0'),
 };
 
 const FIELDS: SceneLook = {
@@ -113,6 +152,7 @@ const FIELDS: SceneLook = {
   roughness: 0.1,
   extraA: '#ffffff',
   extraB: '#ffffff',
+  ...plainFx('#9fffd8'),
 };
 
 const AURORA: SceneLook = {
@@ -142,6 +182,7 @@ const AURORA: SceneLook = {
   roughness: 0.35,
   extraA: '#3dffa8',
   extraB: '#3d8bff',
+  ...plainFx('#7fe8ff'),
 };
 
 const CITY: SceneLook = {
@@ -171,6 +212,7 @@ const CITY: SceneLook = {
   roughness: 0,
   extraA: '#3dd6ff',
   extraB: '#2a4aff',
+  ...plainFx('#2a6aff'),
 };
 
 export const SCENES: readonly SceneDef[] = [

@@ -46,10 +46,12 @@ describe('Neon Grid 45 scenario', () => {
     for (const c of chapters) expect(starts.has(c.startSec), String(c.startSec)).toBe(true);
   });
 
-  it('never changes the scene into a sprint or effort 9+, so every chapter shows', () => {
+  it('never changes the scene in the middle of an effort: every chapter starts on a block boundary', () => {
     const segs = flattenWorkout(workout!);
+    const starts = new Set(segs.map((s) => Math.round(s.startSec)));
     for (const c of resolveChapters(exp!, workout!)) {
       expect(sceneChangeAllowed(segs, c.startSec), `chapter at ${c.startSec}s`).toBe(true);
+      expect(starts.has(Math.round(c.startSec)), `block boundary at ${c.startSec}s`).toBe(true);
     }
   });
 

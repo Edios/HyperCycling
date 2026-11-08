@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { buildExtra, pylonDensity, type Disposable, type ExtraFrame } from './scenes-extras';
+import { buildExtra, type Disposable, type ExtraFrame } from './scenes-extras';
 import { THEMES } from './scenes-themes';
 
 const looks = THEMES['neon-grid']!.scene.variants;
-const dense = looks[4]!;
+const dense = looks[5]!;
 const sparse = looks[0]!;
 
 const frame = (look: ExtraFrame['look'], dist: number): ExtraFrame => ({
   dist,
   time: dist / 10,
   intensity: 0.6,
+  beat: 0,
   look,
   roadX: () => 0,
   roadY: () => 0,
@@ -31,19 +32,13 @@ function drawn(high: boolean, look: ExtraFrame['look']): number {
   return n;
 }
 
-describe('pylonDensity', () => {
-  it('is 0 for the sparse grid and 1 for the dense one, and clamped', () => {
-    expect(pylonDensity(18)).toBe(0);
-    expect(pylonDensity(30)).toBe(0);
-    expect(pylonDensity(8)).toBe(1);
-    expect(pylonDensity(2)).toBe(1);
-    expect(pylonDensity(13)).toBeCloseTo(0.5, 5);
-  });
-
-  it('grows through the Neon Grid looks up to the summit and dies down in the afterglow', () => {
-    const d = looks.map((l) => pylonDensity(l.patternScale));
-    for (let i = 1; i <= 4; i++) expect(d[i]!).toBeGreaterThanOrEqual(d[i - 1]!);
-    expect(d[6]!).toBeLessThan(d[4]!);
+describe('Neon Grid scenery density', () => {
+  it('grows from nothing in the empty plain to the dense climax and dies down in the afterglow', () => {
+    const d = looks.map((l) => l.objDensity);
+    expect(d[0]).toBe(0);
+    expect(d[5]).toBe(Math.max(...d));
+    expect(d[3]!).toBeGreaterThan(d[1]!);
+    expect(d[6]!).toBe(0);
   });
 });
 

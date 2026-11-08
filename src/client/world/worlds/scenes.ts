@@ -24,7 +24,13 @@ import {
   type SceneScheduleEntry,
 } from './scenes-schedule';
 import { THEMES, lookVariant, type ThemeDef } from './scenes-themes';
-import { applySkyLook, setHex, skyMaterial, terrainMaterial } from './scenes-shaders';
+import {
+  applySkyLook,
+  overlayMaterial,
+  setHex,
+  skyMaterial,
+  terrainMaterial,
+} from './scenes-shaders';
 
 /**
  * "Scenes" (working name): a calm road through abstract, stylised scenes (synthwave grid valley,
@@ -118,7 +124,7 @@ interface Scene3D {
   overlayScene: THREE.Scene;
   flatCam: THREE.OrthographicCamera;
   sky: ReturnType<typeof skyMaterial>;
-  wash: THREE.MeshBasicMaterial;
+  wash: ReturnType<typeof overlayMaterial>;
   terrain: THREE.Mesh;
   terrainMat: ReturnType<typeof terrainMaterial>;
   terrainPos: Float32Array;
@@ -207,6 +213,10 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
   let profileStep = PROFILE_STEP_HIGH;
   let intensity: number | undefined;
   let sprint = 0;
+  /** Scenery speed factor of the look (eased) and the phase (cycles) of the beat pulse. */
+  let speedMul = 1;
+  let beatPhase = 0;
+  let beat = 0;
   let time = 0;
   let edgeReady = false;
   const edgeColor = new THREE.Color();
@@ -231,6 +241,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     dist: 0,
     time: 0,
     intensity: 0,
+    beat: 0,
     look: lookBuf as unknown as SceneLook,
     roadX,
     roadY,
@@ -257,6 +268,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     const shiftY = height * (0.5 - horizonFraction(width, height));
     cam.setViewOffset(width, height, width * viewOffsetX, shiftY, width, height);
     s.sky.uniforms.uAspect.value = width / height;
+    s.wash.uniforms.uAspect.value = width / height;
     appliedFov = fov;
   }
 
@@ -294,18 +306,13 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     created.push(quadGeo);
     const bgScene = new THREE.Scene();
     const sky = skyMaterial();
+    sky.uniforms.uDetail.value = high ? 2 : 1;
     created.push(sky);
     const skyQuad = new THREE.Mesh(quadGeo, sky);
     skyQuad.frustumCulled = false;
     bgScene.add(skyQuad);
     const overlayScene = new THREE.Scene();
-    const wash = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0,
-      depthTest: false,
-      depthWrite: false,
-    });
+    const wash = overlayMaterial();
     created.push(wash);
     const washQuad = new THREE.Mesh(quadGeo, wash);
     washQuad.frustumCulled = false;
@@ -592,7 +599,6 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       intensity === undefined ? intensityTarget : approach(intensity, intensityTarget, dt, 0.8);
     const sprinting = frame.fovTarget > FOV_NORMAL || frame.effortGlow >= 0.8;
     if (!reduced) {
-      dist += speed * dt;
       time += dt;
       fov += (frame.fovTarget - fov) * Math.min(1, dt * 2);
       sprint = approach(sprint, sprinting ? 1 : 0, dt, 1.2);
@@ -628,6 +634,19 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
         ? toLook
         : lerpLookInto(lookBuf as unknown as SceneLook, fromLook, toLook, st.variantMix);
 
+    // the look sets how fast the scenery streams (eased, so a chapter change never jerks) and how
+    // strongly it pulses; both are off under reduced motion
+    speedMul = reduced ? 1 : approach(speedMul, look.speedMul, dt, 0.6);
+    const vspeed = speed * speedMul;
+    if (!reduced) {
+      dist += vspeed * dt;
+      beatPhase += dt * look.pulseHz;
+      if (beatPhase > 1e4) beatPhase -= 1e4;
+      beat = look.pulse * (0.4 + 0.6 * intensity) * (0.5 + 0.5 * Math.sin(beatPhase * 2 * Math.PI));
+    } else {
+      beat = 0;
+    }
+
     // road geometry ahead: curves and elevation relative to the camera
     // (scenes-path: winding bends, rolling crests and dips, block grades integrated ahead;
     // under reduced motion the profile ignores the workout so the scene stays still)
@@ -635,7 +654,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     elevationTable(
       reduced ? [] : frame.segments,
       reduced ? 0 : frame.workoutSec,
-      speed,
+      vspeed,
       dist,
       seed,
       profileStep,
@@ -649,7 +668,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       const curvature = (roadX(30) - 2 * roadX(20) + roadX(10)) / 100;
       const bankTarget = Math.max(
         -MAX_BANK,
-        Math.min(MAX_BANK, -BANK_PER_ACCEL * curvature * speed * speed),
+        Math.min(MAX_BANK, -BANK_PER_ACCEL * curvature * vspeed * vspeed),
       );
       bank = approach(bank, bankTarget, dt, 1.5);
     }
@@ -664,6 +683,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     sky.uPivot.value.set(0.5 - viewOffsetX, level);
     sky.uSunX.value = look.sunX - viewOffsetX;
     sky.uTime.value = time;
+    sky.uBeat.value = beat;
 
     s.fog.color.copy(parsed(look.fog));
     s.fog.far = look.fogFar;
@@ -685,6 +705,9 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     const tm = s.terrainMat.uniforms;
     setHex(tm.uFill.value, look.fill);
     setHex(tm.uLine.value, look.line);
+    setHex(tm.uLineB.value, look.lineB);
+    tm.uBand.value = look.band;
+    tm.uBeat.value = beat;
     setHex(tm.uFog.value, look.fog);
     tm.uFogNear.value = FOG_NEAR;
     tm.uFogFar.value = look.fogFar;
@@ -764,7 +787,11 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     dashes.instanceMatrix.needsUpdate = true;
 
     // gate at the start of the next block, in that block's colour
-    const gd = gateDepth({ speed, nextBlockInSec: frame.nextBlockInSec, viewDistance: VIEW });
+    const gd = gateDepth({
+      speed: vspeed,
+      nextBlockInSec: frame.nextBlockInSec,
+      viewDistance: VIEW,
+    });
     if (gd === null) {
       gate.visible = false;
     } else {
@@ -785,19 +812,21 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       extraFrame.dist = dist;
       extraFrame.time = time;
       extraFrame.intensity = intensity;
+      extraFrame.beat = beat;
       extraFrame.look = look;
       extraFor(def.extra)?.update(extraFrame);
     }
 
     // sprint streaks
-    s.streaks.visible = sprint > 0.01;
+    const streakLevel = Math.max(sprint, reduced ? 0 : look.streak);
+    s.streaks.visible = streakLevel > 0.01;
     if (s.streaks.visible) {
-      const len = Math.max(0.5, speed * 0.12);
+      const len = Math.max(0.5, vspeed * 0.12);
       const sp = s.streakPos;
       for (let i = 0; i < s.streakData.length; i++) {
         const k = s.streakData[i];
         if (!k) continue;
-        k.depth -= speed * 1.6 * dt;
+        k.depth -= vspeed * 1.6 * dt;
         if (k.depth < 0) k.depth += STREAK_VIEW;
         const o = i * 6;
         const x = roadX(k.depth) + k.x;
@@ -811,14 +840,18 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       }
       s.streaks.geometry.getAttribute('position').needsUpdate = true;
       s.streakMat.color.copy(edgeColor).lerp(white, 0.5);
-      s.streakMat.opacity = 0.55 * sprint;
+      s.streakMat.opacity = 0.55 * streakLevel;
     }
 
     // scene change: a wash in the scene's horizon light, peaking as the rider passes the gate
     // (outgoing scene's colour before the change, incoming after; the swap hides at the peak)
     washColor.copy(parsed(look.horizonGlow)).lerp(white, 0.3);
-    s.wash.color.copy(washColor);
-    s.wash.opacity = st.wash;
+    const ou = s.wash.uniforms;
+    ou.uColor.value.set(washColor.r, washColor.g, washColor.b);
+    ou.uWash.value = st.wash;
+    // the edge vignette needs the extra full-screen pass: Standard only
+    const vig = s.high && !reduced ? look.vignette : 0;
+    ou.uVig.value = vig;
 
     const { renderer } = s;
     renderer.info.reset();
@@ -826,7 +859,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     renderer.clear();
     renderer.render(s.bgScene, s.flatCam);
     renderer.render(s.scene, cam);
-    if (st.wash > 0.001) renderer.render(s.overlayScene, s.flatCam);
+    if (st.wash > 0.001 || vig > 0.01) renderer.render(s.overlayScene, s.flatCam);
     s.gpuTimer?.end();
     publishRenderStats({
       gpuMs: s.gpuTimer?.ms ?? null,
