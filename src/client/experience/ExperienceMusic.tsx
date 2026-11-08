@@ -273,6 +273,11 @@ export function ExperienceMusic({
                     )}
                     <option value="none">{t('experience.music.noTrack')}</option>
                   </select>
+                  {chosenOption && ref && chosenOption.playable === undefined && (
+                    <small className={styles.cap} data-testid="exp-music-region">
+                      {t('experience.music.regionUnknown')}
+                    </small>
+                  )}
                   {ann?.shortBySec !== undefined && (
                     <small className={styles.warn} data-testid="exp-music-short">
                       {t('experience.music.short', { time: formatSongTime(ann.shortBySec) })}

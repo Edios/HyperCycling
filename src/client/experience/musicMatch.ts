@@ -92,10 +92,10 @@ export function rankHits(
     const title = baseTitle(hit.ref.title);
     const artist = norm(hit.ref.artist ?? '');
     let score = 0;
+    // Whole title and whole words of the artist: "Stay" is not "Stay With Me", "Pink" not "Pink Floyd".
     if (title === wantTitle) score += 50;
-    else if (title.startsWith(wantTitle) || wantTitle.startsWith(title)) score += 30;
     else continue;
-    if (artist.includes(wantArtist)) score += 40;
+    if (` ${artist} `.includes(` ${wantArtist} `)) score += 40;
     else continue;
     const have = new Set([...versionWords(hit.ref.title), ...versionWords(hit.album ?? '')]);
     for (const w of have) if (!wanted.has(w)) score -= VERSION_PENALTY[w] ?? 0;

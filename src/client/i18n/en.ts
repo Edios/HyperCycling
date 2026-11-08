@@ -887,6 +887,8 @@ export const en = {
       short: 'This song is {time} shorter than the part. Add a second song with the same BPM.',
       bpmFits: 'Tempo {bpm} BPM suits this part.',
       bpmOff: 'Tempo {bpm} BPM does not suit this part (2 BPM = 1 RPM).',
+      regionUnknown:
+        'Region not verified: Spotify did not say whether this song plays in your country.',
       fromLibrary: 'from your library',
       manualLabel: 'Spotify link for part {n}',
       manualPlaceholder: 'Paste a Spotify track link',

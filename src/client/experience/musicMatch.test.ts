@@ -76,6 +76,16 @@ describe('rankHits', () => {
     expect(ranked).toEqual([]);
   });
 
+  it('matches whole artist words and the whole title', () => {
+    const want = { artist: 'Pink', title: 'Stay' };
+    const ranked = rankHits(want, [
+      hit('a0000000000', 'Stay', 'Pinkerton'),
+      hit('b0000000000', 'Stay With Me', 'Pink'),
+      hit('c0000000000', 'Stay', 'Pink'),
+    ]);
+    expect(ranked.map((r) => r.hit.ref.id)).toEqual(['c0000000000']);
+  });
+
   it('keeps a remix when the suggestion asks for one', () => {
     const want = { artist: 'Chase & Status', title: 'Blind Faith (Loadstar Remix)' };
     const ranked = rankHits(want, [

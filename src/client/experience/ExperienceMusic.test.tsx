@@ -114,6 +114,22 @@ describe('ExperienceMusic', () => {
     expect(first.value).not.toBe('0'); // an alternative took its place
   });
 
+  it('shows "region not verified" when Spotify sent no availability', async () => {
+    setup({
+      provider: providerFor((q) => everything(q).map((h) => ({ ...h, playable: undefined }))),
+    });
+    fireEvent.click(screen.getByTestId('exp-music-match'));
+    await screen.findByTestId('exp-music-review');
+    expect(screen.getAllByTestId('exp-music-region')).toHaveLength(11);
+  });
+
+  it('shows no region note when availability is known', async () => {
+    setup({ provider: providerFor(everything) });
+    fireEvent.click(screen.getByTestId('exp-music-match'));
+    await screen.findByTestId('exp-music-review');
+    expect(screen.queryByTestId('exp-music-region')).toBeNull();
+  });
+
   it('lets the rider switch to an alternative', async () => {
     const onChoices = setup({ provider: providerFor(everything) });
     fireEvent.click(screen.getByTestId('exp-music-match'));

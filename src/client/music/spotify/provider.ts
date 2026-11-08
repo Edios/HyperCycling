@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { TrackRef } from '../../../domain/workout';
 import type { MusicProvider, TrackInfo } from '../types';
 import { createSpotifyClient, type SpotifyClient, type SpotifyStore } from './client';
-import { SpotifyError } from './errors';
+import { isSpotifyError, SpotifyError } from './errors';
 
 export const FADE_STEPS = 6;
 
@@ -310,9 +310,24 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
     async searchTracks(query, limit = 8) {
       const q = query.trim();
       if (!q) return [];
-      const body = await client.request('GET', '/v1/search', {
-        query: { q, type: 'track', limit, market: 'from_token' },
-      });
+      let body: unknown;
+      let regionFailed = false;
+      try {
+        body = await client.request('GET', '/v1/search', {
+          query: { q, type: 'track', limit, market: 'from_token' },
+        });
+      } catch (err) {
+        // `from_token` may need a scope this app does not ask for (user-read-private). Any other
+        // client error: ask again without a market; the hits then carry no availability.
+        const status = isSpotifyError(err) ? err.status : undefined;
+        const clientError =
+          status !== undefined && status >= 400 && status < 500 && status !== 401 && status !== 429;
+        if (!clientError) throw err;
+        body = await client.request('GET', '/v1/search', {
+          query: { q, type: 'track', limit },
+        });
+        regionFailed = true;
+      }
       const parsed = searchSchema.safeParse(body);
       if (!parsed.success) throw new SpotifyError('http');
       return parsed.data.tracks.items.map((t) => ({
@@ -325,7 +340,8 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
           startAtSec: 0,
         },
         explicit: t.explicit ?? false,
-        playable: t.is_playable,
+        // Absent = the region was not checked (Spotify did not say); never assumed playable.
+        playable: regionFailed ? undefined : t.is_playable,
         ...(t.album ? { album: t.album.name } : {}),
       }));
     },

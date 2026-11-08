@@ -48,3 +48,11 @@ The app asks for four permissions: read playback state, modify playback state, a
 | INVALID_CLIENT: Invalid redirect URI                         | The URI in the dashboard differs from the one in the table above (check `127.0.0.1`, port, trailing `/`). |
 
 Music problems never pause or change the workout: you get one warning and the ride goes on.
+
+## Dopasowanie utworów do Experience i region
+
+„Dopasuj utwory ze Spotify" szuka utworów z `market=from_token` (kraj Twojego konta) i odrzuca te, które
+Spotify oznacza jako niegrywalne u Ciebie. Aplikacja **nie prosi o zakres `user-read-private`** (ujawniałby
+kraj i e-mail konta). Jeśli Spotify odrzuci zapytanie z `from_token` albo nie poda `is_playable`, utwór nie
+jest uznany za grywalny: lista pokazuje „Region niezweryfikowany", a wyszukiwanie jest powtarzane bez
+parametru `market`. Wtedy sprawdź na liście, czy utwór gra u Ciebie, zanim zatwierdzisz wybór.

@@ -673,3 +673,54 @@ describe('playlists (library import)', () => {
     await expect(setup().provider.listPlaylists()).rejects.toMatchObject({ code: 'forbidden' });
   });
 });
+
+describe('searchTracks (region check)', () => {
+  const item = (extra: Record<string, unknown> = {}) => ({
+    id: 'abc',
+    name: 'Song',
+    duration_ms: 200_000,
+    artists: [{ name: 'A' }],
+    explicit: false,
+    ...extra,
+  });
+
+  it('asks for the rider market and keeps is_playable', async () => {
+    const seen = api(() =>
+      HttpResponse.json({
+        tracks: { items: [item({ is_playable: false }), item({ id: 'def', is_playable: true })] },
+      }),
+    );
+    const out = await setup().provider.searchTracks('track:Song artist:A');
+    expect(seen).toHaveLength(1);
+    expect(seen[0]?.query).toMatchObject({ market: 'from_token', type: 'track' });
+    expect(out.map((h) => h.playable)).toEqual([false, true]);
+  });
+
+  it('leaves playable undefined when Spotify sends no is_playable', async () => {
+    api(() => HttpResponse.json({ tracks: { items: [item()] } }));
+    const out = await setup().provider.searchTracks('q');
+    expect(out[0]?.playable).toBeUndefined();
+  });
+
+  it('retries without market after a 4xx and reports the region as unverified', async () => {
+    const seen = api((s) =>
+      s.query.market
+        ? error(403, '', 'Insufficient client scope')
+        : HttpResponse.json({ tracks: { items: [item({ is_playable: true })] } }),
+    );
+    const out = await setup().provider.searchTracks('q');
+    expect(seen).toHaveLength(2);
+    expect(seen[0]?.query.market).toBe('from_token');
+    expect(seen[1]?.query.market).toBeUndefined();
+    // even if the answer carried a flag it was not computed for the rider's market
+    expect(out[0]?.playable).toBeUndefined();
+  });
+
+  it('does not retry on 401, 429 or server errors', async () => {
+    for (const status of [401, 429, 500]) {
+      const seen = api(() => error(status, ''));
+      await expect(setup().provider.searchTracks('q')).rejects.toBeDefined();
+      expect(seen).toHaveLength(1);
+    }
+  });
+});
