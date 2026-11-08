@@ -248,6 +248,32 @@
   text-underline-offset: 3px;
 }
 
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.25rem;
+}
+
+.footer p {
+  margin: 0;
+}
+
+.footerInfo {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+
+.footerCredit {
+  flex: 1 0 100%;
+}
+
 @media (max-width: 759.98px) {
   .footer {
     padding: 1rem 16px 1.5rem;

@@ -203,14 +203,24 @@ export function Home() {
         })}
       </div>
       <footer className={styles.footer} data-testid="home-footer">
-        {t('home.bpmCredit')}{' '}
-        <a href="https://getsongbpm.com" target="_blank" rel="noopener">
-          {t('home.bpmSource')}
-        </a>
-        {' · '}
-        <a href="https://www.deezer.com" target="_blank" rel="noopener">
-          {t('home.bpmSourceDeezer')}
-        </a>
+        <p className={styles.footerInfo}>{t('home.footerInfo')}</p>
+        <nav className={styles.footerLinks} aria-label={t('home.footerInfo')}>
+          <a href="https://github.com/Edios/HyperCycling" target="_blank" rel="noopener">
+            {t('home.footerGithub')}
+          </a>
+          <Link to="/settings?section=about">{t('home.footerPrivacy')}</Link>
+          <Link to="/settings?section=about">{t('home.footerAbout')}</Link>
+        </nav>
+        <p className={styles.footerCredit}>
+          {t('home.bpmCredit')}{' '}
+          <a href="https://getsongbpm.com" target="_blank" rel="noopener">
+            {t('home.bpmSource')}
+          </a>
+          {' · '}
+          <a href="https://www.deezer.com" target="_blank" rel="noopener">
+            {t('home.bpmSourceDeezer')}
+          </a>
+        </p>
       </footer>
     </div>
   );

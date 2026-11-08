@@ -60,10 +60,31 @@ test('phone: hero above a stacked dock, no horizontal scroll', async ({ page }, 
   await shot(page, `home-phone-${info.project.name}`);
 });
 
+test('footer: project info, GitHub, privacy and about links; no horizontal scroll at 360 px', async ({
+  page,
+}, info) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await seedSettings(page, info, null);
+  await page.goto('./#/');
+  const footer = page.getByTestId('home-footer');
+  await expect(footer).toContainText('MIT');
+  await expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
+    'href',
+    'https://github.com/Edios/HyperCycling',
+  );
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+  await footer.getByRole('link', { name: 'Privacy' }).click();
+  await expect(page.getByTestId('about-legal')).toBeInViewport();
+});
+
 test('GetSongBPM link is in the static HTML source (no JS needed)', async ({ request }) => {
   const res = await request.get('./');
   expect(res.ok()).toBe(true);
   expect(await res.text()).toContain('<a href="https://getsongbpm.com"');
+  expect(await res.text()).toContain('https://github.com/Edios/HyperCycling');
 });
 
 test('Experience tile: hero offers Neon Grid, scenario picker and Setup with the scene preset', async ({
