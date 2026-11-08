@@ -37,6 +37,18 @@ export interface SongSuggestion {
   bpm?: number;
 }
 
+/** Preferred recording of a song: the album cut, an extended mix or the radio edit. */
+export type SongVersion = 'album' | 'extended' | 'radio';
+
+/** A song of a slot's authored queue. */
+export interface QueueItem extends SongSuggestion {
+  /** Expected length of the preferred version, seconds. */
+  durationSec?: number;
+  /** Where playback starts (skips an intro), set by the author, seconds. */
+  startOffsetSec?: number;
+  version?: SongVersion;
+}
+
 /** What to look for in one song slot (`slot` = index in the workout's songs). */
 export interface MusicHint extends SongSuggestion {
   slot: number;
@@ -46,7 +58,15 @@ export interface MusicHint extends SongSuggestion {
   noBeat?: boolean;
   /** Accept explicit versions (default: prefer the clean one). */
   explicit?: boolean;
-  /** Other songs for the same slot, in order of preference. */
+  /** Where playback of this (first) song starts, seconds. */
+  startOffsetSec?: number;
+  version?: SongVersion;
+  /** The songs that follow this one in the slot, in order (the authored queue is this + these). */
+  queue?: QueueItem[];
+  /**
+   * The reserve, in order of preference. Never added on top of the queue: it only stands in
+   * for a song that is missing from the rider's catalogue or not playable in their region.
+   */
   alternatives?: SongSuggestion[];
 }
 
@@ -88,11 +108,22 @@ const suggestionSchema = z.object({
   bpm: z.number().min(BPM_MIN).max(BPM_MAX).optional(),
 });
 
+const versionSchema = z.enum(['album', 'extended', 'radio']);
+
+const queueItemSchema = suggestionSchema.extend({
+  durationSec: z.number().int().min(10).max(1800).optional(),
+  startOffsetSec: z.number().int().min(0).max(600).optional(),
+  version: versionSchema.optional(),
+});
+
 const musicHintSchema = suggestionSchema.extend({
   slot: z.number().int().min(0),
   durationSec: z.number().int().min(10).max(1800).optional(),
+  startOffsetSec: z.number().int().min(0).max(600).optional(),
+  version: versionSchema.optional(),
   noBeat: z.boolean().optional(),
   explicit: z.boolean().optional(),
+  queue: z.array(queueItemSchema).max(8).optional(),
   alternatives: z.array(suggestionSchema).max(5).optional(),
 });
 
@@ -211,10 +242,59 @@ export function duplicateHintSlots(e: Experience): [number, number][] {
   const first = new Map<string, number>();
   const out: [number, number][] = [];
   for (const h of [...(e.musicHints ?? [])].sort((a, b) => a.slot - b.slot)) {
-    const key = sameSong(h);
-    const earlier = first.get(key);
-    if (earlier === undefined) first.set(key, h.slot);
-    else out.push([earlier, h.slot]);
+    for (const item of hintQueue(h)) {
+      const key = sameSong(item);
+      const earlier = first.get(key);
+      if (earlier === undefined) first.set(key, h.slot);
+      else if (earlier !== h.slot) out.push([earlier, h.slot]);
+    }
+  }
+  return out;
+}
+
+/** The authored queue of a hint: the song itself, then `queue`. */
+export function hintQueue(h: MusicHint): QueueItem[] {
+  const { slot: _s, queue, alternatives: _a, noBeat: _n, explicit: _e, ...first } = h;
+  void _s;
+  void _a;
+  void _n;
+  void _e;
+  return [first, ...(queue ?? [])];
+}
+
+export interface HintWarning {
+  slot: number;
+  kind: 'short' | 'duplicate';
+  /** short: seconds missing; duplicate: the earlier slot. */
+  value: number;
+}
+
+/**
+ * Checks for the scenario's author (a test, not shown to riders): the authored queue of each slot
+ * should be long enough for the slot (within `toleranceSec`) and no song may repeat between slots.
+ * Songs without a duration are not counted; a slot without any known duration is not checked.
+ */
+export function validateHintQueues(e: Experience, w: Workout, toleranceSec = 10): HintWarning[] {
+  const out: HintWarning[] = [];
+  for (const h of e.musicHints ?? []) {
+    const slot = w.songs?.[h.slot];
+    if (!slot) continue;
+    const items = hintQueue(h).filter((i) => i.durationSec !== undefined);
+    if (items.length === 0) continue;
+    const total = items.reduce((t, i) => t + ((i.durationSec ?? 0) - (i.startOffsetSec ?? 0)), 0);
+    const missing = songDurationSec(w, slot) - total;
+    if (missing > toleranceSec)
+      out.push({ slot: h.slot, kind: 'short', value: Math.round(missing) });
+  }
+  const seen = new Map<string, number>();
+  for (const h of [...(e.musicHints ?? [])].sort((a, b) => a.slot - b.slot)) {
+    for (const item of hintQueue(h)) {
+      const key = sameSong(item);
+      const earlier = seen.get(key);
+      if (earlier !== undefined && earlier !== h.slot) {
+        out.push({ slot: h.slot, kind: 'duplicate', value: earlier });
+      } else if (earlier === undefined) seen.set(key, h.slot);
+    }
   }
   return out;
 }

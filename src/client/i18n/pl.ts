@@ -898,7 +898,7 @@ export const pl: Messages = {
       clear: 'Wyczyść dopasowanie',
       working: 'Szukam na Spotify… {done} z {total}',
       review:
-        'Sprawdź utwory. Zmień wybór na alternatywę albo wklej link do Spotify, potem zapisz.',
+        'Sprawdź dopasowanie ustalonych utworów i zatwierdź. Ręczne zmiany są w sekcji Zaawansowane.',
       choose: 'Utwór do części {n}',
       noTrack: 'Bez utworu (cisza)',
       notInRegion: 'niedostępny w Twoim kraju',
@@ -911,6 +911,13 @@ export const pl: Messages = {
       regionUnknown: 'Region niezweryfikowany: Spotify nie podał, czy ten utwór gra w Twoim kraju.',
       duplicate: 'Ten sam utwór w częściach {a} i {b}.',
       fromLibrary: 'z Twojej biblioteki',
+      advanced: 'Zaawansowane: zmień utwory ręcznie',
+      how: {
+        found: 'znaleziono',
+        longer: 'wybrana dłuższa wersja',
+        replaced: 'niedostępny w Twoim kraju lub brak w katalogu: zamiennik z rezerwy',
+        missing: 'brak utworu i zamiennika',
+      },
       manualLabel: 'Link do Spotify dla części {n}',
       manualPlaceholder: 'Wklej link do utworu ze Spotify',
       manualUse: 'Użyj linku',

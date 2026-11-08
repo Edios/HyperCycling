@@ -93,3 +93,26 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.5rem;
 }
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.9375rem;
+}
+
+.advanced summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--mut);
+  font-size: 0.9375rem;
+}
+
+.advanced[open] {
+  display: grid;
+  gap: 0.5rem;
+}

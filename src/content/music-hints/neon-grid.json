@@ -89,9 +89,18 @@
           "bpm": 128
         },
         {
+          "artist": "Avicii",
+          "title": "Waiting For Love",
+          "bpm": 128
+        }
+      ],
+      "version": "extended",
+      "queue": [
+        {
           "artist": "Zedd",
           "title": "Clarity",
-          "bpm": 128
+          "bpm": 128,
+          "durationSec": 271
         }
       ]
     },
@@ -156,17 +165,26 @@
       "artist": "Eric Prydz",
       "title": "Pjanoo",
       "bpm": 126,
-      "durationSec": 300,
+      "durationSec": 426,
       "alternatives": [
-        {
-          "artist": "David Guetta",
-          "title": "Titanium",
-          "bpm": 126
-        },
         {
           "artist": "Avicii",
           "title": "Levels",
           "bpm": 126
+        },
+        {
+          "artist": "Calvin Harris",
+          "title": "Summer",
+          "bpm": 128
+        }
+      ],
+      "version": "extended",
+      "queue": [
+        {
+          "artist": "David Guetta",
+          "title": "Titanium",
+          "bpm": 126,
+          "durationSec": 245
         }
       ]
     },
@@ -178,14 +196,22 @@
       "durationSec": 181,
       "alternatives": [
         {
-          "artist": "Sub Focus",
-          "title": "Tidal Wave",
-          "bpm": 174
-        },
-        {
           "artist": "Pendulum",
           "title": "Tarantula",
           "bpm": 174
+        },
+        {
+          "artist": "Sub Focus",
+          "title": "Rock It",
+          "bpm": 174
+        }
+      ],
+      "queue": [
+        {
+          "artist": "Sub Focus",
+          "title": "Tidal Wave",
+          "bpm": 174,
+          "durationSec": 240
         }
       ]
     },
@@ -297,9 +323,18 @@
           "bpm": 128
         },
         {
+          "artist": "Avicii",
+          "title": "Waiting For Love",
+          "bpm": 128
+        }
+      ],
+      "version": "extended",
+      "queue": [
+        {
           "artist": "Zedd",
           "title": "Clarity",
-          "bpm": 128
+          "bpm": 128,
+          "durationSec": 271
         }
       ]
     },
@@ -386,14 +421,22 @@
       "durationSec": 181,
       "alternatives": [
         {
-          "artist": "Sub Focus",
-          "title": "Tidal Wave",
-          "bpm": 174
-        },
-        {
           "artist": "Pendulum",
           "title": "Tarantula",
           "bpm": 174
+        },
+        {
+          "artist": "Sub Focus",
+          "title": "Rock It",
+          "bpm": 174
+        }
+      ],
+      "queue": [
+        {
+          "artist": "Sub Focus",
+          "title": "Tidal Wave",
+          "bpm": 174,
+          "durationSec": 240
         }
       ]
     },
@@ -478,17 +521,26 @@
       "artist": "Eric Prydz",
       "title": "Pjanoo",
       "bpm": 126,
-      "durationSec": 300,
+      "durationSec": 426,
       "alternatives": [
-        {
-          "artist": "David Guetta",
-          "title": "Titanium",
-          "bpm": 126
-        },
         {
           "artist": "Avicii",
           "title": "Levels",
           "bpm": 126
+        },
+        {
+          "artist": "Calvin Harris",
+          "title": "Summer",
+          "bpm": 128
+        }
+      ],
+      "version": "extended",
+      "queue": [
+        {
+          "artist": "David Guetta",
+          "title": "Titanium",
+          "bpm": 126,
+          "durationSec": 245
         }
       ]
     },
@@ -519,14 +571,22 @@
       "durationSec": 181,
       "alternatives": [
         {
-          "artist": "Sub Focus",
-          "title": "Tidal Wave",
-          "bpm": 174
-        },
-        {
           "artist": "Pendulum",
           "title": "Tarantula",
           "bpm": 174
+        },
+        {
+          "artist": "Sub Focus",
+          "title": "Rock It",
+          "bpm": 174
+        }
+      ],
+      "queue": [
+        {
+          "artist": "Sub Focus",
+          "title": "Tidal Wave",
+          "bpm": 174,
+          "durationSec": 240
         }
       ]
     },

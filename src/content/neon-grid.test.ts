@@ -7,6 +7,7 @@ import {
   experienceProblems,
   resolveChapters,
   songStartsSec,
+  validateHintQueues,
 } from '../domain/experience';
 import { flattenWorkout } from '../domain/segments';
 import { totalDurationSec } from '../domain/workout';
@@ -183,5 +184,42 @@ describe('Neon Grid owner picks', () => {
     }
     expect(title('neon-grid-30', 1)).toBe(title('neon-grid-45', 2));
     expect(title('neon-grid-45-light', 9)).toBe(title('neon-grid-45', 9));
+  });
+});
+
+describe('Neon Grid authored music queues', () => {
+  const hints = (id: string) => builtinExperiences.find((e) => e.id === id)!.musicHints!;
+  const slotOf = (id: string, title: string): number =>
+    hints(id).find((h) => h.title === title)!.slot;
+
+  it('queues the two songs for the slots with short songs, offsets and versions valid', () => {
+    for (const id of ['neon-grid-45', 'neon-grid-45-light']) {
+      const dywc = hints(id).find((h) => h.title === "Don't You Worry Child")!;
+      expect(dywc.version).toBe('extended');
+      expect(dywc.queue?.map((q) => q.title)).toEqual(['Clarity']);
+    }
+    for (const id of ['neon-grid-45', 'neon-grid-45-light', 'neon-grid-30']) {
+      const bc = hints(id).find((h) => h.title === 'Basket Case')!;
+      expect(bc.queue?.map((q) => q.title)).toEqual(['Tidal Wave']);
+    }
+    for (const id of ['neon-grid-45', 'neon-grid-30']) {
+      const pj = hints(id).find((h) => h.title === 'Pjanoo')!;
+      expect(pj.queue?.map((q) => q.title)).toEqual(['Titanium']);
+    }
+    expect(slotOf('neon-grid-45', 'Pjanoo')).toBe(8);
+  });
+
+  it('the author validator finds no short queue in the reworked slots and no repeat across slots of one scenario beyond the known ones', () => {
+    for (const e of builtinExperiences.filter((x) => x.id.startsWith('neon-grid'))) {
+      const w = getWorkout(e.workoutRef.id)!;
+      const fixed = new Set(
+        (e.musicHints ?? [])
+          .filter((h) => ["Don't You Worry Child", 'Pjanoo', 'Basket Case'].includes(h.title))
+          .map((h) => h.slot),
+      );
+      const warns = validateHintQueues(e, w);
+      expect(warns.filter((x) => x.kind === 'short' && fixed.has(x.slot))).toEqual([]);
+      expect(warns.filter((x) => x.kind === 'duplicate' && fixed.has(x.slot))).toEqual([]);
+    }
   });
 });

@@ -17,7 +17,9 @@ interface Props {
   candidates?: readonly PlanCandidate[];
   /** Tracks used by other slots (not offered as reserve). */
   usedIds?: ReadonlySet<string>;
-  onChange: (next: TrackRef[]) => void;
+  onChange?: (next: TrackRef[]) => void;
+  /** Totals and status only: no offsets or buttons. */
+  readOnly?: boolean;
   testId?: string;
 }
 
@@ -55,9 +57,11 @@ export function SlotQueue({
   rest = false,
   candidates = [],
   usedIds,
-  onChange,
+  onChange: onChangeProp,
+  readOnly = false,
   testId = 'slot-queue',
 }: Props) {
+  const onChange = onChangeProp ?? (() => undefined);
   const t = useT();
   const total = queueSec(tracks);
   const gap = Math.round(slotSec - total);
@@ -82,7 +86,7 @@ export function SlotQueue({
     <div className={styles.queue} data-testid={testId}>
       {tracks.length === 0 ? (
         <small className={styles.cap}>{t('slotQueue.empty')}</small>
-      ) : (
+      ) : readOnly ? null : (
         <ol className={styles.list}>
           {tracks.map((tr, i) => {
             const longer = longerVersion(tr, candidates);
@@ -166,7 +170,7 @@ export function SlotQueue({
           {t(status.key, status.vars)}
         </small>
       )}
-      {candidates.length > 0 && (
+      {!readOnly && candidates.length > 0 && (
         <Button
           disabled={reserve.length === 0}
           onClick={() => {

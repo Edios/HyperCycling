@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   experienceProblems,
+  hintQueue,
+  validateHintQueues,
   experienceSchema,
   experienceText,
   resolveChapters,
@@ -8,7 +10,7 @@ import {
   withExperiencePins,
   type Experience,
 } from './experience';
-import type { Workout } from './workout';
+import { songDurationSec, type Workout } from './workout';
 
 const steady = (id: string, durationSec: number) =>
   ({ kind: 'steady', id, durationSec, intensity: { effort: 4 } }) as const;
@@ -187,5 +189,46 @@ describe('musicHints', () => {
     expect(experienceProblems(past, WORKOUT).join()).toMatch(/past the last song/);
     const twice = parse({ musicHints: [hint, hint] });
     expect(experienceProblems(twice, WORKOUT).join()).toMatch(/duplicate music hint/);
+  });
+});
+
+describe('authored queue in a hint', () => {
+  const base = { slot: 0, artist: 'A', title: 'One', durationSec: 100 };
+  it('accepts queue, offsets and versions and rejects a bad version', () => {
+    const e = parse({
+      musicHints: [
+        {
+          ...base,
+          version: 'extended',
+          startOffsetSec: 8,
+          queue: [{ artist: 'B', title: 'Two', durationSec: 200, startOffsetSec: 4 }],
+        },
+      ],
+    });
+    expect(hintQueue(e.musicHints![0]!).map((i) => i.title)).toEqual(['One', 'Two']);
+    expect(() => parse({ musicHints: [{ ...base, version: 'live' }] })).toThrow();
+  });
+  it('validateHintQueues warns about a short queue and about repeats between slots', () => {
+    const w = { ...WORKOUT } as Workout;
+    const slotSec = songDurationSec(w, w.songs![0]!);
+    const short = parse({ musicHints: [{ ...base, durationSec: slotSec - 60 }] });
+    expect(validateHintQueues(short, w)).toEqual([{ slot: 0, kind: 'short', value: 60 }]);
+    const filled = parse({
+      musicHints: [
+        {
+          ...base,
+          durationSec: slotSec - 60,
+          queue: [{ artist: 'B', title: 'Two', durationSec: 70 }],
+        },
+      ],
+    });
+    expect(validateHintQueues(filled, w)).toEqual([]);
+    const dup = parse({
+      musicHints: [
+        { ...base, durationSec: slotSec },
+        { slot: 1, artist: 'Z', title: 'Z', queue: [{ artist: 'a', title: 'ONE' }] },
+      ],
+    });
+    expect(validateHintQueues(dup, w)).toContainEqual({ slot: 1, kind: 'duplicate', value: 0 });
   });
 });

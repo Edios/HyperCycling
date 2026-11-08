@@ -34,6 +34,10 @@ Pola wpisu:
   bez niej aplikacja woli wersję studyjną i odrzuca live, karaoke, cover i wersje remaster.
 - `bpm`: tempo wg autora (liczba); porównywane z zakresem BPM slotu (2 BPM = 1 RPM). Tempo z biblioteki
   użytkownika (po tagowaniu BPM) ma pierwszeństwo.
+- `version`: `album` | `extended` | `radio`, preferowana wersja (aplikacja wybiera ją z wyników wyszukiwania).
+- `startOffsetSec`: ręczne przesunięcie początku (pominięcie intra), ustawia autor.
+- `queue`: lista kolejnych utworów slotu (`artist`, `title`, `bpm`, `durationSec`, `startOffsetSec`, `version`); kolejka slotu to utwór wpisu + `queue`, w tej kolejności.
+- `alternatives`: rezerwa w ustalonej kolejności. NIE jest dokładana do kolejki: zastępuje tylko utwór niedostępny w regionie lub nieznaleziony (zamiennik o najbliższym BPM, oznaczony w UI).
 - `durationSec`: oczekiwana długość; utwór krótszy od slotu o ponad 20 s dostaje ostrzeżenie
   („dołóż drugi utwór z takim samym BPM").
 - `noBeat`: `true` dla utworu bez rytmu (cooldown), tempo nie jest sprawdzane.
@@ -60,3 +64,13 @@ potem rezerwa z alternatyw rankowanych tempem (2 BPM = 1 RPM) bez duplikatów mi
 dalej brakuje czasu (tolerancja 10 s) pokazuje „brakuje m:ss, dodaj utwór ok. N BPM" (w odpoczynku
 cisza jest dozwolona). Wszystko jest propozycją: nic się nie zapisuje, dopóki użytkownik nie
 zatwierdzi listy.
+
+### Experience: muzyka autorowana
+
+Scenariusz ustala kolejkę utworów slotu; planer **nie** dobiera w Experience niczego dodatkowo.
+„Dopasuj ze Spotify" pokazuje wynik dopasowania (znaleziono / wybrana dłuższa wersja / zamiennik
+z rezerwy / brak) do zatwierdzenia jednym kliknięciem; ręczna zmiana jest w sekcji „Zaawansowane".
+Ten sam scenariusz i ten sam katalog dają tę samą kolejkę. Walidator dla autora
+(`validateHintQueues`, sprawdzany w `src/content/neon-grid.test.ts`): suma czasów kolejki >= czas slotu
+minus 10 s oraz brak powtórzeń utworu między slotami. W zwykłych treningach (edytor) planer jest
+tylko pomocnikiem: licznik brakującego czasu, bez cichych zmian.

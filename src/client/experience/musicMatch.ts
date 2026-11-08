@@ -4,8 +4,9 @@
  * Nothing leaves the app except the Spotify search the rider's own token makes.
  */
 import { rankTracks } from '../../domain/bpm-match';
-import type { PlanCandidate } from '../../domain/slot-plan';
+import { pickPreferred, songKey, type PlanCandidate } from '../../domain/slot-plan';
 import {
+  hintQueue,
   withExperiencePins,
   type Experience,
   type MusicHint,
@@ -183,6 +184,152 @@ export async function resolveSlot(hint: MusicHint, search: SearchFn): Promise<Sl
     options,
     candidates,
   };
+}
+
+export type ItemHow = 'found' | 'longer' | 'replaced' | 'missing';
+
+export interface ItemResult {
+  want: SongSuggestion;
+  how: ItemHow;
+  /** The track chosen for this song (or its stand-in); absent when `how` is 'missing'. */
+  ref?: TrackRef;
+  /** The reserve song that took the place of an unavailable one. */
+  stoodInFor?: SongSuggestion;
+  /** Spotify did not say whether the track plays in the rider's country (no `is_playable`). */
+  regionUnverified?: boolean;
+}
+
+/** The authored queue of one slot matched against the rider's catalogue. Deterministic. */
+export interface QueueMatch {
+  slot: number;
+  items: ItemResult[];
+  /** The tracks to play, in order, with the author's start offsets. Nothing is added to them. */
+  queue: TrackRef[];
+  /** All plausible hits (every version, reserve included) for the advanced editor. */
+  candidates: PlanCandidate[];
+}
+
+async function searchSong(
+  want: SongSuggestion,
+  source: 'main' | 'alt',
+  opts: { explicit?: boolean; durationSec?: number },
+  search: SearchFn,
+): Promise<PlanCandidate[]> {
+  const hits = await search(searchQuery(want), 8);
+  return rankHits(want, hits, opts)
+    .filter((r) => r.score >= MIN_SCORE)
+    .map((r) => ({
+      track: r.hit.ref,
+      origin: source,
+      playable: r.hit.playable,
+      explicit: r.hit.explicit,
+      ...(r.hit.album ? { album: r.hit.album } : {}),
+      ...(want.bpm !== undefined ? { bpm: want.bpm } : {}),
+    }));
+}
+
+/**
+ * Matches the slot's authored queue song by song. The preferred version is picked among the
+ * results (a longer album/extended cut over a radio edit); a song that is not found or not
+ * playable in the rider's region is replaced by the reserve song with the closest tempo. No song
+ * is added beyond the authored queue.
+ */
+export async function resolveHintQueue(
+  hint: MusicHint,
+  search: SearchFn,
+  slotSec: number,
+): Promise<QueueMatch> {
+  const explicit = hint.explicit !== undefined ? { explicit: hint.explicit } : {};
+  const reserve: { want: SongSuggestion; cands: PlanCandidate[] }[] = [];
+  const items: ItemResult[] = [];
+  const candidates: PlanCandidate[] = [];
+  const queue: TrackRef[] = [];
+  const spent = new Set<string>();
+  const authored = hintQueue(hint);
+  let remaining = slotSec;
+  let reserveLoaded = false;
+  for (const item of authored) {
+    const cands = await searchSong(
+      item,
+      'main',
+      { ...explicit, ...(item.durationSec ? { durationSec: item.durationSec } : {}) },
+      search,
+    );
+    candidates.push(...cands);
+    const playable = cands.filter((c) => c.playable !== false);
+    let pick = pickPreferred(playable, item.version, remaining);
+    let how: ItemHow = 'found';
+    let stoodInFor: SongSuggestion | undefined;
+    if (pick) {
+      const shortest = Math.min(...playable.map((c) => c.track.durationSec ?? Infinity));
+      if ((pick.track.durationSec ?? 0) > shortest + 10) how = 'longer';
+    } else {
+      if (!reserveLoaded) {
+        reserveLoaded = true;
+        for (const alt of hint.alternatives ?? []) {
+          const c = await searchSong(alt, 'alt', explicit, search);
+          candidates.push(...c);
+          reserve.push({ want: alt, cands: c });
+        }
+      }
+      const free = reserve.filter(
+        (r) =>
+          !spent.has(songKey({ title: r.want.title, artist: r.want.artist })) &&
+          r.cands.some((c) => c.playable !== false),
+      );
+      const near = [...free].sort(
+        (a, b) =>
+          Math.abs((a.want.bpm ?? 0) - (item.bpm ?? a.want.bpm ?? 0)) -
+          Math.abs((b.want.bpm ?? 0) - (item.bpm ?? b.want.bpm ?? 0)),
+      )[0];
+      if (near) {
+        pick = pickPreferred(
+          near.cands.filter((c) => c.playable !== false),
+          undefined,
+          remaining,
+        );
+        spent.add(songKey({ title: near.want.title, artist: near.want.artist }));
+        how = 'replaced';
+        stoodInFor = item;
+      }
+    }
+    if (!pick) {
+      items.push({ want: item, how: 'missing' });
+      continue;
+    }
+    const ref: TrackRef = { ...pick.track, startAtSec: item.startOffsetSec ?? 0 };
+    spent.add(songKey(ref));
+    queue.push(ref);
+    remaining -= Math.max(0, (ref.durationSec ?? 0) - ref.startAtSec);
+    items.push({
+      want: item,
+      how,
+      ref,
+      ...(stoodInFor ? { stoodInFor } : {}),
+      ...(pick.playable === undefined ? { regionUnverified: true } : {}),
+    });
+  }
+  if (!reserveLoaded) {
+    for (const alt of hint.alternatives ?? []) {
+      candidates.push(...(await searchSong(alt, 'alt', explicit, search)));
+    }
+  }
+  return { slot: hint.slot, items, queue, candidates };
+}
+
+/** Every hinted slot's authored queue, sequentially (gentle on the rate limit). */
+export async function resolveAllQueues(
+  hints: readonly MusicHint[],
+  search: SearchFn,
+  slotSecOf: (slot: number) => number,
+  onProgress?: (done: number, total: number) => void,
+): Promise<QueueMatch[]> {
+  const out: QueueMatch[] = [];
+  for (const h of hints) {
+    out.push(await resolveHintQueue(h, search, slotSecOf(h.slot)));
+    onProgress?.(out.length, hints.length);
+  }
+  return out;
 }
 
 /** Every hinted slot, sequentially (gentle on the rate limit). Errors (token, 429) propagate. */

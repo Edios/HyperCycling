@@ -265,3 +265,28 @@ export function longerVersion(
   if (longer.length === 0) return undefined;
   return longer.reduce((a, b) => ((b.track.durationSec ?? 0) < (a.track.durationSec ?? 0) ? b : a));
 }
+
+/**
+ * Picks the recording of an authored song: the author's preferred version when the results show
+ * it ('radio' = the shortest clean one, 'extended' = the longest, 'album'/none = the cut that
+ * covers the remaining time with the least overshoot). Live/remix/karaoke never win unless wanted.
+ */
+export function pickPreferred(
+  versions: readonly PlanCandidate[],
+  version: 'album' | 'extended' | 'radio' | undefined,
+  remainingSec: number,
+  wantRemix = false,
+): PlanCandidate | undefined {
+  const ok = versions.filter((v) => v.playable !== false);
+  if (ok.length === 0) return undefined;
+  const best = Math.min(...ok.map((v) => versionRank(v, wantRemix)));
+  const pool = ok.filter((v) => versionRank(v, wantRemix) <= best + (version === 'radio' ? 5 : 0));
+  const known = pool.filter((v) => v.track.durationSec !== undefined);
+  if (known.length === 0 || version === undefined || version === 'album') {
+    return pickVersion(ok, remainingSec, wantRemix);
+  }
+  const key = (v: PlanCandidate): number => v.track.durationSec as number;
+  return known.reduce((a, b) =>
+    version === 'extended' ? (key(b) > key(a) ? b : a) : key(b) < key(a) ? b : a,
+  );
+}

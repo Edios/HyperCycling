@@ -897,7 +897,8 @@ export const en = {
       rematch: 'Match again',
       clear: 'Clear matches',
       working: 'Searching Spotify… {done} of {total}',
-      review: 'Check the songs. Change one to an alternative or paste a Spotify link, then save.',
+      review:
+        'Check how the scenario songs matched your Spotify, then approve. Manual changes are under Advanced.',
       choose: 'Song for part {n}',
       noTrack: 'No song (silence)',
       notInRegion: 'not available in your country',
@@ -911,6 +912,13 @@ export const en = {
         'Region not verified: Spotify did not say whether this song plays in your country.',
       duplicate: 'The same song is suggested for parts {a} and {b}.',
       fromLibrary: 'from your library',
+      advanced: 'Advanced: change songs by hand',
+      how: {
+        found: 'found',
+        longer: 'longer version chosen',
+        replaced: 'not available in your country or not found: stand-in from the reserve',
+        missing: 'no song and no stand-in',
+      },
       manualLabel: 'Spotify link for part {n}',
       manualPlaceholder: 'Paste a Spotify track link',
       manualUse: 'Use link',
