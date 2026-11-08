@@ -58,21 +58,32 @@ function isHard(s: Segment): boolean {
 }
 
 /**
- * Whether a scene may change at workout second `t`. At a block boundary a change is fine when the
- * block before it is NOT hard (rest or moderate → anything, including hard work: the dramatic
- * moment, the new world arrives with the pre-cue and the wash is centred on the boundary). Hard →
- * hard (or sprint → sprint) is refused: the wash would start in the middle of an effort. Inside a
- * running block a scene never changes while it is a sprint or effort 9+.
+ * Whether a scene may change at workout second `t`. The wash lasts SCENE_FADE_SEC, centred on `t`,
+ * so the whole window [t - half, t + half] is checked, not just the point. At a block boundary
+ * (within BOUNDARY_TOLERANCE_SEC of a block start) the block that starts there is exempt: rest or
+ * moderate → anything, including hard work (the dramatic moment, the new world arrives with the
+ * pre-cue). Every OTHER block touched by the window must not be hard: hard → hard (or sprint →
+ * sprint) is refused, and so is a change 1–2.5 s after a hard block whose wash would reach back
+ * into it. Inside a running block the block itself must not be hard either.
  */
 export function sceneChangeAllowed(segments: readonly Segment[], t: number): boolean {
+  const half = SCENE_FADE_SEC / 2;
+  let at = -1;
   for (let i = 0; i < segments.length; i++) {
     const s = segments[i] as Segment;
-    if (t < s.startSec || t >= s.startSec + s.durationSec) continue;
-    if (t - s.startSec < BOUNDARY_TOLERANCE_SEC) {
-      const prev = segments[i - 1];
-      return !prev || !isHard(prev);
+    if (t >= s.startSec && t < s.startSec + s.durationSec) {
+      at = i;
+      break;
     }
-    return !isHard(s);
+  }
+  if (at < 0) return true;
+  const cur = segments[at] as Segment;
+  const exempt = at > 0 && t - cur.startSec < BOUNDARY_TOLERANCE_SEC ? at : -1;
+  for (let i = 0; i < segments.length; i++) {
+    if (i === exempt) continue;
+    const s = segments[i] as Segment;
+    if (s.startSec >= t + half || s.startSec + s.durationSec <= t - half) continue;
+    if (isHard(s)) return false;
   }
   return true;
 }

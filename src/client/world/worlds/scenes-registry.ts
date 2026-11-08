@@ -66,7 +66,10 @@ export type SceneLook = {
   /** Always-on speed streaks 0..1 (a sprint adds more) and darkened screen edges 0..1 (Standard only). */
   streak: number;
   vignette: number;
-  /** Construction along the road (scenes-constructs CONSTRUCT id) and terrain terrace step (0 = smooth). */
+  /**
+   * Construction along the road (scenes-constructs CONSTRUCT id; an enum, NOT interpolable between
+   * variants: the scene mixer snaps it) and terrain terrace step (0 = smooth).
+   */
   construct: number;
   terrace: number;
   /** Road character: left-right bend factor (1 = base, ≤ MAX_BEND) and hill factor (1 = base, ≤ MAX_HILLS). */

@@ -47,33 +47,16 @@ const smooth = (x: number): number => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 
 /** Fades an object in over the far end of the view and out right in front of the camera. */
 const fade = (depth: number): number => smooth((VIEW - depth) / 120) * smooth((depth - 4) / 10);
 
-/** Slot loop helper: calls `each(depth, slot)` for every slot of the given period. */
-function slots(
-  f: ConstructFrame,
-  period: number,
-  each: (depth: number, slot: number) => void,
-): void {
-  const phase = dashOffset(f.dist, period);
-  const base = Math.floor(f.dist / period);
-  const count = Math.ceil(VIEW / period) + 1;
-  for (let i = 0; i < count; i++) {
-    const depth = i * period - phase;
-    if (depth < 4) continue;
-    each(depth, i + base);
-  }
-}
-
-/** Like slots(), but each slot sits at a stable random offset (uneven spacing, no metronome). */
-function jittered(
-  f: ConstructFrame,
-  period: number,
-  each: (depth: number, slot: number) => void,
-): void {
-  slots(f, period, (depth, slot) => {
-    const d = depth + (hash01(slot * 3 + 7) - 0.5) * period * 0.75;
-    if (d >= 4) each(d, slot);
-  });
-}
+/*
+ * Slot loops are written out as plain `for` loops in buildConstruct (no callback helper): a closure
+ * passed to a helper would be allocated on every frame, and construction is rebuilt every frame.
+ * A slot i of period P sits at depth i * P - dashOffset(dist, P) and has the stable id
+ * i + floor(dist / P); a jittered slot is moved by a stable random offset (no metronome).
+ */
+const slotCount = (period: number): number => Math.ceil(VIEW / period) + 1;
+/** Stable depth offset of a jittered slot (uneven spacing). */
+const jitter = (slot: number, period: number): number =>
+  (hash01(slot * 3 + 7) - 0.5) * period * 0.75;
 
 /** Two columns at ±halfSpan of the road centre. */
 function columnPair(
@@ -143,189 +126,265 @@ export function buildConstruct(id: number, high: boolean, f: ConstructFrame, put
     case CONSTRUCT.gate: {
       // an open plain: lone columns, far monoliths, a floating panel now and then and, very
       // rarely, one huge arch; spacing and size vary slot by slot
-      jittered(f, high ? 34 : 60, (depth, slot) => {
-        const r = hash01(slot * 5 + 1);
-        const a = fade(depth);
-        const x = f.roadX(depth);
-        const y = f.roadY(depth) - 0.3;
-        const side = hash01(slot * 5 + 2) < 0.5 ? -1 : 1;
-        if (r < 0.2) {
-          columnPair(put, x, y, depth, 15 + hash01(slot + 70) * 26, (16 + r * 80) * k * a, 2.4);
-        } else if (r < 0.24) {
-          archOver(put, x, y, depth, 56, (34 + hash01(slot + 71) * 18) * k * a, 3);
-        } else if (r < 0.42) {
-          const w = 10 + hash01(slot + 72) * 14;
-          put(
-            x + side * (20 + hash01(slot + 73) * 24),
-            y + (10 + r * 40) * k,
-            -depth,
-            w,
-            6,
-            0.5,
-            0.2 * side,
-            0,
-          );
-        } else if (r < 0.52) {
-          const h = (40 + hash01(slot + 74) * 80) * k * a;
-          put(x + side * (70 + hash01(slot + 75) * 50), y, -depth, 7, h, 7, 0, 0);
+      {
+        const period = high ? 34 : 60;
+        const phase = dashOffset(f.dist, period);
+        const base = Math.floor(f.dist / period);
+        const count = slotCount(period);
+        for (let i = 0; i < count; i++) {
+          const slot = i + base;
+          const depth = i * period - phase + jitter(slot, period);
+          if (depth < 4 || i * period - phase < 4) continue;
+          {
+            const r = hash01(slot * 5 + 1);
+            const a = fade(depth);
+            const x = f.roadX(depth);
+            const y = f.roadY(depth) - 0.3;
+            const side = hash01(slot * 5 + 2) < 0.5 ? -1 : 1;
+            if (r < 0.2) {
+              columnPair(put, x, y, depth, 15 + hash01(slot + 70) * 26, (16 + r * 80) * k * a, 2.4);
+            } else if (r < 0.24) {
+              archOver(put, x, y, depth, 56, (34 + hash01(slot + 71) * 18) * k * a, 3);
+            } else if (r < 0.42) {
+              const w = 10 + hash01(slot + 72) * 14;
+              put(
+                x + side * (20 + hash01(slot + 73) * 24),
+                y + (10 + r * 40) * k,
+                -depth,
+                w,
+                6,
+                0.5,
+                0.2 * side,
+                0,
+              );
+            } else if (r < 0.52) {
+              const h = (40 + hash01(slot + 74) * 80) * k * a;
+              put(x + side * (70 + hash01(slot + 75) * 50), y, -depth, 7, h, 7, 0, 0);
+            }
+          }
         }
-      });
+      }
       break;
     }
     case CONSTRUCT.corridor: {
       // lanes of light: beams of light running along the road overhead, with a pair of columns or
       // a low arch only now and then (not a rhythm of identical rings)
-      jittered(f, high ? 18 : 34, (depth, slot) => {
-        const r = hash01(slot * 5 + 11);
-        const a = fade(depth);
-        const x = f.roadX(depth);
-        const y = f.roadY(depth) - 0.3;
-        if (r < 0.34) {
-          const len = (30 + hash01(slot + 80) * 70) * a;
-          const off = (r < 0.17 ? -1 : 1) * (4 + hash01(slot + 81) * 14);
-          put(
-            x + off,
-            y + (7 + hash01(slot + 82) * 8) * k,
-            -depth - len / 2,
-            0.45,
-            0.45,
-            len,
-            0,
-            0,
-          );
-        } else if (r < 0.48) {
-          columnPair(
-            put,
-            x,
-            y,
-            depth,
-            9 + hash01(slot + 83) * 6,
-            (8 + hash01(slot + 84) * 8) * k * a,
-            0.7,
-          );
-        } else if (r < 0.54) {
-          archOver(put, x, y, depth, 20, (10 + hash01(slot + 85) * 4) * k * a, 0.7);
+      {
+        const period = high ? 18 : 34;
+        const phase = dashOffset(f.dist, period);
+        const base = Math.floor(f.dist / period);
+        const count = slotCount(period);
+        for (let i = 0; i < count; i++) {
+          const slot = i + base;
+          const depth = i * period - phase + jitter(slot, period);
+          if (depth < 4 || i * period - phase < 4) continue;
+          {
+            const r = hash01(slot * 5 + 11);
+            const a = fade(depth);
+            const x = f.roadX(depth);
+            const y = f.roadY(depth) - 0.3;
+            if (r < 0.34) {
+              const len = (30 + hash01(slot + 80) * 70) * a;
+              const off = (r < 0.17 ? -1 : 1) * (4 + hash01(slot + 81) * 14);
+              put(
+                x + off,
+                y + (7 + hash01(slot + 82) * 8) * k,
+                -depth - len / 2,
+                0.45,
+                0.45,
+                len,
+                0,
+                0,
+              );
+            } else if (r < 0.48) {
+              columnPair(
+                put,
+                x,
+                y,
+                depth,
+                9 + hash01(slot + 83) * 6,
+                (8 + hash01(slot + 84) * 8) * k * a,
+                0.7,
+              );
+            } else if (r < 0.54) {
+              archOver(put, x, y, depth, 20, (10 + hash01(slot + 85) * 4) * k * a, 0.7);
+            }
+          }
         }
-      });
+      }
       break;
     }
     case CONSTRUCT.terraces: {
       // stepped terraces at the sides, bridge decks over the road at uneven intervals and
       // floating panels between them
-      jittered(f, high ? 30 : 56, (depth, slot) => {
-        const r = hash01(slot * 5 + 21);
-        const a = fade(depth);
-        const x = f.roadX(depth);
-        const y = f.roadY(depth) - 0.3;
-        const side = hash01(slot * 5 + 22) < 0.5 ? -1 : 1;
-        if (r < 0.34) {
-          const h = (6 + hash01(slot + 90) * 10) * a;
-          put(x + side * (15 + hash01(slot + 91) * 14), y, -depth, 2, h, 3 + r * 6, 0, 0);
-        } else if (r < 0.46) {
-          const w = 30 + hash01(slot + 92) * 20;
-          const h = 8 + hash01(slot + 93) * 6;
-          columnPair(put, x, y, depth, w / 2 - 2, h * a, 2);
-          put(x, y + h * a, -depth, w, 1.2, 6 + hash01(slot + 94) * 5, 0, 0);
-        } else if (r < 0.62) {
-          put(
-            x + side * (14 + hash01(slot + 95) * 20),
-            y + 9 + hash01(slot + 96) * 14,
-            -depth,
-            12,
-            0.8,
-            5,
-            0,
-            0.12 * side,
-          );
+      {
+        const period = high ? 30 : 56;
+        const phase = dashOffset(f.dist, period);
+        const base = Math.floor(f.dist / period);
+        const count = slotCount(period);
+        for (let i = 0; i < count; i++) {
+          const slot = i + base;
+          const depth = i * period - phase + jitter(slot, period);
+          if (depth < 4 || i * period - phase < 4) continue;
+          {
+            const r = hash01(slot * 5 + 21);
+            const a = fade(depth);
+            const x = f.roadX(depth);
+            const y = f.roadY(depth) - 0.3;
+            const side = hash01(slot * 5 + 22) < 0.5 ? -1 : 1;
+            if (r < 0.34) {
+              const h = (6 + hash01(slot + 90) * 10) * a;
+              put(x + side * (15 + hash01(slot + 91) * 14), y, -depth, 2, h, 3 + r * 6, 0, 0);
+            } else if (r < 0.46) {
+              const w = 30 + hash01(slot + 92) * 20;
+              const h = 8 + hash01(slot + 93) * 6;
+              columnPair(put, x, y, depth, w / 2 - 2, h * a, 2);
+              put(x, y + h * a, -depth, w, 1.2, 6 + hash01(slot + 94) * 5, 0, 0);
+            } else if (r < 0.62) {
+              put(
+                x + side * (14 + hash01(slot + 95) * 20),
+                y + 9 + hash01(slot + 96) * 14,
+                -depth,
+                12,
+                0.8,
+                5,
+                0,
+                0.12 * side,
+              );
+            }
+          }
         }
-      });
+      }
       break;
     }
     case CONSTRUCT.city: {
       // a circuit city: towers of every height at both sides, a viaduct over the road now and then
-      slots(f, high ? 30 : 56, (depth, slot) => {
-        const a = fade(depth);
-        const x = f.roadX(depth);
-        const y = f.roadY(depth) - 0.3;
-        for (let side = 0; side < 2; side++) {
-          const key = slot * 2 + side;
-          const r = hash01(key + 13);
-          const w = 7 + hash01(key + 29) * 9;
-          const h = (18 + r * r * 92) * k * a;
-          const off = 22 + w / 2 + hash01(key + 41) * 34;
-          put(x + (side === 0 ? -off : off), y, -depth, w, h, w, 0, 0);
+      {
+        const period = high ? 30 : 56;
+        const phase = dashOffset(f.dist, period);
+        const base = Math.floor(f.dist / period);
+        const count = slotCount(period);
+        for (let i = 0; i < count; i++) {
+          const slot = i + base;
+          const depth = i * period - phase;
+          if (depth < 4) continue;
+          {
+            const a = fade(depth);
+            const x = f.roadX(depth);
+            const y = f.roadY(depth) - 0.3;
+            for (let side = 0; side < 2; side++) {
+              const key = slot * 2 + side;
+              const r = hash01(key + 13);
+              const w = 7 + hash01(key + 29) * 9;
+              const h = (18 + r * r * 92) * k * a;
+              const off = 22 + w / 2 + hash01(key + 41) * 34;
+              put(x + (side === 0 ? -off : off), y, -depth, w, h, w, 0, 0);
+            }
+            if (high && hash01(slot + 120) < 0.12) {
+              const vh = 10 + hash01(slot + 121) * 8;
+              columnPair(put, x, y, depth, 15 + hash01(slot + 122) * 5, vh * a, 2);
+              put(x, y + vh * a, -depth, 34 + hash01(slot + 123) * 12, 1.4, 6, 0, 0);
+            }
+          }
         }
-        if (high && hash01(slot + 120) < 0.12) {
-          const vh = 10 + hash01(slot + 121) * 8;
-          columnPair(put, x, y, depth, 15 + hash01(slot + 122) * 5, vh * a, 2);
-          put(x, y + vh * a, -depth, 34 + hash01(slot + 123) * 12, 1.4, 6, 0, 0);
-        }
-      });
+      }
       break;
     }
     case CONSTRUCT.spiral: {
       // two helical strands wind around the road (a climb around a megastructure), and one huge
       // monolith stands at the far end of the view
-      const period = high ? 12 : 22;
-      slots(f, period, (depth, slot) => {
-        const x = f.roadX(depth);
-        const y = f.roadY(depth);
-        for (let s = 0; s < 2; s++) {
-          const th = slot * 0.5 + s * Math.PI;
-          const cx = x + Math.cos(th) * 15;
-          const cy = y + 9 + Math.sin(th) * 7 - 0.5;
-          put(cx, cy, -depth, 0.9, 1, period * 1.2, 0, 0);
+      {
+        const period = high ? 12 : 22;
+        const phase = dashOffset(f.dist, period);
+        const base = Math.floor(f.dist / period);
+        const count = slotCount(period);
+        for (let i = 0; i < count; i++) {
+          const slot = i + base;
+          const depth = i * period - phase;
+          if (depth < 4) continue;
+          {
+            const x = f.roadX(depth);
+            const y = f.roadY(depth);
+            for (let s = 0; s < 2; s++) {
+              const th = slot * 0.5 + s * Math.PI;
+              const cx = x + Math.cos(th) * 15;
+              const cy = y + 9 + Math.sin(th) * 7 - 0.5;
+              put(cx, cy, -depth, 0.9, 1, period * 1.2, 0, 0);
+            }
+          }
         }
-      });
+      }
       const far = 430;
       put(f.roadX(far) + 60, f.roadY(far) - 2, -far, 46, 260 * k, 46, 0, 0);
       break;
     }
     case CONSTRUCT.storm: {
       // the world breaks up: tiles of the grid tumble and drift, thick near the road
-      slots(f, high ? 7 : 14, (depth, slot) => {
-        const a = fade(depth);
-        const x = f.roadX(depth);
-        const y = f.roadY(depth);
-        for (let s = 0; s < 2; s++) {
-          const key = slot * 2 + s;
-          const side = hash01(key + 3) < 0.5 ? -1 : 1;
-          const off = 7 + hash01(key + 5) * 52;
-          const size = (0.9 + hash01(key + 7) * 2.6) * a;
-          const lift = 1.2 + hash01(key + 9) * 30 + Math.sin(f.time * 0.9 + key) * 1.6;
-          put(
-            x + side * off,
-            y + lift,
-            -depth,
-            size * 1.6,
-            size * 0.35,
-            size * 1.6,
-            f.time * (0.4 + hash01(key + 11)) + key,
-            f.time * 0.5 + key * 1.3,
-          );
+      {
+        const period = high ? 7 : 14;
+        const phase = dashOffset(f.dist, period);
+        const base = Math.floor(f.dist / period);
+        const count = slotCount(period);
+        for (let i = 0; i < count; i++) {
+          const slot = i + base;
+          const depth = i * period - phase;
+          if (depth < 4) continue;
+          {
+            const a = fade(depth);
+            const x = f.roadX(depth);
+            const y = f.roadY(depth);
+            for (let s = 0; s < 2; s++) {
+              const key = slot * 2 + s;
+              const side = hash01(key + 3) < 0.5 ? -1 : 1;
+              const off = 7 + hash01(key + 5) * 52;
+              const size = (0.9 + hash01(key + 7) * 2.6) * a;
+              const lift = 1.2 + hash01(key + 9) * 30 + Math.sin(f.time * 0.9 + key) * 1.6;
+              put(
+                x + side * off,
+                y + lift,
+                -depth,
+                size * 1.6,
+                size * 0.35,
+                size * 1.6,
+                f.time * (0.4 + hash01(key + 11)) + key,
+                f.time * 0.5 + key * 1.3,
+              );
+            }
+          }
         }
-      });
+      }
       break;
     }
     default: {
       // stillness: slow motes of dust drifting in the dark
-      slots(f, high ? 6 : 12, (depth, slot) => {
-        const a = fade(depth);
-        const x = f.roadX(depth);
-        const y = f.roadY(depth);
-        const side = hash01(slot + 3) < 0.5 ? -1 : 1;
-        const sway = Math.sin(f.time * 0.25 + slot * 1.7);
-        put(
-          x + side * (3 + hash01(slot + 5) * 30) + sway * 2,
-          y + 0.6 + hash01(slot + 9) * 12 + Math.sin(f.time * 0.18 + slot) * 0.8,
-          -depth,
-          0.32 * a,
-          0.32 * a,
-          0.32 * a,
-          0,
-          0,
-        );
-      });
+      {
+        const period = high ? 6 : 12;
+        const phase = dashOffset(f.dist, period);
+        const base = Math.floor(f.dist / period);
+        const count = slotCount(period);
+        for (let i = 0; i < count; i++) {
+          const slot = i + base;
+          const depth = i * period - phase;
+          if (depth < 4) continue;
+          {
+            const a = fade(depth);
+            const x = f.roadX(depth);
+            const y = f.roadY(depth);
+            const side = hash01(slot + 3) < 0.5 ? -1 : 1;
+            const sway = Math.sin(f.time * 0.25 + slot * 1.7);
+            put(
+              x + side * (3 + hash01(slot + 5) * 30) + sway * 2,
+              y + 0.6 + hash01(slot + 9) * 12 + Math.sin(f.time * 0.18 + slot) * 0.8,
+              -depth,
+              0.32 * a,
+              0.32 * a,
+              0.32 * a,
+              0,
+              0,
+            );
+          }
+        }
+      }
     }
   }
   landmark(f, high, put);
