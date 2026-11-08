@@ -26,14 +26,16 @@ test('Neon Grid 45: Home tile → picker → Setup → ride (shortened) → summ
   await page.locator('[data-tile="experience"]').click();
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Neon Grid');
   await page.getByTestId('home-secondary').click();
-  const card = page.getByTestId('experience-card');
+  // The catalogue holds the 30-minute, the 45-minute and the light variant; ride the full 45.
+  await expect(page.getByTestId('experience-card')).toHaveCount(3);
+  const card = page.locator('[data-testid="experience-card"][data-experience="neon-grid-45"]');
   await expect(card).toHaveCount(1);
   await expect(card).toContainText('11 songs');
   await card.getByRole('button', { name: 'Show scenario' }).click();
   await expect(page.getByTestId('experience-scenario').locator('li')).toHaveCount(11);
 
   // Setup is preset for the Experience: the Scenes world
-  await page.getByTestId('experience-start').click();
+  await card.getByTestId('experience-start').click();
   await expect(page.getByTestId('setup-experience')).toContainText('Neon Grid 45');
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
