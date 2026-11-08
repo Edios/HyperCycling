@@ -863,6 +863,11 @@ export const pl: Messages = {
     bpmCredit: 'Dane o tempie utworów:',
     bpmSource: 'GetSongBPM',
     bpmSourceDeezer: 'Deezer',
+    footerInfo:
+      'HyperCycling, otwarty projekt (MIT). Trening w przeglądarce, dane tylko lokalnie.',
+    footerGithub: 'GitHub',
+    footerPrivacy: 'Prywatność',
+    footerAbout: 'O aplikacji i licencja',
     minutes: '{minutes} min',
   },
   welcome: {

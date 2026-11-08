@@ -35,6 +35,7 @@ const NOT_FETCHED = new Set([
   'https://developers.deezer.com', // API docs link in a code comment
   'https://www.deezer.com', // attribution link and track links shown to the user
   'https://api.deezer.com', // loaded only by the sandboxed bridge page (see the bridge tests)
+  'https://github.com', // project link in the Home footer (navigation only)
   'https://edios.github.io', // old Pages address, kept in the redirect URI hint
 ]);
 

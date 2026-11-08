@@ -863,6 +863,11 @@ export const en = {
     bpmCredit: 'Tempo data:',
     bpmSource: 'GetSongBPM',
     bpmSourceDeezer: 'Deezer',
+    footerInfo:
+      'HyperCycling is open source (MIT). Trains in your browser, data stays local.',
+    footerGithub: 'GitHub',
+    footerPrivacy: 'Privacy',
+    footerAbout: 'About and licence',
     minutes: '{minutes} min',
   },
   welcome: {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { DashLine } from '../brand';
 import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
@@ -137,6 +138,12 @@ export function SettingsScreen() {
   const t = useT();
   const { loaded } = useSettings();
   const [active, setActive] = useActiveSection(loaded);
+  const [params] = useSearchParams();
+  const wanted = params.get('section');
+  useEffect(() => {
+    if (!loaded || !wanted) return;
+    document.getElementById(`settings-section-${wanted}`)?.scrollIntoView?.({ block: 'start' });
+  }, [loaded, wanted]);
   const goTo = (id: string): void => {
     setActive(id);
     document.getElementById(`settings-section-${id}`)?.scrollIntoView?.({ block: 'start' });
