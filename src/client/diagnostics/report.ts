@@ -9,13 +9,15 @@ export interface ReportInput {
   date: Date;
   info: DeviceInfo;
   results: readonly TestResult[];
+  /** Lines of the music log (which recording played or failed); empty = left out. */
+  musicLog?: string;
   t: Translate;
 }
 
 const n1 = (v: number): string => v.toFixed(1);
 
 /** Plain-text diagnostics report for pasting into a message or saving as a .txt file. */
-export function buildReport({ version, date, info, results, t }: ReportInput): string {
+export function buildReport({ version, date, info, results, musicLog, t }: ReportInput): string {
   const na = t('diagnostics.device.unavailable');
   const lines = [
     t('diagnostics.report.title'),
@@ -53,5 +55,6 @@ export function buildReport({ version, date, info, results, t }: ReportInput): s
       );
     }
   }
+  if (musicLog) lines.push('', `${t('diagnostics.music.title')}:`, musicLog);
   return lines.join('\n') + '\n';
 }

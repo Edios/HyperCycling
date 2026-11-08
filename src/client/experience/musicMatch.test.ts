@@ -240,14 +240,43 @@ describe('applying the choices', () => {
     expect(cues[0]).toMatchObject({ track: ref, queue: [second] });
   });
 
-  it('adds nothing without choices', () => {
-    expect(withUserMusic(w, exp, {}).musicCues).toEqual([]);
+  const YT_ONLY = { source: 'youtube', spotifyUsable: false } as const;
+
+  it("plays the scenario's YouTube chain without any choice, each song with its backups", () => {
+    const cues = withUserMusic(w, exp, {}, YT_ONLY).musicCues;
+    expect(cues).toHaveLength(11);
+    expect(cues[0]?.track.provider).toBe('youtube');
+    expect(cues[0]?.track.alternates?.length).toBeGreaterThanOrEqual(2);
+    expect(exp.musicPins).toEqual([]); // nothing is stored in the scenario's pins
   });
 
-  it("gives the ride the rider's track and no embedded id exists", () => {
-    const ride = withUserMusic(w, exp, { [w.songs![2]!.id]: [ref] });
-    expect(ride.musicCues).toHaveLength(1);
-    expect(exp.musicPins).toEqual([]);
+  it("the rider's Spotify track goes first with Auto/Spotify, YouTube stays behind it", () => {
+    const auto = withUserMusic(w, exp, { [w.songs![2]!.id]: [ref] });
+    const cue = auto.musicCues.find((c) => c.blockId === w.songs![2]!.firstBlockId)!;
+    expect(cue.track).toMatchObject({ provider: 'spotify', id: 'nc000000000' });
+    expect(cue.track.alternates?.every((t) => t.provider === 'youtube')).toBe(true);
+    expect(auto.musicCues).toHaveLength(11);
+  });
+
+  it('with YouTube as the source, Spotify is only the last backup', () => {
+    const ride = withUserMusic(
+      w,
+      exp,
+      { [w.songs![2]!.id]: [ref] },
+      {
+        source: 'youtube',
+        spotifyUsable: true,
+      },
+    );
+    const cue = ride.musicCues.find((c) => c.blockId === w.songs![2]!.firstBlockId)!;
+    expect(cue.track.provider).toBe('youtube');
+    expect(cue.track.alternates?.at(-1)).toMatchObject({ provider: 'spotify', id: 'nc000000000' });
+  });
+
+  it('ignores Spotify choices when Spotify is not connected', () => {
+    const ride = withUserMusic(w, exp, { [w.songs![2]!.id]: [ref] }, YT_ONLY);
+    const all = ride.musicCues.flatMap((c) => [c.track, ...(c.track.alternates ?? [])]);
+    expect(all.some((t) => t.provider === 'spotify')).toBe(false);
   });
 });
 

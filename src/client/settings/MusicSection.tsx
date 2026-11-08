@@ -4,6 +4,7 @@ import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
 import { closeDeezerBridge } from '../music/deezer/client';
 import { GETSONGBPM_SITE } from '../music/getsongbpm/client';
+import { MusicSourceSelect } from '../experience/MusicSourceSelect';
 import { useSave } from './save';
 import { SongLibraryCard } from './SongLibraryCard';
 import { getSharedTagController } from '../music/library/tag-controller';
@@ -209,6 +210,7 @@ export function MusicSection() {
   return (
     <div className={styles.stack}>
       <p className={styles.lead}>{t('settings.music.intro')}</p>
+      <MusicSourceSelect className={styles.note} />
 
       {onLocalhost && (
         <div role="alert" className={styles.warning} data-testid="localhost-warning">

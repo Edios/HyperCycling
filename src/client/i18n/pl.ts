@@ -932,8 +932,35 @@ export const pl: Messages = {
       retry: 'Spróbuj ponownie',
       skip: 'Jedź bez tych utworów',
       offline:
-        'Połącz Spotify w Ustawieniach, aby dopasować podpowiedziane utwory do swojego konta. Bez tego jazda jest bez muzyki; możesz też przypiąć linki YouTube w edytorze.',
+        'Muzyka gra z YouTube i nie wymaga logowania. Opcjonalnie połącz Spotify w Ustawieniach: użyjesz własnego konta jako źródła albo zapasu.',
       connect: 'Połącz Spotify w Ustawieniach',
+    },
+    check: {
+      title: 'Sprawdź muzykę',
+      intro:
+        'Przed jazdą sprawdź, czy każdy utwór zagra na tym urządzeniu. Test jest bez dźwięku. Najlepiej uruchom go na miejscu, w salce: blokady regionalne i słabe łącze wychodzą dopiero tam.',
+      source: {
+        label: 'Źródło muzyki',
+        youtube: 'YouTube (domyślnie)',
+        spotify: 'Spotify, YouTube jako zapas',
+        auto: 'Auto (Spotify, gdy połączony)',
+      },
+      run: 'Sprawdź muzykę',
+      rerun: 'Sprawdź ponownie',
+      working: 'Sprawdzam wersje… {done} z {total}',
+      notRun: 'Muzyka nie była jeszcze sprawdzana na tym urządzeniu.',
+      health: {
+        green: 'Gotowe',
+        yellow: 'Tylko zapas',
+        red: 'Brak grającego utworu',
+      },
+      slot: 'Część {n}: {title}',
+      detail: 'Działa {live} z {total} wersji',
+      blocked:
+        'Nie można ruszyć: w częściach {slots} żadna wersja utworu nie zagra na tym urządzeniu.',
+      blockedTip:
+        'Przełącz źródło na Spotify albo sprawdź ponownie na miejscu, z docelowego urządzenia.',
+      useSpotify: 'Przełącz na Spotify',
     },
     kicker: 'Experience',
     seeScenario: 'Zobacz scenariusz',
@@ -979,6 +1006,15 @@ export const pl: Messages = {
     experienceBody: 'Trening z własną muzyką i światem. Wkrótce.',
   },
   diagnostics: {
+    music: {
+      title: 'Muzyka: ostatnie próby',
+      hint: 'Którą wersję utworu odtworzono, a która zawiodła. Pomaga ustalić, co zablokowano na tym urządzeniu.',
+      empty: 'Brak zapisanych prób odtwarzania.',
+      played: 'zagrało',
+      failed: 'nie zagrało',
+      version: 'wersja {n}',
+      clear: 'Wyczyść log muzyki',
+    },
     title: 'Diagnostyka',
     enable: 'Tryb diagnostyczny',
     enableHint:

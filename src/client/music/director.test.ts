@@ -930,3 +930,95 @@ describe('music director: slot queue', () => {
     expect(spotify.log.some((l) => l.startsWith('fadeOut'))).toBe(true);
   });
 });
+
+describe('music director: chain of recordings', () => {
+  const yt = (id: string, startAtSec = 0): TrackRef => ({
+    provider: 'youtube',
+    id,
+    title: `Title ${id}`,
+    startAtSec,
+  });
+  const chained = (): MusicCue => ({
+    blockId: 'b',
+    rep: 1,
+    track: { ...yt('Y1', 5), alternates: [yt('Y2', 20), yt('Y3', 0)] },
+  });
+
+  it('plays the main recording and keeps the others for later', async () => {
+    const events: string[] = [];
+    make({
+      cues: [chained()],
+      onCandidate: (e) => events.push(`${e.outcome}:${e.track.id}:${e.index}`),
+    }).start();
+    await runAt(130);
+    expect(youtube.log).toEqual(['play:Y1@35']);
+    expect(events).toEqual(['played:Y1:0']);
+    expect(warnings).toEqual([]);
+  });
+
+  it('moves to the next recording at once, at the same place of the song', async () => {
+    youtube.failPlaysWhen((t) => t.id === 'Y1');
+    const events: string[] = [];
+    make({
+      cues: [chained()],
+      onCandidate: (e) => events.push(`${e.outcome}:${e.track.id}`),
+    }).start();
+    await runAt(130); // 30 s into the song; Y2 has its own start 20 s
+    expect(youtube.log).toEqual(['play:Y1@35', 'play:Y2@50']);
+    expect(events).toEqual(['failed:Y1', 'played:Y2']);
+    expect(warnings).toEqual([]);
+  });
+
+  it('goes through every recording and then stays silent with one warning', async () => {
+    youtube.failPlaysWhen(() => true);
+    make({ cues: [chained()] }).start();
+    await runAt(130);
+    expect(youtube.log).toEqual(['play:Y1@35', 'play:Y2@50', 'play:Y3@30']);
+    expect(warnings).toHaveLength(1);
+    // The workout goes on: later polls do not hammer the player.
+    await advance(1000);
+    expect(youtube.log).toHaveLength(3);
+  });
+
+  it('retries the whole chain once after the retry delay', async () => {
+    youtube.failPlaysWhen(() => true);
+    make({ cues: [chained()], retryMs: 3000 }).start();
+    await runAt(130);
+    youtube.failPlaysWhen(undefined);
+    await advance(3000);
+    expect(youtube.log.slice(-1)).toEqual(['play:Y1@35']);
+  });
+
+  it('a recording that stalls or errors while playing hands over to the next one', async () => {
+    make({ cues: [chained()] }).start();
+    await runAt(130);
+    youtube.breakDown(new Error('stalled'));
+    await advance(200);
+    expect(youtube.log.filter((l) => l.startsWith('play:'))).toEqual(['play:Y1@35', 'play:Y2@50']);
+  });
+
+  it('falls back to Spotify when the YouTube recordings are dead', async () => {
+    youtube.failPlaysWhen(() => true);
+    const sp = { ...track('S1'), startAtSec: 0 };
+    make({
+      cues: [{ blockId: 'b', rep: 1, track: { ...yt('Y1'), alternates: [yt('Y2'), sp] } }],
+    }).start();
+    await runAt(100);
+    expect(spotify.log).toEqual(['play:S1@0']);
+    expect(warnings).toEqual([]);
+  });
+
+  it('puts recordings known to be unplayable last', async () => {
+    make({
+      cues: [
+        {
+          blockId: 'b',
+          rep: 1,
+          track: { ...yt('Y1'), notEmbeddable: true, alternates: [yt('Y2')] },
+        },
+      ],
+    }).start();
+    await runAt(100);
+    expect(youtube.log).toEqual(['play:Y2@0']);
+  });
+});

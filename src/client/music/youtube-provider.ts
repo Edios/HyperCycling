@@ -14,11 +14,14 @@ export interface YTMusicPlayer extends YTPlayer {
 }
 
 const STATE_PLAYING = 1;
+const STATE_BUFFERING = 3;
 /** Planned steps of the fade-out; each one is a `setVolume` call. */
 const FADE_STEPS = 10;
 const MAX_FADE_STEPS = 100;
 /** The player must start playing this soon after `play`, else the track counts as failed. */
-export const PLAY_START_TIMEOUT_MS = 8_000;
+export const PLAY_START_TIMEOUT_MS = 7_000;
+/** Buffering this long while the track should be playing counts as a stalled (failed) track. */
+export const STALL_TIMEOUT_MS = 8_000;
 
 export interface YoutubeMusicProviderOptions {
   /** Test seam. Defaults to the shared IFrame API loader. */
@@ -70,6 +73,22 @@ export function createYoutubeMusicProvider(
   let instance = 0;
   /** False while the track should be silent (paused, faded out, timed out, disposed). */
   let wantPlaying = false;
+  let failureHandler: ((err: Error) => void) | undefined;
+  let stallTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const clearStall = (): void => {
+    if (stallTimer !== undefined) clearTimeout(stallTimer);
+    stallTimer = undefined;
+  };
+  /** The track broke down after it had started: tell the director, once. */
+  const breakDown = (err: Error): void => {
+    clearStall();
+    wantPlaying = false;
+    player?.pauseVideo();
+    const handler = failureHandler;
+    failureHandler = undefined;
+    handler?.(err);
+  };
 
   const settle = (err?: Error): void => {
     const p = pending;
@@ -128,7 +147,21 @@ export function createYoutubeMusicProvider(
             resolve(player);
           },
           onStateChange: (e: YTPlayerEvent) => {
-            if (mine !== instance || e.data !== STATE_PLAYING) return;
+            if (mine !== instance) return;
+            if (e.data === STATE_BUFFERING) {
+              // Started but stuck buffering: after a while it counts as failed.
+              if (!pending && wantPlaying && stallTimer === undefined) {
+                stallTimer = setTimeout(() => {
+                  stallTimer = undefined;
+                  if (mine === instance && wantPlaying) {
+                    breakDown(new Error('YouTube track stalled while buffering'));
+                  }
+                }, STALL_TIMEOUT_MS);
+              }
+              return;
+            }
+            clearStall();
+            if (e.data !== STATE_PLAYING) return;
             if (pending) settle();
             // Playing although nobody waits for it (a track that timed out, or a pause that
             // lost a race): keep it silent.
@@ -137,8 +170,11 @@ export function createYoutubeMusicProvider(
           onError: (e: YTPlayerEvent) => {
             if (mine !== instance) return;
             const err = new Error(`YouTube player error ${String(e.data)}`);
+            const waiting = pending !== undefined;
             settle(err);
             reject(err); // no-op once the player is ready
+            // An error while playing (not while starting): the director moves to the next recording.
+            if (!waiting && wantPlaying) breakDown(err);
           },
         },
       });
@@ -160,6 +196,8 @@ export function createYoutubeMusicProvider(
 
   const dropPlayer = (): void => {
     instance++;
+    clearStall();
+    failureHandler = undefined;
     wantPlaying = false;
     settle(new Error('YouTube music player was disposed'));
     const p = player;
@@ -184,6 +222,8 @@ export function createYoutubeMusicProvider(
     async play(track: TrackRef, offsetSec: number) {
       if (!api) throw new Error('YouTube music provider is not connected');
       const token = ++playToken;
+      clearStall();
+      failureHandler = undefined;
       fadeGeneration++;
       const startSec = Math.max(0, Math.floor(offsetSec));
       const YT = api;
@@ -230,6 +270,7 @@ export function createYoutubeMusicProvider(
     },
 
     pause() {
+      clearStall();
       fadeGeneration++;
       wantPlaying = false;
       player?.pauseVideo();
@@ -252,6 +293,10 @@ export function createYoutubeMusicProvider(
 
     isReady() {
       return api !== undefined;
+    },
+
+    setFailureHandler(handler) {
+      failureHandler = handler;
     },
 
     dispose() {

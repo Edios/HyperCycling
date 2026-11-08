@@ -20,6 +20,7 @@
     "format:check": "prettier --check src tests scripts .github *.ts *.js *.json *.md",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "check": "npm run typecheck && npm run lint && npm test",
+    "check:music": "node scripts/check-experience-music.mjs",
     "docs:screenshots": "tsx scripts/docs-screenshots.ts",
     "brand:assets": "tsx scripts/brand-assets.ts"
   },

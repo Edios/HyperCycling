@@ -98,4 +98,16 @@ describe('Deezer JSONP is kept out of the page origin', () => {
     expect(js).toContain('event.source !== parent');
     expect(js).not.toMatch(/\beval\b|new Function|innerHTML|localStorage|document\.cookie/);
   });
+
+  it('lets the music check and the failover reach YouTube: oEmbed, the IFrame API and both player hosts', () => {
+    expect(CSP_DIRECTIVES['connect-src']).toContain('https://www.youtube.com'); // oEmbed
+    expect(CSP_DIRECTIVES['script-src']).toEqual(
+      expect.arrayContaining(['https://www.youtube.com', 'https://s.ytimg.com']),
+    );
+    expect(CSP_DIRECTIVES['frame-src']).toEqual(
+      expect.arrayContaining(['https://www.youtube.com', 'https://www.youtube-nocookie.com']),
+    );
+    expect(PAGE_CSP).toContain('frame-src');
+    expect(SERVER_CSP).toContain('https://www.youtube-nocookie.com');
+  });
 });

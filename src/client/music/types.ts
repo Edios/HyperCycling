@@ -18,6 +18,12 @@ export interface MusicProvider {
   setVolume(v: number): Promise<void>;
   isReady(): boolean;
   /**
+   * Optional: `handler` is called when the track that was started breaks down later (player
+   * error, stalled buffering). It is replaced by the next `play` or `setFailureHandler`; the
+   * director uses it to move on to the song's next recording.
+   */
+  setFailureHandler?(handler: ((err: Error) => void) | undefined): void;
+  /**
    * Optional: looks up the name (and artists) of a track. The director uses it for tracks saved
    * without a title; it may reject and never holds up playback.
    */

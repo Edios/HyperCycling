@@ -4,10 +4,12 @@ import { sceneChangeAllowed } from '../client/world/worlds/scenes-schedule';
 import { THEMES } from '../client/world/worlds/scenes-themes';
 import {
   duplicateHintSlots,
+  hintQueue,
   experienceProblems,
   resolveChapters,
   songStartsSec,
   validateHintQueues,
+  YOUTUBE_ID,
 } from '../domain/experience';
 import { flattenWorkout } from '../domain/segments';
 import { totalDurationSec } from '../domain/workout';
@@ -131,13 +133,45 @@ describe('Neon Grid music suggestions', () => {
     expect(experienceProblems(e, w)).toEqual([]);
     expect(e.musicPins).toEqual([]);
     expect(e.musicHints?.map((h) => h.slot)).toEqual(Array.from({ length: slots }, (_, i) => i));
-    expect(JSON.stringify(e.musicHints)).not.toMatch(/spotify:|open\.spotify|"id"/);
+    expect(JSON.stringify(e.musicHints)).not.toMatch(/spotify:|open\.spotify/);
+    // The only ids in a hint are YouTube video ids, one list per song.
+    expect(JSON.stringify(e.musicHints)).not.toMatch(/"(provider|uri)"/);
     for (const h of e.musicHints ?? []) {
       const slot = w.songs![h.slot]!;
       if (h.bpm && slot.bpm) {
         const mid = (slot.bpm[0] + slot.bpm[1]) / 2;
         // the suggested tempo suits the slot at normal, half or double time
         expect([h.bpm, h.bpm * 2, h.bpm / 2].some((v) => Math.abs(v - mid) / mid < 0.1)).toBe(true);
+      }
+    }
+  });
+});
+
+describe('Neon Grid YouTube chains', () => {
+  const songs = (id: string) =>
+    (builtinExperiences.find((e) => e.id === id)!.musicHints ?? []).flatMap((h) => hintQueue(h));
+
+  it.each(['neon-grid-45', 'neon-grid-45-light', 'neon-grid-30'])(
+    '%s: every song has a main upload and at least two backups, all different',
+    (id) => {
+      for (const song of songs(id)) {
+        const ids = (song.youtube ?? []).map((c) => c.id);
+        expect(ids.length, `${song.title}`).toBeGreaterThanOrEqual(3);
+        expect(new Set(ids).size, `${song.title}`).toBe(ids.length);
+        for (const c of song.youtube ?? []) expect(c.id).toMatch(YOUTUBE_ID);
+      }
+    },
+  );
+
+  it('a video id belongs to one song only', () => {
+    const owner = new Map<string, string>();
+    for (const id of ['neon-grid-45', 'neon-grid-45-light', 'neon-grid-30']) {
+      for (const song of songs(id)) {
+        for (const c of song.youtube ?? []) {
+          const name = `${song.artist} - ${song.title}`;
+          expect(owner.get(c.id) ?? name, c.id).toBe(name);
+          owner.set(c.id, name);
+        }
       }
     }
   });

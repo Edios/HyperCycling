@@ -31,6 +31,11 @@ export interface MusicDirectorOptions {
   onWarning(track: TrackRef, error?: unknown): void;
   /** The track now playing (or paused), `null` once nothing is scheduled. */
   onPlaying?(track: TrackRef | null): void;
+  /**
+   * Told about every recording the director tried: which one of a song's chain it was, and
+   * whether it played or failed (for the diagnostics log).
+   */
+  onCandidate?(event: CandidateEvent): void;
   /** Volume 0..1 applied to every provider; 1 by default. */
   volume?: number;
   /** Music fades out and stays off for this many seconds before the workout ends (0 = off). */
@@ -45,6 +50,16 @@ export interface MusicDirectorOptions {
   pollMs?: number;
 }
 
+export interface CandidateEvent {
+  /** The recording tried (without its backups). */
+  track: TrackRef;
+  /** Place in the song's chain, 0 = the main recording. */
+  index: number;
+  total: number;
+  outcome: 'played' | 'failed';
+  error?: unknown;
+}
+
 export interface MusicDirector {
   /** Mute/unmute: 0..1. Applies to the current track and to those that follow. */
   setVolume(v: number): void;
@@ -55,6 +70,8 @@ export interface MusicDirector {
 interface Playing {
   key: string;
   track: TrackRef;
+  /** Which recording of the song's chain plays (0 = the main one). */
+  index: number;
   provider: MusicProvider;
   /** Paused because the engine is not running; resumed when it runs again on the same track. */
   halted: boolean;
@@ -136,6 +153,8 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
   let unsubscribeState: (() => void) | undefined;
   let poll: ReturnType<typeof setInterval> | undefined;
   const failures = new Map<string, FailureRecord>();
+  /** Per scheduled track: the chain positions that failed (in the current attempt). */
+  const failedCandidates = new Map<string, Set<number>>();
   /** Id of the newest `play` issued to each provider; older completions are stale. */
   const latestPlay = new Map<MusicProvider, number>();
   let playCounter = 0;
@@ -188,34 +207,55 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     const timer = setTimeout(() => {
       retryTimers.delete(timer);
       record.retryReady = true;
+      failedCandidates.delete(key);
       void reconcile();
     }, retryMs);
     retryTimers.add(timer);
   }
 
-  /** Starts the desired track. Returns true when the loop should look again. */
-  async function startTrack(desired: ScheduledTrack): Promise<boolean> {
-    const record = failures.get(desired.key);
-    if (record && !(record.count === 1 && record.retryReady)) return false; // waiting or given up
-    if (disposed) return false;
-    let offsetSec = desired.offsetSec;
-    const provider = options.getProvider(desired.track.provider);
+  const chainOf = (track: TrackRef): TrackRef[] => {
+    const { alternates, ...main } = track;
+    const all = [main, ...(alternates ?? [])];
+    // Recordings known to be unplayable go last, but are kept: the check may have been wrong.
+    const ok = all.filter((t) => !t.notEmbeddable);
+    return [...ok, ...all.filter((t) => t.notEmbeddable)];
+  };
+
+  const emit = (event: CandidateEvent): void => {
     try {
-      if (!provider) throw new Error(`No ${desired.track.provider} music provider available`);
+      options.onCandidate?.(event);
+    } catch (err) {
+      console.error('Music candidate handler failed', err);
+    }
+  };
+
+  /**
+   * Plays one recording of the chain. Returns undefined on success, else the failure. Only a
+   * rejection of this recording counts: a connect that outlasts the schedule ends the attempt.
+   */
+  async function tryCandidate(
+    desired: ScheduledTrack,
+    cand: TrackRef,
+  ): Promise<{ stale: true } | { error: unknown } | { provider: MusicProvider }> {
+    const provider = options.getProvider(cand.provider);
+    try {
+      if (!provider) throw new Error(`No ${cand.provider} music provider available`);
       if (!provider.isReady()) {
         await bounded(() => provider.connect(), CONNECT_TIMEOUT_MS, 'connect');
-        if (disposed) return false;
+        if (disposed) return { stale: true };
         // Connecting can take a while; the engine has moved on.
-        const fresh = desiredNow(options.getState());
-        if (fresh?.key !== desired.key) return true; // the loop will decide again
-        offsetSec = fresh.offsetSec;
+        if (desiredNow(options.getState())?.key !== desired.key) return { stale: true };
       }
+      // The same place of the song in this recording, whatever time the failures took.
+      const fresh = desiredNow(options.getState());
+      if (fresh?.key !== desired.key) return { stale: true };
+      const offsetSec = Math.max(0, cand.startAtSec + (fresh.offsetSec - desired.track.startAtSec));
       // A muted session must not start audible: set the level before the track begins.
       if (volume !== 1) await quietly('volume', () => provider.setVolume(volume));
       const playId = ++playCounter;
       latestPlay.set(provider, playId);
       await bounded(
-        () => provider.play(desired.track, offsetSec),
+        () => provider.play(cand, offsetSec),
         PLAY_TIMEOUT_MS,
         'play',
         // The timed-out play started after all. Silence it, unless a newer play has taken over
@@ -226,20 +266,76 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
           }
         },
       );
+      return { provider };
     } catch (err) {
-      recordFailure(desired.track, desired.key, err);
-      return false;
+      return { error: err };
     }
-    failures.delete(desired.key);
-    if (disposed) {
-      void quietly('pause', () => provider.pause());
-      return false;
+  }
+
+  /**
+   * Starts the desired track: the main recording, and when it fails the next one of its chain,
+   * at once and at the same place of the song. Returns true when the loop should look again.
+   */
+  async function startTrack(desired: ScheduledTrack): Promise<boolean> {
+    const record = failures.get(desired.key);
+    if (record && !(record.count === 1 && record.retryReady)) return false; // waiting or given up
+    if (disposed) return false;
+    const chain = chainOf(desired.track);
+    const skip = failedCandidates.get(desired.key) ?? new Set<number>();
+    failedCandidates.set(desired.key, skip);
+    let lastError: unknown;
+    for (let index = 0; index < chain.length; index++) {
+      if (skip.has(index)) continue;
+      const cand = chain[index] as TrackRef;
+      const result = await tryCandidate(desired, cand);
+      if ('stale' in result) return !disposed;
+      if ('error' in result) {
+        if (disposed) return false;
+        skip.add(index);
+        lastError = result.error;
+        console.warn('Music recording could not be played', result.error);
+        emit({ track: cand, index, total: chain.length, outcome: 'failed', error: result.error });
+        continue;
+      }
+      const { provider } = result;
+      failures.delete(desired.key);
+      failedCandidates.delete(desired.key);
+      if (disposed) {
+        void quietly('pause', () => provider.pause());
+        return false;
+      }
+      const playing: Playing = {
+        key: desired.key,
+        track: cand,
+        index,
+        provider,
+        halted: false,
+      };
+      current = playing;
+      provider.setFailureHandler?.((err) => onPlaybackFailure(playing, err));
+      emit({ track: cand, index, total: chain.length, outcome: 'played' });
+      announce(cand);
+      if (!cand.title) void resolveTitle(playing);
+      return true;
     }
-    const playing: Playing = { key: desired.key, track: desired.track, provider, halted: false };
-    current = playing;
-    announce(desired.track);
-    if (!desired.track.title) void resolveTitle(playing);
-    return true;
+    // Every recording failed: one warning and one retry, then silence. The workout goes on.
+    failedCandidates.delete(desired.key);
+    recordFailure(desired.track, desired.key, lastError);
+    return false;
+  }
+
+  /** A recording that was playing broke down (player error, stalled): move on along the chain. */
+  function onPlaybackFailure(playing: Playing, err: unknown): void {
+    if (disposed || current !== playing) return;
+    console.warn('Music recording failed while playing', err);
+    emit({ track: playing.track, index: playing.index, total: 0, outcome: 'failed', error: err });
+    const skip = failedCandidates.get(playing.key) ?? new Set<number>();
+    skip.add(playing.index);
+    failedCandidates.set(playing.key, skip);
+    current = null;
+    announce(null);
+    void quietly('pause', () => playing.provider.pause());
+    void reconcile();
   }
 
   /**

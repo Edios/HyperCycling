@@ -74,3 +74,41 @@ Ten sam scenariusz i ten sam katalog dają tę samą kolejkę. Walidator dla aut
 (`validateHintQueues`, sprawdzany w `src/content/neon-grid.test.ts`): suma czasów kolejki >= czas slotu
 minus 10 s oraz brak powtórzeń utworu między slotami. W zwykłych treningach (edytor) planer jest
 tylko pomocnikiem: licznik brakującego czasu, bez cichych zmian.
+
+## YouTube jako domyślne źródło (łańcuch wersji)
+
+Każdy utwór w `musicHints` (pierwszy w slocie i każdy z `queue`) ma listę `youtube`: kilka wgrań tego samego utworu, główna pierwsza.
+
+```json
+{ "artist": "Kavinsky", "title": "Nightcall",
+  "youtube": [
+    { "id": "MV_3Dpw-BRY", "label": "official audio" },
+    { "id": "46qo_V1zcOM", "label": "official audio HD" },
+    { "id": "ahienBeHUWw", "label": "lyric video", "offsetSec": 2 }
+  ] }
+```
+
+- `id`: 11-znakowy identyfikator filmu. `offsetSec`: gdzie w TYM wgraniu zaczyna się utwór (np. intro filmu); bez niego obowiązuje `startOffsetSec` utworu.
+- Zasada autora: główna + co najmniej 2 zapasowe (oficjalne wgranie, drugie oficjalne, lyric video / audio). Test `neon-grid.test.ts` pilnuje minimum 3 i unikalności; `npm run check:music` sprawdza w sieci, czy wszystkie ID jeszcze odpowiadają (oEmbed) i czy każdy utwór ma ≥2 działające wersje.
+- ID Spotify nadal nie wchodzą do repozytorium. Spotify to opcjonalny element łańcucha, dopasowany na koncie jeźdźca.
+
+### Kolejność źródeł
+
+Ustawienie „Źródło muzyki” (Ustawienia → Muzyka oraz panel „Sprawdź muzykę”, tylko to urządzenie): **YouTube** (domyślnie), **Spotify** (Spotify pierwszy, YouTube jako zapas) albo **Auto** (Spotify, gdy połączony i dopasowany). Spotify nie połączony = zawsze YouTube. Wersje, które ostatnie sprawdzenie na tym urządzeniu uznało za martwe (ważne 7 dni), idą na koniec łańcucha.
+
+### Failover w czasie jazdy
+
+`TrackRef.alternates` niesie zapasowe nagrania tego samego utworu. Dyrektor muzyki (`director.ts`) próbuje je po kolei, od razu i z TYM SAMYM miejscem w utworze (`offset = startAtSec nagrania + pozycja w utworze`):
+
+- start: błąd odtwarzacza (2, 5, 100, 101, 150), brak startu w 7 s (`PLAY_START_TIMEOUT_MS`) albo odrzucenie przez dostawcę → następne nagranie;
+- w trakcie: błąd odtwarzacza albo buforowanie dłuższe niż 8 s (`STALL_TIMEOUT_MS`) → następne nagranie (`setFailureHandler`);
+- wyczerpany łańcuch: jedno ostrzeżenie, jedna ponowna próba całego łańcucha po 3 s, potem cisza. Trening idzie dalej (zegar rządzi);
+- każda próba trafia do logu muzyki (Ustawienia → Diagnostyka → „Muzyka: ostatnie próby”, także w raporcie): które nagranie zagrało, które nie i dlaczego.
+
+### Sprawdź muzykę (przed jazdą)
+
+Panel w ekranie startu Experience. Dla KAŻDEGO nagrania z każdego slotu: oEmbed (401/403/404 = niedostępne), potem próbne osadzenie w ukrytym, wyciszonym odtwarzaczu (IFrame API, `mute`, odczyt stanu/błędu, bez dźwięku). Wynik na slot: zielone (gra główna wersja), żółte (gra tylko zapas) albo czerwone (nic nie gra). Czerwony slot blokuje „Start” i podpowiada przełączenie na Spotify. Uruchamiaj na miejscu, na docelowym urządzeniu: blokady regionalne wychodzą dopiero tam.
+
+### Granice
+
+Nie ma 100% pewności: wideo może zniknąć między sprawdzeniem a jazdą, a przeglądarka może wstrzymać odtwarzanie w tle. Jest wykrywanie, automatyczne obejście, sprawdzenie na miejscu i cotygodniowy test ID w CI (nieblokujący). Odtwarzacz zostaje osadzony z oficjalnym IFrame API (ukryty/poza ekranem za zgodą właściciela); nic nie omija reklam.

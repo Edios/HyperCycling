@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSettings } from '../data/useSettings';
 import { triggerDownload, type DownloadFn } from '../data/import-export';
@@ -8,6 +8,7 @@ import { recommendQuality, type TestResult } from '../diagnostics/recommendation
 import { buildReport } from '../diagnostics/report';
 import { useTestResults } from '../diagnostics/results-store';
 import { WORLD_CHOICES } from '../world/world-options';
+import { clearMusicLog, formatMusicLog, getMusicLog, subscribeMusicLog } from '../music/play-log';
 import { useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
 import { Toast } from '../ui/Toast';
@@ -45,6 +46,7 @@ export function DiagnosticsSection({ download = triggerDownload }: DiagnosticsSe
   const setResults = useTestResults((s) => s.setResults);
   const [running, setRunning] = useState(false);
   const [notice, setNotice] = useState<{ kind: Notice; id: number } | null>(null);
+  const musicLog = useSyncExternalStore(subscribeMusicLog, getMusicLog);
   const on = settings.diagnostics === true;
   const info = useMemo(() => (on ? collectDeviceInfo(browserDeviceEnv()) : undefined), [on]);
 
@@ -55,6 +57,7 @@ export function DiagnosticsSection({ download = triggerDownload }: DiagnosticsSe
       date: new Date(),
       info: info ?? collectDeviceInfo(browserDeviceEnv()),
       results,
+      musicLog: formatMusicLog(musicLog.slice(-30)),
       t,
     });
 
@@ -192,6 +195,40 @@ export function DiagnosticsSection({ download = triggerDownload }: DiagnosticsSe
                     {t(REC_KEY[recommendation])}
                   </p>
                 )}
+              </>
+            )}
+          </section>
+
+          <section className={styles.block} aria-labelledby="diag-music">
+            <h3 id="diag-music" className={settingsStyles.subTitle}>
+              {t('diagnostics.music.title')}
+            </h3>
+            <p className={settingsStyles.note}>{t('diagnostics.music.hint')}</p>
+            {musicLog.length === 0 ? (
+              <p className={settingsStyles.note}>{t('diagnostics.music.empty')}</p>
+            ) : (
+              <>
+                <ul className={styles.facts} data-testid="music-log">
+                  {musicLog
+                    .slice(-10)
+                    .reverse()
+                    .map((e) => (
+                      <li key={`${e.at}:${e.provider}:${e.id}:${e.outcome}`}>
+                        {new Date(e.at).toLocaleTimeString()} ·{' '}
+                        {t(
+                          e.outcome === 'played'
+                            ? 'diagnostics.music.played'
+                            : 'diagnostics.music.failed',
+                        )}{' '}
+                        · {e.title} ({e.provider},{' '}
+                        {t('diagnostics.music.version', { n: e.index + 1 })})
+                        {e.error ? ` · ${e.error}` : ''}
+                      </li>
+                    ))}
+                </ul>
+                <div>
+                  <Button onClick={clearMusicLog}>{t('diagnostics.music.clear')}</Button>
+                </div>
               </>
             )}
           </section>

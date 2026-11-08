@@ -17,6 +17,24 @@
           "title": "Faded",
           "bpm": 90
         }
+      ],
+      "youtube": [
+        {
+          "id": "MV_3Dpw-BRY",
+          "label": "official audio"
+        },
+        {
+          "id": "46qo_V1zcOM",
+          "label": "official audio HD"
+        },
+        {
+          "id": "ahienBeHUWw",
+          "label": "lyric video"
+        },
+        {
+          "id": "Gl8SUy1C9JY",
+          "label": "lyric video"
+        }
       ]
     },
     {
@@ -35,6 +53,20 @@
           "artist": "Daft Punk",
           "title": "One More Time",
           "bpm": 123
+        }
+      ],
+      "youtube": [
+        {
+          "id": "fnWypQz6X2U",
+          "label": "official audio"
+        },
+        {
+          "id": "cLFRlsisrBM",
+          "label": "lyric video"
+        },
+        {
+          "id": "ZQ1i_f4czWk",
+          "label": "lyric video"
         }
       ]
     },
@@ -55,6 +87,24 @@
           "title": "Rio",
           "bpm": 173
         }
+      ],
+      "youtube": [
+        {
+          "id": "SBjQ9tuuTJQ",
+          "label": "official"
+        },
+        {
+          "id": "m4OnAwaDVTE",
+          "label": "official"
+        },
+        {
+          "id": "nLjVtDtyDlY",
+          "label": "audio"
+        },
+        {
+          "id": "HRWJ7FxGwVg",
+          "label": "lyric video"
+        }
       ]
     },
     {
@@ -74,6 +124,24 @@
           "title": "Nightcall",
           "bpm": 91
         }
+      ],
+      "youtube": [
+        {
+          "id": "60ItHLz5WEA",
+          "label": "official"
+        },
+        {
+          "id": "psn_rs_a5O0",
+          "label": "official audio"
+        },
+        {
+          "id": "qdpXxGPqW-Y",
+          "label": "lyric video"
+        },
+        {
+          "id": "jA9PqVkkK54",
+          "label": "lyric video"
+        }
       ]
     },
     {
@@ -81,7 +149,7 @@
       "artist": "Swedish House Mafia",
       "title": "Don't You Worry Child",
       "bpm": 129,
-      "durationSec": 360,
+      "durationSec": 404,
       "alternatives": [
         {
           "artist": "Calvin Harris",
@@ -100,7 +168,43 @@
           "artist": "Zedd",
           "title": "Clarity",
           "bpm": 128,
-          "durationSec": 271
+          "durationSec": 271,
+          "youtube": [
+            {
+              "id": "IxxstCcJlsc",
+              "label": "official"
+            },
+            {
+              "id": "l9Q7GISatW0",
+              "label": "official"
+            },
+            {
+              "id": "u6MvE6nypdA",
+              "label": "lyric video"
+            },
+            {
+              "id": "wpQ_R85VfJc",
+              "label": "lyric video"
+            }
+          ]
+        }
+      ],
+      "youtube": [
+        {
+          "id": "V9_jp0n-2Mw",
+          "label": "extended mix, label"
+        },
+        {
+          "id": "6X4ys3ZjERg",
+          "label": "extended mix"
+        },
+        {
+          "id": "MvK4hIWYNQI",
+          "label": "extended mix"
+        },
+        {
+          "id": "1y6smkh6c-0",
+          "label": "official video"
         }
       ]
     },
@@ -119,6 +223,24 @@
           "artist": "Tycho",
           "title": "Awake",
           "bpm": 88
+        }
+      ],
+      "youtube": [
+        {
+          "id": "izOftbklvGs",
+          "label": "official"
+        },
+        {
+          "id": "tffpYgAdZxE",
+          "label": "audio"
+        },
+        {
+          "id": "b_BRR9pRJSA",
+          "label": "audio"
+        },
+        {
+          "id": "WnaUGsgbf1A",
+          "label": "audio"
         }
       ]
     },
@@ -139,6 +261,24 @@
           "title": "Afterglow",
           "bpm": 174
         }
+      ],
+      "youtube": [
+        {
+          "id": "ogMNV33AhCY",
+          "label": "official video"
+        },
+        {
+          "id": "U2KjySY9wvw",
+          "label": "audio"
+        },
+        {
+          "id": "OmeWleosFp0",
+          "label": "audio"
+        },
+        {
+          "id": "bnBS90qe7EU",
+          "label": "audio"
+        }
       ]
     },
     {
@@ -158,6 +298,24 @@
           "title": "Starboy",
           "bpm": 93
         }
+      ],
+      "youtube": [
+        {
+          "id": "MV_3Dpw-BRY",
+          "label": "official audio"
+        },
+        {
+          "id": "46qo_V1zcOM",
+          "label": "official audio HD"
+        },
+        {
+          "id": "ahienBeHUWw",
+          "label": "lyric video"
+        },
+        {
+          "id": "Gl8SUy1C9JY",
+          "label": "lyric video"
+        }
       ]
     },
     {
@@ -165,7 +323,7 @@
       "artist": "Eric Prydz",
       "title": "Pjanoo",
       "bpm": 126,
-      "durationSec": 426,
+      "durationSec": 451,
       "alternatives": [
         {
           "artist": "Avicii",
@@ -184,7 +342,39 @@
           "artist": "David Guetta",
           "title": "Titanium",
           "bpm": 126,
-          "durationSec": 245
+          "durationSec": 245,
+          "youtube": [
+            {
+              "id": "JRfuAukYTKg",
+              "label": "official video"
+            },
+            {
+              "id": "P-gWGlf_VrY",
+              "label": "audio"
+            },
+            {
+              "id": "YW8fDhbEh-8",
+              "label": "lyric video"
+            },
+            {
+              "id": "Xn_kp8OZtc8",
+              "label": "lyric video"
+            }
+          ]
+        }
+      ],
+      "youtube": [
+        {
+          "id": "HUvovrkygZg",
+          "label": "club mix"
+        },
+        {
+          "id": "f-Nd5aWM2Ks",
+          "label": "club mix, label"
+        },
+        {
+          "id": "ByXbXg-Zny8",
+          "label": "official video, shorter"
         }
       ]
     },
@@ -211,7 +401,43 @@
           "artist": "Sub Focus",
           "title": "Tidal Wave",
           "bpm": 174,
-          "durationSec": 240
+          "durationSec": 240,
+          "youtube": [
+            {
+              "id": "B8vlk1UR99k",
+              "label": "official"
+            },
+            {
+              "id": "Fsk7j_cnUh0",
+              "label": "official"
+            },
+            {
+              "id": "xNThiulE25M",
+              "label": "lyric video"
+            },
+            {
+              "id": "Jyk3YIe3NxM",
+              "label": "audio"
+            }
+          ]
+        }
+      ],
+      "youtube": [
+        {
+          "id": "NUTGr5t3MoY",
+          "label": "official video"
+        },
+        {
+          "id": "AJDiYxKSAqQ",
+          "label": "official audio"
+        },
+        {
+          "id": "u3lOlXgx-1k",
+          "label": "official video 4K"
+        },
+        {
+          "id": "_lof1pYtL9Q",
+          "label": "lyric video"
         }
       ]
     },
@@ -229,6 +455,24 @@
         {
           "artist": "Stars of the Lid",
           "title": "Requiem for Dying Mothers, Pt. 2"
+        }
+      ],
+      "youtube": [
+        {
+          "id": "OlaTeXX3uH8",
+          "label": "official 2019"
+        },
+        {
+          "id": "hvzQQOAjuoU",
+          "label": "official 2005"
+        },
+        {
+          "id": "wNQU5FH1Q40",
+          "label": "official 2005"
+        },
+        {
+          "id": "It4WxQ6dnn0",
+          "label": "audio"
         }
       ]
     }
@@ -251,6 +495,24 @@
           "title": "Faded",
           "bpm": 90
         }
+      ],
+      "youtube": [
+        {
+          "id": "MV_3Dpw-BRY",
+          "label": "official audio"
+        },
+        {
+          "id": "46qo_V1zcOM",
+          "label": "official audio HD"
+        },
+        {
+          "id": "ahienBeHUWw",
+          "label": "lyric video"
+        },
+        {
+          "id": "Gl8SUy1C9JY",
+          "label": "lyric video"
+        }
       ]
     },
     {
@@ -269,6 +531,20 @@
           "artist": "Daft Punk",
           "title": "One More Time",
           "bpm": 123
+        }
+      ],
+      "youtube": [
+        {
+          "id": "fnWypQz6X2U",
+          "label": "official audio"
+        },
+        {
+          "id": "cLFRlsisrBM",
+          "label": "lyric video"
+        },
+        {
+          "id": "ZQ1i_f4czWk",
+          "label": "lyric video"
         }
       ]
     },
@@ -289,6 +565,24 @@
           "title": "Rio",
           "bpm": 173
         }
+      ],
+      "youtube": [
+        {
+          "id": "SBjQ9tuuTJQ",
+          "label": "official"
+        },
+        {
+          "id": "m4OnAwaDVTE",
+          "label": "official"
+        },
+        {
+          "id": "nLjVtDtyDlY",
+          "label": "audio"
+        },
+        {
+          "id": "HRWJ7FxGwVg",
+          "label": "lyric video"
+        }
       ]
     },
     {
@@ -308,6 +602,24 @@
           "title": "Nightcall",
           "bpm": 91
         }
+      ],
+      "youtube": [
+        {
+          "id": "60ItHLz5WEA",
+          "label": "official"
+        },
+        {
+          "id": "psn_rs_a5O0",
+          "label": "official audio"
+        },
+        {
+          "id": "qdpXxGPqW-Y",
+          "label": "lyric video"
+        },
+        {
+          "id": "jA9PqVkkK54",
+          "label": "lyric video"
+        }
       ]
     },
     {
@@ -315,7 +627,7 @@
       "artist": "Swedish House Mafia",
       "title": "Don't You Worry Child",
       "bpm": 129,
-      "durationSec": 360,
+      "durationSec": 404,
       "alternatives": [
         {
           "artist": "Calvin Harris",
@@ -334,7 +646,43 @@
           "artist": "Zedd",
           "title": "Clarity",
           "bpm": 128,
-          "durationSec": 271
+          "durationSec": 271,
+          "youtube": [
+            {
+              "id": "IxxstCcJlsc",
+              "label": "official"
+            },
+            {
+              "id": "l9Q7GISatW0",
+              "label": "official"
+            },
+            {
+              "id": "u6MvE6nypdA",
+              "label": "lyric video"
+            },
+            {
+              "id": "wpQ_R85VfJc",
+              "label": "lyric video"
+            }
+          ]
+        }
+      ],
+      "youtube": [
+        {
+          "id": "V9_jp0n-2Mw",
+          "label": "extended mix, label"
+        },
+        {
+          "id": "6X4ys3ZjERg",
+          "label": "extended mix"
+        },
+        {
+          "id": "MvK4hIWYNQI",
+          "label": "extended mix"
+        },
+        {
+          "id": "1y6smkh6c-0",
+          "label": "official video"
         }
       ]
     },
@@ -353,6 +701,24 @@
           "artist": "Tycho",
           "title": "Awake",
           "bpm": 88
+        }
+      ],
+      "youtube": [
+        {
+          "id": "izOftbklvGs",
+          "label": "official"
+        },
+        {
+          "id": "tffpYgAdZxE",
+          "label": "audio"
+        },
+        {
+          "id": "b_BRR9pRJSA",
+          "label": "audio"
+        },
+        {
+          "id": "WnaUGsgbf1A",
+          "label": "audio"
         }
       ]
     },
@@ -373,6 +739,24 @@
           "title": "Afterglow",
           "bpm": 174
         }
+      ],
+      "youtube": [
+        {
+          "id": "ogMNV33AhCY",
+          "label": "official video"
+        },
+        {
+          "id": "U2KjySY9wvw",
+          "label": "audio"
+        },
+        {
+          "id": "OmeWleosFp0",
+          "label": "audio"
+        },
+        {
+          "id": "bnBS90qe7EU",
+          "label": "audio"
+        }
       ]
     },
     {
@@ -392,6 +776,24 @@
           "title": "Nightcall",
           "bpm": 91
         }
+      ],
+      "youtube": [
+        {
+          "id": "VZBrZV3nHAA",
+          "label": "official"
+        },
+        {
+          "id": "W8VdVY8diqs",
+          "label": "official"
+        },
+        {
+          "id": "6XJBDX3Z0BY",
+          "label": "audio"
+        },
+        {
+          "id": "AsTvI76PskA",
+          "label": "audio"
+        }
       ]
     },
     {
@@ -410,6 +812,24 @@
           "artist": "Alan Walker",
           "title": "Faded",
           "bpm": 90
+        }
+      ],
+      "youtube": [
+        {
+          "id": "Rif-RTvmmss",
+          "label": "official audio"
+        },
+        {
+          "id": "plnfIj7dkJE",
+          "label": "official"
+        },
+        {
+          "id": "dMMUH_ZpbB0",
+          "label": "official lyric video"
+        },
+        {
+          "id": "34Na4j8AVgA",
+          "label": "official video"
         }
       ]
     },
@@ -436,7 +856,43 @@
           "artist": "Sub Focus",
           "title": "Tidal Wave",
           "bpm": 174,
-          "durationSec": 240
+          "durationSec": 240,
+          "youtube": [
+            {
+              "id": "B8vlk1UR99k",
+              "label": "official"
+            },
+            {
+              "id": "Fsk7j_cnUh0",
+              "label": "official"
+            },
+            {
+              "id": "xNThiulE25M",
+              "label": "lyric video"
+            },
+            {
+              "id": "Jyk3YIe3NxM",
+              "label": "audio"
+            }
+          ]
+        }
+      ],
+      "youtube": [
+        {
+          "id": "NUTGr5t3MoY",
+          "label": "official video"
+        },
+        {
+          "id": "AJDiYxKSAqQ",
+          "label": "official audio"
+        },
+        {
+          "id": "u3lOlXgx-1k",
+          "label": "official video 4K"
+        },
+        {
+          "id": "_lof1pYtL9Q",
+          "label": "lyric video"
         }
       ]
     },
@@ -454,6 +910,24 @@
         {
           "artist": "Stars of the Lid",
           "title": "Requiem for Dying Mothers, Pt. 2"
+        }
+      ],
+      "youtube": [
+        {
+          "id": "OlaTeXX3uH8",
+          "label": "official 2019"
+        },
+        {
+          "id": "hvzQQOAjuoU",
+          "label": "official 2005"
+        },
+        {
+          "id": "wNQU5FH1Q40",
+          "label": "official 2005"
+        },
+        {
+          "id": "It4WxQ6dnn0",
+          "label": "audio"
         }
       ]
     }
@@ -476,6 +950,24 @@
           "title": "Faded",
           "bpm": 90
         }
+      ],
+      "youtube": [
+        {
+          "id": "MV_3Dpw-BRY",
+          "label": "official audio"
+        },
+        {
+          "id": "46qo_V1zcOM",
+          "label": "official audio HD"
+        },
+        {
+          "id": "ahienBeHUWw",
+          "label": "lyric video"
+        },
+        {
+          "id": "Gl8SUy1C9JY",
+          "label": "lyric video"
+        }
       ]
     },
     {
@@ -494,6 +986,24 @@
           "artist": "Netsky",
           "title": "Rio",
           "bpm": 173
+        }
+      ],
+      "youtube": [
+        {
+          "id": "SBjQ9tuuTJQ",
+          "label": "official"
+        },
+        {
+          "id": "m4OnAwaDVTE",
+          "label": "official"
+        },
+        {
+          "id": "nLjVtDtyDlY",
+          "label": "audio"
+        },
+        {
+          "id": "HRWJ7FxGwVg",
+          "label": "lyric video"
         }
       ]
     },
@@ -514,6 +1024,24 @@
           "title": "Nightcall",
           "bpm": 91
         }
+      ],
+      "youtube": [
+        {
+          "id": "60ItHLz5WEA",
+          "label": "official"
+        },
+        {
+          "id": "psn_rs_a5O0",
+          "label": "official audio"
+        },
+        {
+          "id": "qdpXxGPqW-Y",
+          "label": "lyric video"
+        },
+        {
+          "id": "jA9PqVkkK54",
+          "label": "lyric video"
+        }
       ]
     },
     {
@@ -521,7 +1049,7 @@
       "artist": "Eric Prydz",
       "title": "Pjanoo",
       "bpm": 126,
-      "durationSec": 426,
+      "durationSec": 451,
       "alternatives": [
         {
           "artist": "Avicii",
@@ -540,7 +1068,39 @@
           "artist": "David Guetta",
           "title": "Titanium",
           "bpm": 126,
-          "durationSec": 245
+          "durationSec": 245,
+          "youtube": [
+            {
+              "id": "JRfuAukYTKg",
+              "label": "official video"
+            },
+            {
+              "id": "P-gWGlf_VrY",
+              "label": "audio"
+            },
+            {
+              "id": "YW8fDhbEh-8",
+              "label": "lyric video"
+            },
+            {
+              "id": "Xn_kp8OZtc8",
+              "label": "lyric video"
+            }
+          ]
+        }
+      ],
+      "youtube": [
+        {
+          "id": "HUvovrkygZg",
+          "label": "club mix"
+        },
+        {
+          "id": "f-Nd5aWM2Ks",
+          "label": "club mix, label"
+        },
+        {
+          "id": "ByXbXg-Zny8",
+          "label": "official video, shorter"
         }
       ]
     },
@@ -560,6 +1120,24 @@
           "artist": "Kavinsky",
           "title": "Nightcall",
           "bpm": 91
+        }
+      ],
+      "youtube": [
+        {
+          "id": "VZBrZV3nHAA",
+          "label": "official"
+        },
+        {
+          "id": "W8VdVY8diqs",
+          "label": "official"
+        },
+        {
+          "id": "6XJBDX3Z0BY",
+          "label": "audio"
+        },
+        {
+          "id": "AsTvI76PskA",
+          "label": "audio"
         }
       ]
     },
@@ -586,7 +1164,43 @@
           "artist": "Sub Focus",
           "title": "Tidal Wave",
           "bpm": 174,
-          "durationSec": 240
+          "durationSec": 240,
+          "youtube": [
+            {
+              "id": "B8vlk1UR99k",
+              "label": "official"
+            },
+            {
+              "id": "Fsk7j_cnUh0",
+              "label": "official"
+            },
+            {
+              "id": "xNThiulE25M",
+              "label": "lyric video"
+            },
+            {
+              "id": "Jyk3YIe3NxM",
+              "label": "audio"
+            }
+          ]
+        }
+      ],
+      "youtube": [
+        {
+          "id": "NUTGr5t3MoY",
+          "label": "official video"
+        },
+        {
+          "id": "AJDiYxKSAqQ",
+          "label": "official audio"
+        },
+        {
+          "id": "u3lOlXgx-1k",
+          "label": "official video 4K"
+        },
+        {
+          "id": "_lof1pYtL9Q",
+          "label": "lyric video"
         }
       ]
     },
@@ -604,6 +1218,24 @@
         {
           "artist": "Stars of the Lid",
           "title": "Requiem for Dying Mothers, Pt. 2"
+        }
+      ],
+      "youtube": [
+        {
+          "id": "OlaTeXX3uH8",
+          "label": "official 2019"
+        },
+        {
+          "id": "hvzQQOAjuoU",
+          "label": "official 2005"
+        },
+        {
+          "id": "wNQU5FH1Q40",
+          "label": "official 2005"
+        },
+        {
+          "id": "It4WxQ6dnn0",
+          "label": "audio"
         }
       ]
     }
