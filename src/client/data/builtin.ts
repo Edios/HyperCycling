@@ -16,6 +16,37 @@ const experienceFiles = import.meta.glob<unknown>('../../content/experiences/*.j
   import: 'default',
 });
 
+// Song suggestions per Experience in one small file the owner can edit (names and tempos, no ids).
+const hintFiles = import.meta.glob<unknown>('../../content/music-hints/*.json', {
+  eager: true,
+  import: 'default',
+});
+
+/** experience id -> suggestions, merged from every hints file; an experience's own list wins. */
+function loadHints(): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [file, raw] of Object.entries(hintFiles)) {
+    if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+      throw new Error(`Invalid built-in music hints ${file}`);
+    }
+    Object.assign(out, raw);
+  }
+  return out;
+}
+
+const withHints = (files: Record<string, unknown>): Record<string, unknown> => {
+  const hints = loadHints();
+  return Object.fromEntries(
+    Object.entries(files).map(([file, raw]) => {
+      const id = (raw as { id?: unknown } | null)?.id;
+      const own = (raw as { musicHints?: unknown } | null)?.musicHints;
+      return typeof id === 'string' && own === undefined && hints[id] !== undefined
+        ? [file, { ...(raw as object), musicHints: hints[id] }]
+        : [file, raw];
+    }),
+  );
+};
+
 interface Parser<T> {
   safeParse(v: unknown): { success: true; data: T } | { success: false; error: Error };
 }
@@ -36,7 +67,7 @@ export const builtinPlans: Plan[] = load('plan', planFiles, planSchema);
 
 export const builtinExperiences: Experience[] = load(
   'experience',
-  experienceFiles,
+  withHints(experienceFiles),
   experienceSchema,
 );
 

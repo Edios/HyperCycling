@@ -112,3 +112,27 @@ describe('Neon Grid 45 scenario', () => {
     }
   });
 });
+
+describe('Neon Grid music suggestions', () => {
+  const PAIRS = [
+    ['neon-grid-45', 'class-neon-grid-45', 11],
+    ['neon-grid-45-light', 'class-neon-grid-45-light', 11],
+    ['neon-grid-30', 'class-neon-grid-30', 7],
+  ] as const;
+  it.each(PAIRS)('%s has one suggestion per slot and ships no Spotify ids', (id, wid, slots) => {
+    const e = builtinExperiences.find((x) => x.id === id)!;
+    const w = getWorkout(wid)!;
+    expect(experienceProblems(e, w)).toEqual([]);
+    expect(e.musicPins).toEqual([]);
+    expect(e.musicHints?.map((h) => h.slot)).toEqual(Array.from({ length: slots }, (_, i) => i));
+    expect(JSON.stringify(e.musicHints)).not.toMatch(/spotify:|open\.spotify|"id"/);
+    for (const h of e.musicHints ?? []) {
+      const slot = w.songs![h.slot]!;
+      if (h.bpm && slot.bpm) {
+        const mid = (slot.bpm[0] + slot.bpm[1]) / 2;
+        // the suggested tempo suits the slot at normal, half or double time
+        expect([h.bpm, h.bpm * 2, h.bpm / 2].some((v) => Math.abs(v - mid) / mid < 0.1)).toBe(true);
+      }
+    }
+  });
+});

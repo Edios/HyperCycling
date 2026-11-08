@@ -20,6 +20,15 @@ export interface SpotifyPlaylist {
   total: number;
 }
 
+/** A search hit with what matching needs: the explicit flag and availability in the user's market. */
+export interface SpotifyTrackHit {
+  ref: TrackRef;
+  explicit: boolean;
+  /** False = Spotify says it cannot be played in the user's country; undefined = not reported. */
+  playable: boolean | undefined;
+  album?: string;
+}
+
 export interface PlaylistTrack {
   id: string;
   title: string;
@@ -32,6 +41,11 @@ export interface SpotifyProvider extends MusicProvider {
   listDevices(): Promise<SpotifyDevice[]>;
   /** Track search for the editor; results are ready-to-use track references. */
   search(query: string): Promise<TrackRef[]>;
+  /**
+   * Track search with `market=from_token` (the rider's own country), so each hit says whether it
+   * is playable there. At most `limit` hits (default 8).
+   */
+  searchTracks(query: string, limit?: number): Promise<SpotifyTrackHit[]>;
   /** The user's own playlists (GET /v1/me/playlists; needs the playlist-read scopes). */
   listPlaylists(): Promise<SpotifyPlaylist[]>;
   /** Tracks of one playlist the user owns or collaborates on, at most `max` (default 500). */
@@ -69,6 +83,9 @@ const searchSchema = z.object({
         name: z.string(),
         duration_ms: z.number(),
         artists: z.array(z.object({ name: z.string() })),
+        explicit: z.boolean().optional(),
+        is_playable: z.boolean().optional(),
+        album: z.object({ name: z.string() }).optional(),
       }),
     ),
   }),
@@ -287,6 +304,29 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
         ...(t.artists.length ? { artist: t.artists.map((a) => a.name).join(', ') } : {}),
         durationSec: Math.round(t.duration_ms / 1000),
         startAtSec: 0,
+      }));
+    },
+
+    async searchTracks(query, limit = 8) {
+      const q = query.trim();
+      if (!q) return [];
+      const body = await client.request('GET', '/v1/search', {
+        query: { q, type: 'track', limit, market: 'from_token' },
+      });
+      const parsed = searchSchema.safeParse(body);
+      if (!parsed.success) throw new SpotifyError('http');
+      return parsed.data.tracks.items.map((t) => ({
+        ref: {
+          provider: 'spotify' as const,
+          id: t.id,
+          title: t.name,
+          ...(t.artists.length ? { artist: t.artists.map((a) => a.name).join(', ') } : {}),
+          durationSec: Math.round(t.duration_ms / 1000),
+          startAtSec: 0,
+        },
+        explicit: t.explicit ?? false,
+        playable: t.is_playable,
+        ...(t.album ? { album: t.album.name } : {}),
       }));
     },
 

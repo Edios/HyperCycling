@@ -163,3 +163,29 @@ describe('withExperiencePins', () => {
     expect(out.musicCues.map((c) => c.track.id).sort()).toEqual(['keep', 'new']);
   });
 });
+
+describe('musicHints', () => {
+  const hint = { slot: 0, artist: 'Kavinsky', title: 'Nightcall', bpm: 91, durationSec: 259 };
+  it('are optional: an older file without them still loads', () => {
+    expect(parse().musicHints).toBeUndefined();
+  });
+  it('accept a suggestion with alternatives', () => {
+    const e = parse({
+      musicHints: [{ ...hint, alternatives: [{ artist: 'Tycho', title: 'Awake', bpm: 88 }] }],
+    });
+    expect(e.musicHints?.[0]?.alternatives).toHaveLength(1);
+  });
+  it('reject a missing title, an absurd tempo and no field for a Spotify id', () => {
+    expect(() => parse({ musicHints: [{ ...hint, title: '' }] })).toThrow();
+    expect(() => parse({ musicHints: [{ ...hint, bpm: 900 }] })).toThrow();
+    expect(parse({ musicHints: [{ ...hint, id: 'abc' }] }).musicHints?.[0]).not.toHaveProperty(
+      'id',
+    );
+  });
+  it('are flagged when pointing past the last slot or repeated', () => {
+    const past = parse({ musicHints: [{ ...hint, slot: 9 }] });
+    expect(experienceProblems(past, WORKOUT).join()).toMatch(/past the last song/);
+    const twice = parse({ musicHints: [hint, hint] });
+    expect(experienceProblems(twice, WORKOUT).join()).toMatch(/duplicate music hint/);
+  });
+});

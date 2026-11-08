@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LANGS, type Lang } from './lang';
+import { BPM_MAX, BPM_MIN } from './bpm-match';
 import { songDurationSec, type MusicCue, type Workout } from './workout';
 
 /**
@@ -28,6 +29,27 @@ export interface WorldTheme {
   chapters?: ThemeChapter[];
 }
 
+/** A song suggestion: only names and numbers, never an id (the rider matches it on their own account). */
+export interface SongSuggestion {
+  artist: string;
+  title: string;
+  /** Tempo of the song as the author measured it. */
+  bpm?: number;
+}
+
+/** What to look for in one song slot (`slot` = index in the workout's songs). */
+export interface MusicHint extends SongSuggestion {
+  slot: number;
+  /** Expected length of the preferred version; a shorter song than the slot gets a warning. */
+  durationSec?: number;
+  /** Beatless piece (cooldown): the tempo is not compared. */
+  noBeat?: boolean;
+  /** Accept explicit versions (default: prefer the clean one). */
+  explicit?: boolean;
+  /** Other songs for the same slot, in order of preference. */
+  alternatives?: SongSuggestion[];
+}
+
 export interface ExperienceText {
   title: string;
   description: string;
@@ -42,6 +64,8 @@ export interface Experience {
   workoutRef: { kind: 'builtin' | 'user'; id: string };
   /** Pins of the experience; they override the workout's own music cues. May be empty. */
   musicPins: MusicCue[];
+  /** Song suggestions per slot; the rider turns them into pins with their own Spotify. Optional. */
+  musicHints?: MusicHint[];
   worldTheme: WorldTheme;
   /** Fixed route; absent = a new seed per session. */
   seed?: number;
@@ -57,6 +81,20 @@ export interface Experience {
 
 const knownTheme = (v: unknown): unknown =>
   typeof v === 'string' && (THEME_IDS as readonly string[]).includes(v) ? v : 'abstract';
+
+const suggestionSchema = z.object({
+  artist: z.string().min(1).max(120),
+  title: z.string().min(1).max(160),
+  bpm: z.number().min(BPM_MIN).max(BPM_MAX).optional(),
+});
+
+const musicHintSchema = suggestionSchema.extend({
+  slot: z.number().int().min(0),
+  durationSec: z.number().int().min(10).max(1800).optional(),
+  noBeat: z.boolean().optional(),
+  explicit: z.boolean().optional(),
+  alternatives: z.array(suggestionSchema).max(5).optional(),
+});
 
 export const experienceSchema: z.ZodType<Experience> = z
   .object({
@@ -91,6 +129,7 @@ export const experienceSchema: z.ZodType<Experience> = z
         }),
       )
       .default([]),
+    musicHints: z.array(musicHintSchema).max(32).optional(),
     worldTheme: z.object({
       // an unknown theme (newer file, older app) falls back to the abstract look
       theme: z.preprocess(knownTheme, z.enum(THEME_IDS)),
@@ -165,6 +204,12 @@ export function experienceProblems(e: Experience, w: Workout): string[] {
   );
   for (const c of e.worldTheme.chapters ?? []) {
     if (c.atPin >= slots) out.push(`chapter at pin ${c.atPin} is past the last song (${slots})`);
+  }
+  const seen = new Set<number>();
+  for (const h of e.musicHints ?? []) {
+    if (h.slot >= slots) out.push(`music hint for slot ${h.slot} is past the last song (${slots})`);
+    if (seen.has(h.slot)) out.push(`duplicate music hint for slot ${h.slot}`);
+    seen.add(h.slot);
   }
   for (const p of e.musicPins)
     if (!ids.has(p.blockId)) out.push(`pin for unknown block ${p.blockId}`);

@@ -7,5 +7,6 @@ export {
   type SpotifyDevice,
   type SpotifyProvider,
   type SpotifyProviderOptions,
+  type SpotifyTrackHit,
 } from './provider';
 export { settingsSpotifyStore } from './settings-store';

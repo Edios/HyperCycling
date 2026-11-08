@@ -1,0 +1,95 @@
+.panel {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+}
+
+.note,
+.cap {
+  margin: 0;
+  color: var(--mut);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.cap {
+  font-size: 0.875rem;
+}
+
+.err,
+.warn {
+  margin: 0;
+  color: var(--warn, #f5b942);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.err {
+  color: var(--danger, #ff6b6b);
+}
+
+.link {
+  color: var(--accent, inherit);
+  font-size: 1rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.row {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+}
+
+.want {
+  color: var(--mut);
+  font-size: 0.9375rem;
+}
+
+.select,
+.manual input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  box-sizing: border-box;
+  font: inherit;
+  color: inherit;
+  background: var(--card, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.2));
+  border-radius: 0.5rem;
+  padding: 0 0.625rem;
+}
+
+.manual {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+}

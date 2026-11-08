@@ -12,7 +12,11 @@ import { useLibrary } from '../data/useLibrary';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
 import { getExperience } from '../data/builtin';
-import { experienceText, withExperiencePins, type Experience } from '../../domain/experience';
+import { experienceText, type Experience } from '../../domain/experience';
+import { ExperienceMusic } from '../experience/ExperienceMusic';
+import { loadChoices, type Choices } from '../experience/musicChoices';
+import { withUserMusic } from '../experience/musicMatch';
+import { useSpotifyConnected } from '../music/spotify/useSpotify';
 import { WORLD_CHOICES } from '../world/world-options';
 import { useSessionStore } from '../training/session-store';
 import { formatClock } from '../training/format';
@@ -146,13 +150,18 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
     experience ? 'scenes' : settings.hyperrideWorld,
   );
   const [adding, setAdding] = useState(false);
+  const spotifyConnected = useSpotifyConnected();
+  // Songs the rider matched to their Spotify for this Experience (kept in this browser only).
+  const [matched, setMatched] = useState<Choices>(() =>
+    experience ? loadChoices(experience.id) : {},
+  );
   const [youtubeUrl, setYoutubeUrl] = useState(last?.youtubeUrl ?? '');
 
   // The plan's session length and difficulty apply to what is shown and to what is ridden.
   const scaled = useMemo(() => {
     const base = plan ? applyPlanSettings(workout, planSettings) : workout;
-    return experience ? withExperiencePins(base, experience) : base;
-  }, [workout, plan, planSettings, experience]);
+    return experience ? withUserMusic(base, experience, matched) : base;
+  }, [workout, plan, planSettings, experience, matched]);
   const segments = useMemo(
     () => flattenWorkout(scaled, settings.effortTable, resolveResistanceMode(settings)),
     [scaled, settings],
@@ -289,6 +298,15 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
               />
               <p className={styles.note}>{t('experience.liteHint')}</p>
             </section>
+          )}
+          {experience && (
+            <ExperienceMusic
+              experience={experience}
+              workout={workout}
+              connected={spotifyConnected}
+              choices={matched}
+              onChoices={setMatched}
+            />
           )}
 
           {!experience && (
