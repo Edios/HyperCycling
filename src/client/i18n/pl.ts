@@ -830,7 +830,7 @@ export const pl: Messages = {
     },
     theme: { abstract: 'Abstrakcja', 'neon-grid': 'Neon Grid' },
     cardMeta: '{minutes} min · {steps} stopni oporu · {songs} piosenek',
-    songRow: 'Piosenka {n}: {minutes} min',
+    songRow: 'Piosenka {n}: {time}',
     start: 'Start',
     showScenario: 'Pokaż scenariusz',
     hideScenario: 'Ukryj scenariusz',
@@ -1026,6 +1026,8 @@ export const pl: Messages = {
     ngBreathe2: 'Zdejmij dwa stopnie, oddychaj.',
     ngWindDown: 'Zdejmij opór, luźne kręcenie, oddychaj.',
     ngSilence: 'Cisza. Oddychaj, wyciągnij ramiona.',
+    ngWelcome: 'Witaj. Usiądź wygodnie, luźne nogi, zaczynamy spokojnie.',
+    ngFlatRoad: 'Płaska droga, siedząc, znajdź równy rytm.',
   },
   block: {
     warmup: 'Rozgrzewka',

@@ -1,0 +1,61 @@
+{
+  "id": "neon-grid-45-light",
+  "title": "Neon Grid Light 45",
+  "description": "The full 45 minutes of the grid without the summit climb: longer recoveries and a calmer middle, same sprint finish and the silence after it.",
+  "localized": {
+    "pl": {
+      "title": "Neon Grid Light 45",
+      "description": "Pełne 45 minut siatki bez podjazdu na szczyt: dłuższe odpoczynki i spokojniejszy środek, ten sam sprint na koniec i cisza po nim."
+    },
+    "en": {
+      "title": "Neon Grid Light 45",
+      "description": "The full 45 minutes of the grid without the summit climb: longer recoveries and a calmer middle, same sprint finish and the silence after it."
+    }
+  },
+  "workoutRef": {
+    "kind": "builtin",
+    "id": "class-neon-grid-45-light"
+  },
+  "musicPins": [],
+  "worldTheme": {
+    "theme": "neon-grid",
+    "chapters": [
+      {
+        "atPin": 0,
+        "look": "grid-wake"
+      },
+      {
+        "atPin": 2,
+        "look": "light-lanes"
+      },
+      {
+        "atPin": 4,
+        "look": "arches"
+      },
+      {
+        "atPin": 6,
+        "look": "surge"
+      },
+      {
+        "atPin": 9,
+        "look": "overdrive"
+      },
+      {
+        "atPin": 10,
+        "look": "afterglow"
+      }
+    ]
+  },
+  "lengthMin": 45,
+  "level": "medium",
+  "bike": "manual-stepped",
+  "stepCount": 5,
+  "tags": [
+    "electronic",
+    "intervals",
+    "hills",
+    "sprints"
+  ],
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-08T00:00:00.000Z"
+}

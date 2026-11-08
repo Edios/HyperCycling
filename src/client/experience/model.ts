@@ -7,15 +7,19 @@ export function matchesLevel(e: Experience, f: LevelFilter): boolean {
   return f === 'all' || e.level === f;
 }
 
-/** Song slots of the experience's workout with their length in minutes (rounded, at least 1). */
-export function scenarioRows(w: Workout): { id: string; minutes: number }[] {
-  return (w.songs ?? []).map((s) => ({
-    id: s.id,
-    minutes: Math.max(1, Math.round(songDurationSec(w, s) / 60)),
-  }));
+/** m:ss, so the rows add up to the class length (no rounding to whole minutes). */
+export function formatSongTime(sec: number): string {
+  const total = Math.max(0, Math.round(sec));
+  const s = total % 60;
+  return `${Math.floor(total / 60)}:${s < 10 ? '0' : ''}${s}`;
 }
 
-/** The experience to feature on the start page: the first by id. */
+/** Song slots of the experience's workout with their length as m:ss. */
+export function scenarioRows(w: Workout): { id: string; time: string }[] {
+  return (w.songs ?? []).map((s) => ({ id: s.id, time: formatSongTime(songDurationSec(w, s)) }));
+}
+
+/** The experience to feature on the start page: the longest full one, then the first by id. */
 export function featuredExperience(list: readonly Experience[]): Experience | undefined {
-  return [...list].sort((a, b) => a.id.localeCompare(b.id))[0];
+  return [...list].sort((a, b) => b.lengthMin - a.lengthMin || a.id.localeCompare(b.id))[0];
 }

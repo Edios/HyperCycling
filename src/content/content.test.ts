@@ -149,6 +149,8 @@ const NEON_GRID_CUES = [
   'ngBreathe2',
   'ngWindDown',
   'ngSilence',
+  'ngWelcome',
+  'ngFlatRoad',
 ];
 
 /** The song slot that covers a block id (top-level or a repeat child). */
