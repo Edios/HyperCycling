@@ -69,6 +69,9 @@ export type SceneLook = {
   /** Construction along the road (scenes-constructs CONSTRUCT id) and terrain terrace step (0 = smooth). */
   construct: number;
   terrace: number;
+  /** Road character: left-right bend factor (1 = base, ≤ MAX_BEND) and hill factor (1 = base, ≤ MAX_HILLS). */
+  bend: number;
+  hills: number;
 };
 
 /** The "Trip" channels switched off: what every plain scene uses. */
@@ -85,6 +88,8 @@ export function plainFx(line: string) {
     vignette: 0,
     construct: 0,
     terrace: 0,
+    bend: 1,
+    hills: 1,
   };
 }
 

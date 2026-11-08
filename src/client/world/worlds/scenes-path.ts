@@ -15,6 +15,8 @@ export const CLIMB_GRADE = 0.11;
 export const DESCENT_GRADE = -0.07;
 /** Half length of the grade ramp around a block boundary, in seconds. */
 const RAMP_SEC = 4;
+/** Bends ease over a longer stretch than grades, so the whole road never swings suddenly. */
+const BEND_RAMP_SEC = 10;
 const S_CELL = 700;
 const S_PROBABILITY = 0.45;
 /** Below this speed, depth → arrival time would stretch to infinity. */
@@ -25,7 +27,7 @@ const smooth01 = (u: number): number => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 
 const phase = (seed: number, k: number): number => hash01(seed * 31 + k) * TAU;
 
 /** Lateral position of the road centre at world z. */
-export function windX(z: number, seed: number): number {
+export function windX(z: number, seed: number, bend = 1): number {
   let x = 30 * Math.sin(z / 450 + phase(seed, 1)) + 14 * Math.sin(z / 210 + phase(seed, 2));
   // an S-bend in some cells: sin(2πu)·sin²(πu) is zero with zero slope and curvature at both ends
   const cell = Math.floor(z / S_CELL);
@@ -36,12 +38,60 @@ export function windX(z: number, seed: number): number {
     const s = Math.sin(Math.PI * u);
     x += amp * Math.sin(TAU * u) * s * s;
   }
-  return x;
+  return x * bend;
 }
 
 /** Rolling crests and dips of the road at world z (every block, not only climbs). */
-export function rollY(z: number, seed: number): number {
-  return 7 * Math.sin(z / 260 + phase(seed, 3)) + 4 * Math.sin(z / 110 + phase(seed, 4));
+export function rollY(z: number, seed: number, hills = 1): number {
+  return hills * (7 * Math.sin(z / 260 + phase(seed, 3)) + 4 * Math.sin(z / 110 + phase(seed, 4)));
+}
+
+/** Largest bend / hills factor a look may ask for (curvature stays ≤ MAX_CURVATURE · MAX_BEND). */
+export const MAX_BEND = 2.4;
+export const MAX_HILLS = 3;
+
+/** How winding a block is: climbs wind, recovery sways gently, sprints run nearly straight. */
+function segmentBend(s: Segment): number {
+  const effort = Math.max(s.effortStart, s.effortEnd);
+  if ((s.rpm ?? DEFAULT_RPM) < CLIMB_MAX_RPM && effort >= CLIMB_MIN_EFFORT) return 1.25;
+  if (effort <= 3) return 0.8;
+  if (effort >= 8) return 0.35;
+  return 1;
+}
+
+/** Bend factor at workout second t (1 = the base road), eased over ±BEND_RAMP_SEC around boundaries. */
+export function blockBend(segments: readonly Segment[], t: number): number {
+  if (segments.length === 0) return 1;
+  let i = 0;
+  while (i + 1 < segments.length && (segments[i + 1]?.startSec ?? Infinity) <= t) i++;
+  const cur = segments[i];
+  if (!cur) return 1;
+  const b = segmentBend(cur);
+  const prev = segments[i - 1];
+  if (prev && t - cur.startSec < BEND_RAMP_SEC) {
+    const w = smooth01((t - cur.startSec + BEND_RAMP_SEC) / (2 * BEND_RAMP_SEC));
+    return segmentBend(prev) + (b - segmentBend(prev)) * w;
+  }
+  const next = segments[i + 1];
+  const end = cur.startSec + cur.durationSec;
+  if (next && end - t < BEND_RAMP_SEC) {
+    const w = smooth01((t - end + BEND_RAMP_SEC) / (2 * BEND_RAMP_SEC));
+    return b + (segmentBend(next) - b) * w;
+  }
+  return b;
+}
+
+/** Bend factor at depths 0, step, 2·step, … (fills `out`), each depth reached at the current speed. */
+export function bendTable(
+  segments: readonly Segment[],
+  workoutSec: number,
+  speed: number,
+  step: number,
+  out: Float32Array,
+): Float32Array {
+  const v = Math.max(speed, MIN_PROFILE_SPEED);
+  for (let k = 0; k < out.length; k++) out[k] = blockBend(segments, workoutSec + (k * step) / v);
+  return out;
 }
 
 function segmentGrade(s: Segment): number {
@@ -85,9 +135,10 @@ export function elevationTable(
   seed: number,
   step: number,
   out: Float32Array,
+  hills = 1,
 ): Float32Array {
   const v = Math.max(speed, MIN_PROFILE_SPEED);
-  const y0 = rollY(dist, seed);
+  const y0 = rollY(dist, seed, hills);
   let acc = 0;
   let gPrev = blockGrade(segments, workoutSec);
   if (out.length > 0) out[0] = 0;
@@ -96,7 +147,7 @@ export function elevationTable(
     const g = blockGrade(segments, workoutSec + s / v);
     acc += ((gPrev + g) / 2) * step;
     gPrev = g;
-    out[k] = acc + rollY(dist + s, seed) - y0;
+    out[k] = acc + rollY(dist + s, seed, hills) - y0;
   }
   return out;
 }
