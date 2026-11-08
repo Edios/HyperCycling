@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
+import { logoSegments } from './src/client/brand/geometry';
+import { MARK_SIZE } from './src/client/brand/intro-timeline';
 import { injectCspMeta } from './src/shared/cspMeta';
 
 /**
@@ -16,6 +18,23 @@ function cspMeta(): Plugin {
   };
 }
 
+/** Fills the intro's logo ticks (index.html) from the one logo geometry, in dev and in builds. */
+function introMarkup(): Plugin {
+  return {
+    name: 'spinning-tutor:intro-markup',
+    transformIndexHtml: (html) =>
+      html.replace(
+        '<!--INTRO_TICKS-->',
+        logoSegments(MARK_SIZE)
+          .map(
+            (s, i) =>
+              `<path class="t${i}" d="${s.d}" fill="${s.color}" stroke="${s.color}" stroke-width="${s.strokeWidth}" stroke-linejoin="round" />`,
+          )
+          .join(''),
+      ),
+  };
+}
+
 const { version } = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
 ) as {
@@ -27,7 +46,7 @@ export default defineConfig({
   base: process.env.VITE_BASE ?? '/',
   // Vite would inline a small modulepreload polyfill; the CSP has no 'unsafe-inline' for scripts.
   build: { modulePreload: { polyfill: false } },
-  plugins: [react(), cspMeta()],
+  plugins: [react(), introMarkup(), cspMeta()],
   server: {
     host: '127.0.0.1',
     // The API only trusts the dev origin on 5173; silently moving to another port would break it.
