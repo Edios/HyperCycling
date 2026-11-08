@@ -38,7 +38,7 @@ No account, no install, no power meter. Pick a workout, press play, and ride.
 ## Run it in 30 seconds
 
 - **Browser:** open https://hypercycling.app/ and ride.
-- **Locally** (Node 24+): `npm ci`, then `npm start`, then open http://127.0.0.1:5175 (use `127.0.0.1`, not `localhost`).
+- **Locally** (Node 24+): `npm ci`, then `npm start`, then open http://127.0.0.1:5175 (use `127.0.0.1`, not `localhost`, for Spotify). **YouTube music does not play from an IP address** such as `127.0.0.1` (YouTube refuses to embed there): for YouTube locally open http://localhost:5175 instead, or use Spotify. On https://hypercycling.app/ both work.
 
 ## Your data stays yours
 

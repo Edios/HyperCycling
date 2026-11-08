@@ -11,7 +11,7 @@ let shared: SpotifyProvider | undefined;
  * sessions, the editor search and the settings screen can all use the same instance.
  */
 export function getSharedSpotifyProvider(): SpotifyProvider {
-  return (shared ??= createSpotifyProvider({ store: settingsSpotifyStore }));
+  return (shared ??= createSpotifyProvider({ store: settingsSpotifyStore, watchdogMs: 6000 }));
 }
 
 /** Test seam: forget the shared instance (or install a prepared one). */

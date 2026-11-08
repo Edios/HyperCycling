@@ -51,6 +51,8 @@ export interface YoutubeCandidate {
   label?: string;
   /** Where in this upload the song starts, seconds (an intro of the video). Default: the item's offset. */
   offsetSec?: number;
+  /** Length of THIS upload, seconds (a music video is shorter than the extended mix). Default: the item's. */
+  durationSec?: number;
 }
 
 /** A song of a slot's authored queue. */
@@ -133,6 +135,7 @@ const youtubeCandidateSchema = z.object({
   id: z.string().regex(YOUTUBE_ID),
   label: z.string().max(60).optional(),
   offsetSec: z.number().int().min(0).max(600).optional(),
+  durationSec: z.number().int().min(10).max(7200).optional(),
 });
 
 const queueItemSchema = suggestionSchema.extend({

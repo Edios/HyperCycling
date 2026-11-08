@@ -1022,3 +1022,56 @@ describe('music director: chain of recordings', () => {
     expect(youtube.log).toEqual(['play:Y2@0']);
   });
 });
+
+describe('music director: failure memory and recordings of other lengths', () => {
+  const yt = (id: string, startAtSec = 0, durationSec?: number): TrackRef => ({
+    provider: 'youtube',
+    id,
+    title: `Title ${id}`,
+    startAtSec,
+    ...(durationSec !== undefined ? { durationSec } : {}),
+  });
+  const cueOf = (t: TrackRef): MusicCue => ({ blockId: 'b', rep: 1, track: t });
+  const plays = () => youtube.log.filter((l) => l.startsWith('play:'));
+
+  it('does not go back to a recording that already failed when a later one breaks', async () => {
+    youtube.failPlaysWhen((t) => t.id === 'Y1');
+    make({ cues: [cueOf({ ...yt('Y1'), alternates: [yt('Y2'), yt('Y3')] })] }).start();
+    await runAt(130);
+    expect(plays()).toEqual(['play:Y1@30', 'play:Y2@30']);
+    youtube.breakDown();
+    await advance(200);
+    expect(plays()).toEqual(['play:Y1@30', 'play:Y2@30', 'play:Y3@30']);
+  });
+
+  it('skips a recording that ends before the position at once (no stalled seek)', async () => {
+    make({
+      cues: [cueOf({ ...yt('V', 0, 400), alternates: [yt('SHORT', 0, 100), yt('LONG', 0, 400)] })],
+    }).start();
+    await runAt(330); // 230 s into the song: SHORT (100 s) cannot reach it
+    expect(plays()).toEqual(['play:V@230']);
+    youtube.breakDown();
+    await advance(200);
+    expect(plays()).toEqual(['play:V@230', 'play:LONG@230']);
+  });
+
+  it('tries a recording shorter than the planned song only after the full-length ones', async () => {
+    make({
+      cues: [
+        cueOf({ ...yt('MAIN', 0, 400), alternates: [yt('VIDEO', 0, 200), yt('FULL', 0, 400)] }),
+      ],
+    }).start();
+    await runAt(110);
+    youtube.failPlaysWhen((t) => t.id === 'FULL');
+    youtube.breakDown(); // MAIN broke: FULL is next (fails), then the shorter VIDEO
+    await advance(200);
+    expect(plays()).toEqual(['play:MAIN@10', 'play:FULL@10', 'play:VIDEO@10']);
+  });
+
+  it('stays silent, without a warning, when no recording reaches the position', async () => {
+    make({ cues: [cueOf({ ...yt('A', 0, 50), alternates: [yt('B', 0, 60)] })] }).start();
+    await runAt(300);
+    expect(youtube.log).toEqual([]);
+    expect(warnings).toEqual([]);
+  });
+});

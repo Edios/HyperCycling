@@ -724,3 +724,60 @@ describe('searchTracks (region check)', () => {
     }
   });
 });
+
+describe('watchdog (a track that stops playing)', () => {
+  function watched(playerReply: () => unknown) {
+    api((s) =>
+      s.method === 'GET' && s.path === '/v1/me/player'
+        ? HttpResponse.json(playerReply() as Record<string, unknown>)
+        : undefined,
+    );
+    const state = { cfg: FRESH as SpotifySettings | undefined };
+    const provider = createSpotifyProvider({
+      store: { read: () => state.cfg, write: () => Promise.resolve() },
+      now: () => clock.t,
+      watchdogMs: 15,
+    });
+    const failures: string[] = [];
+    provider.setFailureHandler?.((e) => failures.push(e.message));
+    return { provider, failures };
+  }
+  const playing = (extra: Record<string, unknown> = {}) => ({
+    is_playing: true,
+    progress_ms: 5000,
+    item: { id: track.id, duration_ms: 200_000 },
+    ...extra,
+  });
+
+  it('reports a failure after two bad readings, once', async () => {
+    const { provider, failures } = watched(() => playing({ is_playing: false }));
+    await provider.connect();
+    await provider.play(track, 0);
+    await vi.waitFor(() => expect(failures).toEqual(['Spotify stopped playing the track']));
+    await new Promise((r) => setTimeout(r, 60));
+    expect(failures).toHaveLength(1);
+  });
+
+  it('reports a failure when another track plays', async () => {
+    const { provider, failures } = watched(() =>
+      playing({ item: { id: 'other', duration_ms: 1 } }),
+    );
+    await provider.connect();
+    await provider.play(track, 0);
+    await vi.waitFor(() => expect(failures).toHaveLength(1));
+  });
+
+  it('stays quiet while the track plays, near its end, and after pause', async () => {
+    let reply: unknown = playing();
+    const { provider, failures } = watched(() => reply);
+    await provider.connect();
+    await provider.play(track, 0);
+    await new Promise((r) => setTimeout(r, 70));
+    reply = playing({ is_playing: false, progress_ms: 199_000 }); // it just ended
+    await new Promise((r) => setTimeout(r, 70));
+    reply = playing({ is_playing: false });
+    await provider.pause();
+    await new Promise((r) => setTimeout(r, 70));
+    expect(failures).toEqual([]);
+  });
+});

@@ -62,6 +62,12 @@ export interface SpotifyProviderOptions {
   now?: () => number;
   /** Resolves after `ms`; injected so tests and the fade do not depend on real timers. */
   sleep?: (ms: number) => Promise<void>;
+  /**
+   * Spotify only takes commands (no player events), so after a track starts the provider asks the
+   * player every `watchdogMs` whether it still plays that track, and reports a failure (the
+   * director then moves to the song's next recording). 0 / absent = off.
+   */
+  watchdogMs?: number;
 }
 
 const devicesSchema = z.object({
@@ -142,6 +148,23 @@ const playerSchema = z.object({
     .optional(),
 });
 
+const nowPlayingSchema = z
+  .object({
+    is_playing: z.boolean().optional(),
+    progress_ms: z.number().nullable().optional(),
+    item: z
+      .object({ id: z.string().nullable().optional(), duration_ms: z.number().optional() })
+      .nullable()
+      .optional(),
+  })
+  .nullable()
+  .optional();
+
+/** Bad readings in a row before the track counts as failed (one hiccup is not enough). */
+const WATCHDOG_STRIKES = 2;
+/** Near the end of the track "not playing" just means it ended. */
+const END_GRACE_MS = 4000;
+
 const defaultSleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 const clamp01 = (v: number): number => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1);
@@ -157,6 +180,51 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
   /** The device volume (0..100) from before the session was muted; restored on unmute. */
   let volumeBeforeMute: number | undefined;
   const now = options.now ?? Date.now;
+  let failureHandler: ((err: Error) => void) | undefined;
+  let lastTrackId: string | undefined;
+  let watch: { timer: ReturnType<typeof setInterval>; id: string; strikes: number } | undefined;
+
+  const stopWatch = (): void => {
+    if (watch) clearInterval(watch.timer);
+    watch = undefined;
+  };
+
+  /** One look at the player: true when it plays `id` (or has just finished it). */
+  async function playsTrack(id: string): Promise<boolean> {
+    const parsed = nowPlayingSchema.safeParse(await client.request('GET', '/v1/me/player'));
+    if (!parsed.success) return true; // an odd answer proves nothing
+    const p = parsed.data;
+    if (!p || !p.item) return false; // no active player / nothing loaded
+    if (p.item.id !== id) return false;
+    if (p.is_playing) return true;
+    const left = (p.item.duration_ms ?? Infinity) - (p.progress_ms ?? 0);
+    return left <= END_GRACE_MS; // stopped at the end: finished, not broken
+  }
+
+  function startWatch(id: string): void {
+    stopWatch();
+    const every = options.watchdogMs ?? 0;
+    if (!(every > 0)) return;
+    const mine = { id, strikes: 0, timer: undefined as unknown as ReturnType<typeof setInterval> };
+    mine.timer = setInterval(() => {
+      void (async () => {
+        let ok = true;
+        try {
+          ok = await playsTrack(id);
+        } catch {
+          return; // a network or rate-limit hiccup is not a verdict
+        }
+        if (watch !== mine) return; // replaced or stopped while asking
+        mine.strikes = ok ? 0 : mine.strikes + 1;
+        if (mine.strikes < WATCHDOG_STRIKES) return;
+        stopWatch();
+        const handler = failureHandler;
+        failureHandler = undefined;
+        handler?.(new Error('Spotify stopped playing the track'));
+      })();
+    }, every);
+    watch = mine;
+  }
 
   async function listDevices(): Promise<SpotifyDevice[]> {
     const body = await client.request('GET', '/v1/me/player/devices');
@@ -217,6 +285,12 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
           position_ms: Math.max(0, Math.round(offsetSec * 1000)),
         },
       });
+      lastTrackId = track.id;
+      startWatch(track.id);
+    },
+
+    setFailureHandler(handler) {
+      failureHandler = handler;
     },
 
     /**
@@ -226,6 +300,7 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
      * does not report a volume it only pauses: guessing a level could make things louder.
      */
     async fadeOut(ms) {
+      stopWatch();
       const device = await resolveDeviceId();
       const original = await currentVolume(device);
       if (original === undefined) {
@@ -254,6 +329,7 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
     },
 
     async pause() {
+      stopWatch();
       const device = await resolveDeviceId();
       try {
         await client.request('PUT', '/v1/me/player/pause', { query: { device_id: device } });
@@ -266,6 +342,7 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
     async resume() {
       const device = await resolveDeviceId();
       await client.request('PUT', '/v1/me/player/play', { query: { device_id: device } });
+      if (lastTrackId) startWatch(lastTrackId);
     },
 
     /**

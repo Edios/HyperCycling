@@ -5,6 +5,7 @@ import { queueRecordings } from '../../domain/music-chain';
 import type { TrackRef, Workout } from '../../domain/workout';
 import { useT, type MessageKey } from '../i18n';
 import { setMusicSource } from '../music/music-source';
+import { ipOriginHost } from '../music/origin';
 import {
   checkRecordings,
   liveCount,
@@ -36,6 +37,8 @@ interface Props {
   spotifyConnected: boolean;
   /** Test seam: the oEmbed lookup and the trial embed. */
   deps?: PreflightDeps;
+  /** Test seam: the page's host name; defaults to the real one. */
+  host?: string | undefined;
 }
 
 /** Slots whose music cannot play according to the check (empty until a check ran). */
@@ -68,9 +71,12 @@ export function ExperienceMusicCheck({
   onResults,
   spotifyConnected,
   deps,
+  host,
 }: Props) {
   const t = useT();
   const hints = useMemo(() => experience.musicHints ?? [], [experience]);
+  // YouTube refuses to play from an IP address: say so instead of a bare "nothing plays".
+  const ip = ipOriginHost(host === undefined ? undefined : { hostname: host }) ?? undefined;
   const [progress, setProgress] = useState<{ done: number; total: number } | undefined>();
   const alive = useRef(true);
   useEffect(() => {
@@ -100,6 +106,13 @@ export function ExperienceMusicCheck({
     <section className={styles.panel} data-testid="exp-check">
       <h2 className={styles.title}>{t('experience.check.title')}</h2>
       <p className={styles.note}>{t('experience.check.intro')}</p>
+      {ip && (
+        <p role="note" className={styles.warn} data-testid="exp-check-ip">
+          {t(spotifyConnected ? 'experience.check.ipOriginAuto' : 'experience.check.ipOrigin', {
+            host: ip,
+          })}
+        </p>
+      )}
       <MusicSourceSelect className={styles.note} />
       <div className={styles.actions}>
         <Button
@@ -161,7 +174,9 @@ export function ExperienceMusicCheck({
       {red.length > 0 && (
         <div role="alert" className={styles.err} data-testid="exp-check-blocked">
           <p>{t('experience.check.blocked', { slots: red.map((n) => n + 1).join(', ') })}</p>
-          <p>{t('experience.check.blockedTip')}</p>
+          <p>
+            {ip ? t('experience.check.ipOrigin', { host: ip }) : t('experience.check.blockedTip')}
+          </p>
           {spotifyConnected ? (
             <Button onClick={() => setMusicSource('spotify')} data-testid="exp-check-spotify">
               {t('experience.check.useSpotify')}

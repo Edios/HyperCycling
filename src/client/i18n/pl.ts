@@ -569,7 +569,7 @@ export const pl: Messages = {
         'HyperCycling służy do użytku osobistego. Muzyka gra przez Spotify lub YouTube na ich zasadach. Odtwarzanie jej dla grupy wymaga własnej licencji lokalu, a klucze i licencje Spotify ponosisz Ty.',
       privacyTitle: 'Prywatność',
       privacy:
-        'Twoje dane zostają w tej przeglądarce: bez kont, bez analityki, a tętno i FTP nigdy nigdzie nie są wysyłane. Dopiero gdy z nich korzystasz: Spotify dostaje polecenia odtwarzania, YouTube ładuje swój odtwarzacz, a Deezer i GetSongBPM dostają wpisany artystę i tytuł.',
+        'Twoje dane zostają w tej przeglądarce: bez kont, bez analityki, a tętno i FTP nigdy nigdzie nie są wysyłane. Dopiero gdy z nich korzystasz: Spotify dostaje polecenia odtwarzania, YouTube ładuje swój odtwarzacz (także przy „Sprawdź muzykę”, które kontaktuje youtube.com), a Deezer i GetSongBPM dostają wpisany artystę i tytuł.',
       trademarkTitle: 'Licencja i nazwa',
       trademark: 'Kod jest na licencji MIT. Nazwa i logo HyperCycling nie są objęte tą licencją.',
     },
@@ -961,6 +961,9 @@ export const pl: Messages = {
       blockedTip:
         'Przełącz źródło na Spotify albo sprawdź ponownie na miejscu, z docelowego urządzenia.',
       useSpotify: 'Przełącz na Spotify',
+      ipOrigin:
+        'YouTube nie gra z adresu IP ({host}). Otwórz aplikację przez localhost albo hypercycling.app, albo wybierz Spotify.',
+      ipOriginAuto: 'Adres {host} to adres IP, więc YouTube nie zagra: źródłem jest Spotify.',
     },
     kicker: 'Experience',
     seeScenario: 'Zobacz scenariusz',

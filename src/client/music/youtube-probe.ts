@@ -1,4 +1,9 @@
-import { loadIframeApi, type YTNamespace, type YTPlayer } from '../youtube/loadIframeApi';
+import {
+  NOCOOKIE_HOST,
+  loadIframeApi,
+  type YTNamespace,
+  type YTPlayer,
+} from '../youtube/loadIframeApi';
 
 /** How a trial embed ended. `error` carries the IFrame API error code (101/150 = embedding off). */
 export type ProbeResult =
@@ -56,6 +61,7 @@ export async function probeYoutube(
     try {
       new YT.Player(target, {
         videoId,
+        host: NOCOOKIE_HOST,
         width: 200,
         height: 200,
         playerVars: { autoplay: 1, mute: 1, controls: 0, playsinline: 1, rel: 0, fs: 0 },

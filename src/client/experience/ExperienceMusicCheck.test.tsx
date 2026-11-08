@@ -125,3 +125,55 @@ describe('redSlots', () => {
     expect(redSlots(exp, workout, chains, new Map())).toEqual([]);
   });
 });
+
+describe('ExperienceMusicCheck on an IP address', () => {
+  const allDead = {
+    oembed: async () => ({ status: 'ok' as const }),
+    probe: async () => ({ kind: 'error' as const, code: 150 }),
+  };
+
+  function mountAt(host: string | undefined, spotifyConnected: boolean) {
+    const seen: Map<string, RecordingResult>[] = [];
+    function Host() {
+      return (
+        <MemoryRouter>
+          <ExperienceMusicCheck
+            experience={exp}
+            workout={workout}
+            chains={chains}
+            results={seen.at(-1) ?? new Map()}
+            onResults={(r) => {
+              seen.push(new Map(r));
+              rr(<Host />);
+            }}
+            spotifyConnected={spotifyConnected}
+            deps={allDead}
+            host={host}
+          />
+        </MemoryRouter>
+      );
+    }
+    const { rerender: rr } = render(<Host />);
+  }
+
+  it('says YouTube does not play from an IP and what to do, not a bare "nothing plays"', async () => {
+    mountAt('127.0.0.1', false);
+    expect(screen.getByTestId('exp-check-ip').textContent).toMatch(
+      /127\.0\.0\.1.*localhost.*hypercycling\.app.*Spotify/s,
+    );
+    fireEvent.click(screen.getByTestId('exp-check-run'));
+    const blocked = await screen.findByTestId('exp-check-blocked');
+    expect(blocked.textContent).toMatch(/127\.0\.0\.1/);
+    expect(blocked.textContent).not.toMatch(/Switch the source to Spotify/);
+  });
+
+  it('with Spotify connected the note says the source is Spotify', () => {
+    mountAt('192.168.1.20', true);
+    expect(screen.getByTestId('exp-check-ip').textContent).toMatch(/192\.168\.1\.20.*Spotify/s);
+  });
+
+  it('shows no IP note on localhost or a domain', () => {
+    mountAt('localhost', false);
+    expect(screen.queryByTestId('exp-check-ip')).toBeNull();
+  });
+});
