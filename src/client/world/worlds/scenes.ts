@@ -235,7 +235,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
   const roadX = (d: number): number => windX(dist + d, seed) - frameX0;
   const roadY = (d: number): number => sampleTable(profile, profileStep, d);
   const yawAt = (d: number): number => -Math.atan(roadX(d + 0.5) - roadX(d - 0.5));
-  const shape: TerrainShape = { height: 0, flat: 0, rise: 0, roughness: 0 };
+  const shape: TerrainShape = { height: 0, flat: 0, rise: 0, roughness: 0, terrace: 0 };
   const lookBuf: Record<string, number | string> = {};
   const extraFrame = {
     dist: 0,
@@ -726,6 +726,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     shape.flat = look.flat;
     shape.rise = look.rise;
     shape.roughness = look.roughness;
+    shape.terrace = look.terrace;
     tm.uPeak.value = Math.max(1, shape.height);
     const { terrainPos: tp, terrainGrid: tg, terrainCols: cols, terrainDepths: tds } = s;
     const nCols = cols.length;
