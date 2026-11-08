@@ -9,6 +9,8 @@ import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Segmented';
 import { BpmField } from './BpmField';
 import { SpotifySearch } from './SpotifySearch';
+import { SuggestedChips } from './SuggestedChips';
+import { toTrackRef } from '../music/library/library';
 import { formatClock } from '../training/format';
 import type { EditorAction } from './editor-state';
 import { findBlock, intensityEffort, rpmOutsideUsual, type Leaf } from './model';
@@ -655,6 +657,7 @@ function TrackField({
           });
         }}
       />
+      <SuggestedChips rpm={rpm} onPick={(lt) => place(toTrackRef(lt, startSec ?? 0))} />
       <SpotifySearch
         onPick={(track) => {
           place({ ...track, startAtSec: startSec ?? 0 });

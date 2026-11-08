@@ -13,12 +13,29 @@ export interface SpotifyDevice {
   isActive: boolean;
 }
 
+export interface SpotifyPlaylist {
+  id: string;
+  name: string;
+  /** Number of items as Spotify reports it (0 when unknown). */
+  total: number;
+}
+
+export interface PlaylistTrack {
+  id: string;
+  title: string;
+  artist?: string;
+}
+
 export interface SpotifyProvider extends MusicProvider {
   readonly kind: 'spotify';
   /** Devices that can currently receive playback (for the settings device picker). */
   listDevices(): Promise<SpotifyDevice[]>;
   /** Track search for the editor; results are ready-to-use track references. */
   search(query: string): Promise<TrackRef[]>;
+  /** The user's own playlists (GET /v1/me/playlists; needs the playlist-read scopes). */
+  listPlaylists(): Promise<SpotifyPlaylist[]>;
+  /** Tracks of one playlist the user owns or collaborates on, at most `max` (default 500). */
+  playlistTracks(playlistId: string, max?: number): Promise<PlaylistTrack[]>;
   /** Name and artists of a track (GET /v1/tracks/{id}). */
   describeTrack(track: TrackRef): Promise<TrackInfo>;
   /** Drops the stored tokens (client id and device choice stay). */
@@ -56,6 +73,45 @@ const searchSchema = z.object({
     ),
   }),
 });
+
+const playlistsSchema = z.object({
+  items: z.array(
+    z
+      .object({
+        id: z.string(),
+        name: z.string(),
+        // Feb 2026 API: `items`; earlier: `tracks`.
+        items: z.object({ total: z.number() }).optional(),
+        tracks: z.object({ total: z.number() }).optional(),
+      })
+      .nullable(),
+  ),
+  next: z.string().nullable().optional(),
+});
+
+const playlistItemsSchema = z.object({
+  items: z.array(
+    z
+      .object({
+        // Feb 2026 API: `item`; earlier: `track`. Episodes, local files and gaps are skipped.
+        item: z.unknown().optional(),
+        track: z.unknown().optional(),
+      })
+      .nullable(),
+  ),
+  next: z.string().nullable().optional(),
+});
+
+const playlistTrackSchema = z.object({
+  id: z.string().regex(/^[A-Za-z0-9]{1,40}$/),
+  name: z.string().min(1),
+  type: z.string().optional(),
+  is_local: z.boolean().optional(),
+  artists: z.array(z.object({ name: z.string() })).optional(),
+});
+
+const PAGE = 50;
+const MAX_PLAYLIST_PAGES = 6;
 
 const trackSchema = z.object({
   name: z.string(),
@@ -232,6 +288,53 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
         durationSec: Math.round(t.duration_ms / 1000),
         startAtSec: 0,
       }));
+    },
+
+    async listPlaylists() {
+      const out: SpotifyPlaylist[] = [];
+      for (let page = 0; page < MAX_PLAYLIST_PAGES; page++) {
+        const body = await client.request('GET', '/v1/me/playlists', {
+          query: { limit: PAGE, offset: page * PAGE },
+        });
+        const parsed = playlistsSchema.safeParse(body);
+        if (!parsed.success) throw new SpotifyError('http');
+        for (const p of parsed.data.items) {
+          if (!p) continue;
+          out.push({
+            id: p.id,
+            name: p.name.slice(0, 200),
+            total: p.items?.total ?? p.tracks?.total ?? 0,
+          });
+        }
+        if (!parsed.data.next) break;
+      }
+      return out;
+    },
+
+    async playlistTracks(playlistId, max = 500) {
+      const out: PlaylistTrack[] = [];
+      for (let offset = 0; out.length < max; offset += PAGE) {
+        const body = await client.request(
+          'GET',
+          `/v1/playlists/${encodeURIComponent(playlistId)}/items`,
+          { query: { limit: PAGE, offset, additional_types: 'track' } },
+        );
+        const parsed = playlistItemsSchema.safeParse(body);
+        if (!parsed.success) throw new SpotifyError('http');
+        for (const entry of parsed.data.items) {
+          const t = playlistTrackSchema.safeParse(entry?.item ?? entry?.track);
+          if (!t.success || t.data.is_local || (t.data.type && t.data.type !== 'track')) continue;
+          const artist = (t.data.artists ?? []).map((a) => a.name).join(', ');
+          out.push({
+            id: t.data.id,
+            title: t.data.name,
+            ...(artist ? { artist } : {}),
+          });
+          if (out.length >= max) break;
+        }
+        if (!parsed.data.next) break;
+      }
+      return out;
     },
 
     async describeTrack(track) {

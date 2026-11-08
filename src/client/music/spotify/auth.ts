@@ -5,7 +5,9 @@ import { challengeFor, generateState, generateVerifier } from './pkce';
 
 export const SPOTIFY_AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 export const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
-export const SPOTIFY_SCOPES = 'user-modify-playback-state user-read-playback-state';
+/** The playlist scopes serve the song library import (read only; nothing is ever written). */
+export const SPOTIFY_SCOPES =
+  'user-modify-playback-state user-read-playback-state playlist-read-private playlist-read-collaborative';
 
 /** Pending login kept in sessionStorage only: it dies with the tab and is never persisted. */
 const PENDING_KEY = 'hypercycling.spotify.login';
