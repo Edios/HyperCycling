@@ -7,7 +7,7 @@ import { renderPixelRatio, watchDevicePixelRatio, wantsAntialias } from './pixel
 import { buildExtra, type Disposable, type SceneExtra } from './scenes-extras';
 import { BASE_VFOV_DEG, baseVerticalFov, dashOffset, gateDepth, hash01 } from './road-model';
 import { approach, terrainHeight, type TerrainShape } from './scenes-model';
-import { elevationTable, sampleTable, windX } from './scenes-path';
+import { bendTable, elevationTable, sampleTable, windX } from './scenes-path';
 import {
   createGpuTimer,
   publishRenderStats,
@@ -59,8 +59,8 @@ const LOOK_AHEAD = 30;
 /** The camera pitches by this share of the road's rise ahead (the rest reads as the hill). */
 const PITCH_SHARE = 0.6;
 /** Bank into bends: roll per unit of lateral acceleration (speed² · curvature), capped. */
-const BANK_PER_ACCEL = 0.03;
-const MAX_BANK = 0.07;
+const BANK_PER_ACCEL = 0.05;
+const MAX_BANK = 0.12;
 /** Elevation table step (world units) on high / low quality. */
 const PROFILE_STEP_HIGH = 8;
 const PROFILE_STEP_LOW = 12;
@@ -210,6 +210,9 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
   let bank = 0;
   let seed = 0;
   let profile = new Float32Array(0);
+  let bendT = new Float32Array(0);
+  /** Look's bend / hills factors for this frame (read by the road closures). */
+  let bendK = 1;
   let profileStep = PROFILE_STEP_HIGH;
   let intensity: number | undefined;
   let sprint = 0;
@@ -232,7 +235,8 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
   tmp.rotation.order = 'YXZ';
   // per-frame road sampling state: closures are created once, not per update()
   let frameX0 = 0;
-  const roadX = (d: number): number => windX(dist + d, seed) - frameX0;
+  const roadX = (d: number): number =>
+    windX(dist + d, seed, bendK * sampleTable(bendT, profileStep, d)) - frameX0;
   const roadY = (d: number): number => sampleTable(profile, profileStep, d);
   const yawAt = (d: number): number => -Math.atan(roadX(d + 0.5) - roadX(d - 0.5));
   const shape: TerrainShape = { height: 0, flat: 0, rise: 0, roughness: 0, terrace: 0 };
@@ -357,6 +361,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
 
     profileStep = high ? PROFILE_STEP_HIGH : PROFILE_STEP_LOW;
     profile = new Float32Array(Math.ceil(TERRAIN_VIEW / profileStep) + 2);
+    bendT = new Float32Array(profile.length);
     const segs = high ? RIBBON_SEGMENTS_HIGH : RIBBON_SEGMENTS_LOW;
     const ribbonDepths = new Float32Array(segs + 1);
     for (let i = 0; i <= segs; i++) {
@@ -650,7 +655,15 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     // road geometry ahead: curves and elevation relative to the camera
     // (scenes-path: winding bends, rolling crests and dips, block grades integrated ahead;
     // under reduced motion the profile ignores the workout so the scene stays still)
-    frameX0 = windX(dist, seed);
+    bendK = look.bend;
+    bendTable(
+      reduced ? [] : frame.segments,
+      reduced ? 0 : frame.workoutSec,
+      vspeed,
+      profileStep,
+      bendT,
+    );
+    frameX0 = windX(dist, seed, bendK * (bendT[0] ?? 1));
     elevationTable(
       reduced ? [] : frame.segments,
       reduced ? 0 : frame.workoutSec,
@@ -659,6 +672,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
       seed,
       profileStep,
       profile,
+      look.hills,
     );
 
     // camera: pitches with the slope ahead, banks gently into bends
@@ -686,7 +700,13 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     sky.uBeat.value = beat;
 
     s.fog.color.copy(parsed(look.fog));
-    s.fog.far = look.fogFar;
+    // climbs close the view in a little, descents open it up
+    const gradeNow = Math.max(
+      -1,
+      Math.min(1, ((profile[2] ?? 0) - (profile[1] ?? 0)) / (profileStep * 0.12)),
+    );
+    const fogFar = look.fogFar * (1 - 0.14 * gradeNow);
+    s.fog.far = fogFar;
     s.road.color.copy(parsed(look.road));
 
     // zone edge: the CURRENT zone colour, easing over at block boundaries
@@ -710,7 +730,7 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     tm.uBeat.value = beat;
     setHex(tm.uFog.value, look.fog);
     tm.uFogNear.value = FOG_NEAR;
-    tm.uFogFar.value = look.fogFar;
+    tm.uFogFar.value = fogFar;
     tm.uScale.value = look.patternScale;
     tm.uWidth.value = look.lineWidth;
     tm.uPatA.value = fromLook.pattern;
@@ -788,11 +808,18 @@ export function createScenes(opts: ScenesOptions = {}): WorldRenderer {
     dashes.instanceMatrix.needsUpdate = true;
 
     // gate at the start of the next block, in that block's colour
-    const gd = gateDepth({
-      speed: vspeed,
-      nextBlockInSec: frame.nextBlockInSec,
-      viewDistance: VIEW,
-    });
+    // (an Experience: only where the chapter changes; otherwise at every block)
+    let gateIn = frame.nextBlockInSec;
+    if (frame.theme) {
+      gateIn = null;
+      for (const c of frame.theme.chapters) {
+        if (c.startSec > frame.workoutSec + 0.01) {
+          gateIn = c.startSec - frame.workoutSec;
+          break;
+        }
+      }
+    }
+    const gd = gateDepth({ speed: vspeed, nextBlockInSec: gateIn, viewDistance: VIEW });
     if (gd === null) {
       gate.visible = false;
     } else {
