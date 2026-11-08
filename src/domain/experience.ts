@@ -40,8 +40,23 @@ export interface SongSuggestion {
 /** Preferred recording of a song: the album cut, an extended mix or the radio edit. */
 export type SongVersion = 'album' | 'extended' | 'radio';
 
+/**
+ * One YouTube upload of a song: the official video, a lyric video or a cover. The first one is
+ * played, the rest are the way around a video that will not embed or play on the rider's device.
+ */
+export interface YoutubeCandidate {
+  /** The 11-character video id. */
+  id: string;
+  /** Short note for the author and the music check, e.g. "official", "lyric video". */
+  label?: string;
+  /** Where in this upload the song starts, seconds (an intro of the video). Default: the item's offset. */
+  offsetSec?: number;
+}
+
 /** A song of a slot's authored queue. */
 export interface QueueItem extends SongSuggestion {
+  /** YouTube uploads of the song, main first; at least two should work (checked by a test). */
+  youtube?: YoutubeCandidate[];
   /** Expected length of the preferred version, seconds. */
   durationSec?: number;
   /** Where playback starts (skips an intro), set by the author, seconds. */
@@ -52,6 +67,8 @@ export interface QueueItem extends SongSuggestion {
 /** What to look for in one song slot (`slot` = index in the workout's songs). */
 export interface MusicHint extends SongSuggestion {
   slot: number;
+  /** YouTube uploads of this (first) song, main first. */
+  youtube?: YoutubeCandidate[];
   /** Expected length of the preferred version; a shorter song than the slot gets a warning. */
   durationSec?: number;
   /** Beatless piece (cooldown): the tempo is not compared. */
@@ -110,13 +127,23 @@ const suggestionSchema = z.object({
 
 const versionSchema = z.enum(['album', 'extended', 'radio']);
 
+export const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
+
+const youtubeCandidateSchema = z.object({
+  id: z.string().regex(YOUTUBE_ID),
+  label: z.string().max(60).optional(),
+  offsetSec: z.number().int().min(0).max(600).optional(),
+});
+
 const queueItemSchema = suggestionSchema.extend({
+  youtube: z.array(youtubeCandidateSchema).max(6).optional(),
   durationSec: z.number().int().min(10).max(1800).optional(),
   startOffsetSec: z.number().int().min(0).max(600).optional(),
   version: versionSchema.optional(),
 });
 
 const musicHintSchema = suggestionSchema.extend({
+  youtube: z.array(youtubeCandidateSchema).max(6).optional(),
   slot: z.number().int().min(0),
   durationSec: z.number().int().min(10).max(1800).optional(),
   startOffsetSec: z.number().int().min(0).max(600).optional(),

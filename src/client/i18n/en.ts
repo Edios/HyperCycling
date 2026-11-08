@@ -933,8 +933,34 @@ export const en = {
       retry: 'Try again',
       skip: 'Ride without these songs',
       offline:
-        'Connect Spotify in Settings to match the suggested songs to your account. Without it the ride has no music; you can also pin YouTube links in the editor.',
+        'The music plays from YouTube and needs no sign-in. Optionally connect Spotify in Settings to use your own account as the source or as a backup.',
       connect: 'Connect Spotify in Settings',
+    },
+    check: {
+      title: 'Check the music',
+      intro:
+        'Before the ride, check that every song will play on this device. The test is silent. Best run it on site, in the training room: regional blocks and a weak connection only show up there.',
+      source: {
+        label: 'Music source',
+        youtube: 'YouTube (default)',
+        spotify: 'Spotify, YouTube as backup',
+        auto: 'Auto (Spotify when connected)',
+      },
+      run: 'Check the music',
+      rerun: 'Check again',
+      working: 'Checking versions… {done} of {total}',
+      notRun: 'The music has not been checked on this device yet.',
+      health: {
+        green: 'Ready',
+        yellow: 'Backup only',
+        red: 'Nothing plays',
+      },
+      slot: 'Part {n}: {title}',
+      detail: '{live} of {total} versions work',
+      blocked: 'Cannot start: in parts {slots} no version of the song will play on this device.',
+      blockedTip:
+        'Switch the source to Spotify, or check again on site from the device you will ride with.',
+      useSpotify: 'Switch to Spotify',
     },
     kicker: 'Experience',
     seeScenario: 'See scenario',
@@ -980,6 +1006,15 @@ export const en = {
     experienceBody: 'A workout with its own music and world. Coming soon.',
   },
   diagnostics: {
+    music: {
+      title: 'Music: recent attempts',
+      hint: 'Which version of a song played and which failed. Helps find what is blocked on this device.',
+      empty: 'No playback attempts recorded.',
+      played: 'played',
+      failed: 'failed',
+      version: 'version {n}',
+      clear: 'Clear music log',
+    },
     title: 'Diagnostics',
     enable: 'Diagnostics mode',
     enableHint:

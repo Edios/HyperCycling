@@ -6,6 +6,7 @@ import {
   type SessionRuntime,
 } from '../training/session-store';
 import { createMusicDirector, SWITCH_FADE_MS, type MusicDirector } from './director';
+import { logMusicEvent } from './play-log';
 import { createMusicProviders } from './providers';
 
 /**
@@ -55,6 +56,7 @@ export function useMusicDirector(
       subscribeState: (cb) => useSessionStore.subscribe(cb),
       onWarning: (track, error) => warningRef.current(track, error),
       onPlaying: (track) => playingRef.current?.(track),
+      onCandidate: logMusicEvent,
       volume: volumeRef.current,
       ...(silenceLastSec ? { silenceLastSec } : {}),
       switchFadeMs: SWITCH_FADE_MS,

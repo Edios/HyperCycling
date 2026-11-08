@@ -15,7 +15,10 @@ import { getExperience } from '../data/builtin';
 import { experienceText, type Experience } from '../../domain/experience';
 import { ExperienceMusic } from '../experience/ExperienceMusic';
 import { loadChoices, type Choices } from '../experience/musicChoices';
-import { withUserMusic } from '../experience/musicMatch';
+import { chainChoices, withUserMusic } from '../experience/musicMatch';
+import { ExperienceMusicCheck, redSlots } from '../experience/ExperienceMusicCheck';
+import { useMusicSource } from '../music/music-source';
+import { deadRecordings, type ResultMap } from '../music/preflight';
 import { useSpotifyConnected } from '../music/spotify/useSpotify';
 import { WORLD_CHOICES } from '../world/world-options';
 import { useSessionStore } from '../training/session-store';
@@ -156,12 +159,36 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
     experience ? loadChoices(experience.id) : {},
   );
   const [youtubeUrl, setYoutubeUrl] = useState(last?.youtubeUrl ?? '');
+  const musicSource = useMusicSource();
+  // What the last "Check the music" found in this visit; empty until it ran.
+  const [checked, setChecked] = useState<ResultMap>(new Map());
+
+  const chainOpts = useMemo(
+    () => ({ source: musicSource, spotifyUsable: spotifyConnected, dead: deadRecordings() }),
+    // A finished check changes which recordings are known dead.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [musicSource, spotifyConnected, checked],
+  );
 
   // The plan's session length and difficulty apply to what is shown and to what is ridden.
   const scaled = useMemo(() => {
     const base = plan ? applyPlanSettings(workout, planSettings) : workout;
-    return experience ? withUserMusic(base, experience, matched) : base;
-  }, [workout, plan, planSettings, experience, matched]);
+    return experience ? withUserMusic(base, experience, matched, chainOpts) : base;
+  }, [workout, plan, planSettings, experience, matched, chainOpts]);
+  // The queue of every slot in the scenario's own order (main upload first): what the music check
+  // judges, so a dead main upload shows as "backup only" and is not hidden by the re-ordering the
+  // ride itself does with the known-dead recordings.
+  const chains = useMemo(
+    () =>
+      experience
+        ? chainChoices(workout, experience, matched, {
+            source: musicSource,
+            spotifyUsable: spotifyConnected,
+          })
+        : {},
+    [workout, experience, matched, musicSource, spotifyConnected],
+  );
+  const unplayable = experience ? redSlots(experience, workout, chains, checked) : [];
   const segments = useMemo(
     () => flattenWorkout(scaled, settings.effortTable, resolveResistanceMode(settings)),
     [scaled, settings],
@@ -298,6 +325,16 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
               />
               <p className={styles.note}>{t('experience.liteHint')}</p>
             </section>
+          )}
+          {experience && (
+            <ExperienceMusicCheck
+              experience={experience}
+              workout={workout}
+              chains={chains}
+              results={checked}
+              onResults={setChecked}
+              spotifyConnected={spotifyConnected}
+            />
           )}
           {experience && (
             <ExperienceMusic
@@ -458,7 +495,12 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
 
           <div className={styles.startRow}>
             <span className={styles.note}>{t('setup.remembered')}</span>
-            <Button variant="primary" size="big" onClick={start} disabled={youtubeInvalid}>
+            <Button
+              variant="primary"
+              size="big"
+              onClick={start}
+              disabled={youtubeInvalid || unplayable.length > 0}
+            >
               {t('setup.start')}
             </Button>
           </div>

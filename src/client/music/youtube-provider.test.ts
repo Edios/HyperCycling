@@ -4,6 +4,7 @@ import type { YTNamespace, YTPlayerEvent, YTPlayerOptions } from '../youtube/loa
 import {
   createYoutubeMusicProvider,
   PLAY_START_TIMEOUT_MS,
+  STALL_TIMEOUT_MS,
   type YoutubeMusicProvider,
 } from './youtube-provider';
 
@@ -310,5 +311,43 @@ describe('YouTube music provider', () => {
     await provider.resume();
     await provider.fadeOut(1500);
     expect(players).toHaveLength(0);
+  });
+
+  it('tells the failure handler when the player errors after the track has started', async () => {
+    await provider.connect();
+    const failed: string[] = [];
+    await provider.play(track('abc'), 0);
+    provider.setFailureHandler?.((e) => failed.push(e.message));
+    players[0]?.error(150);
+    expect(failed).toEqual(['YouTube player error 150']);
+    // Reported once; the track is paused so nothing plays on by itself.
+    players[0]?.error(150);
+    expect(failed).toHaveLength(1);
+    expect(players[0]?.calls).toContain('pause');
+  });
+
+  it('counts buffering for too long as a failure, but not a short stall', async () => {
+    vi.useFakeTimers();
+    await provider.connect();
+    const failed: string[] = [];
+    await provider.play(track('abc'), 0);
+    provider.setFailureHandler?.((e) => failed.push(e.message));
+    players[0]?.state(3);
+    await vi.advanceTimersByTimeAsync(STALL_TIMEOUT_MS - 1000);
+    players[0]?.state(1); // recovered
+    await vi.advanceTimersByTimeAsync(STALL_TIMEOUT_MS);
+    expect(failed).toEqual([]);
+    players[0]?.state(3);
+    await vi.advanceTimersByTimeAsync(STALL_TIMEOUT_MS);
+    expect(failed).toEqual(['YouTube track stalled while buffering']);
+  });
+
+  it.each([2, 5, 100, 101, 150])('rejects play on player error %i', async (code) => {
+    autoPlay = false;
+    await provider.connect();
+    const playing = provider.play(track('abc'), 0);
+    await vi.waitFor(() => expect(players).toHaveLength(1));
+    players[0]?.error(code);
+    await expect(playing).rejects.toThrow(String(code));
   });
 });

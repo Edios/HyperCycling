@@ -3,6 +3,7 @@
  * the rider's own account. Pure logic: the search function is injected, so tests need no network.
  * Nothing leaves the app except the Spotify search the rider's own token makes.
  */
+import { slotQueue, type ChainOptions } from '../../domain/music-chain';
 import { rankTracks } from '../../domain/bpm-match';
 import { pickPreferred, songKey, type PlanCandidate } from '../../domain/slot-plan';
 import {
@@ -411,8 +412,9 @@ export function withUserMusic(
   w: Workout,
   e: Experience,
   choices: Readonly<Record<string, TrackRef[]>>,
+  opts: Omit<ChainOptions, 'spotify'> = { source: 'auto', spotifyUsable: true },
 ): Workout {
-  const mine = choiceCues(w, choices);
+  const mine = choiceCues(w, chainChoices(w, e, choices, opts));
   if (mine.length === 0) return withExperiencePins(w, e);
   const key = (c: MusicCue): string => `${c.blockId}#${c.rep}`;
   const taken = new Set(mine.map(key));
@@ -420,4 +422,24 @@ export function withUserMusic(
     ...e,
     musicPins: [...e.musicPins.filter((p) => !taken.has(key(p))), ...mine],
   });
+}
+
+/**
+ * The queue of every hinted slot as a chain: the YouTube uploads of the scenario and the rider's
+ * Spotify tracks, ordered by the music source. Slots without hints keep the rider's own choice.
+ */
+export function chainChoices(
+  w: Workout,
+  e: Experience,
+  choices: Readonly<Record<string, TrackRef[]>>,
+  opts: Omit<ChainOptions, 'spotify'>,
+): Record<string, TrackRef[]> {
+  const out: Record<string, TrackRef[]> = { ...choices };
+  for (const h of e.musicHints ?? []) {
+    const slot = w.songs?.[h.slot];
+    if (!slot) continue;
+    const queue = slotQueue(h, { ...opts, spotify: choices[slot.id] ?? [] });
+    if (queue.length > 0) out[slot.id] = queue;
+  }
+  return out;
 }

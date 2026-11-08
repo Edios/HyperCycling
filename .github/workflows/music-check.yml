@@ -1,0 +1,23 @@
+name: Experience music check
+
+# Weekly (and on demand): are the YouTube uploads of the Experience scenarios still alive?
+# Never blocks a pull request; a red run only means "look at the log and replace the dead ids".
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  music:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/check-experience-music.mjs

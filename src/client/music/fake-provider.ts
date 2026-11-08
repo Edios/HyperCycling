@@ -31,6 +31,8 @@ export interface FakeMusicProvider extends MusicProvider {
   failPlaysWhen(predicate: ((track: TrackRef) => boolean) | undefined): void;
   /** The error that failing plays reject with (default: a plain Error). */
   failPlaysWith(error: Error | undefined): void;
+  /** Simulates the started track breaking down (player error, stall): calls the failure handler. */
+  breakDown(error?: Error): void;
 }
 
 /** In-memory provider for tests: records calls and fails on demand. */
@@ -41,6 +43,7 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
   let connectFails = false;
   let failWhen: ((track: TrackRef) => boolean) | undefined;
   let failError: Error | undefined;
+  let onFailure: ((err: Error) => void) | undefined;
   const calls: FakeCall[] = [];
   const log: string[] = [];
   const record = (call: FakeCall, line: string): void => {
@@ -64,6 +67,12 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
     },
     failPlaysWith(error) {
       failError = error;
+    },
+    setFailureHandler(handler) {
+      onFailure = handler;
+    },
+    breakDown(error = new Error('track broke down')) {
+      onFailure?.(error);
     },
     connect() {
       record({ type: 'connect' }, 'connect');

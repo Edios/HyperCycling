@@ -61,6 +61,11 @@ export interface TrackRef {
   bpmSource?: BpmSource;
   /** Set by the editor when YouTube reports that the video cannot be embedded. */
   notEmbeddable?: boolean;
+  /**
+   * Other recordings of the same song, in order: when this one cannot be played the music tries
+   * them one by one, from the same position of the song (each carries its own `startAtSec`).
+   */
+  alternates?: TrackRef[];
 }
 
 export interface MusicCue {
@@ -166,7 +171,7 @@ const blockSchema = z.discriminatedUnion('kind', [steadySchema, rampSchema, repe
 /** Most tracks queued behind the first one in a slot. */
 const MAX_QUEUE = 12;
 
-const trackRefSchema = z.object({
+const plainTrackSchema = z.object({
   provider: z.enum(['spotify', 'youtube']),
   id: z.string().min(1),
   title: z.string(),
@@ -176,6 +181,13 @@ const trackRefSchema = z.object({
   bpm: z.number().min(BPM_MIN).max(BPM_MAX).optional(),
   bpmSource: z.enum(['getsongbpm', 'deezer']).optional(),
   notEmbeddable: z.boolean().optional(),
+});
+
+/** Most other recordings a track may carry. */
+export const MAX_ALTERNATES = 8;
+
+const trackRefSchema = plainTrackSchema.extend({
+  alternates: z.array(plainTrackSchema).max(MAX_ALTERNATES).optional(),
 });
 
 const musicCueSchema = z.object({
