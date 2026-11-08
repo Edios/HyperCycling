@@ -890,6 +890,7 @@ export const pl: Messages = {
       bpmFits: 'Tempo {bpm} BPM pasuje do tej części.',
       bpmOff: 'Tempo {bpm} BPM nie pasuje do tej części (2 BPM = 1 RPM).',
       regionUnknown: 'Region niezweryfikowany: Spotify nie podał, czy ten utwór gra w Twoim kraju.',
+      duplicate: 'Ten sam utwór w częściach {a} i {b}.',
       fromLibrary: 'z Twojej biblioteki',
       manualLabel: 'Link do Spotify dla części {n}',
       manualPlaceholder: 'Wklej link do utworu ze Spotify',

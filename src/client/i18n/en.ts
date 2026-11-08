@@ -890,6 +890,7 @@ export const en = {
       bpmOff: 'Tempo {bpm} BPM does not suit this part (2 BPM = 1 RPM).',
       regionUnknown:
         'Region not verified: Spotify did not say whether this song plays in your country.',
+      duplicate: 'The same song is suggested for parts {a} and {b}.',
       fromLibrary: 'from your library',
       manualLabel: 'Spotify link for part {n}',
       manualPlaceholder: 'Paste a Spotify track link',

@@ -40,19 +40,19 @@
     },
     {
       "slot": 2,
-      "artist": "The Weeknd",
-      "title": "Blinding Lights",
-      "bpm": 171,
-      "durationSec": 200,
+      "artist": "Foo Fighters",
+      "title": "The Pretender",
+      "bpm": 173,
+      "durationSec": 269,
       "alternatives": [
+        {
+          "artist": "The Weeknd",
+          "title": "Blinding Lights",
+          "bpm": 171
+        },
         {
           "artist": "Netsky",
           "title": "Rio",
-          "bpm": 173
-        },
-        {
-          "artist": "Foo Fighters",
-          "title": "The Pretender",
           "bpm": 173
         }
       ]
@@ -65,14 +65,14 @@
       "durationSec": 212,
       "alternatives": [
         {
-          "artist": "Kavinsky",
-          "title": "Nightcall",
-          "bpm": 91
-        },
-        {
           "artist": "Tycho",
           "title": "Awake",
           "bpm": 88
+        },
+        {
+          "artist": "Kavinsky",
+          "title": "Nightcall",
+          "bpm": 91
         }
       ]
     },
@@ -81,7 +81,7 @@
       "artist": "Swedish House Mafia",
       "title": "Don't You Worry Child",
       "bpm": 129,
-      "durationSec": 213,
+      "durationSec": 360,
       "alternatives": [
         {
           "artist": "Calvin Harris",
@@ -134,65 +134,65 @@
     },
     {
       "slot": 7,
-      "artist": "Tycho",
-      "title": "Awake",
-      "bpm": 88,
-      "durationSec": 283,
+      "artist": "Kavinsky",
+      "title": "Nightcall",
+      "bpm": 91,
+      "durationSec": 259,
       "alternatives": [
         {
-          "artist": "Alan Walker",
-          "title": "Faded",
-          "bpm": 90
+          "artist": "Tycho",
+          "title": "Awake",
+          "bpm": 88
         },
         {
-          "artist": "Kavinsky",
-          "title": "Nightcall",
-          "bpm": 91
+          "artist": "The Weeknd",
+          "title": "Starboy",
+          "bpm": 93
         }
       ]
     },
     {
       "slot": 8,
-      "artist": "David Guetta",
-      "title": "Titanium",
+      "artist": "Eric Prydz",
+      "title": "Pjanoo",
       "bpm": 126,
-      "durationSec": 245,
+      "durationSec": 300,
       "alternatives": [
         {
-          "artist": "Avicii",
-          "title": "Levels",
+          "artist": "David Guetta",
+          "title": "Titanium",
           "bpm": 126
         },
         {
-          "artist": "Eric Prydz",
-          "title": "Pjanoo",
+          "artist": "Avicii",
+          "title": "Levels",
           "bpm": 126
         }
       ]
     },
     {
       "slot": 9,
-      "artist": "Sub Focus",
-      "title": "Tidal Wave",
-      "bpm": 174,
-      "durationSec": 226,
+      "artist": "Green Day",
+      "title": "Basket Case",
+      "bpm": 175,
+      "durationSec": 181,
       "alternatives": [
+        {
+          "artist": "Sub Focus",
+          "title": "Tidal Wave",
+          "bpm": 174
+        },
         {
           "artist": "Pendulum",
           "title": "Tarantula",
           "bpm": 174
-        },
-        {
-          "artist": "Green Day",
-          "title": "Basket Case",
-          "bpm": 175
         }
       ]
     },
     {
       "slot": 10,
       "artist": "Brian Eno",
-      "title": "An Ending (Ascent)",
+      "title": "An Ending (Ascent) (Remastered 2019)",
       "durationSec": 265,
       "noBeat": true,
       "alternatives": [
@@ -248,19 +248,19 @@
     },
     {
       "slot": 2,
-      "artist": "The Weeknd",
-      "title": "Blinding Lights",
-      "bpm": 171,
-      "durationSec": 200,
+      "artist": "Foo Fighters",
+      "title": "The Pretender",
+      "bpm": 173,
+      "durationSec": 269,
       "alternatives": [
+        {
+          "artist": "The Weeknd",
+          "title": "Blinding Lights",
+          "bpm": 171
+        },
         {
           "artist": "Netsky",
           "title": "Rio",
-          "bpm": 173
-        },
-        {
-          "artist": "Foo Fighters",
-          "title": "The Pretender",
           "bpm": 173
         }
       ]
@@ -273,14 +273,14 @@
       "durationSec": 212,
       "alternatives": [
         {
-          "artist": "Kavinsky",
-          "title": "Nightcall",
-          "bpm": 91
-        },
-        {
           "artist": "Tycho",
           "title": "Awake",
           "bpm": 88
+        },
+        {
+          "artist": "Kavinsky",
+          "title": "Nightcall",
+          "bpm": 91
         }
       ]
     },
@@ -289,7 +289,7 @@
       "artist": "Swedish House Mafia",
       "title": "Don't You Worry Child",
       "bpm": 129,
-      "durationSec": 213,
+      "durationSec": 360,
       "alternatives": [
         {
           "artist": "Calvin Harris",
@@ -380,27 +380,27 @@
     },
     {
       "slot": 9,
-      "artist": "Sub Focus",
-      "title": "Tidal Wave",
-      "bpm": 174,
-      "durationSec": 226,
+      "artist": "Green Day",
+      "title": "Basket Case",
+      "bpm": 175,
+      "durationSec": 181,
       "alternatives": [
+        {
+          "artist": "Sub Focus",
+          "title": "Tidal Wave",
+          "bpm": 174
+        },
         {
           "artist": "Pendulum",
           "title": "Tarantula",
           "bpm": 174
-        },
-        {
-          "artist": "Green Day",
-          "title": "Basket Case",
-          "bpm": 175
         }
       ]
     },
     {
       "slot": 10,
       "artist": "Brian Eno",
-      "title": "An Ending (Ascent)",
+      "title": "An Ending (Ascent) (Remastered 2019)",
       "durationSec": 265,
       "noBeat": true,
       "alternatives": [
@@ -437,19 +437,19 @@
     },
     {
       "slot": 1,
-      "artist": "The Weeknd",
-      "title": "Blinding Lights",
-      "bpm": 171,
-      "durationSec": 200,
+      "artist": "Foo Fighters",
+      "title": "The Pretender",
+      "bpm": 173,
+      "durationSec": 269,
       "alternatives": [
+        {
+          "artist": "The Weeknd",
+          "title": "Blinding Lights",
+          "bpm": 171
+        },
         {
           "artist": "Netsky",
           "title": "Rio",
-          "bpm": 173
-        },
-        {
-          "artist": "Foo Fighters",
-          "title": "The Pretender",
           "bpm": 173
         }
       ]
@@ -462,32 +462,32 @@
       "durationSec": 212,
       "alternatives": [
         {
-          "artist": "Kavinsky",
-          "title": "Nightcall",
-          "bpm": 91
-        },
-        {
           "artist": "Tycho",
           "title": "Awake",
           "bpm": 88
+        },
+        {
+          "artist": "Kavinsky",
+          "title": "Nightcall",
+          "bpm": 91
         }
       ]
     },
     {
       "slot": 3,
-      "artist": "David Guetta",
-      "title": "Titanium",
+      "artist": "Eric Prydz",
+      "title": "Pjanoo",
       "bpm": 126,
-      "durationSec": 245,
+      "durationSec": 300,
       "alternatives": [
         {
-          "artist": "Avicii",
-          "title": "Levels",
+          "artist": "David Guetta",
+          "title": "Titanium",
           "bpm": 126
         },
         {
-          "artist": "Eric Prydz",
-          "title": "Pjanoo",
+          "artist": "Avicii",
+          "title": "Levels",
           "bpm": 126
         }
       ]
@@ -513,27 +513,27 @@
     },
     {
       "slot": 5,
-      "artist": "Sub Focus",
-      "title": "Tidal Wave",
-      "bpm": 174,
-      "durationSec": 226,
+      "artist": "Green Day",
+      "title": "Basket Case",
+      "bpm": 175,
+      "durationSec": 181,
       "alternatives": [
+        {
+          "artist": "Sub Focus",
+          "title": "Tidal Wave",
+          "bpm": 174
+        },
         {
           "artist": "Pendulum",
           "title": "Tarantula",
           "bpm": 174
-        },
-        {
-          "artist": "Green Day",
-          "title": "Basket Case",
-          "bpm": 175
         }
       ]
     },
     {
       "slot": 6,
       "artist": "Brian Eno",
-      "title": "An Ending (Ascent)",
+      "title": "An Ending (Ascent) (Remastered 2019)",
       "durationSec": 265,
       "noBeat": true,
       "alternatives": [
