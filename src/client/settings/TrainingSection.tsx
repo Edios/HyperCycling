@@ -4,6 +4,7 @@ import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
 import { WORLD_CHOICES } from '../world/world-options';
 import { Segmented } from '../ui/Segmented';
+import { readIntroPref, writeIntroPref, type IntroPref } from '../brand/intro-policy';
 import { Toggle } from '../ui/Toggle';
 import { effectiveHud, layoutOptions, type Background } from '../setup/model';
 import { layoutKindOf } from '../training/overlay-layouts';
@@ -27,6 +28,8 @@ export function TrainingSection() {
   const t = useT();
   const save = useSave();
   const { settings } = useSettings();
+  // The intro choice is read before the first paint, so it lives in localStorage, not Settings.
+  const [introPref, setIntroPref] = useState<IntroPref>(readIntroPref);
   const last = settings.lastSession ?? FALLBACK_SESSION;
   const hasPlayers = last.playerIds.length > 0;
   // A saved Solo means "riders panel off"; any other saved layout shows riders when there are any.
@@ -89,6 +92,24 @@ export function TrainingSection() {
             {t('settings.training.effectsValue', { pct })}
           </output>
         </div>
+      </div>
+
+      <div className={styles.field}>
+        <span className={styles.fieldLabel}>{t('settings.training.introPref')}</span>
+        <Segmented
+          label={t('settings.training.introPref')}
+          value={introPref}
+          options={[
+            { value: 'always', label: t('settings.training.introAlways') },
+            { value: 'rare', label: t('settings.training.introRare') },
+            { value: 'never', label: t('settings.training.introNever') },
+          ]}
+          onChange={(pref: IntroPref) => {
+            writeIntroPref(pref);
+            setIntroPref(pref);
+          }}
+        />
+        <span className={styles.note}>{t('settings.training.introHint')}</span>
       </div>
 
       <div className={styles.field}>

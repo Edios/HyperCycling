@@ -15,6 +15,22 @@
     <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="stylesheet" href="/src/client/brand/intro-boot.css" />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/BarlowCondensed-SemiBold.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/BarlowCondensed-ExtraBold.woff2"
+      crossorigin
+    />
+    <script src="/intro-boot.js"></script>
     <meta property="og:title" content="HyperCycling" />
     <meta
       property="og:description"
@@ -25,6 +41,15 @@
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
+    <!-- Brand intro: markup is static so it paints with the first frame; public/intro-boot.js decides
+         whether it shows, src/client/brand/Intro.tsx removes it. Decorative, hidden from assistive tech. -->
+    <div id="boot-intro" aria-hidden="true">
+      <div class="row">
+        <svg class="mark" viewBox="0 0 100 100" focusable="false"><!--INTRO_TICKS--></svg>
+        <div class="name"><span class="w1">Hyper</span><span class="w2">Cycling</span></div>
+      </div>
+      <span class="hint"></span>
+    </div>
     <div id="root">
       <!-- Fallback content for crawlers and no-JS: React replaces it on start. -->
       <h1>HyperCycling</h1>
