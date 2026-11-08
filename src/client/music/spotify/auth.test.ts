@@ -64,10 +64,15 @@ describe('buildAuthorizeUrl', () => {
       redirect_uri: 'http://127.0.0.1:5175/',
       code_challenge_method: 'S256',
       code_challenge: 'CH',
-      scope: 'user-modify-playback-state user-read-playback-state',
+      scope: SPOTIFY_SCOPES,
       state: 'ST',
     });
-    expect(SPOTIFY_SCOPES).toBe('user-modify-playback-state user-read-playback-state');
+    expect(SPOTIFY_SCOPES.split(' ').sort()).toEqual([
+      'playlist-read-collaborative',
+      'playlist-read-private',
+      'user-modify-playback-state',
+      'user-read-playback-state',
+    ]);
   });
 });
 

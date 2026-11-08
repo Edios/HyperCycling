@@ -20,9 +20,9 @@ You need:
 
 The redirect URI is the address where you open the app, followed by its path.
 
-| Where you run HyperCycling     | Redirect URI                                         |
-| ------------------------------ | ---------------------------------------------------- |
-| On your computer (`npm start`) | `http://127.0.0.1:5175/`                             |
+| Where you run HyperCycling     | Redirect URI                |
+| ------------------------------ | --------------------------- |
+| On your computer (`npm start`) | `http://127.0.0.1:5175/`    |
 | GitHub Pages                   | `https://hypercycling.app/` |
 
 Use `127.0.0.1`, never `localhost`: Spotify rejects `http://localhost` redirects. Open the local app at `http://127.0.0.1:5175` too; Settings, Music shows a warning and disables Connect if you open it on `localhost`. If you changed the port (`PORT=...`), put that port in the URI.
@@ -35,7 +35,7 @@ Settings, Music lists the exact URIs for this build and has a **Copy** button ne
 2. Press **Connect Spotify** and approve access. You come back to the settings page.
 3. Optional: pick a **Playback device**. The default, Automatic, uses whichever device is active.
 
-The app asks for two permissions only: read playback state and modify playback state. Tokens stay in your browser (or your local database) and are not part of data exports.
+The app asks for four permissions: read playback state, modify playback state, and read your private and collaborative playlists (only to import a playlist into your song library; nothing is ever written to your playlists). If you connected before this feature, disconnect and connect again to grant the playlist permission. Since February 2026 Spotify returns the songs of a playlist only for playlists you own or collaborate on. Tokens stay in your browser (or your local database) and are not part of data exports.
 
 ## Troubleshooting
 

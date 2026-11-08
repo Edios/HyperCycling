@@ -605,3 +605,71 @@ describe('describeTrack', () => {
     await expect(setup().provider.describeTrack(track)).rejects.toMatchObject({ code: 'http' });
   });
 });
+
+describe('playlists (library import)', () => {
+  it('lists the user playlists and reads the item count of either API shape', async () => {
+    const seen = api(() =>
+      HttpResponse.json({
+        items: [
+          { id: 'p1', name: 'Climb', items: { total: 12 } },
+          null,
+          { id: 'p2', name: 'Old', tracks: { total: 3 } },
+        ],
+        next: null,
+      }),
+    );
+    const out = await setup().provider.listPlaylists();
+    expect(seen[0]).toMatchObject({ path: '/v1/me/playlists', query: { limit: '50' } });
+    expect(out).toEqual([
+      { id: 'p1', name: 'Climb', total: 12 },
+      { id: 'p2', name: 'Old', total: 3 },
+    ]);
+  });
+
+  it('reads playlist items from /items, skipping episodes, local files and gaps', async () => {
+    const seen = api(() =>
+      HttpResponse.json({
+        items: [
+          {
+            item: {
+              id: 'aaa',
+              name: 'One',
+              type: 'track',
+              artists: [{ name: 'X' }, { name: 'Y' }],
+            },
+          },
+          { item: { id: 'bbb', name: 'Pod', type: 'episode' } },
+          { track: { id: 'ccc', name: 'Old shape', artists: [] } },
+          { item: { id: 'ddd', name: 'Local', is_local: true } },
+          { item: null },
+          null,
+        ],
+        next: null,
+      }),
+    );
+    const out = await setup().provider.playlistTracks('PL/1');
+    expect(seen[0]).toMatchObject({ path: '/v1/playlists/PL%2F1/items' });
+    expect(out).toEqual([
+      { id: 'aaa', title: 'One', artist: 'X, Y' },
+      { id: 'ccc', title: 'Old shape' },
+    ]);
+  });
+
+  it('pages through long playlists and stops at the limit', async () => {
+    const page = (n: number) =>
+      Array.from({ length: 50 }, (_, i) => ({
+        item: { id: `t${n}x${i}`, name: `S${n}-${i}`, type: 'track', artists: [] },
+      }));
+    const seen = api((r) =>
+      HttpResponse.json({ items: page(Number(r.query.offset) / 50), next: 'more' }),
+    );
+    const out = await setup().provider.playlistTracks('p', 120);
+    expect(out).toHaveLength(120);
+    expect(seen.map((s) => s.query.offset)).toEqual(['0', '50', '100']);
+  });
+
+  it('reports a missing playlist permission as forbidden', async () => {
+    api(() => error(403, '', 'Insufficient client scope'));
+    await expect(setup().provider.listPlaylists()).rejects.toMatchObject({ code: 'forbidden' });
+  });
+});

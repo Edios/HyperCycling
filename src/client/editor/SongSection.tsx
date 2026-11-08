@@ -5,6 +5,8 @@ import { cooldownBlockOf, type SongSlot, type TrackRef, type Workout } from '../
 import { songHint } from '../data/localized';
 import type { SongCandidate } from '../music/bpmLookup';
 import { SongFinder } from './SongFinder';
+import { SuggestedChips } from './SuggestedChips';
+import { toTrackRef, type LibraryTrack } from '../music/library/library';
 import { useT } from '../i18n';
 import { parseClock, parseTrackUrl } from '../music/parse-track-url';
 import { lookupSpotifyTrack } from '../music/spotify/track-info';
@@ -157,6 +159,21 @@ function TrackPin({
   );
 }
 
+/** Cadence a slot calls for: its wanted tempo range (2 BPM = 1 RPM), else its first block's RPM. */
+function slotRpm(w: Workout, song: SongSlot): number | undefined {
+  if (song.bpm) return (song.bpm[0] + song.bpm[1]) / 4;
+  const a = w.blocks.findIndex((b) => b.id === song.firstBlockId);
+  const z = w.blocks.findIndex((b) => b.id === song.lastBlockId);
+  const find = (bs: Workout['blocks']): number | undefined => {
+    for (const b of bs) {
+      const v = b.kind === 'repeat' ? find(b.blocks) : b.rpm;
+      if (v !== undefined) return v;
+    }
+    return undefined;
+  };
+  return a < 0 || z < a ? undefined : find(w.blocks.slice(a, z + 1));
+}
+
 function parseBpm(text: string): number | undefined {
   if (!/^\d{2,3}$/.test(text.trim())) return undefined;
   const v = Number(text);
@@ -211,6 +228,21 @@ function SongPanel({
       patch.bpm = [hit.bpm, hit.bpm];
       setLo(String(hit.bpm));
       setHi(String(hit.bpm));
+    }
+    dispatch({ type: 'updateSong', id: song.id, patch });
+  };
+  /** A suggested song does what 'Find a song' does and pins the track as well. */
+  const pickSuggested = (lt: LibraryTrack): void => {
+    const name = (lt.artist ? `${lt.artist} – ${lt.title}` : lt.title).slice(0, 200);
+    setHint(name);
+    const patch: { hint: string; bpm?: [number, number]; track: TrackRef } = {
+      hint: name,
+      track: toTrackRef(lt, 0),
+    };
+    if (!song.bpm && lt.bpm !== undefined) {
+      patch.bpm = [lt.bpm, lt.bpm];
+      setLo(String(lt.bpm));
+      setHi(String(lt.bpm));
     }
     dispatch({ type: 'updateSong', id: song.id, patch });
   };
@@ -290,6 +322,7 @@ function SongPanel({
           </small>
         )}
       </div>
+      {!readOnly && <SuggestedChips rpm={slotRpm(workout, song)} onPick={pickSuggested} />}
       {!readOnly && <SongFinder range={song.bpm} onPick={pick} />}
       <TrackPin
         key={song.track ? `${song.track.id}:${song.track.title}` : 'none'}

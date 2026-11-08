@@ -5,6 +5,8 @@ import { useT } from '../i18n';
 import { closeDeezerBridge } from '../music/deezer/client';
 import { GETSONGBPM_SITE } from '../music/getsongbpm/client';
 import { useSave } from './save';
+import { SongLibraryCard } from './SongLibraryCard';
+import { getSharedTagController } from '../music/library/tag-controller';
 import {
   beginLogin,
   getLastSpotifyCallbackResult,
@@ -143,7 +145,10 @@ export function MusicSection() {
   };
 
   const toggleDeezer = (on: boolean): void => {
-    if (!on) closeDeezerBridge(); // drop the sandboxed frame at once
+    if (!on) {
+      getSharedTagController().pause(); // a running tagging queue must not keep asking Deezer
+      closeDeezerBridge(); // drop the sandboxed frame at once
+    }
     void save_({ deezerLookup: on });
   };
 
@@ -340,6 +345,8 @@ export function MusicSection() {
           {t('settings.music.deezer.hint')}
         </p>
       </div>
+
+      <SongLibraryCard />
 
       <div className={styles.setup}>
         <h3 className={styles.subTitle}>{t('settings.music.setupTitle')}</h3>
