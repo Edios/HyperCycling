@@ -17,7 +17,7 @@ export type CoachCue =
   /** Closing after a change: `effort` for an attack or cadence, `position` after standing up. */
   | { kind: 'closing'; after: 'effort' | 'position' }
   /** The music goes quiet in `inSec` seconds (the closing silence of the class). */
-  | { kind: 'silenceAhead'; inSec: number };
+  | { kind: 'silenceAhead'; inSec: number; quietSec: number };
 
 export type PreChange = 'attack' | 'standUp' | 'sitDown' | 'cadenceUp' | 'cadenceDown';
 
@@ -187,7 +187,7 @@ export function buildCuePlan(segments: Segment[], opts: CuePlanOptions = {}): Pl
     raw.push({
       atSec: total - quiet - PRE_LEAD_SEC,
       key: 'silence',
-      cue: { kind: 'silenceAhead', inSec: PRE_LEAD_SEC },
+      cue: { kind: 'silenceAhead', inSec: PRE_LEAD_SEC, quietSec: quiet },
     });
   }
   raw.sort((a, b) => a.atSec - b.atSec);

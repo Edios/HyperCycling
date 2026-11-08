@@ -57,7 +57,7 @@ function cueText(cue: CoachCue, t: ReturnType<typeof useT>): string {
     case 'closing':
       return t(cue.after === 'position' ? 'coach.closingPosition' : 'coach.closingEffort');
     case 'silenceAhead':
-      return t('coach.silenceAhead', { s: cue.inSec });
+      return t('coach.silenceAhead', { s: cue.inSec, q: cue.quietSec });
     default:
       return t(SIMPLE_KEYS[cue.kind]);
   }

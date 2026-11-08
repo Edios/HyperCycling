@@ -30,11 +30,7 @@ describe('buildCuePlan', () => {
   });
 
   it('orders pre-cue < boundary < closing, entries ascending', () => {
-    const segs = [
-      seg(0, 0, 60),
-      seg(1, 60, 80, { effortStart: 8, effortEnd: 8 }),
-      seg(2, 140, 60),
-    ];
+    const segs = [seg(0, 0, 60), seg(1, 60, 80, { effortStart: 8, effortEnd: 8 }), seg(2, 140, 60)];
     const plan = buildCuePlan(segs);
     const pre = plan.find((e) => e.cue.kind === 'pre');
     const closing = plan.find((e) => e.cue.kind === 'closing');
@@ -85,8 +81,14 @@ describe('buildCuePlan', () => {
     const segs = [seg(0, 0, 200), seg(1, 200, 100)];
     const plan = buildCuePlan(segs, { silenceLastSec: 60 });
     const s = plan.find((e) => e.cue.kind === 'silenceAhead');
-    expect(s).toMatchObject({ atSec: 300 - 60 - 10, cue: { inSec: 10 } });
+    expect(s).toMatchObject({ atSec: 300 - 60 - 10, cue: { inSec: 10, quietSec: 60 } });
     expect(buildCuePlan(segs).some((e) => e.cue.kind === 'silenceAhead')).toBe(false);
+  });
+
+  it('carries the configured silence length into the announcement', () => {
+    const segs = [seg(0, 0, 400), seg(1, 400, 100)];
+    const s = buildCuePlan(segs, { silenceLastSec: 90 }).find((e) => e.cue.kind === 'silenceAhead');
+    expect(s?.cue).toMatchObject({ inSec: 10, quietSec: 90 });
   });
 
   it('numericCadence false gives cadenceUp/Down pre-cues', () => {
