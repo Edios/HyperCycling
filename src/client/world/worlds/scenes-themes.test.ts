@@ -35,7 +35,7 @@ function distance(a: SceneLook, b: SceneLook): number {
   score += a.pattern !== b.pattern ? 25 : 0;
   score += Math.abs(a.speedMul - b.speedMul) * 40;
   score += Math.abs(a.warp - b.warp) * 25;
-  score += Math.abs(a.objDensity - b.objDensity) * 25;
+  score += a.construct !== b.construct ? 30 : 0;
   score += Math.abs(a.sunSize - b.sunSize) * 150;
   return score;
 }
@@ -93,7 +93,13 @@ describe('Neon Grid chapters', () => {
     expect(after.speedMul).toBeLessThan(wake.speedMul);
     expect(after.pulse).toBe(0);
     expect(after.streak).toBe(0);
-    expect(after.objDensity).toBe(0);
+    expect(after.construct).toBe(6);
     expect(after.vignette).toBe(0);
+  });
+});
+
+describe('Neon Grid constructions', () => {
+  it('gives every chapter its own construction (architecture, not only a palette)', () => {
+    expect(new Set(looks.map((l) => l.construct)).size).toBe(looks.length);
   });
 });

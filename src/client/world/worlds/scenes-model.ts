@@ -16,6 +16,8 @@ export interface TerrainShape {
   rise: number;
   /** 0: smooth rolling hills, 1: sharp ridged peaks. */
   roughness: number;
+  /** Step height of stepped terraces (0: smooth). */
+  terrace: number;
 }
 
 /** Height of the side terrain at lateral distance `absX` from the road and world z. */
@@ -27,5 +29,10 @@ export function terrainHeight(absX: number, z: number, shape: TerrainShape): num
   const r = 1 - Math.abs(Math.sin(absX / 29 + z / 61 + 1.7));
   const b = 0.5 + 0.5 * Math.sin(absX / 13 - z / 37);
   const n = (1 - shape.roughness) * a + shape.roughness * (0.65 * r + 0.35 * b);
-  return shape.height * valley * (0.25 + 0.75 * n);
+  const h = shape.height * valley * (0.25 + 0.75 * n);
+  if (shape.terrace <= 0) return h;
+  // stepped terraces: flat treads joined by short risers
+  const u = h / shape.terrace;
+  const f = Math.floor(u);
+  return (f + smooth01((u - f - 0.7) / 0.3)) * shape.terrace;
 }

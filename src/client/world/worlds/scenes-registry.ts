@@ -61,13 +61,14 @@ export type SceneLook = {
   pulseHz: number;
   /** Flowing nebula in the sky (0 = off; Lite quality uses a cheaper version). */
   warp: number;
-  /** Scenery objects (pylons, arches): density 0..1, height factor, share of slots with an arch 0..1. */
-  objDensity: number;
+  /** Height factor of the scenery objects (gates, rings, towers). */
   objHeight: number;
-  objArch: number;
   /** Always-on speed streaks 0..1 (a sprint adds more) and darkened screen edges 0..1 (Standard only). */
   streak: number;
   vignette: number;
+  /** Construction along the road (scenes-constructs CONSTRUCT id) and terrain terrace step (0 = smooth). */
+  construct: number;
+  terrace: number;
 };
 
 /** The "Trip" channels switched off: what every plain scene uses. */
@@ -79,11 +80,11 @@ export function plainFx(line: string) {
     pulse: 0,
     pulseHz: 1,
     warp: 0,
-    objDensity: 0,
     objHeight: 1,
-    objArch: 0,
     streak: 0,
     vignette: 0,
+    construct: 0,
+    terrace: 0,
   };
 }
 

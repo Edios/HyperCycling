@@ -14,7 +14,7 @@ describe('approach (exponential smoothing)', () => {
 });
 
 describe('terrainHeight', () => {
-  const shape = { height: 40, flat: 9, rise: 60, roughness: 0.6 };
+  const shape = { height: 40, flat: 9, rise: 60, roughness: 0.6, terrace: 0 };
 
   it('is flat next to the road', () => {
     for (let z = 0; z < 2000; z += 37) {
@@ -46,5 +46,32 @@ describe('terrainHeight', () => {
 
   it('is 0 everywhere for a zero height (flat city / snowfield)', () => {
     expect(terrainHeight(300, 1234, { ...shape, height: 0 })).toBe(0);
+  });
+});
+
+describe('terrainHeight terraces', () => {
+  const base = { height: 80, flat: 10, rise: 60, roughness: 0.2 };
+  it('keeps the smooth height when the terrace step is 0', () => {
+    const a = terrainHeight(70, 300, { ...base, terrace: 0 });
+    expect(a).toBeGreaterThan(0);
+  });
+  it('flattens heights into treads: most samples sit at a multiple of the step', () => {
+    const step = 16;
+    let treads = 0;
+    let n = 0;
+    for (let z = 0; z < 2000; z += 7) {
+      const h = terrainHeight(70, z, { ...base, terrace: step });
+      const r = h % step;
+      if (r < 0.5 || r > step - 0.5) treads++;
+      n++;
+    }
+    expect(treads / n).toBeGreaterThan(0.5);
+  });
+  it('stays within one step of the smooth height', () => {
+    for (let z = 0; z < 1000; z += 13) {
+      const smooth = terrainHeight(60, z, { ...base, terrace: 0 });
+      const stepped = terrainHeight(60, z, { ...base, terrace: 16 });
+      expect(Math.abs(stepped - smooth)).toBeLessThanOrEqual(16);
+    }
   });
 });

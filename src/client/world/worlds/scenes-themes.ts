@@ -1,4 +1,5 @@
 import type { ThemeId } from '../../../domain/experience';
+import { CONSTRUCT } from './scenes-constructs';
 import { PATTERN, plainFx, type SceneDef, type SceneLook } from './scenes-registry';
 
 /**
@@ -70,6 +71,7 @@ const NEON_GRID: ThemeDef = {
       // grid-wake: a dark, wide, empty plain under stars; slow and quiet
       {
         ...NEON,
+        construct: CONSTRUCT.gate,
         skyTop: '#01030a',
         skyMid: '#060b26',
         skyHorizon: '#0b2a48',
@@ -91,6 +93,7 @@ const NEON_GRID: ThemeDef = {
       // light-lanes: green-teal stripes (lanes of light) over gentle rolling hills
       {
         ...NEON,
+        construct: CONSTRUCT.corridor,
         skyTop: '#021410',
         skyMid: '#06362f',
         skyHorizon: '#0f7a64',
@@ -113,12 +116,13 @@ const NEON_GRID: ThemeDef = {
         pulse: 0.2,
         pulseHz: 1.07,
         warp: 0.3,
-        objDensity: 0.3,
         objHeight: 0.8,
       },
       // arches: royal blue, huge smooth swells, many arches over the road
       {
         ...NEON,
+        construct: CONSTRUCT.terraces,
+        terrace: 24,
         skyTop: '#03072e',
         skyMid: '#14238a',
         skyHorizon: '#3f63e8',
@@ -140,14 +144,13 @@ const NEON_GRID: ThemeDef = {
         pulse: 0.3,
         pulseHz: 1.07,
         warp: 0.5,
-        objDensity: 0.75,
         objHeight: 1.1,
-        objArch: 1,
         vignette: 0.15,
       },
       // surge: violet, sharp ridged spikes, hex cells, fast, streaks always on
       {
         ...NEON,
+        construct: CONSTRUCT.city,
         skyTop: '#08012c',
         skyMid: '#3a1490',
         skyHorizon: '#8a3cff',
@@ -170,15 +173,14 @@ const NEON_GRID: ThemeDef = {
         pulse: 0.45,
         pulseHz: 1.45,
         warp: 0.7,
-        objDensity: 0.9,
         objHeight: 1.2,
-        objArch: 0.3,
         streak: 0.5,
         vignette: 0.25,
       },
       // summit-scan: ice and white, tall canyon walls, a big pale moon, bright horizon
       {
         ...NEON,
+        construct: CONSTRUCT.spiral,
         skyTop: '#0a1a52',
         skyMid: '#3a6ad8',
         skyHorizon: '#bff0ff',
@@ -205,15 +207,14 @@ const NEON_GRID: ThemeDef = {
         pulse: 0.35,
         pulseHz: 1.05,
         warp: 0.55,
-        objDensity: 0.5,
         objHeight: 1.4,
-        objArch: 0.5,
         streak: 0.25,
         vignette: 0.3,
       },
       // overdrive: the climax; deep violet to cyan sky, big bright sun, white lines, hue bands
       {
         ...NEON,
+        construct: CONSTRUCT.storm,
         skyTop: '#16004a',
         skyMid: '#5a14d8',
         skyHorizon: '#00d8ff',
@@ -241,15 +242,14 @@ const NEON_GRID: ThemeDef = {
         pulse: 0.6,
         pulseHz: 1.45,
         warp: 1,
-        objDensity: 1,
         objHeight: 1.3,
-        objArch: 0.6,
         streak: 0.7,
         vignette: 0.45,
       },
       // afterglow: the calm after: a quiet starry night with a small moon and a faint ember
       {
         ...NEON,
+        construct: CONSTRUCT.dust,
         skyTop: '#01020a',
         skyMid: '#050818',
         skyHorizon: '#0a1a2a',

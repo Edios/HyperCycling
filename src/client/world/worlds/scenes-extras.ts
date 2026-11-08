@@ -1,5 +1,11 @@
 import * as THREE from 'three';
 import { dashOffset, hash01 } from './road-model';
+import {
+  MAX_CONSTRUCT_INSTANCES,
+  buildConstruct,
+  type ConstructFrame,
+  type Placer,
+} from './scenes-constructs';
 import type { SceneExtraId, SceneLook } from './scenes-registry';
 import { setHex } from './scenes-shaders';
 
@@ -400,21 +406,35 @@ function pylons(high: boolean, created: Disposable[]): SceneExtra {
     `,
   });
   created.push(mat);
-  const period = high ? 34 : 60;
-  const perSide = Math.ceil(EXTRA_VIEW / period) + 1;
-  // per slot: two posts and (on the high setting) one lintel
-  const capacity = perSide * (high ? 3 : 2);
+  const capacity = high ? MAX_CONSTRUCT_INSTANCES : Math.floor(MAX_CONSTRUCT_INSTANCES / 2);
   const mesh = new THREE.InstancedMesh(geo, mat, capacity);
   created.push(mesh);
   mesh.frustumCulled = false;
   mesh.renderOrder = 5;
   const tmp = new THREE.Object3D();
-  const smooth = (x: number): number => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+  tmp.rotation.order = 'YXZ';
+  let n = 0;
+  // one reused placer: no allocation per frame
+  const put: Placer = (x, y, z, sx, sy, sz, yaw, roll) => {
+    if (n >= capacity) return;
+    tmp.position.set(x, y, z);
+    tmp.rotation.set(0, yaw, roll);
+    tmp.scale.set(sx, sy, sz);
+    tmp.updateMatrix();
+    mesh.setMatrixAt(n++, tmp.matrix);
+  };
+  const cf: ConstructFrame = {
+    dist: 0,
+    time: 0,
+    roadX: () => 0,
+    roadY: () => 0,
+    scale: 1,
+  };
 
   return {
     object: mesh,
     update(f) {
-      // edges glow in the grid colour of the look (cyan, brighter in the hard chapters)
+      // edges glow in the grid colour of the look
       setHex(uniforms.uA.value, f.look.line);
       setHex(uniforms.uB.value, f.look.extraB);
       setHex(uniforms.uFill.value, f.look.fill);
@@ -423,41 +443,14 @@ function pylons(high: boolean, created: Disposable[]): SceneExtra {
       uniforms.uFogFar.value = f.look.fogFar;
       uniforms.uTime.value = f.time;
       uniforms.uIntensity.value = f.intensity + f.beat * 0.5;
-      const density = f.look.objDensity;
-      const heightK = f.look.objHeight;
-      const archShare = high ? f.look.objArch : 0;
-      const phase = dashOffset(f.dist, period);
-      const base = Math.floor(f.dist / period);
-      let n = 0;
-      for (let i = 0; i < perSide; i++) {
-        const depth = i * period - phase;
-        if (depth < 4) continue;
-        const slot = i + base;
-        // grows in and out with the look instead of popping
-        const vis = density > 0.001 ? smooth((density * 1.05 - hash01(slot * 5 + 3)) * 8) : 0;
-        // an arch over the road on the slots the look picks (its posts are the side pylons)
-        const arch = archShare > 0.001 ? smooth((archShare - hash01(slot * 5 + 17)) * 8) : 0;
-        const rx = f.roadX(depth);
-        const ry = f.roadY(depth) - 0.3;
-        const show = Math.max(vis, arch);
-        if (show > 0.01) {
-          const h = (10 + hash01(slot * 5 + 9) * 14) * heightK * show + 7 * arch * heightK;
-          for (let side = 0; side < 2; side++) {
-            tmp.position.set(rx + (side === 0 ? -15 : 15), ry, -depth);
-            tmp.rotation.set(0, 0, 0);
-            tmp.scale.set(0.9, h, 0.9);
-            tmp.updateMatrix();
-            mesh.setMatrixAt(n++, tmp.matrix);
-          }
-          if (arch > 0.01) {
-            tmp.position.set(rx, ry + h - 0.9, -depth);
-            tmp.scale.set(31, 0.9, 0.9);
-            tmp.updateMatrix();
-            mesh.setMatrixAt(n++, tmp.matrix);
-          }
-        }
-      }
-      mesh.count = Math.min(n, capacity);
+      cf.dist = f.dist;
+      cf.time = f.time;
+      cf.roadX = f.roadX;
+      cf.roadY = f.roadY;
+      cf.scale = f.look.objHeight;
+      n = 0;
+      buildConstruct(f.look.construct, high, cf, put);
+      mesh.count = n;
       mesh.instanceMatrix.needsUpdate = true;
     },
   };

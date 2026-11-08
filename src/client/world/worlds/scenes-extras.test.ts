@@ -3,7 +3,7 @@ import { buildExtra, type Disposable, type ExtraFrame } from './scenes-extras';
 import { THEMES } from './scenes-themes';
 
 const looks = THEMES['neon-grid']!.scene.variants;
-const dense = looks[5]!;
+const dense = looks[3]!;
 const sparse = looks[0]!;
 
 const frame = (look: ExtraFrame['look'], dist: number): ExtraFrame => ({
@@ -32,16 +32,6 @@ function drawn(high: boolean, look: ExtraFrame['look']): number {
   return n;
 }
 
-describe('Neon Grid scenery density', () => {
-  it('grows from nothing in the empty plain to the dense climax and dies down in the afterglow', () => {
-    const d = looks.map((l) => l.objDensity);
-    expect(d[0]).toBe(0);
-    expect(d[5]).toBe(Math.max(...d));
-    expect(d[3]!).toBeGreaterThan(d[1]!);
-    expect(d[6]!).toBe(0);
-  });
-});
-
 describe('Neon Grid pylons', () => {
   it('is the extra of the theme scene', () => {
     expect(THEMES['neon-grid']!.scene.extra).toBe('pylons');
@@ -66,8 +56,19 @@ describe('Neon Grid pylons', () => {
     }
   });
 
-  it('draws arches only on the high setting and more scenery in dense looks', () => {
-    expect(drawn(true, dense)).toBeGreaterThan(drawn(false, dense));
-    expect(drawn(true, sparse)).toBeLessThan(drawn(true, dense));
+  it('draws something in every chapter, never over the budget, and less on Lite', () => {
+    for (const look of looks) {
+      const hi = drawn(true, look);
+      const lo = drawn(false, look);
+      expect(hi, String(look.construct)).toBeGreaterThan(0);
+      expect(hi).toBeLessThanOrEqual(220);
+      expect(lo).toBeLessThanOrEqual(110);
+      expect(lo).toBeLessThanOrEqual(hi);
+    }
+  });
+
+  it('builds a different scene for every chapter', () => {
+    const counts = new Set(looks.map((l) => drawn(true, l)));
+    expect(counts.size).toBeGreaterThanOrEqual(4);
   });
 });
