@@ -60,7 +60,7 @@ describe('bend and hills factors', () => {
   });
 
   it('every Neon Grid chapter asks for a legal factor, and chapters differ', () => {
-    const looks = THEMES['neon-grid'].scene.variants;
+    const looks = THEMES['neon-grid']?.scene.variants ?? [];
     expect(looks.length).toBe(7);
     for (const l of looks) {
       expect(l.bend).toBeGreaterThan(0);
