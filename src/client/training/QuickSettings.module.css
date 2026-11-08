@@ -107,3 +107,11 @@
     display: none;
   }
 }
+
+/* Local keyframes: CSS Modules rename animation names, so a global one would not be found. */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}

@@ -145,17 +145,3 @@ html {
     --motion-panel: 0ms;
   }
 }
-
-/* Shared enter animation of panels and dialogs: opacity + a short rise, nothing that re-layouts. */
-@keyframes panel-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.5rem);
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-}
