@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { CoachCue } from '../../../domain/coach';
+import type { KnobHint } from '../../../domain/bike';
+import { useKnobHint } from '../../bike/useKnobHint';
 import { useT, type MessageKey } from '../../i18n';
 import { translateContentText } from '../content-text';
 import styles from './CoachOverlay.module.css';
@@ -25,12 +27,19 @@ const SIMPLE_KEYS: Record<
 
 type ResistanceCue = Extract<CoachCue, { kind: 'addResistance' | 'reduceResistance' }>;
 
-function resistanceText(cue: ResistanceCue, t: ReturnType<typeof useT>): string {
+function resistanceText(
+  cue: ResistanceCue,
+  t: ReturnType<typeof useT>,
+  hint: KnobHint | undefined,
+): string {
   const base = t(cue.kind === 'addResistance' ? 'coach.addResistance' : 'coach.reduceResistance', {
     s: cue.inSec,
     effort: cue.effort,
   });
-  return cue.rpm === undefined ? base : `${base}, ${cue.rpm} ${t('training.rpm')}`;
+  const withKnob = hint
+    ? `${base} (${t('coach.knobAt', { step: hint.step, pos: hint.position })})`
+    : base;
+  return cue.rpm === undefined ? withKnob : `${withKnob}, ${cue.rpm} ${t('training.rpm')}`;
 }
 
 const PRE_KEYS: Record<Extract<CoachCue, { kind: 'pre' }>['change'], MessageKey> = {
@@ -41,7 +50,11 @@ const PRE_KEYS: Record<Extract<CoachCue, { kind: 'pre' }>['change'], MessageKey>
   cadenceDown: 'coach.preCadenceDown',
 };
 
-function cueText(cue: CoachCue, t: ReturnType<typeof useT>): string {
+function cueText(
+  cue: CoachCue,
+  t: ReturnType<typeof useT>,
+  knob: (effort: number) => KnobHint | undefined,
+): string {
   switch (cue.kind) {
     case 'custom':
       return translateContentText(cue.text, 'cue');
@@ -49,7 +62,7 @@ function cueText(cue: CoachCue, t: ReturnType<typeof useT>): string {
       return t('training.cadenceCue', { rpm: cue.rpm });
     case 'addResistance':
     case 'reduceResistance':
-      return resistanceText(cue, t);
+      return resistanceText(cue, t, knob(cue.effort));
     case 'pre':
       return t(PRE_KEYS[cue.change], { s: cue.inSec });
     case 'preCadence':
@@ -65,7 +78,8 @@ function cueText(cue: CoachCue, t: ReturnType<typeof useT>): string {
 
 export function CoachOverlay({ cue, cueKey, color, reducedMotion = false }: CoachOverlayProps) {
   const t = useT();
-  const text = cue ? cueText(cue, t) : '';
+  const knob = useKnobHint();
+  const text = cue ? cueText(cue, t, knob) : '';
   const style: CSSProperties & Record<'--c', string> = { '--c': color };
   return (
     <>

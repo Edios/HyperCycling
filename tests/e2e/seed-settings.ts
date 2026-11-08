@@ -1,6 +1,6 @@
 import type { Page, TestInfo } from '@playwright/test';
 import { expect } from './fixtures';
-import { DEFAULT_SETTINGS } from '../../src/domain/settings';
+import { DEFAULT_SETTINGS, type Settings } from '../../src/domain/settings';
 
 /**
  * Stores settings (and loads the app with them) through whichever storage the project's build uses: the local server's
@@ -10,8 +10,13 @@ export async function seedSettings(
   page: Page,
   info: TestInfo,
   activePlanId: string | null,
+  extra: Partial<Settings> = {},
 ): Promise<void> {
-  const settings = { ...DEFAULT_SETTINGS, ...(activePlanId ? { activePlanId } : {}) };
+  const settings = {
+    ...DEFAULT_SETTINGS,
+    ...(activePlanId ? { activePlanId } : {}),
+    ...extra,
+  };
   if (info.project.name.startsWith('local')) {
     const res = await page.request.put('/api/settings', { data: settings });
     expect(res.ok()).toBe(true);

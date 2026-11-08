@@ -56,3 +56,39 @@ export function isValidKnobSteps(steps: readonly number[]): boolean {
 export function normalizeKnobSteps(steps: readonly number[] | undefined): readonly number[] {
   return steps && isValidKnobSteps(steps) ? steps : DEFAULT_KNOB_STEPS;
 }
+
+export interface KnobHint {
+  /** Stopień S1..S5 najbliższy poziomowi wysiłku E1..E10. */
+  step: number;
+  /** Położenie pokrętła zapisane przez rowerzystę dla tego stopnia. */
+  position: number;
+}
+
+/** Poziom wysiłku E, który odpowiada stopniom S1..S5 (research-b; używa ich Neon Grid). */
+export const KNOB_STEP_EFFORTS: readonly number[] = [3, 4, 6, 7, 9];
+
+/**
+ * Stopień pokrętła (S1..S5) dla poziomu wysiłku E1..E10: kotwice S1=E3, S2=E4, S3=E6, S4=E7,
+ * S5=E9, wybór najbliższego stopnia; remis (E5 między S2 i S3, E8 między S4 i S5) rozstrzyga
+ * NIŻSZY stopień (bezpieczniej nie dokręcać). E1-E2 -> S1, E10 -> S5.
+ * Zwraca undefined, gdy rower nie ma pokrętła albo rowerzysta nie zapisał poprawnej kalibracji
+ * (brak danych lub uszkodzone dane = zachowanie jak przed kalibracją, bez podpowiedzi).
+ */
+export function knobHint(
+  kind: BikeKind,
+  knobSteps: readonly number[] | undefined,
+  effort: number,
+): KnobHint | undefined {
+  if (!hasKnob(kind) || !knobSteps || !isValidKnobSteps(knobSteps) || !Number.isFinite(effort)) {
+    return undefined;
+  }
+  let index = 0;
+  KNOB_STEP_EFFORTS.forEach((anchor, k) => {
+    // Strict "<" keeps the lower step on a tie.
+    if (Math.abs(effort - anchor) < Math.abs(effort - (KNOB_STEP_EFFORTS[index] ?? anchor))) {
+      index = k;
+    }
+  });
+  const position = knobSteps[index];
+  return position === undefined ? undefined : { step: index + 1, position };
+}
