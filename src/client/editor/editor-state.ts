@@ -2,6 +2,7 @@ import type { EffortLevel } from '../../domain/effort';
 import { newId } from '../../domain/ids';
 import {
   repairSongs,
+  slotTracks,
   workoutSchema,
   type Block,
   type RampBlock,
@@ -32,10 +33,21 @@ type MetaPatch = Partial<
 >;
 
 /** `null` clears the field. */
+/** One track is kept as the plain `track`, several as `tracks`; none removes both. */
+function storeQueue(slot: SongSlot, list: TrackRef[]): void {
+  delete slot.track;
+  delete slot.tracks;
+  if (list.length === 1) slot.track = list[0] as TrackRef;
+  else if (list.length > 1) slot.tracks = list;
+}
+
 export interface SongPatch {
   hint?: string | null;
   bpm?: [number, number] | null;
+  /** Replaces (or, with null, drops) the first track of the slot's queue. */
   track?: TrackRef | null;
+  /** The whole queue; one track is stored as `track` (older apps read it), more as `tracks`. */
+  tracks?: TrackRef[];
 }
 
 export type EditorAction =
@@ -482,7 +494,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return apply(state, (w) => {
         const slot = w.songs?.find((sg) => sg.id === action.id);
         if (!slot) return notFound;
-        const { hint, bpm, track } = action.patch;
+        const { hint, bpm, track, tracks } = action.patch;
         if (hint !== undefined) {
           if (hint === null || hint.trim() === '') delete slot.hint;
           else slot.hint = hint;
@@ -492,9 +504,10 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
           else slot.bpm = bpm;
         }
         if (track !== undefined) {
-          if (track === null) delete slot.track;
-          else slot.track = track;
+          const rest = slotTracks(slot).slice(1);
+          storeQueue(slot, track === null ? rest : [track, ...rest]);
         }
+        if (tracks !== undefined) storeQueue(slot, tracks);
         return { selectedId: state.selectedId };
       });
 

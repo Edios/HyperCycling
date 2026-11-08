@@ -96,6 +96,18 @@ const musicHintSchema = suggestionSchema.extend({
   alternatives: z.array(suggestionSchema).max(5).optional(),
 });
 
+const pinTrackSchema = z.object({
+  provider: z.enum(['spotify', 'youtube']),
+  id: z.string().min(1),
+  title: z.string(),
+  artist: z.string().optional(),
+  durationSec: z.number().min(0).optional(),
+  startAtSec: z.number().min(0),
+  bpm: z.number().optional(),
+  bpmSource: z.enum(['getsongbpm', 'deezer']).optional(),
+  notEmbeddable: z.boolean().optional(),
+});
+
 export const experienceSchema: z.ZodType<Experience> = z
   .object({
     id: z.string().min(1),
@@ -115,17 +127,8 @@ export const experienceSchema: z.ZodType<Experience> = z
         z.object({
           blockId: z.string().min(1),
           rep: z.number().int().min(1),
-          track: z.object({
-            provider: z.enum(['spotify', 'youtube']),
-            id: z.string().min(1),
-            title: z.string(),
-            artist: z.string().optional(),
-            durationSec: z.number().min(0).optional(),
-            startAtSec: z.number().min(0),
-            bpm: z.number().optional(),
-            bpmSource: z.literal('getsongbpm').optional(),
-            notEmbeddable: z.boolean().optional(),
-          }),
+          track: pinTrackSchema,
+          queue: z.array(pinTrackSchema).max(12).optional(),
         }),
       )
       .default([]),

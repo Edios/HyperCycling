@@ -844,6 +844,25 @@ export const pl: Messages = {
     embedBlocked: 'Tego filmu nie można osadzić. Używam tła Basic.',
     unavailable: 'Nie można odtworzyć filmu. Używam tła Basic.',
   },
+  slotQueue: {
+    title: 'Kolejka utworów',
+    empty: 'Brak utworów w tej części.',
+    total: 'Suma {sum} z {slot}',
+    fits: 'Kolejka pasuje do czasu części.',
+    missing: 'Brakuje {time}. Dodaj utwór ok. {bpm} BPM.',
+    missingAny: 'Brakuje {time}. Dodaj kolejny utwór.',
+    missingRest: 'Brakuje {time}. W odpoczynku cisza do końca jest w porządku.',
+    over: 'Nadmiar {time}: ostatni utwór zostanie wyciszony na końcu części.',
+    longer: 'Dłuższa wersja',
+    addReserve: 'Dodaj z rezerwy',
+    noReserve: 'Brak utworów w rezerwie',
+    remove: 'Usuń',
+    up: 'Wyżej',
+    down: 'Niżej',
+    offset: 'Początek (s)',
+    regionUnknown: 'region niezweryfikowany',
+    item: '{name}, {time}',
+  },
   experience: {
     title: 'Experience',
     intro:
@@ -1259,6 +1278,7 @@ export const pl: Messages = {
       bpm: 'Zakres tempa (BPM)',
       bpmMin: 'BPM od',
       bpmMax: 'BPM do',
+      queueAdd: 'Dodaj kolejny utwór (link)',
       bpmError: 'Podaj liczby całkowite od {min} do {max}, najpierw mniejszą.',
       finder: {
         title: 'Znajdź utwór (tempo z Deezer / GetSongBPM)',

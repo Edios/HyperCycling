@@ -43,3 +43,20 @@ Pola wpisu:
 Wartości w pliku to propozycje oznaczone ★ w `neon-grid-45-music.md` (alternatywy a/b/c); Neon Grid 30
 i Lekki 45 używają tych samych utworów w odpowiednich slotach. **Zmiana wyboru = edycja tego jednego
 pliku**, bez zmian w kodzie. Nie wpisuj identyfikatorów Spotify ani linków.
+
+## Kolejka utworów w slocie
+
+Utwór krótszy od części treningu nie przesuwa niczego: zegar treningu rządzi, muzyka tylko za nim
+podąża. Dlatego slot ma **kolejkę** utworów (`SongSlot.tracks`; pojedynczy `track` z wcześniejszych
+zapisów czyta się jak kolejkę jednoelementową, a kolejka jednoelementowa nadal zapisuje się jako
+`track`). Wejście w blok startuje pierwszy utwór, koniec utworu startuje następny (harmonogram
+`musicAt` + wybudzenie dyrektora w chwili zmiany, bez czekania na odpytywanie), a na końcu slotu
+ostatni utwór jest ucinany istniejącym wyciszeniem. Przeskok bloku wraca do początku kolejki slotu.
+`TrackRef.startAtSec` to ręczne przesunięcie początku (pominięcie intra), bez analizy audio.
+
+Propozycję układa czysta funkcja `planSlot` ([`src/domain/slot-plan.ts`](../src/domain/slot-plan.ts)):
+najpierw dłuższa wersja tego samego utworu (album/extended zamiast radio edit; nie live, nie remix),
+potem rezerwa z alternatyw rankowanych tempem (2 BPM = 1 RPM) bez duplikatów między slotami; gdy
+dalej brakuje czasu (tolerancja 10 s) pokazuje „brakuje m:ss, dodaj utwór ok. N BPM" (w odpoczynku
+cisza jest dozwolona). Wszystko jest propozycją: nic się nie zapisuje, dopóki użytkownik nie
+zatwierdzi listy.

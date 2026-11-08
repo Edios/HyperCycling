@@ -4,6 +4,7 @@
  * Nothing leaves the app except the Spotify search the rider's own token makes.
  */
 import { rankTracks } from '../../domain/bpm-match';
+import type { PlanCandidate } from '../../domain/slot-plan';
 import {
   withExperiencePins,
   type Experience,
@@ -129,6 +130,8 @@ export interface SlotMatch {
   options: MatchOption[];
   /** Index into `options` of the automatic choice; absent when nothing playable was found. */
   chosen?: number;
+  /** Every plausible hit of the suggestion and its alternatives (all versions), for the planner. */
+  candidates: PlanCandidate[];
 }
 
 export function searchQuery(s: SongSuggestion): string {
@@ -143,12 +146,23 @@ export async function resolveSlot(hint: MusicHint, search: SearchFn): Promise<Sl
     ...(hint.alternatives ?? []).map((want) => ({ source: 'alt' as const, want })),
   ];
   const options: MatchOption[] = [];
+  const candidates: PlanCandidate[] = [];
   for (const { source, want } of wants) {
     const hits = await search(searchQuery(want), 8);
     const ranked = rankHits(want, hits, {
       ...(hint.explicit !== undefined ? { explicit: hint.explicit } : {}),
       ...(source === 'main' && hint.durationSec ? { durationSec: hint.durationSec } : {}),
     }).filter((r) => r.score >= MIN_SCORE);
+    for (const r of ranked) {
+      candidates.push({
+        track: r.hit.ref,
+        origin: source,
+        playable: r.hit.playable,
+        explicit: r.hit.explicit,
+        ...(r.hit.album ? { album: r.hit.album } : {}),
+        ...(want.bpm !== undefined ? { bpm: want.bpm } : {}),
+      });
+    }
     // The best playable hit wins; if none is playable, the best unplayable one is still shown.
     const best = ranked.find((r) => r.hit.playable !== false) ?? ranked[0];
     if (!best) continue;
@@ -162,8 +176,13 @@ export async function resolveSlot(hint: MusicHint, search: SearchFn): Promise<Sl
     });
   }
   const chosen = options.findIndex((o) => o.playable !== false);
-  if (chosen >= 0) return { slot: hint.slot, status: 'ok', options, chosen };
-  return { slot: hint.slot, status: options.length > 0 ? 'unavailable' : 'none', options };
+  if (chosen >= 0) return { slot: hint.slot, status: 'ok', options, chosen, candidates };
+  return {
+    slot: hint.slot,
+    status: options.length > 0 ? 'unavailable' : 'none',
+    options,
+    candidates,
+  };
 }
 
 /** Every hinted slot, sequentially (gentle on the rate limit). Errors (token, 429) propagate. */
@@ -226,13 +245,14 @@ export function slotInfo(
   return { id: s.id, sec: songDurationSec(w, s), ...(s.bpm ? { range: s.bpm } : {}) };
 }
 
-/** Cues for the rider's chosen tracks (slot id -> track), placed like a slot's own pinned track. */
-export function choiceCues(w: Workout, choices: Readonly<Record<string, TrackRef>>): MusicCue[] {
+/** Cues for the rider's chosen queues (slot id -> tracks), placed like a slot's own pinned tracks. */
+export function choiceCues(w: Workout, choices: Readonly<Record<string, TrackRef[]>>): MusicCue[] {
   const songs = (w.songs ?? []).map((s) => {
-    const { track: _drop, ...rest } = s;
+    const { track: _drop, tracks: _drop2, ...rest } = s;
     void _drop;
+    void _drop2;
     const t = choices[s.id];
-    return t ? { ...rest, track: t } : rest;
+    return t && t.length > 0 ? { ...rest, tracks: t } : rest;
   });
   return compileSongCues({ ...w, songs });
 }
@@ -241,7 +261,7 @@ export function choiceCues(w: Workout, choices: Readonly<Record<string, TrackRef
 export function withUserMusic(
   w: Workout,
   e: Experience,
-  choices: Readonly<Record<string, TrackRef>>,
+  choices: Readonly<Record<string, TrackRef[]>>,
 ): Workout {
   const mine = choiceCues(w, choices);
   if (mine.length === 0) return withExperiencePins(w, e);

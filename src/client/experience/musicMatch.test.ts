@@ -111,7 +111,7 @@ describe('resolveSlot', () => {
 
   it('reports none when Spotify has nothing', async () => {
     const m = await resolveSlot(NIGHTCALL, fake({}));
-    expect(m).toEqual({ slot: 0, status: 'none', options: [] });
+    expect(m).toEqual({ slot: 0, status: 'none', options: [], candidates: [] });
   });
 
   it('falls back to an alternative when the main song is missing', async () => {
@@ -227,9 +227,15 @@ describe('applying the choices', () => {
   };
 
   it('puts the track on the first block of the slot', () => {
-    const cues = choiceCues(w, { [w.songs![0]!.id]: ref });
+    const cues = choiceCues(w, { [w.songs![0]!.id]: [ref] });
     expect(cues).toHaveLength(1);
     expect(cues[0]).toMatchObject({ blockId: w.songs![0]!.firstBlockId, rep: 1, track: ref });
+  });
+
+  it('puts a queue on the first block: first track plus the rest', () => {
+    const second = { ...ref, id: 'ab000000000' };
+    const cues = choiceCues(w, { [w.songs![0]!.id]: [ref, second] });
+    expect(cues[0]).toMatchObject({ track: ref, queue: [second] });
   });
 
   it('adds nothing without choices', () => {
@@ -237,7 +243,7 @@ describe('applying the choices', () => {
   });
 
   it("gives the ride the rider's track and no embedded id exists", () => {
-    const ride = withUserMusic(w, exp, { [w.songs![2]!.id]: ref });
+    const ride = withUserMusic(w, exp, { [w.songs![2]!.id]: [ref] });
     expect(ride.musicCues).toHaveLength(1);
     expect(exp.musicPins).toEqual([]);
   });

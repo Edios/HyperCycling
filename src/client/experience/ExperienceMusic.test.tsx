@@ -138,7 +138,7 @@ describe('ExperienceMusic', () => {
     fireEvent.change(first, { target: { value: '1' } });
     fireEvent.click(screen.getByTestId('exp-music-approve'));
     const saved = vi.mocked(onChoices).mock.calls[0]![0];
-    expect(saved[workout.songs![0]!.id]?.title).toBe('Awake');
+    expect(saved[workout.songs![0]!.id]?.[0]?.title).toBe('Awake');
   });
 
   it('warns when a song is shorter than its slot', async () => {
@@ -149,7 +149,8 @@ describe('ExperienceMusic', () => {
     });
     fireEvent.click(screen.getByTestId('exp-music-match'));
     await screen.findByTestId('exp-music-review');
-    expect(screen.getAllByTestId('exp-music-short').length).toBeGreaterThan(0);
+    const msgs = screen.getAllByTestId('exp-music-queue-status').map((e) => e.textContent);
+    expect(msgs.some((m) => /Brakuje|Missing/.test(m ?? ''))).toBe(true);
   });
 
   it('shows an error and no list when there is no token', async () => {
@@ -174,7 +175,7 @@ describe('ExperienceMusic', () => {
       title: 'Nightcall',
       startAtSec: 0,
     } as const;
-    const onChoices = setup({ choices: { [workout.songs![0]!.id]: track } });
+    const onChoices = setup({ choices: { [workout.songs![0]!.id]: [track] } });
     expect(screen.getByTestId('exp-music-state').textContent).toMatch(/1/);
     fireEvent.click(screen.getByTestId('exp-music-clear'));
     expect(onChoices).toHaveBeenCalledWith({});

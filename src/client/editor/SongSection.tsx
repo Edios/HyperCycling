@@ -1,9 +1,16 @@
 import { useEffect, useId, useMemo, useRef, useState, type Dispatch } from 'react';
 import { BPM_MAX, BPM_MIN } from '../../domain/bpm-match';
 import type { Lang } from '../../domain/lang';
-import { cooldownBlockOf, type SongSlot, type TrackRef, type Workout } from '../../domain/workout';
+import {
+  cooldownBlockOf,
+  slotTracks,
+  type SongSlot,
+  type TrackRef,
+  type Workout,
+} from '../../domain/workout';
 import { songHint } from '../data/localized';
 import type { SongCandidate } from '../music/bpmLookup';
+import { SlotQueue } from '../music/SlotQueue';
 import { SongFinder } from './SongFinder';
 import { SuggestedChips } from './SuggestedChips';
 import { toTrackRef, type LibraryTrack } from '../music/library/library';
@@ -54,7 +61,9 @@ function TrackPin({
   onClear,
   readOnly,
   testId,
+  label,
 }: {
+  label?: string;
   track: TrackRef | undefined;
   getTrack: () => TrackRef | undefined;
   onPlace: (t: TrackRef) => void;
@@ -103,7 +112,7 @@ function TrackPin({
 
   return (
     <div className={styles.group} data-testid={testId}>
-      <label htmlFor={urlId}>{t('editor.inspector.track')}</label>
+      <label htmlFor={urlId}>{label ?? t('editor.inspector.track')}</label>
       {track && (
         <small className={styles.cap}>
           {track.title ? `${track.title} · ` : ''}
@@ -218,6 +227,9 @@ function SongPanel({
     dispatch({ type: 'updateSong', id: song.id, patch: { bpm: [loV, hiV] } });
   };
   const span = spanOf(workout, song.firstBlockId, song.lastBlockId);
+  const queue = slotTracks(song);
+  const isRest = song.lastBlockId === cooldownBlockOf(workout)?.id;
+  const latestSlot = (): SongSlot | undefined => ref.current.songs?.find((x) => x.id === song.id);
   const hintId = useId();
   /** A found song names the slot; an empty tempo range takes the song's tempo (still editable). */
   const pick = (hit: SongCandidate): void => {
@@ -325,14 +337,49 @@ function SongPanel({
       {!readOnly && <SuggestedChips rpm={slotRpm(workout, song)} onPick={pickSuggested} />}
       {!readOnly && <SongFinder range={song.bpm} onPick={pick} />}
       <TrackPin
-        key={song.track ? `${song.track.id}:${song.track.title}` : 'none'}
-        track={song.track}
-        getTrack={() => ref.current.songs?.find((s) => s.id === song.id)?.track}
+        key={queue[0] ? `${queue[0].id}:${queue[0].title}` : 'none'}
+        track={queue[0]}
+        getTrack={() => slotTracks(latestSlot() ?? {})[0]}
         onPlace={(track) => dispatch({ type: 'updateSong', id: song.id, patch: { track } })}
         onClear={() => dispatch({ type: 'updateSong', id: song.id, patch: { track: null } })}
         readOnly={readOnly}
         testId="song-track"
       />
+      {queue.length > 0 && (
+        <div className={styles.group} data-testid="song-queue-group">
+          <span>{t('slotQueue.title')}</span>
+          <SlotQueue
+            tracks={queue}
+            slotSec={span?.len ?? 0}
+            targetBpm={song.bpm ? (song.bpm[0] + song.bpm[1]) / 2 : undefined}
+            rest={isRest}
+            onChange={
+              readOnly
+                ? () => undefined
+                : (tracks) => dispatch({ type: 'updateSong', id: song.id, patch: { tracks } })
+            }
+            testId="song-queue"
+          />
+        </div>
+      )}
+      {!readOnly && queue.length > 0 && (
+        <TrackPin
+          key={`add:${queue.length}`}
+          track={undefined}
+          getTrack={() => slotTracks(latestSlot() ?? {}).at(-1)}
+          onPlace={(track) => {
+            const cur = slotTracks(latestSlot() ?? {});
+            const last = cur.at(-1);
+            const next =
+              last && last.id === track.id ? [...cur.slice(0, -1), track] : [...cur, track];
+            dispatch({ type: 'updateSong', id: song.id, patch: { tracks: next } });
+          }}
+          onClear={() => undefined}
+          readOnly={readOnly}
+          testId="song-queue-add"
+          label={t('editor.songs.queueAdd')}
+        />
+      )}
       {!readOnly && (
         <Button onClick={() => dispatch({ type: 'removeSong', id: song.id })}>
           {t('editor.songs.remove')}

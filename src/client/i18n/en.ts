@@ -844,6 +844,25 @@ export const en = {
     embedBlocked: 'This video cannot be embedded. Using the Basic background.',
     unavailable: 'The video cannot be played. Using the Basic background.',
   },
+  slotQueue: {
+    title: 'Song queue',
+    empty: 'No songs in this part.',
+    total: 'Total {sum} of {slot}',
+    fits: 'The queue fits the length of the part.',
+    missing: 'Missing {time}. Add a song of about {bpm} BPM.',
+    missingAny: 'Missing {time}. Add another song.',
+    missingRest: 'Missing {time}. Silence to the end is fine in a rest.',
+    over: 'Over by {time}: the last song fades out at the end of the part.',
+    longer: 'Longer version',
+    addReserve: 'Add from reserve',
+    noReserve: 'No songs left in reserve',
+    remove: 'Remove',
+    up: 'Move up',
+    down: 'Move down',
+    offset: 'Start (s)',
+    regionUnknown: 'region not verified',
+    item: '{name}, {time}',
+  },
   experience: {
     title: 'Experience',
     intro:
@@ -1258,6 +1277,7 @@ export const en = {
       bpm: 'Tempo range (BPM)',
       bpmMin: 'BPM from',
       bpmMax: 'BPM to',
+      queueAdd: 'Add another song (link)',
       bpmError: 'Use whole numbers from {min} to {max}, lowest first.',
       finder: {
         title: 'Find a song (tempo from Deezer / GetSongBPM)',

@@ -3,10 +3,12 @@ import type { TrackRef } from '../../domain/workout';
 import { readCompat, type KeyValueStorage } from '../data/storage-compat';
 
 /**
- * The rider's matched tracks per Experience, kept in this browser only (slot id -> Spotify track).
- * Never part of the repository or of exports.
+ * The rider's matched tracks per Experience, kept in this browser only (slot id -> the slot's
+ * queue of Spotify tracks). Never part of the repository or of exports. An older save holds one
+ * track per slot; it reads as a one-track queue.
  */
-export type Choices = Record<string, TrackRef>;
+export type Choices = Record<string, TrackRef[]>;
+const MAX_TRACKS = 13;
 
 const KEY = 'hypercycling.experience.music';
 const ID = /^[A-Za-z0-9]{10,32}$/;
@@ -35,7 +37,7 @@ function validTrack(v: unknown): TrackRef | undefined {
     title: o.title,
     ...(typeof o.artist === 'string' ? { artist: o.artist } : {}),
     ...(num(o.durationSec) ? { durationSec: o.durationSec } : {}),
-    startAtSec: 0,
+    startAtSec: num(o.startAtSec) ? o.startAtSec : 0,
     ...(num(o.bpm) && o.bpm >= BPM_MIN && o.bpm <= BPM_MAX ? { bpm: o.bpm } : {}),
   };
 }
@@ -50,8 +52,9 @@ function readAll(storage: KeyValueStorage | undefined): Record<string, Choices> 
       if (typeof slots !== 'object' || slots === null) continue;
       const c: Choices = {};
       for (const [slot, t] of Object.entries(slots)) {
-        const ok = validTrack(t);
-        if (ok) c[slot] = ok;
+        const list = (Array.isArray(t) ? t : [t]).slice(0, MAX_TRACKS);
+        const ok = list.flatMap((x) => validTrack(x) ?? []);
+        if (ok.length > 0) c[slot] = ok;
       }
       out[exp] = c;
     }

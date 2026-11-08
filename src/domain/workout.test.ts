@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { newId } from './ids';
 import {
+  compileSongCues,
   duplicateWorkout,
+  slotTracks,
   totalDurationSec,
   workoutSchema,
   type Block,
@@ -239,5 +241,40 @@ describe('duplicateWorkout details', () => {
     expect(d.updatedAt).not.toBe(w.updatedAt);
     expect(w.localized?.pl?.name).toBe('Polska');
     expect(workoutSchema.safeParse(d).success).toBe(true);
+  });
+});
+
+describe('slot queue model', () => {
+  const t = (id: string, d = 100) => ({
+    provider: 'spotify' as const,
+    id,
+    title: id,
+    durationSec: d,
+    startAtSec: 0,
+  });
+
+  it('reads the legacy single track as a one-track queue', () => {
+    expect(slotTracks({ track: t('a') })).toEqual([t('a')]);
+    expect(slotTracks({})).toEqual([]);
+    expect(slotTracks({ track: t('a'), tracks: [t('b'), t('c')] })).toEqual([t('b'), t('c')]);
+  });
+
+  it('compiles a slot queue into one cue with a queue; a legacy track stays a plain cue', () => {
+    const w = {
+      format: 'songs',
+      blocks: [
+        { kind: 'steady', id: 'b1' },
+        { kind: 'steady', id: 'b2' },
+      ],
+      songs: [
+        { id: 's1', firstBlockId: 'b1', lastBlockId: 'b1', tracks: [t('a'), t('b')] },
+        { id: 's2', firstBlockId: 'b2', lastBlockId: 'b2', track: t('c') },
+      ],
+    } as unknown as Workout;
+    const cues = compileSongCues(w);
+    expect(cues).toEqual([
+      { blockId: 'b1', rep: 1, track: t('a'), queue: [t('b')] },
+      { blockId: 'b2', rep: 1, track: t('c') },
+    ]);
   });
 });

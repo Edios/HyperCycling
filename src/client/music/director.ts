@@ -1,4 +1,4 @@
-import { musicAt, type ScheduledTrack } from '../../domain/music-schedule';
+import { musicAt, nextTrackChange, type ScheduledTrack } from '../../domain/music-schedule';
 import type { EngineEvent, EngineState } from '../../domain/session-engine';
 import type { Segment } from '../../domain/segments';
 import type { MusicCue, TrackRef } from '../../domain/workout';
@@ -139,6 +139,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
   /** Id of the newest `play` issued to each provider; older completions are stale. */
   const latestPlay = new Map<MusicProvider, number>();
   let playCounter = 0;
+  let boundaryTimer: ReturnType<typeof setTimeout> | undefined;
   const retryTimers = new Set<ReturnType<typeof setTimeout>>();
 
   const silenceFromSec = (() => {
@@ -328,6 +329,30 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     return startTrack(desired);
   }
 
+  /**
+   * Wakes the loop right when the schedule changes track (the next song of a slot's queue), so the
+   * switch does not wait for the next poll. Only a timer: the decision stays in `step`.
+   */
+  function armBoundary(): void {
+    if (boundaryTimer !== undefined) clearTimeout(boundaryTimer);
+    boundaryTimer = undefined;
+    const state = options.getState();
+    if (disposed || state.status !== 'running') return;
+    const next = nextTrackChange({
+      segments: options.segments,
+      cues: options.cues,
+      fallback: options.fallback,
+      tSec: state.workoutElapsedSec,
+    });
+    if (!next) return;
+    const ms = Math.max(0, (next.atSec - state.workoutElapsedSec) * 1000);
+    if (ms > pollMs) return; // the regular poll gets there first or close enough
+    boundaryTimer = setTimeout(() => {
+      boundaryTimer = undefined;
+      void reconcile();
+    }, ms);
+  }
+
   async function reconcile(): Promise<void> {
     if (disposed || !started) return;
     if (running) {
@@ -348,6 +373,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       }
     } finally {
       running = false;
+      armBoundary();
     }
   }
 
@@ -384,6 +410,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       unsubscribeEvents?.();
       unsubscribeState?.();
       if (poll !== undefined) clearInterval(poll);
+      if (boundaryTimer !== undefined) clearTimeout(boundaryTimer);
       for (const timer of retryTimers) clearTimeout(timer);
       retryTimers.clear();
       const playing = current;
