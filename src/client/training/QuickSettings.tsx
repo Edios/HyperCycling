@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { WorldSettingId, SessionConfig } from '../../domain/settings';
 import { useT, type MessageKey } from '../i18n';
 import { layoutLabelKey } from '../setup/model';
@@ -44,6 +44,13 @@ export interface QuickSettingsProps {
 export function QuickSettings(p: QuickSettingsProps) {
   const t = useT();
   useRestoreFocus();
+  // A body attribute (not body:has()) dims the HUD: no document-wide selector invalidation.
+  useLayoutEffect(() => {
+    document.body.dataset.quickOpen = '';
+    return () => {
+      delete document.body.dataset.quickOpen;
+    };
+  }, []);
   const panelRef = useRef<HTMLElement>(null);
   // Start on the first control (the background choice), not on Close: Space and arrows work at once.
   useEffect(() => {

@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   gap: calc(1.6 * var(--u));
-  transition: opacity 0.3s;
+  transition: opacity var(--motion-panel) var(--motion-ease-out);
 }
 
 .hidden {

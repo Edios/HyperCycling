@@ -264,7 +264,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .sheet {
-    animation: sheet-up 0.18s ease-out;
+    animation: sheet-up var(--motion-panel) var(--motion-ease-out);
   }
 
   @keyframes sheet-up {

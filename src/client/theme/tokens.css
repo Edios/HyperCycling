@@ -1,4 +1,9 @@
 :root {
+  /* Motion: ONE place for open/close timing. Opening starts at once (no delay), ease-out, only
+     opacity/transform. Reduced motion zeroes every token (see the media query at the end). */
+  --motion-menu: 110ms;
+  --motion-panel: 160ms;
+  --motion-ease-out: cubic-bezier(0.2, 0, 0, 1);
   --bg: #070a12;
   --s1: #101624;
   --s2: #151d2f;
@@ -132,4 +137,11 @@ html {
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-menu: 0ms;
+    --motion-panel: 0ms;
+  }
 }

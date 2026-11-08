@@ -7,6 +7,7 @@
   justify-content: center;
   padding: 1.5rem;
   background: rgb(4 7 14 / 0.72);
+  animation: fade-in var(--motion-menu) var(--motion-ease-out);
 }
 
 .panel {
@@ -19,6 +20,7 @@
   background: var(--s1);
   color: var(--fg);
   outline: none;
+  animation: panel-in var(--motion-panel) var(--motion-ease-out);
 }
 
 .head {
@@ -49,4 +51,18 @@
 .close:focus-visible {
   outline: 2px solid var(--act);
   outline-offset: 2px;
+}
+
+/* Local keyframes: CSS Modules rename animation names, so a global one would not be found. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
 }
