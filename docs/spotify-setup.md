@@ -27,6 +27,8 @@ The redirect URI is the address where you open the app, followed by its path.
 
 Use `127.0.0.1`, never `localhost`: Spotify rejects `http://localhost` redirects. Open the local app at `http://127.0.0.1:5175` too; Settings, Music shows a warning and disables Connect if you open it on `localhost`. If you changed the port (`PORT=...`), put that port in the URI.
 
+**YouTube is the other way round.** YouTube refuses to embed videos (player error 150) when the page's address is an IP such as `127.0.0.1`, while `localhost` and a domain work. So locally: Spotify needs `127.0.0.1`, YouTube needs `localhost`. On https://hypercycling.app/ both work. The app notices an IP address and says so in the Experience music check; it then prefers Spotify when connected. Local storage is per address, so `127.0.0.1` and `localhost` do not share your data.
+
 Settings, Music lists the exact URIs for this build and has a **Copy** button next to each.
 
 ## 3. Connect

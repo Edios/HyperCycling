@@ -102,3 +102,20 @@ describe('songChain', () => {
     expect(trackKey(chain[6] as TrackRef)).toBe('spotify:s');
   });
 });
+
+describe('per-upload length', () => {
+  it('an upload carries its own length, falling back to the song', () => {
+    const q = slotQueue(
+      {
+        slot: 0,
+        artist: 'A',
+        title: 'B',
+        durationSec: 404,
+        youtube: [{ id: 'AAAAAAAAAAA' }, { id: 'BBBBBBBBBBB', durationSec: 213 }],
+      },
+      { source: 'youtube', spotifyUsable: false },
+    );
+    expect(q[0]?.durationSec).toBe(404);
+    expect(q[0]?.alternates?.[0]?.durationSec).toBe(213);
+  });
+});

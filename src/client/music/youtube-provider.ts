@@ -1,5 +1,6 @@
 import type { TrackRef } from '../../domain/workout';
 import {
+  NOCOOKIE_HOST,
   loadIframeApi,
   type YTNamespace,
   type YTPlayer,
@@ -120,6 +121,7 @@ export function createYoutubeMusicProvider(
     return new Promise<YTMusicPlayer>((resolve, reject) => {
       new YT.Player(target, {
         videoId,
+        host: NOCOOKIE_HOST,
         width: 200,
         height: 200,
         playerVars: {

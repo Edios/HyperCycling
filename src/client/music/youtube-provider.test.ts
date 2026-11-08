@@ -118,6 +118,7 @@ describe('YouTube music provider', () => {
     await provider.play(track('abc'), 42.9);
     expect(players).toHaveLength(1);
     expect(players[0]?.opts.videoId).toBe('abc');
+    expect(players[0]?.opts.host).toBe('https://www.youtube-nocookie.com');
     expect(players[0]?.opts.playerVars).toMatchObject({ autoplay: 1, start: 42, controls: 0 });
     const hidden = document.body.querySelector<HTMLElement>('div[aria-hidden="true"]');
     expect(hidden).not.toBeNull();

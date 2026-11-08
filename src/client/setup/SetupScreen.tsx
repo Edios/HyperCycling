@@ -18,6 +18,7 @@ import { loadChoices, type Choices } from '../experience/musicChoices';
 import { chainChoices, withUserMusic } from '../experience/musicMatch';
 import { ExperienceMusicCheck, redSlots } from '../experience/ExperienceMusicCheck';
 import { useMusicSource } from '../music/music-source';
+import { ipOriginHost } from '../music/origin';
 import { deadRecordings, type ResultMap } from '../music/preflight';
 import { useSpotifyConnected } from '../music/spotify/useSpotify';
 import { WORLD_CHOICES } from '../world/world-options';
@@ -159,7 +160,12 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
     experience ? loadChoices(experience.id) : {},
   );
   const [youtubeUrl, setYoutubeUrl] = useState(last?.youtubeUrl ?? '');
-  const musicSource = useMusicSource();
+  const chosenSource = useMusicSource();
+  // YouTube does not play from an IP address (127.0.0.1): with Spotify connected it goes first.
+  const musicSource =
+    ipOriginHost() !== undefined && spotifyConnected && chosenSource === 'youtube'
+      ? 'spotify'
+      : chosenSource;
   // What the last "Check the music" found in this visit; empty until it ran.
   const [checked, setChecked] = useState<ResultMap>(new Map());
 

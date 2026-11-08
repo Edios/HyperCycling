@@ -35,7 +35,9 @@ export function youtubeTrack(item: QueueItem, cand: YoutubeCandidate): TrackRef 
     title: item.title,
     artist: item.artist,
     startAtSec: cand.offsetSec ?? item.startOffsetSec ?? 0,
-    ...(item.durationSec !== undefined ? { durationSec: item.durationSec } : {}),
+    ...((cand.durationSec ?? item.durationSec) !== undefined
+      ? { durationSec: cand.durationSec ?? item.durationSec }
+      : {}),
     ...(item.bpm !== undefined ? { bpm: item.bpm } : {}),
   };
 }

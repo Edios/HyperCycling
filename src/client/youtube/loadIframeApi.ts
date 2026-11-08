@@ -16,6 +16,8 @@ export interface YTPlayerOptions {
   width?: string | number;
   height?: string | number;
   playerVars?: Record<string, string | number>;
+  /** Embed host; `https://www.youtube-nocookie.com` keeps Google cookies off until playback. */
+  host?: string;
   events?: {
     onReady?: (e: YTPlayerEvent) => void;
     onError?: (e: YTPlayerEvent) => void;
@@ -43,6 +45,9 @@ export interface IframeApiHost {
   setTimeout(cb: () => void, ms: number): unknown;
   clearTimeout(id: unknown): void;
 }
+
+/** Privacy-enhanced embed host used by the music player and the music check. */
+export const NOCOOKIE_HOST = 'https://www.youtube-nocookie.com';
 
 export const IFRAME_API_URL = 'https://www.youtube.com/iframe_api';
 export const IFRAME_API_TIMEOUT_MS = 10_000;

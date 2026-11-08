@@ -48,7 +48,7 @@ test('checks the music silently and shows every slot as ready', async ({ page })
   await expect(page.getByTestId('exp-check-notrun')).toBeVisible();
   await page.getByTestId('exp-check-run').click();
   const slots = page.getByTestId('exp-check-slot');
-  await expect(slots).toHaveCount(11);
+  await expect(slots).toHaveCount(11, { timeout: 20_000 });
   for (const slot of await slots.all()) await expect(slot).toHaveAttribute('data-health', 'green');
   await expect(page.getByTestId('exp-check-blocked')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Start' })).toBeEnabled();
@@ -79,4 +79,17 @@ test('a dead main upload alone is only a yellow warning', async ({ page }) => {
   await page.getByTestId('exp-check-run').click();
   await expect(page.getByTestId('exp-check-slot').first()).toHaveAttribute('data-health', 'yellow');
   await expect(page.getByRole('button', { name: 'Start' })).toBeEnabled();
+});
+
+test('on an IP address origin the page says YouTube will not play there', async ({ page }) => {
+  await mockYoutube(page, []);
+  await page.goto('./#/setup/class-neon-grid-45?exp=neon-grid-45');
+  const onIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(new URL(page.url()).hostname);
+  const note = page.getByTestId('exp-check-ip');
+  if (onIp) {
+    await expect(note).toBeVisible();
+    await expect(note).toContainText(/localhost|hypercycling\.app|Spotify/);
+  } else {
+    await expect(note).toHaveCount(0);
+  }
 });

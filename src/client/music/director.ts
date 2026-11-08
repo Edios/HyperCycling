@@ -213,12 +213,33 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     retryTimers.add(timer);
   }
 
-  const chainOf = (track: TrackRef): TrackRef[] => {
+  /** A recording shorter than the planned song by more than this still plays, but only last. */
+  const SHORT_TOLERANCE_SEC = 10;
+
+  /**
+   * The recordings to try, best first, for the song position `posSec`. A recording that ends
+   * before that position is dropped (a seek past its end would only stall), one that is shorter
+   * than the planned song or known to be unplayable goes after the others, and the order of the
+   * rest is kept. Returns the position in the original chain with each recording.
+   */
+  const chainOf = (track: TrackRef, posSec: number): { cand: TrackRef; index: number }[] => {
     const { alternates, ...main } = track;
-    const all = [main, ...(alternates ?? [])];
-    // Recordings known to be unplayable go last, but are kept: the check may have been wrong.
-    const ok = all.filter((t) => !t.notEmbeddable);
-    return [...ok, ...all.filter((t) => t.notEmbeddable)];
+    const plannedSec =
+      main.durationSec !== undefined ? main.durationSec - main.startAtSec : undefined;
+    return [main, ...(alternates ?? [])]
+      .map((cand, index) => ({ cand, index }))
+      .filter(
+        ({ cand }) => cand.durationSec === undefined || cand.startAtSec + posSec < cand.durationSec,
+      )
+      .map((x) => {
+        const have =
+          x.cand.durationSec === undefined ? undefined : x.cand.durationSec - x.cand.startAtSec;
+        const short =
+          have !== undefined && plannedSec !== undefined && have < plannedSec - SHORT_TOLERANCE_SEC;
+        return { ...x, rank: (x.cand.notEmbeddable ? 2 : 0) + (short ? 1 : 0) };
+      })
+      .sort((a, b) => a.rank - b.rank || a.index - b.index)
+      .map(({ cand, index }) => ({ cand, index }));
   };
 
   const emit = (event: CandidateEvent): void => {
@@ -280,13 +301,13 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     const record = failures.get(desired.key);
     if (record && !(record.count === 1 && record.retryReady)) return false; // waiting or given up
     if (disposed) return false;
-    const chain = chainOf(desired.track);
+    const chain = chainOf(desired.track, desired.offsetSec - desired.track.startAtSec);
+    if (chain.length === 0) return false; // no recording reaches this position: silence, no retry
     const skip = failedCandidates.get(desired.key) ?? new Set<number>();
     failedCandidates.set(desired.key, skip);
     let lastError: unknown;
-    for (let index = 0; index < chain.length; index++) {
+    for (const { cand, index } of chain) {
       if (skip.has(index)) continue;
-      const cand = chain[index] as TrackRef;
       const result = await tryCandidate(desired, cand);
       if ('stale' in result) return !disposed;
       if ('error' in result) {
@@ -299,7 +320,8 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       }
       const { provider } = result;
       failures.delete(desired.key);
-      failedCandidates.delete(desired.key);
+      // `failedCandidates` stays: if this recording breaks later, the ones that already failed
+      // are not tried again (it is cleared only when the whole chain failed and is retried).
       if (disposed) {
         void quietly('pause', () => provider.pause());
         return false;
