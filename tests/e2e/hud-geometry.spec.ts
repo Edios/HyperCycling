@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+import { seedSettings } from './seed-settings';
 
 // Experience ride on phones and wide landscape screens: no text sticks out of its panel or the
 // screen, panels do not overlap each other, and the quick settings stay on screen.
@@ -158,3 +159,44 @@ test('Experience preview offers only the HUD layout and Lite (no background or w
   await page.goto('./#/setup/demo-mixed');
   await expect(page.getByRole('heading', { name: 'Background' })).toBeVisible();
 });
+
+// Knob calibration (E15): the HUD shows the saved position for the current step; without a
+// calibration nothing is added. Geometry must hold either way.
+for (const size of [
+  { width: 390, height: 844 },
+  { width: 1280, height: 720 },
+]) {
+  for (const calibrated of [true, false]) {
+    test(`Knob calibration HUD ${calibrated ? 'with' : 'without'} calibration at ${size.width}x${size.height}`, async ({
+      page,
+    }, info) => {
+      test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+      test.setTimeout(120_000);
+      await page.setViewportSize(size);
+      await seedSettings(
+        page,
+        info,
+        null,
+        calibrated ? { resistanceMode: 'knob', knobSteps: [2, 4, 6, 8, 10] } : {},
+      );
+      await startExperience(page);
+      const line = page.getByTestId('knob-line');
+      if (calibrated) await expect(line.first()).toBeVisible();
+      else await expect(line).toHaveCount(0);
+      const bad: string[] = [];
+      for (let i = 0; i < 5; i += 1) {
+        await page.waitForTimeout(350);
+        const id = await page
+          .locator('[data-testid^="layout-"]')
+          .first()
+          .getAttribute('data-testid');
+        for (const p of await geometryProblems(page)) bad.push(`${id}: ${p.what}`);
+        await page.keyboard.press('KeyH');
+      }
+      expect(bad).toEqual([]);
+      await page.screenshot({
+        path: `test-results/knob-hud-${calibrated ? 'cal' : 'nocal'}-${size.width}.png`,
+      });
+    });
+  }
+}

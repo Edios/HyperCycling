@@ -67,6 +67,7 @@ export const pl: Messages = {
     standing: 'Stojąc',
     position: 'Pozycja',
     step: 'Krok {n}/{total}',
+    knob: 'Pokrętło S{step} · {pos}',
     blockOf: 'blok {n} z {total}',
     cadenceCue: 'Kadencja {rpm}!',
     ftpApprox: '~{pct}% FTP',
@@ -1013,6 +1014,7 @@ export const pl: Messages = {
   coach: {
     attack: 'ATAK!',
     standUp: 'Wstań!',
+    knobAt: 'pokrętło S{step} = {pos}',
     addResistance: 'Za {s} s: dodaj opór → wysiłek {effort}',
     reduceResistance: 'Za {s} s: zmniejsz opór → wysiłek {effort}',
     sitDown: 'Usiądź',

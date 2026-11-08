@@ -56,3 +56,30 @@ export function isValidKnobSteps(steps: readonly number[]): boolean {
 export function normalizeKnobSteps(steps: readonly number[] | undefined): readonly number[] {
   return steps && isValidKnobSteps(steps) ? steps : DEFAULT_KNOB_STEPS;
 }
+
+export interface KnobHint {
+  /** Stopień S1..S5 najbliższy poziomowi wysiłku E1..E10. */
+  step: number;
+  /** Położenie pokrętła zapisane przez rowerzystę dla tego stopnia. */
+  position: number;
+}
+
+/**
+ * Stopień pokrętła (S1..S5) odpowiadający poziomowi wysiłku E1..E10: skala 1..10 jest
+ * rozciągnięta na pięć stopni (E1 = S1, E10 = S5), wynik zaokrąglony do najbliższego stopnia.
+ * Zwraca undefined, gdy rower nie ma pokrętła albo rowerzysta nie zapisał poprawnej kalibracji
+ * (brak danych lub uszkodzone dane = zachowanie jak przed kalibracją, bez podpowiedzi).
+ */
+export function knobHint(
+  kind: BikeKind,
+  knobSteps: readonly number[] | undefined,
+  effort: number,
+): KnobHint | undefined {
+  if (!hasKnob(kind) || !knobSteps || !isValidKnobSteps(knobSteps) || !Number.isFinite(effort)) {
+    return undefined;
+  }
+  const e = Math.min(10, Math.max(1, effort));
+  const index = Math.round(((e - 1) / 9) * (KNOB_STEP_COUNT - 1));
+  const position = knobSteps[index];
+  return position === undefined ? undefined : { step: index + 1, position };
+}

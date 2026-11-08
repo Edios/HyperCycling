@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { DashLine, EffortRing } from '../../brand';
+import { useKnobHint } from '../../bike/useKnobHint';
 import { useT } from '../../i18n';
 import { positionOf, type Segment } from '../../../domain/segments';
 import type { Position } from '../../../domain/workout';
@@ -67,6 +68,7 @@ export function EffortGroup({
     return () => ro.disconnect();
   }, []);
   const label = t(`effort.${labelKey}`);
+  const knobHint = useKnobHint()(effort);
   const nextDesc = next
     ? [
         next.rpm !== undefined ? `${next.rpm} ${t('training.rpm')}` : '',
@@ -118,6 +120,11 @@ export function EffortGroup({
         {hr && <div className={styles.hr}>{hr}</div>}
         <div className={styles.posRow}>
           <PositionBadge position={position} />
+          {knobHint && (
+            <div className={`${hud.lbl} ${styles.step}`} data-testid="knob-line">
+              {t('training.knob', { step: knobHint.step, pos: knobHint.position })}
+            </div>
+          )}
           {step && step.count > 1 && (
             <div className={`${hud.lbl} ${styles.step}`} data-testid="step-line">
               {t('training.step', { n: step.index + 1, total: step.count })}
