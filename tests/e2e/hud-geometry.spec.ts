@@ -154,7 +154,7 @@ test('Experience preview offers only the HUD layout and Lite (no background or w
   ).toHaveCount(5);
   await expect(page.getByRole('heading', { name: 'Background' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'World', exact: true })).toHaveCount(0);
-  await expect(page.getByText('YouTube')).toHaveCount(0);
+  await expect(page.getByText('YouTube', { exact: true })).toHaveCount(0);
   // A regular workout keeps the full choice.
   await page.goto('./#/setup/demo-mixed');
   await expect(page.getByRole('heading', { name: 'Background' })).toBeVisible();

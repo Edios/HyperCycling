@@ -1,0 +1,551 @@
+{
+  "neon-grid-45": [
+    {
+      "slot": 0,
+      "artist": "Kavinsky",
+      "title": "Nightcall",
+      "bpm": 91,
+      "durationSec": 259,
+      "alternatives": [
+        {
+          "artist": "Tycho",
+          "title": "Awake",
+          "bpm": 88
+        },
+        {
+          "artist": "Alan Walker",
+          "title": "Faded",
+          "bpm": 90
+        }
+      ]
+    },
+    {
+      "slot": 1,
+      "artist": "Daft Punk",
+      "title": "Technologic",
+      "bpm": 128,
+      "durationSec": 284,
+      "alternatives": [
+        {
+          "artist": "Martin Garrix",
+          "title": "Animals",
+          "bpm": 128
+        },
+        {
+          "artist": "Daft Punk",
+          "title": "One More Time",
+          "bpm": 123
+        }
+      ]
+    },
+    {
+      "slot": 2,
+      "artist": "The Weeknd",
+      "title": "Blinding Lights",
+      "bpm": 171,
+      "durationSec": 200,
+      "alternatives": [
+        {
+          "artist": "Netsky",
+          "title": "Rio",
+          "bpm": 173
+        },
+        {
+          "artist": "Foo Fighters",
+          "title": "The Pretender",
+          "bpm": 173
+        }
+      ]
+    },
+    {
+      "slot": 3,
+      "artist": "Alan Walker",
+      "title": "Faded",
+      "bpm": 90,
+      "durationSec": 212,
+      "alternatives": [
+        {
+          "artist": "Kavinsky",
+          "title": "Nightcall",
+          "bpm": 91
+        },
+        {
+          "artist": "Tycho",
+          "title": "Awake",
+          "bpm": 88
+        }
+      ]
+    },
+    {
+      "slot": 4,
+      "artist": "Swedish House Mafia",
+      "title": "Don't You Worry Child",
+      "bpm": 129,
+      "durationSec": 213,
+      "alternatives": [
+        {
+          "artist": "Calvin Harris",
+          "title": "Feel So Close",
+          "bpm": 128
+        },
+        {
+          "artist": "Zedd",
+          "title": "Clarity",
+          "bpm": 128
+        }
+      ]
+    },
+    {
+      "slot": 5,
+      "artist": "Chase & Status",
+      "title": "Blind Faith (Loadstar Remix)",
+      "bpm": 87,
+      "alternatives": [
+        {
+          "artist": "The Weeknd",
+          "title": "Starboy",
+          "bpm": 93
+        },
+        {
+          "artist": "Tycho",
+          "title": "Awake",
+          "bpm": 88
+        }
+      ]
+    },
+    {
+      "slot": 6,
+      "artist": "Pendulum",
+      "title": "Witchcraft",
+      "bpm": 174,
+      "durationSec": 252,
+      "alternatives": [
+        {
+          "artist": "Pendulum",
+          "title": "Propane Nightmares",
+          "bpm": 174
+        },
+        {
+          "artist": "Wilkinson",
+          "title": "Afterglow",
+          "bpm": 174
+        }
+      ]
+    },
+    {
+      "slot": 7,
+      "artist": "Tycho",
+      "title": "Awake",
+      "bpm": 88,
+      "durationSec": 283,
+      "alternatives": [
+        {
+          "artist": "Alan Walker",
+          "title": "Faded",
+          "bpm": 90
+        },
+        {
+          "artist": "Kavinsky",
+          "title": "Nightcall",
+          "bpm": 91
+        }
+      ]
+    },
+    {
+      "slot": 8,
+      "artist": "David Guetta",
+      "title": "Titanium",
+      "bpm": 126,
+      "durationSec": 245,
+      "alternatives": [
+        {
+          "artist": "Avicii",
+          "title": "Levels",
+          "bpm": 126
+        },
+        {
+          "artist": "Eric Prydz",
+          "title": "Pjanoo",
+          "bpm": 126
+        }
+      ]
+    },
+    {
+      "slot": 9,
+      "artist": "Sub Focus",
+      "title": "Tidal Wave",
+      "bpm": 174,
+      "durationSec": 226,
+      "alternatives": [
+        {
+          "artist": "Pendulum",
+          "title": "Tarantula",
+          "bpm": 174
+        },
+        {
+          "artist": "Green Day",
+          "title": "Basket Case",
+          "bpm": 175
+        }
+      ]
+    },
+    {
+      "slot": 10,
+      "artist": "Brian Eno",
+      "title": "An Ending (Ascent)",
+      "durationSec": 265,
+      "noBeat": true,
+      "alternatives": [
+        {
+          "artist": "Max Richter",
+          "title": "On the Nature of Daylight"
+        },
+        {
+          "artist": "Stars of the Lid",
+          "title": "Requiem for Dying Mothers, Pt. 2"
+        }
+      ]
+    }
+  ],
+  "neon-grid-45-light": [
+    {
+      "slot": 0,
+      "artist": "Kavinsky",
+      "title": "Nightcall",
+      "bpm": 91,
+      "durationSec": 259,
+      "alternatives": [
+        {
+          "artist": "Tycho",
+          "title": "Awake",
+          "bpm": 88
+        },
+        {
+          "artist": "Alan Walker",
+          "title": "Faded",
+          "bpm": 90
+        }
+      ]
+    },
+    {
+      "slot": 1,
+      "artist": "Daft Punk",
+      "title": "Technologic",
+      "bpm": 128,
+      "durationSec": 284,
+      "alternatives": [
+        {
+          "artist": "Martin Garrix",
+          "title": "Animals",
+          "bpm": 128
+        },
+        {
+          "artist": "Daft Punk",
+          "title": "One More Time",
+          "bpm": 123
+        }
+      ]
+    },
+    {
+      "slot": 2,
+      "artist": "The Weeknd",
+      "title": "Blinding Lights",
+      "bpm": 171,
+      "durationSec": 200,
+      "alternatives": [
+        {
+          "artist": "Netsky",
+          "title": "Rio",
+          "bpm": 173
+        },
+        {
+          "artist": "Foo Fighters",
+          "title": "The Pretender",
+          "bpm": 173
+        }
+      ]
+    },
+    {
+      "slot": 3,
+      "artist": "Alan Walker",
+      "title": "Faded",
+      "bpm": 90,
+      "durationSec": 212,
+      "alternatives": [
+        {
+          "artist": "Kavinsky",
+          "title": "Nightcall",
+          "bpm": 91
+        },
+        {
+          "artist": "Tycho",
+          "title": "Awake",
+          "bpm": 88
+        }
+      ]
+    },
+    {
+      "slot": 4,
+      "artist": "Swedish House Mafia",
+      "title": "Don't You Worry Child",
+      "bpm": 129,
+      "durationSec": 213,
+      "alternatives": [
+        {
+          "artist": "Calvin Harris",
+          "title": "Feel So Close",
+          "bpm": 128
+        },
+        {
+          "artist": "Zedd",
+          "title": "Clarity",
+          "bpm": 128
+        }
+      ]
+    },
+    {
+      "slot": 5,
+      "artist": "Chase & Status",
+      "title": "Blind Faith (Loadstar Remix)",
+      "bpm": 87,
+      "alternatives": [
+        {
+          "artist": "The Weeknd",
+          "title": "Starboy",
+          "bpm": 93
+        },
+        {
+          "artist": "Tycho",
+          "title": "Awake",
+          "bpm": 88
+        }
+      ]
+    },
+    {
+      "slot": 6,
+      "artist": "Pendulum",
+      "title": "Witchcraft",
+      "bpm": 174,
+      "durationSec": 252,
+      "alternatives": [
+        {
+          "artist": "Pendulum",
+          "title": "Propane Nightmares",
+          "bpm": 174
+        },
+        {
+          "artist": "Wilkinson",
+          "title": "Afterglow",
+          "bpm": 174
+        }
+      ]
+    },
+    {
+      "slot": 7,
+      "artist": "Tycho",
+      "title": "Awake",
+      "bpm": 88,
+      "durationSec": 283,
+      "alternatives": [
+        {
+          "artist": "Alan Walker",
+          "title": "Faded",
+          "bpm": 90
+        },
+        {
+          "artist": "Kavinsky",
+          "title": "Nightcall",
+          "bpm": 91
+        }
+      ]
+    },
+    {
+      "slot": 8,
+      "artist": "The Weeknd",
+      "title": "Starboy",
+      "bpm": 93,
+      "durationSec": 230,
+      "alternatives": [
+        {
+          "artist": "Tycho",
+          "title": "Awake",
+          "bpm": 88
+        },
+        {
+          "artist": "Alan Walker",
+          "title": "Faded",
+          "bpm": 90
+        }
+      ]
+    },
+    {
+      "slot": 9,
+      "artist": "Sub Focus",
+      "title": "Tidal Wave",
+      "bpm": 174,
+      "durationSec": 226,
+      "alternatives": [
+        {
+          "artist": "Pendulum",
+          "title": "Tarantula",
+          "bpm": 174
+        },
+        {
+          "artist": "Green Day",
+          "title": "Basket Case",
+          "bpm": 175
+        }
+      ]
+    },
+    {
+      "slot": 10,
+      "artist": "Brian Eno",
+      "title": "An Ending (Ascent)",
+      "durationSec": 265,
+      "noBeat": true,
+      "alternatives": [
+        {
+          "artist": "Max Richter",
+          "title": "On the Nature of Daylight"
+        },
+        {
+          "artist": "Stars of the Lid",
+          "title": "Requiem for Dying Mothers, Pt. 2"
+        }
+      ]
+    }
+  ],
+  "neon-grid-30": [
+    {
+      "slot": 0,
+      "artist": "Kavinsky",
+      "title": "Nightcall",
+      "bpm": 91,
+      "durationSec": 259,
+      "alternatives": [
+        {
+          "artist": "Tycho",
+          "title": "Awake",
+          "bpm": 88
+        },
+        {
+          "artist": "Alan Walker",
+          "title": "Faded",
+          "bpm": 90
+        }
+      ]
+    },
+    {
+      "slot": 1,
+      "artist": "The Weeknd",
+      "title": "Blinding Lights",
+      "bpm": 171,
+      "durationSec": 200,
+      "alternatives": [
+        {
+          "artist": "Netsky",
+          "title": "Rio",
+          "bpm": 173
+        },
+        {
+          "artist": "Foo Fighters",
+          "title": "The Pretender",
+          "bpm": 173
+        }
+      ]
+    },
+    {
+      "slot": 2,
+      "artist": "Alan Walker",
+      "title": "Faded",
+      "bpm": 90,
+      "durationSec": 212,
+      "alternatives": [
+        {
+          "artist": "Kavinsky",
+          "title": "Nightcall",
+          "bpm": 91
+        },
+        {
+          "artist": "Tycho",
+          "title": "Awake",
+          "bpm": 88
+        }
+      ]
+    },
+    {
+      "slot": 3,
+      "artist": "David Guetta",
+      "title": "Titanium",
+      "bpm": 126,
+      "durationSec": 245,
+      "alternatives": [
+        {
+          "artist": "Avicii",
+          "title": "Levels",
+          "bpm": 126
+        },
+        {
+          "artist": "Eric Prydz",
+          "title": "Pjanoo",
+          "bpm": 126
+        }
+      ]
+    },
+    {
+      "slot": 4,
+      "artist": "Tycho",
+      "title": "Awake",
+      "bpm": 88,
+      "durationSec": 283,
+      "alternatives": [
+        {
+          "artist": "Alan Walker",
+          "title": "Faded",
+          "bpm": 90
+        },
+        {
+          "artist": "Kavinsky",
+          "title": "Nightcall",
+          "bpm": 91
+        }
+      ]
+    },
+    {
+      "slot": 5,
+      "artist": "Sub Focus",
+      "title": "Tidal Wave",
+      "bpm": 174,
+      "durationSec": 226,
+      "alternatives": [
+        {
+          "artist": "Pendulum",
+          "title": "Tarantula",
+          "bpm": 174
+        },
+        {
+          "artist": "Green Day",
+          "title": "Basket Case",
+          "bpm": 175
+        }
+      ]
+    },
+    {
+      "slot": 6,
+      "artist": "Brian Eno",
+      "title": "An Ending (Ascent)",
+      "durationSec": 265,
+      "noBeat": true,
+      "alternatives": [
+        {
+          "artist": "Max Richter",
+          "title": "On the Nature of Daylight"
+        },
+        {
+          "artist": "Stars of the Lid",
+          "title": "Requiem for Dying Mothers, Pt. 2"
+        }
+      ]
+    }
+  ]
+}
