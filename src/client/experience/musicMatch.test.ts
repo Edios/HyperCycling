@@ -9,6 +9,7 @@ import {
   choiceCues,
   rankHits,
   resolveAll,
+  resolveAllQueues,
   resolveHintQueue,
   resolveSlot,
   searchQuery,
@@ -307,6 +308,17 @@ describe('resolveHintQueue (authored queue)', () => {
     expect(m.items[0]).toMatchObject({ how: 'replaced', regionUnverified: true });
     expect(m.items[0]?.stoodInFor?.title).toBe("Don't You Worry Child");
     expect(m.queue.map((t) => t.id)).toEqual(['wfl', 'cla']);
+  });
+
+  it('does not stand in the same reserve song in two slots', async () => {
+    const search = fakeFor({
+      "Don't You Worry Child": [dy('alb', '', 352, { playable: false })],
+      Clarity: [hit('cla', 'Clarity', 'Zedd')],
+      'Waiting For Love': [hit('wfl', 'Waiting For Love', 'Avicii')],
+    });
+    const out = await resolveAllQueues([DYWC, { ...DYWC, slot: 7 }], search, () => 360);
+    expect(out[0]?.items[0]?.how).toBe('replaced');
+    expect(out[1]?.items[0]?.how).toBe('missing');
   });
 
   it('reports a missing song when there is no reserve either, and is deterministic', async () => {

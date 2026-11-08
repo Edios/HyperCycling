@@ -238,13 +238,14 @@ export async function resolveHintQueue(
   hint: MusicHint,
   search: SearchFn,
   slotSec: number,
+  /** Songs already taken by earlier slots: a stand-in never repeats one of them. */
+  spent: Set<string> = new Set(),
 ): Promise<QueueMatch> {
   const explicit = hint.explicit !== undefined ? { explicit: hint.explicit } : {};
   const reserve: { want: SongSuggestion; cands: PlanCandidate[] }[] = [];
   const items: ItemResult[] = [];
   const candidates: PlanCandidate[] = [];
   const queue: TrackRef[] = [];
-  const spent = new Set<string>();
   const authored = hintQueue(hint);
   let remaining = slotSec;
   let reserveLoaded = false;
@@ -325,8 +326,9 @@ export async function resolveAllQueues(
   onProgress?: (done: number, total: number) => void,
 ): Promise<QueueMatch[]> {
   const out: QueueMatch[] = [];
+  const spent = new Set<string>();
   for (const h of hints) {
-    out.push(await resolveHintQueue(h, search, slotSecOf(h.slot)));
+    out.push(await resolveHintQueue(h, search, slotSecOf(h.slot), spent));
     onProgress?.(out.length, hints.length);
   }
   return out;

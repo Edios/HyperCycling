@@ -89,9 +89,15 @@ test('matches the suggested songs to Spotify, approves them and keeps them', asy
   await page.getByTestId('exp-music-match').click();
   await expect(page.getByTestId('exp-music-row')).toHaveCount(11);
   expect(queries.every((q) => q.endsWith('market=from_token'))).toBe(true);
-  // Nightcall is blocked in the mocked country, so slot 1 took its first alternative.
-  const first = page.getByTestId('exp-music-select').first();
-  await expect(first).not.toHaveValue('0');
+  // Nightcall is blocked in the mocked country: its slot shows a stand-in from the reserve.
+  const row = page.getByTestId('exp-music-row').first();
+  await expect(row.locator('[data-how="replaced"]')).toHaveCount(1);
+  await expect(page.locator('[data-how="found"]').first()).toBeVisible();
+  // Manual changes live in the collapsed "Advanced" section; the queue is editable there.
+  const advanced = row.getByTestId('exp-music-advanced');
+  await expect(advanced).not.toHaveAttribute('open', '');
+  await advanced.locator('summary').click();
+  await expect(row.getByTestId('exp-music-edit-item').first()).toBeVisible();
   await page.getByTestId('exp-music-review').scrollIntoViewIfNeeded();
   await shot(page, 'experience-music-review');
 
