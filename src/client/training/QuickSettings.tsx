@@ -44,6 +44,13 @@ export interface QuickSettingsProps {
 export function QuickSettings(p: QuickSettingsProps) {
   const t = useT();
   useRestoreFocus();
+  // A body attribute (not body:has()) dims the HUD: no document-wide selector invalidation.
+  useEffect(() => {
+    document.body.dataset.quickOpen = '';
+    return () => {
+      delete document.body.dataset.quickOpen;
+    };
+  }, []);
   const panelRef = useRef<HTMLElement>(null);
   // Start on the first control (the background choice), not on Close: Space and arrows work at once.
   useEffect(() => {

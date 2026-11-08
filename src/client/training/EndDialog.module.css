@@ -5,6 +5,7 @@
   place-items: center;
   background: rgb(0 0 0 / 0.55);
   z-index: 20;
+  animation: fade-in var(--motion-menu) var(--motion-ease-out);
 }
 
 .dialog {
@@ -16,6 +17,7 @@
   border-radius: 2vh;
   font-family: var(--font-display);
   text-align: center;
+  animation: panel-in var(--motion-panel) var(--motion-ease-out);
 }
 
 .dialog h2 {

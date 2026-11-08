@@ -16,6 +16,7 @@
   border: 1px solid var(--line);
   border-radius: 1rem;
   box-shadow: 0 1.5rem 3rem rgb(0 0 0 / 0.45);
+  animation: panel-in var(--motion-panel) var(--motion-ease-out);
 }
 
 .head {
@@ -91,9 +92,8 @@
 
 /* The panel sits over the corner HUD panels: while it is open they step back, so nothing reads
    through it or competes with it. */
-:global(body:has([data-quick-settings])) :global([data-g]) {
+:global(body[data-quick-open]) :global([data-g]) {
   opacity: 0.18;
-  transition: opacity 0.15s;
 }
 
 /* Short landscape phone: a compact panel (the keyboard hints are no use on a touch screen). */

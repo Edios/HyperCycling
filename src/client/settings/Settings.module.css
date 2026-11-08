@@ -348,7 +348,7 @@
   display: inline-block;
   font-size: 1.75rem;
   line-height: 1;
-  transition: transform 0.15s ease;
+  transition: transform var(--motion-menu) var(--motion-ease-out);
 }
 
 .chevronOpen {
