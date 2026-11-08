@@ -54,7 +54,7 @@ describe('knob calibration in the cue and the HUD', () => {
         <EffortGroup effort={6} ftpPct={85} labelKey="hardTempo" />
       </>,
     );
-    // E6 -> S3 (position 6).
+    // E6 -> S3 (anchors S1=E3, S2=E4, S3=E6, S4=E7, S5=E9) (position 6).
     expect(screen.getByTestId('coach-live')).toHaveTextContent(
       'In 5 s: add resistance → effort 6 (knob S3 = 6), 90 rpm',
     );
@@ -81,10 +81,10 @@ describe('knob calibration in the cue and the HUD', () => {
 
   it('a calibration change applies to the next render', async () => {
     await updateSettings({ resistanceMode: 'knob', knobSteps: [2, 4, 6, 8, 10] });
-    const { rerender } = render(<EffortGroup effort={1} ftpPct={45} labelKey="veryEasy" />);
+    const { rerender } = render(<EffortGroup effort={3} ftpPct={62} labelKey="steady" />);
     expect(screen.getByTestId('knob-line')).toHaveTextContent('Knob S1 · 2');
     await updateSettings({ knobSteps: [3, 5, 7, 9, 11] });
-    rerender(<EffortGroup effort={1} ftpPct={45} labelKey="veryEasy" />);
+    rerender(<EffortGroup effort={3} ftpPct={62} labelKey="steady" />);
     expect(screen.getByTestId('knob-line')).toHaveTextContent('Knob S1 · 3');
   });
 });

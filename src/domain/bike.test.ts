@@ -47,10 +47,16 @@ describe('knob steps', () => {
 
 describe('knobHint', () => {
   const steps = [2, 4, 6, 8, 10];
-  it('stretches E1..E10 over S1..S5 and returns the saved position', () => {
-    expect(knobHint('knob', steps, 1)).toEqual({ step: 1, position: 2 });
-    expect(knobHint('knob', steps, 5)).toEqual({ step: 3, position: 6 });
-    expect(knobHint('knobPower', steps, 10)).toEqual({ step: 5, position: 10 });
+  it('maps E1..E10 to the nearest anchor (S1=E3, S2=E4, S3=E6, S4=E7, S5=E9), ties go lower', () => {
+    const stepOf = (e: number): number | undefined => knobHint('knob', steps, e)?.step;
+    expect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(stepOf)).toEqual([1, 1, 1, 2, 2, 3, 4, 4, 5, 5]);
+  });
+  it('matches the levels used by Neon Grid and returns the saved position', () => {
+    expect(knobHint('knob', steps, 3)).toEqual({ step: 1, position: 2 });
+    expect(knobHint('knob', steps, 4)).toEqual({ step: 2, position: 4 });
+    expect(knobHint('knob', steps, 6)).toEqual({ step: 3, position: 6 });
+    expect(knobHint('knob', steps, 7)).toEqual({ step: 4, position: 8 });
+    expect(knobHint('knobPower', steps, 9)).toEqual({ step: 5, position: 10 });
   });
   it('clamps efforts outside 1..10', () => {
     expect(knobHint('knob', steps, 0)).toEqual({ step: 1, position: 2 });
