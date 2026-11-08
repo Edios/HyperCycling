@@ -162,6 +162,11 @@ describe('ExperienceMusic', () => {
     await waitFor(() => expect(screen.getByTestId('exp-music-match')).toBeTruthy());
   });
 
+  it('warns that the same song is suggested for parts 1 and 8', () => {
+    setup({});
+    expect(screen.getByTestId('exp-music-duplicate').textContent).toMatch(/1.*8/);
+  });
+
   it('reports the saved state and clears it', () => {
     const track = {
       provider: 'spotify',

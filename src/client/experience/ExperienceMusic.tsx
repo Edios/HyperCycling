@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { Experience } from '../../domain/experience';
+import { duplicateHintSlots, type Experience } from '../../domain/experience';
 import type { TrackRef, Workout } from '../../domain/workout';
 import { useT, type MessageKey } from '../i18n';
 import { parseTrackUrl } from '../music/parse-track-url';
@@ -68,6 +68,7 @@ export function ExperienceMusic({
 }: Props) {
   const t = useT();
   const hints = useMemo(() => experience.musicHints ?? [], [experience]);
+  const duplicates = useMemo(() => duplicateHintSlots(experience), [experience]);
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
   const [manual, setManual] = useState<Record<number, string>>({});
   const [manualErr, setManualErr] = useState<number | undefined>();
@@ -171,6 +172,11 @@ export function ExperienceMusic({
   return (
     <section className={styles.panel} data-testid="exp-music">
       <h2 className={styles.title}>{t('experience.music.title')}</h2>
+      {duplicates.map(([a, b]) => (
+        <p key={`${a}-${b}`} className={styles.warn} data-testid="exp-music-duplicate">
+          {t('experience.music.duplicate', { a: a + 1, b: b + 1 })}
+        </p>
+      ))}
       {phase.kind === 'idle' && (
         <>
           <p className={styles.note} data-testid="exp-music-state">

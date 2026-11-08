@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { builtinExperiences, getWorkout } from '../client/data/builtin';
 import { sceneChangeAllowed } from '../client/world/worlds/scenes-schedule';
 import { THEMES } from '../client/world/worlds/scenes-themes';
-import { experienceProblems, resolveChapters, songStartsSec } from '../domain/experience';
+import {
+  duplicateHintSlots,
+  experienceProblems,
+  resolveChapters,
+  songStartsSec,
+} from '../domain/experience';
 import { flattenWorkout } from '../domain/segments';
 import { totalDurationSec } from '../domain/workout';
 
@@ -134,5 +139,49 @@ describe('Neon Grid music suggestions', () => {
         expect([h.bpm, h.bpm * 2, h.bpm / 2].some((v) => Math.abs(v - mid) / mid < 0.1)).toBe(true);
       }
     }
+  });
+});
+
+describe('Neon Grid owner picks', () => {
+  const hints = (id: string) => builtinExperiences.find((e) => e.id === id)!.musicHints!;
+  const title = (id: string, slot: number) => {
+    const h = hints(id).find((x) => x.slot === slot)!;
+    return `${h.artist} - ${h.title}`;
+  };
+
+  it('Neon Grid 45 follows the owner picks, slot by slot', () => {
+    expect(hints('neon-grid-45').map((h) => `${h.artist} - ${h.title}`)).toEqual([
+      'Kavinsky - Nightcall',
+      'Daft Punk - Technologic',
+      'Foo Fighters - The Pretender',
+      'Alan Walker - Faded',
+      "Swedish House Mafia - Don't You Worry Child",
+      'Chase & Status - Blind Faith (Loadstar Remix)',
+      'Pendulum - Witchcraft',
+      'Kavinsky - Nightcall',
+      'Eric Prydz - Pjanoo',
+      'Green Day - Basket Case',
+      'Brian Eno - An Ending (Ascent) (Remastered 2019)',
+    ]);
+  });
+
+  it('flags the same song in slots 1 and 8 of Neon Grid 45 only', () => {
+    const e = (id: string) => builtinExperiences.find((x) => x.id === id)!;
+    expect(duplicateHintSlots(e('neon-grid-45'))).toEqual([[0, 7]]);
+    expect(duplicateHintSlots(e('neon-grid-45-light'))).toEqual([]);
+    expect(duplicateHintSlots(e('neon-grid-30'))).toEqual([]);
+  });
+
+  it('gives the duplicate slot 8 the alternatives Awake and Starboy', () => {
+    const h = hints('neon-grid-45').find((x) => x.slot === 7)!;
+    expect(h.alternatives?.map((a) => a.title)).toEqual(['Awake', 'Starboy']);
+  });
+
+  it('keeps alternatives per slot and the shorter variants on the same picks', () => {
+    for (const id of ['neon-grid-45', 'neon-grid-45-light', 'neon-grid-30']) {
+      for (const h of hints(id)) expect(h.alternatives?.length).toBeGreaterThanOrEqual(2);
+    }
+    expect(title('neon-grid-30', 1)).toBe(title('neon-grid-45', 2));
+    expect(title('neon-grid-45-light', 9)).toBe(title('neon-grid-45', 9));
   });
 });

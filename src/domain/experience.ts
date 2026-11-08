@@ -194,6 +194,28 @@ export function resolveChapters(e: Experience, w: Workout): ResolvedChapter[] {
   return out;
 }
 
+const sameSong = (h: SongSuggestion): string =>
+  `${h.artist}|${h.title}`
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[^a-z0-9|]+/g, '');
+
+/**
+ * Slots whose first suggestion is the same song (a warning, not an error: the author may want it).
+ * Each pair is [earlier slot, later slot], 0-based.
+ */
+export function duplicateHintSlots(e: Experience): [number, number][] {
+  const first = new Map<string, number>();
+  const out: [number, number][] = [];
+  for (const h of [...(e.musicHints ?? [])].sort((a, b) => a.slot - b.slot)) {
+    const key = sameSong(h);
+    const earlier = first.get(key);
+    if (earlier === undefined) first.set(key, h.slot);
+    else out.push([earlier, h.slot]);
+  }
+  return out;
+}
+
 /** Problems that make an experience unusable with this workout (empty = fine). */
 export function experienceProblems(e: Experience, w: Workout): string[] {
   const out: string[] = [];
