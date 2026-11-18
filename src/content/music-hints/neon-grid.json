@@ -422,11 +422,16 @@
     },
     {
       "slot": 9,
-      "artist": "Green Day",
-      "title": "Basket Case",
-      "bpm": 175,
-      "durationSec": 181,
+      "artist": "Sub Focus",
+      "title": "Tidal Wave",
+      "bpm": 174,
+      "durationSec": 232,
       "alternatives": [
+        {
+          "artist": "Green Day",
+          "title": "Basket Case",
+          "bpm": 175
+        },
         {
           "artist": "Pendulum",
           "title": "Tarantula",
@@ -438,56 +443,26 @@
           "bpm": 174
         }
       ],
-      "queue": [
-        {
-          "artist": "Sub Focus",
-          "title": "Tidal Wave",
-          "bpm": 174,
-          "durationSec": 240,
-          "youtube": [
-            {
-              "id": "B8vlk1UR99k",
-              "label": "official (VEVO)",
-              "durationSec": 232
-            },
-            {
-              "id": "Fsk7j_cnUh0",
-              "label": "official",
-              "durationSec": 181
-            },
-            {
-              "id": "xNThiulE25M",
-              "label": "re-upload, lyrics (BeastyLovesChi)",
-              "durationSec": 233
-            },
-            {
-              "id": "Jyk3YIe3NxM",
-              "label": "re-upload (benni ali)",
-              "durationSec": 232
-            }
-          ]
-        }
-      ],
       "youtube": [
         {
-          "id": "NUTGr5t3MoY",
-          "label": "official video",
-          "durationSec": 194
+          "id": "B8vlk1UR99k",
+          "label": "official (VEVO)",
+          "durationSec": 232
         },
         {
-          "id": "AJDiYxKSAqQ",
-          "label": "topic (auto-generated)",
-          "durationSec": 182
+          "id": "Fsk7j_cnUh0",
+          "label": "official",
+          "durationSec": 181
         },
         {
-          "id": "u3lOlXgx-1k",
-          "label": "re-upload (MASTER RJ)",
-          "durationSec": 194
+          "id": "xNThiulE25M",
+          "label": "re-upload, lyrics (BeastyLovesChi)",
+          "durationSec": 233
         },
         {
-          "id": "_lof1pYtL9Q",
-          "label": "re-upload, lyrics (7clouds Rock)",
-          "durationSec": 180
+          "id": "Jyk3YIe3NxM",
+          "label": "re-upload (benni ali)",
+          "durationSec": 232
         }
       ]
     },
@@ -928,11 +903,16 @@
     },
     {
       "slot": 9,
-      "artist": "Green Day",
-      "title": "Basket Case",
-      "bpm": 175,
-      "durationSec": 181,
+      "artist": "Sub Focus",
+      "title": "Tidal Wave",
+      "bpm": 174,
+      "durationSec": 232,
       "alternatives": [
+        {
+          "artist": "Green Day",
+          "title": "Basket Case",
+          "bpm": 175
+        },
         {
           "artist": "Pendulum",
           "title": "Tarantula",
@@ -944,56 +924,26 @@
           "bpm": 174
         }
       ],
-      "queue": [
-        {
-          "artist": "Sub Focus",
-          "title": "Tidal Wave",
-          "bpm": 174,
-          "durationSec": 240,
-          "youtube": [
-            {
-              "id": "B8vlk1UR99k",
-              "label": "official (VEVO)",
-              "durationSec": 232
-            },
-            {
-              "id": "Fsk7j_cnUh0",
-              "label": "official",
-              "durationSec": 181
-            },
-            {
-              "id": "xNThiulE25M",
-              "label": "re-upload, lyrics (BeastyLovesChi)",
-              "durationSec": 233
-            },
-            {
-              "id": "Jyk3YIe3NxM",
-              "label": "re-upload (benni ali)",
-              "durationSec": 232
-            }
-          ]
-        }
-      ],
       "youtube": [
         {
-          "id": "NUTGr5t3MoY",
-          "label": "official video",
-          "durationSec": 194
+          "id": "B8vlk1UR99k",
+          "label": "official (VEVO)",
+          "durationSec": 232
         },
         {
-          "id": "AJDiYxKSAqQ",
-          "label": "topic (auto-generated)",
-          "durationSec": 182
+          "id": "Fsk7j_cnUh0",
+          "label": "official",
+          "durationSec": 181
         },
         {
-          "id": "u3lOlXgx-1k",
-          "label": "re-upload (MASTER RJ)",
-          "durationSec": 194
+          "id": "xNThiulE25M",
+          "label": "re-upload, lyrics (BeastyLovesChi)",
+          "durationSec": 233
         },
         {
-          "id": "_lof1pYtL9Q",
-          "label": "re-upload, lyrics (7clouds Rock)",
-          "durationSec": 180
+          "id": "Jyk3YIe3NxM",
+          "label": "re-upload (benni ali)",
+          "durationSec": 232
         }
       ]
     },
@@ -1271,11 +1221,16 @@
     },
     {
       "slot": 5,
-      "artist": "Green Day",
-      "title": "Basket Case",
-      "bpm": 175,
-      "durationSec": 181,
+      "artist": "Sub Focus",
+      "title": "Tidal Wave",
+      "bpm": 174,
+      "durationSec": 232,
       "alternatives": [
+        {
+          "artist": "Green Day",
+          "title": "Basket Case",
+          "bpm": 175
+        },
         {
           "artist": "Pendulum",
           "title": "Tarantula",
@@ -1287,56 +1242,26 @@
           "bpm": 174
         }
       ],
-      "queue": [
-        {
-          "artist": "Sub Focus",
-          "title": "Tidal Wave",
-          "bpm": 174,
-          "durationSec": 240,
-          "youtube": [
-            {
-              "id": "B8vlk1UR99k",
-              "label": "official (VEVO)",
-              "durationSec": 232
-            },
-            {
-              "id": "Fsk7j_cnUh0",
-              "label": "official",
-              "durationSec": 181
-            },
-            {
-              "id": "xNThiulE25M",
-              "label": "re-upload, lyrics (BeastyLovesChi)",
-              "durationSec": 233
-            },
-            {
-              "id": "Jyk3YIe3NxM",
-              "label": "re-upload (benni ali)",
-              "durationSec": 232
-            }
-          ]
-        }
-      ],
       "youtube": [
         {
-          "id": "NUTGr5t3MoY",
-          "label": "official video",
-          "durationSec": 194
+          "id": "B8vlk1UR99k",
+          "label": "official (VEVO)",
+          "durationSec": 232
         },
         {
-          "id": "AJDiYxKSAqQ",
-          "label": "topic (auto-generated)",
-          "durationSec": 182
+          "id": "Fsk7j_cnUh0",
+          "label": "official",
+          "durationSec": 181
         },
         {
-          "id": "u3lOlXgx-1k",
-          "label": "re-upload (MASTER RJ)",
-          "durationSec": 194
+          "id": "xNThiulE25M",
+          "label": "re-upload, lyrics (BeastyLovesChi)",
+          "durationSec": 233
         },
         {
-          "id": "_lof1pYtL9Q",
-          "label": "re-upload, lyrics (7clouds Rock)",
-          "durationSec": 180
+          "id": "Jyk3YIe3NxM",
+          "label": "re-upload (benni ali)",
+          "durationSec": 232
         }
       ]
     },
