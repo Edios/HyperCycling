@@ -11,6 +11,7 @@ import { Card } from '../ui/Card';
 import { Field } from '../ui/Field';
 import { Modal } from '../ui/Modal';
 import styles from './PlayersScreen.module.css';
+import { Icon } from '../ui/Icon';
 
 interface Errors {
   name?: boolean;
@@ -390,7 +391,7 @@ export function PlayersScreen() {
                       if (!p.isMe) void setMe(p);
                     }}
                   >
-                    {p.isMe ? '●' : '○'} {t('players.me')}
+                    {p.isMe ? <Icon name="check" size={16} /> : null} {t('players.me')}
                   </Button>
                   <span className={styles.actions}>
                     <Button

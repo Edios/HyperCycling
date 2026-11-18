@@ -54,6 +54,7 @@ import {
 import { layoutKindOf, type LayoutKind } from '../training/overlay-layouts';
 import { BikeCard } from '../bike/BikeCard';
 import styles from './SetupScreen.module.css';
+import { Icon } from '../ui/Icon';
 
 const BACKGROUNDS: readonly { value: Background; labelKey: MessageKey }[] = [
   { value: 'basic', labelKey: 'setup.backgroundBasic' },
@@ -369,7 +370,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
                     >
                       <span className={`${styles.thumb} ${styles[`thumb_${b.value}`] ?? ''}`}>
                         {b.value === 'basic' && <b>{peak}</b>}
-                        {b.value === 'youtube' && <span aria-hidden="true">▶</span>}
+                        {b.value === 'youtube' && <Icon name="play" size={20} />}
                       </span>
                       <span className={styles.tileName}>
                         {t(b.labelKey)}

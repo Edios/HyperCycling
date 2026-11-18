@@ -2,6 +2,7 @@ import type { TrackRef } from '../../domain/workout';
 import { useT } from '../i18n';
 import hud from './hud/hud.module.css';
 import styles from './NowPlaying.module.css';
+import { Icon } from '../ui/Icon';
 
 export interface NowPlayingProps {
   track: TrackRef;
@@ -36,7 +37,7 @@ export function NowPlaying({ track, muted }: NowPlayingProps) {
         </svg>
       ) : (
         <span className={styles.icon} aria-hidden="true">
-          {track.provider === 'spotify' ? '●' : '▶'}
+          <Icon name={track.provider === 'spotify' ? 'music' : 'play'} size={18} />
         </span>
       )}
       <span className={styles.text}>

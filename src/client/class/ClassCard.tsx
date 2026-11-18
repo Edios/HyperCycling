@@ -7,6 +7,7 @@ import { intensityEffort, blockTotalSec } from '../editor/model';
 import { formatClock } from '../training/format';
 import { DoseWarnings } from './DoseWarnings';
 import styles from './ClassCard.module.css';
+import { Icon } from '../ui/Icon';
 
 interface Row {
   key: string;
@@ -104,7 +105,8 @@ export function ClassCard({
             {s.hint && <p className={styles.hint}>{s.hint}</p>}
             {s.track && (
               <p className={styles.track}>
-                ♫ {s.track.title || (s.track.provider === 'spotify' ? 'Spotify' : 'YouTube')}
+                <Icon name="music" size={14} />{' '}
+                {s.track.title || (s.track.provider === 'spotify' ? 'Spotify' : 'YouTube')}
               </p>
             )}
             <ul className={styles.rows}>

@@ -4,6 +4,7 @@ import { formatSongTime } from '../experience/model';
 import { useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
 import styles from './SlotQueue.module.css';
+import { Icon } from '../ui/Icon';
 
 interface Props {
   tracks: TrackRef[];
@@ -119,7 +120,7 @@ export function SlotQueue({
                     onClick={() => move(i, -1)}
                     data-testid={`${testId}-up`}
                   >
-                    ↑
+                    <Icon name="up" size={16} />
                   </Button>
                   <Button
                     aria-label={`${t('slotQueue.down')}: ${label(tr)}`}
@@ -127,7 +128,7 @@ export function SlotQueue({
                     onClick={() => move(i, 1)}
                     data-testid={`${testId}-down`}
                   >
-                    ↓
+                    <Icon name="down" size={16} />
                   </Button>
                   {longer && (
                     <Button
@@ -148,7 +149,7 @@ export function SlotQueue({
                     onClick={() => onChange(tracks.filter((_, k) => k !== i))}
                     data-testid={`${testId}-remove`}
                   >
-                    ✕
+                    <Icon name="close" size={16} />
                   </Button>
                 </span>
               </li>
