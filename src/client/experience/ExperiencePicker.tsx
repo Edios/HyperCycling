@@ -4,6 +4,7 @@ import { DashLine } from '../brand';
 import { experienceText, type Experience } from '../../domain/experience';
 import { builtinExperiences } from '../data/builtin';
 import { useLibrary } from '../data/useLibrary';
+import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -23,6 +24,7 @@ export function ExperiencePicker() {
   const [lang] = useLang();
   const navigate = useNavigate();
   const { workouts } = useLibrary();
+  const { settings } = useSettings();
   const [filter, setFilter] = useState<LevelFilter>('all');
   const [open, setOpen] = useState<string | undefined>();
 
@@ -50,7 +52,7 @@ export function ExperiencePicker() {
         {visible.map((e) => {
           const text = experienceText(e, lang);
           const workout = workouts.find((w) => w.id === e.workoutRef.id);
-          const rows = workout ? scenarioRows(workout) : [];
+          const rows = workout ? scenarioRows(workout, e, settings.effortTable) : [];
           const expanded = open === e.id;
           return (
             <Card
@@ -80,7 +82,42 @@ export function ExperiencePicker() {
               {expanded && (
                 <ol className={styles.scenario} data-testid="experience-scenario">
                   {rows.map((r, i) => (
-                    <li key={r.id}>{t('experience.songRow', { n: i + 1, time: r.time })}</li>
+                    <li key={r.id} className={styles.slot}>
+                      <span className={styles.slotNum}>{i + 1}</span>
+                      <span className={styles.slotMain}>
+                        <span className={styles.slotTitle}>
+                          {r.title
+                            ? r.artist
+                              ? `${r.artist} – ${r.title}`
+                              : r.title
+                            : t('experience.slotUnnamed', { n: i + 1 })}
+                        </span>
+                        <span className={styles.slotSub}>
+                          {r.look ? `${t(`experience.looks.${r.look}` as MessageKey)} · ` : ''}
+                          {t('experience.slotEffort', {
+                            effort:
+                              r.minEffort === r.maxEffort
+                                ? String(r.maxEffort)
+                                : `${r.minEffort}–${r.maxEffort}`,
+                          })}
+                        </span>
+                      </span>
+                      <span
+                        className={styles.slotBar}
+                        aria-hidden="true"
+                        title={t('experience.slotEffort', { effort: String(r.maxEffort) })}
+                      >
+                        <span
+                          style={{
+                            width: `${Math.max(10, r.maxEffort * 10)}%`,
+                            background: `var(--z${Math.min(10, Math.max(1, r.maxEffort))})`,
+                          }}
+                        />
+                      </span>
+                      <span className={styles.slotTime} data-testid="scenario-time">
+                        {r.time}
+                      </span>
+                    </li>
                   ))}
                 </ol>
               )}

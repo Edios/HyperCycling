@@ -3,7 +3,7 @@ import { LogoMark, ModeIcon, Wordmark, type Mode } from '../brand';
 import { useT } from '../i18n';
 import styles from './AppBar.module.css';
 
-/** Top bar of the select screens: logo, Plan | Freestyle tabs, Players and Settings links. */
+/** Top bar of the select screens: logo, Plan | Freestyle | Experience tabs, Players and Settings links. */
 export function AppBar() {
   const t = useT();
   const tab =
@@ -24,6 +24,10 @@ export function AppBar() {
         <NavLink to="/freestyle" className={tab('free')}>
           <ModeIcon mode="free" />
           {t('nav.freestyle')}
+        </NavLink>
+        <NavLink to="/experiences" className={tab('world')} data-testid="nav-experience">
+          <ModeIcon mode="world" />
+          {t('nav.experience')}
         </NavLink>
       </nav>
       <div className={styles.sp} />

@@ -58,11 +58,17 @@ describe('ExperiencePicker', () => {
     const rows = screen.getByTestId('experience-scenario').children;
     expect(rows.length).toBe(11);
     // m:ss, so the rows add up to the 45 minutes of the class
-    expect(rows[0]).toHaveTextContent('Song 1: 5:00');
-    expect(rows[3]).toHaveTextContent('Song 4: 2:30');
+    expect(rows[0]).toHaveTextContent('5:00');
+    expect(rows[0]).toHaveTextContent(/effort \d/);
+    expect(rows[3]).toHaveTextContent('2:30');
     let sec = 0;
     for (const r of Array.from(rows)) {
-      const [m, s] = (/(\d+):(\d\d)$/.exec(r.textContent ?? '') ?? []).slice(1).map(Number);
+      const [m, s] = (
+        /(\d+):(\d\d)$/.exec(r.querySelector('[data-testid="scenario-time"]')?.textContent ?? '') ??
+        []
+      )
+        .slice(1)
+        .map(Number);
       sec += (m ?? 0) * 60 + (s ?? 0);
     }
     expect(sec).toBe(45 * 60);

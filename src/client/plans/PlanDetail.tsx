@@ -354,7 +354,6 @@ function Editor({ plan, data }: { plan: Plan; data: Loaded }) {
               {(id) => (
                 <select
                   id={id}
-                  className={styles.select}
                   value={cfg.startWeek}
                   onChange={(e) => set({ startWeek: Number(e.target.value) })}
                 >

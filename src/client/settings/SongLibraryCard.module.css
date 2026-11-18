@@ -41,13 +41,6 @@
   min-width: 0;
   max-width: 100%;
   flex: 1 1 12rem;
-  height: 2.875rem;
-  border-radius: 0.625rem;
-  background: var(--bg);
-  border: 1px solid var(--line);
-  padding: 0 0.875rem;
-  font: inherit;
-  color: var(--fg);
 }
 
 .controls select:focus-visible,

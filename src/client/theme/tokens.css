@@ -99,6 +99,50 @@ html {
 }
 
 /*
+ * Native <select>: one look for every dropdown in the app (zero specificity, so component styles
+ * can still adjust width/height). Arrow drawn with gradients in --mut; color-scheme darkens the
+ * open list on the dark theme.
+ */
+:where(select) {
+  appearance: none;
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  max-width: 100%;
+  padding: 0 2.25rem 0 0.875rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--line2);
+  background-color: var(--s1);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--mut) 50%),
+    linear-gradient(135deg, var(--mut) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.25rem) 50%,
+    calc(100% - 0.9rem) 50%;
+  background-size:
+    0.4rem 0.4rem,
+    0.4rem 0.4rem;
+  background-repeat: no-repeat;
+  color: var(--fg);
+  color-scheme: dark;
+  font: inherit;
+  cursor: pointer;
+}
+[data-theme='light'] :where(select) {
+  color-scheme: light;
+}
+:where(select):hover {
+  border-color: var(--mut);
+}
+:where(select:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+:where(select option) {
+  background: var(--s1);
+  color: var(--fg);
+}
+
+/*
  * Accessibility baseline. A visible keyboard focus ring for every interactive control; the
  * :where() wrapper keeps specificity at zero so component styles can still refine it.
  */

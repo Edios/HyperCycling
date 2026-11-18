@@ -71,8 +71,7 @@
   color: var(--mut);
 }
 
-.field input,
-.field select {
+.field input {
   height: 2.875rem;
   border-radius: 0.625rem;
   background: var(--bg);
@@ -81,6 +80,10 @@
   font: inherit;
   font-size: 1.0625rem;
   color: var(--fg);
+  min-width: 0;
+}
+
+.field select {
   min-width: 0;
 }
 
