@@ -4,6 +4,7 @@ export const en = {
   nav: {
     plan: 'Plan',
     freestyle: 'Freestyle',
+    experience: 'Experience',
     world: 'World',
     coach: 'Coach',
     players: 'Players',
@@ -887,6 +888,8 @@ export const en = {
     theme: { abstract: 'Abstract', 'neon-grid': 'Neon Grid' },
     cardMeta: '{minutes} min · {steps} resistance steps · {songs} songs',
     songRow: 'Song {n}: {time}',
+    slotUnnamed: 'Song {n}',
+    slotEffort: 'effort {effort}/10',
     start: 'Start',
     showScenario: 'Show scenario',
     hideScenario: 'Hide scenario',

@@ -6,6 +6,7 @@ export const pl: Messages = {
   nav: {
     plan: 'Plan',
     freestyle: 'Freestyle',
+    experience: 'Experience',
     world: 'World',
     coach: 'Coach',
     players: 'Gracze',
@@ -887,6 +888,8 @@ export const pl: Messages = {
     theme: { abstract: 'Abstrakcja', 'neon-grid': 'Neon Grid' },
     cardMeta: '{minutes} min · {steps} stopni oporu · {songs} piosenek',
     songRow: 'Piosenka {n}: {time}',
+    slotUnnamed: 'Piosenka {n}',
+    slotEffort: 'wysiłek {effort}/10',
     start: 'Start',
     showScenario: 'Pokaż scenariusz',
     hideScenario: 'Ukryj scenariusz',
