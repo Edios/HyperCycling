@@ -148,9 +148,9 @@ describe('ExperienceMusic', () => {
     await screen.findByTestId('exp-music-review');
     fireEvent.click(screen.getByTestId('exp-music-approve'));
     const saved = vi.mocked(onChoices).mock.calls[0]![0];
-    expect(saved[workout.songs![9]!.id]?.map((x: { title: string }) => x.title)).toEqual([
-      'Basket Case',
-      'Tidal Wave',
+    expect(saved[workout.songs![4]!.id]?.map((x: { title: string }) => x.title)).toEqual([
+      "Don't You Worry Child",
+      'Clarity',
     ]);
   });
 
