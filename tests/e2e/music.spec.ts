@@ -32,6 +32,8 @@ const TRACKS = Array.from({ length: 12 }, (_, i) => ({
 
 async function mockSpotify(page: Page, devices: SpotifyMock['devices']): Promise<SpotifyMock> {
   const mock: SpotifyMock = { calls: [], devices };
+  /** The track id last started with a play command (what the mocked player is "playing"). */
+  let playing: string | undefined;
 
   // The consent page: approve at once by redirecting back with a code and the same state.
   await page.route('https://accounts.spotify.com/authorize**', (route) => {
@@ -65,8 +67,18 @@ async function mockSpotify(page: Page, devices: SpotifyMock['devices']): Promise
       });
     if (url.pathname === '/v1/search') return json({ tracks: { items: TRACKS } });
     if (url.pathname === '/v1/me/player/devices') return json({ devices: mock.devices });
+    if (url.pathname === '/v1/me/player/play' && req.method() === 'PUT') {
+      // Remember what was started: the app's watchdog asks the player whether it still plays it.
+      const uri = (req.postDataJSON() as { uris?: string[] } | null)?.uris?.[0];
+      playing = uri?.split(':').pop();
+    }
     if (url.pathname === '/v1/me/player' && req.method() === 'GET') {
-      return json({ device: { id: 'D-PC', volume_percent: 80 } });
+      return json({
+        device: { id: 'D-PC', volume_percent: 80 },
+        ...(playing
+          ? { is_playing: true, progress_ms: 5_000, item: { id: playing, duration_ms: 215_000 } }
+          : {}),
+      });
     }
     return route.fulfill({ status: 204, headers: CORS });
   });
