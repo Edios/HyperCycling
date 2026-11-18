@@ -106,7 +106,7 @@ html {
 :where(select) {
   appearance: none;
   box-sizing: border-box;
-  min-height: 2.75rem;
+  height: max(2.75rem, 44px);
   max-width: 100%;
   padding: 0 2.25rem 0 0.875rem;
   border-radius: 0.625rem;

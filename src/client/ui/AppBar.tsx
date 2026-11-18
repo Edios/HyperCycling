@@ -3,6 +3,9 @@ import { LogoMark, ModeIcon, Wordmark, type Mode } from '../brand';
 import { useT } from '../i18n';
 import styles from './AppBar.module.css';
 
+/** Star glyph for the Experience tab (the world glyph reads as a warning triangle in a nav). */
+const STAR = 'M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z';
+
 /** Top bar of the select screens: logo, Plan | Freestyle | Experience tabs, Players and Settings links. */
 export function AppBar() {
   const t = useT();
@@ -26,7 +29,7 @@ export function AppBar() {
           {t('nav.freestyle')}
         </NavLink>
         <NavLink to="/experiences" className={tab('world')} data-testid="nav-experience">
-          <ModeIcon mode="world" />
+          <ModeIcon mode="world" glyph={STAR} />
           {t('nav.experience')}
         </NavLink>
       </nav>

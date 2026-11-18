@@ -8,7 +8,16 @@ const GLYPH: Record<Mode, string> = {
 };
 
 /** Mode glyph; takes its colour from currentColor (the mode accent). Decorative. */
-export function ModeIcon({ mode, size = 18 }: { mode: Mode; size?: number }) {
+export function ModeIcon({
+  mode,
+  size = 18,
+  glyph,
+}: {
+  mode: Mode;
+  size?: number;
+  /** Optional SVG path overriding the mode's own glyph. */
+  glyph?: string;
+}) {
   return (
     <svg
       width={size}
@@ -22,7 +31,7 @@ export function ModeIcon({ mode, size = 18 }: { mode: Mode; size?: number }) {
       aria-hidden="true"
       focusable="false"
     >
-      <path d={GLYPH[mode]} />
+      <path d={glyph ?? GLYPH[mode]} />
     </svg>
   );
 }
