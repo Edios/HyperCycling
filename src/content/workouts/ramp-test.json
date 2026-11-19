@@ -1,15 +1,15 @@
 {
   "id": "ramp-test",
   "name": "Ramp Test",
-  "description": "Every minute 6 % harder until you cannot go on; the result helps set your FTP.",
+  "description": "Every minute 6% harder until you cannot go on; the result helps set your FTP.",
   "localized": {
     "en": {
       "name": "Ramp Test",
-      "description": "Every minute 6 % harder until you cannot go on; the result helps set your FTP."
+      "description": "Every minute 6% harder until you cannot go on; the result helps set your FTP."
     },
     "pl": {
       "name": "Test rampowy",
-      "description": "Co minutę o 6 % mocniej, aż do odmowy; wynik pomaga ustalić FTP."
+      "description": "Co minutę o 6% mocniej, aż do odmowy; wynik pomaga ustalić FTP."
     }
   },
   "category": "freestyle",

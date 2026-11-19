@@ -1,14 +1,14 @@
 {
   "id": "easy-ride-30",
-  "name": "Easy Zone 2 - 30",
+  "name": "Easy Zone 2, 30 min",
   "description": "A relaxed Zone 2 spin at a pace where you can still talk.",
   "localized": {
     "en": {
-      "name": "Easy Zone 2 - 30",
+      "name": "Easy Zone 2, 30 min",
       "description": "A relaxed Zone 2 spin at a pace where you can still talk."
     },
     "pl": {
-      "name": "Spokojna dwójka 30",
+      "name": "Spokojna strefa 2, 30 min",
       "description": "Spokojna jazda w strefie 2, w tempie, przy którym możesz rozmawiać."
     }
   },

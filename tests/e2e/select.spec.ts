@@ -12,7 +12,7 @@ test('plan tab with an active plan: Ride starts the training screen', async ({ p
 
   await page.getByRole('button', { name: 'Ride', exact: true }).click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
-  await expect(page.getByTestId('setup-badge')).toContainText('Progres · week 1');
+  await expect(page.getByTestId('setup-badge')).toContainText('Progress · week 1');
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
   await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'idle');

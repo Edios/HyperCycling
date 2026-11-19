@@ -63,7 +63,7 @@ describe('HrTarget', () => {
     db.players = [me()];
     db.settings = { ...DEFAULT_SETTINGS, showHrZones: true };
     render(<HrTarget segment={seg(300)} elapsedInSegSec={10} />);
-    expect(await screen.findByText('Z3 · 70–80 % HRmax')).toBeInTheDocument();
+    expect(await screen.findByText('Z3 · 70–80% HRmax')).toBeInTheDocument();
   });
 
   it('renders nothing for a 30-second block', async () => {

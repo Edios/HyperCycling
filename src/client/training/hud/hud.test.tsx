@@ -63,7 +63,7 @@ describe('EffortGroup', () => {
     expect(name).not.toHaveAttribute('title');
   });
   it.each([
-    ['add', 'Turn up'],
+    ['add', 'Add resistance'],
     ['ease', 'Ease off'],
     ['hold', 'Hold'],
   ] as const)('shows the relative knob command %s', (command, text) => {

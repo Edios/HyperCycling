@@ -1,14 +1,14 @@
 {
   "id": "easy-ride-60",
-  "name": "Easy Zone 2 - 60",
+  "name": "Easy Zone 2, 60 min",
   "description": "An hour of calm Zone 2 riding to build your base.",
   "localized": {
     "en": {
-      "name": "Easy Zone 2 - 60",
+      "name": "Easy Zone 2, 60 min",
       "description": "An hour of calm Zone 2 riding to build your base."
     },
     "pl": {
-      "name": "Spokojna dwójka 60",
+      "name": "Spokojna strefa 2, 60 min",
       "description": "Godzina spokojnej jazdy w strefie 2 do budowania bazy."
     }
   },

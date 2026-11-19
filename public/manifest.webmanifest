@@ -1,7 +1,7 @@
 {
   "name": "HyperCycling",
   "short_name": "HyperCycling",
-  "description": "Structured indoor cycling with an effort scale you can feel.",
+  "description": "Indoor cycling guided by a 1–10 effort scale. In your browser, no account.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",

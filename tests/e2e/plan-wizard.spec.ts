@@ -39,7 +39,7 @@ async function walk(page: Page, ftp: 'unknown' | number, shots = false): Promise
 }
 
 async function start(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await page.getByRole('button', { name: 'Start plan', exact: true }).click();
   // Another spec may have left a plan in the shared database. The confirmation appears after an
   // awaited repository read, so wait for either outcome instead of probing the dialog once.
   const dialog = page.getByRole('dialog');

@@ -1,15 +1,15 @@
 {
   "id": "four-eights-102",
-  "name": "Four Eights (102 %)",
-  "description": "Four eight-minute blocks at 102 % of FTP, the maintenance version.",
+  "name": "Four Eights (102%)",
+  "description": "Four eight-minute blocks at 102% of FTP, the maintenance version.",
   "localized": {
     "en": {
-      "name": "Four Eights (102 %)",
-      "description": "Four eight-minute blocks at 102 % of FTP, the maintenance version."
+      "name": "Four Eights (102%)",
+      "description": "Four eight-minute blocks at 102% of FTP, the maintenance version."
     },
     "pl": {
-      "name": "Cztery ósemki (102 %)",
-      "description": "Cztery ośmiominutowe odcinki przy 102 % FTP, wersja na stałą formę."
+      "name": "Cztery ósemki (102%)",
+      "description": "Cztery ośmiominutowe odcinki przy 102% FTP, wersja na stałą formę."
     }
   },
   "category": "progres",

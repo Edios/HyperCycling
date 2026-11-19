@@ -19,7 +19,7 @@
     },
     "pl": {
       "name": "Zajęcia: wytrzymałość 45",
-      "description": "Piosenki tempo na siedząco z małymi krokami oporu i krótkimi przerwami na stojąco (około 44 minuty).",
+      "description": "Utwory w tempie, siedząc, z małymi krokami oporu i krótkimi przerwami na stojąco (około 44 minuty).",
       "songHints": {
         "class-endurance-45-s1": "Lekka piosenka na rozgrzewkę, ok. 6 min. Szukaj ok. 175 BPM.",
         "class-endurance-45-s2": "Piosenka o średnim tempie i równym groove do tempa na siedząco. Szukaj ok. 175 BPM.",
@@ -27,7 +27,7 @@
         "class-endurance-45-s4": "Piosenka z przyspieszeniem w drugiej połowie; dociśnij trochę mocniej. Szukaj ok. 175 BPM.",
         "class-endurance-45-s5": "Lekka, kręcąca piosenka na odpoczynek. Szukaj ok. 185 BPM.",
         "class-endurance-45-s6": "Płynąca piosenka; opór rośnie powoli przez 6 min. Szukaj ok. 171 BPM.",
-        "class-endurance-45-s7": "Znana piosenka na ostatni wysiłek tempo. Szukaj ok. 179 BPM.",
+        "class-endurance-45-s7": "Znany utwór na ostatni odcinek w tempie. Szukaj ok. 179 BPM.",
         "class-endurance-45-s8": "Wolna piosenka na schłodzenie, ok. 5 min. Szukaj ok. 165 BPM."
       }
     }

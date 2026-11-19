@@ -66,10 +66,10 @@ function Welcome() {
           <b>{t('welcome.ride')}</b>
           <span>{t('welcome.rideBody')}</span>
         </Link>
-        <div className={`${styles.path} ${styles.pathSoon}`} data-testid="welcome-experience">
+        <Link to="/experiences" className={styles.path} data-testid="welcome-experience">
           <b>{t('welcome.experience')}</b>
           <span>{t('welcome.experienceBody')}</span>
-        </div>
+        </Link>
       </div>
     </div>
   );

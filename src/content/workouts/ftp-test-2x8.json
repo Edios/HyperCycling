@@ -1,15 +1,15 @@
 {
   "id": "ftp-test-2x8",
   "name": "Two by Eight Test",
-  "description": "Two eight-minute all-in efforts with ten minutes of rest. Take the higher average and multiply by 90 % for an estimate of FTP.",
+  "description": "Two eight-minute all-in efforts with ten minutes of rest. Take the higher average and multiply by 90% for an estimate of FTP.",
   "localized": {
     "en": {
       "name": "Two by Eight Test",
-      "description": "Two eight-minute all-in efforts with ten minutes of rest. Take the higher average and multiply by 90 % for an estimate of FTP."
+      "description": "Two eight-minute all-in efforts with ten minutes of rest. Take the higher average and multiply by 90% for an estimate of FTP."
     },
     "pl": {
       "name": "Test 2 × 8 minut",
-      "description": "Dwa ośmiominutowe wysiłki na maksa z dziesięciominutową przerwą. Weź wyższą średnią i pomnóż przez 90 %, by oszacować FTP."
+      "description": "Dwa ośmiominutowe wysiłki na maksa z dziesięciominutową przerwą. Weź wyższą średnią i pomnóż przez 90%, by oszacować FTP."
     }
   },
   "category": "freestyle",

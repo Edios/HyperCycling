@@ -39,7 +39,7 @@ test('plan wizard: the heart-rate step previews zones from the age', async ({ pa
   await page.getByRole('button', { name: 'Next', exact: true }).click();
 
   await page.getByLabel('Age', { exact: true }).fill('36');
-  await page.getByRole('button', { name: 'Suggest from age' }).click();
+  await page.getByRole('button', { name: 'Estimate from age' }).click();
   await expect(page.getByLabel('Max heart rate')).toHaveValue('183');
   await expect(page.getByTestId('hr-preview')).toContainText('128–146 bpm');
 });
