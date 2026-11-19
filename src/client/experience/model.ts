@@ -1,7 +1,7 @@
 import { flattenWorkout } from '../../domain/segments';
 import { songDurationSec, type SongSlot, type Workout } from '../../domain/workout';
 import type { EffortTable } from '../../domain/effort';
-import type { Experience, ExperienceLevel } from '../../domain/experience';
+import { EXPERIENCE_LEVELS, type Experience, type ExperienceLevel } from '../../domain/experience';
 import { intensityEffort } from '../editor/model';
 
 export type LevelFilter = 'all' | ExperienceLevel;
@@ -97,4 +97,58 @@ export function featuredExperience(list: readonly Experience[]): Experience | un
       best = e;
   }
   return best;
+}
+
+/** Rides of one world shown as a single card: the variants differ in length and difficulty. */
+export interface ExperienceSeries {
+  /** Theme id for a series; the experience id for a ride that stands alone. */
+  key: string;
+  /** The theme the variants share; undefined for a ride on its own. */
+  theme?: Experience['worldTheme']['theme'];
+  /** Shortest first, easier before harder at the same length. */
+  variants: Experience[];
+}
+
+/**
+ * Groups the catalogue by world. The abstract look is no world to speak of, so each of those
+ * rides stays its own card; the order of the first appearance is kept.
+ */
+export function groupSeries(list: readonly Experience[]): ExperienceSeries[] {
+  const out: ExperienceSeries[] = [];
+  const byTheme = new Map<string, ExperienceSeries>();
+  for (const e of list) {
+    const theme = e.worldTheme.theme;
+    if (theme === 'abstract') {
+      out.push({ key: e.id, variants: [e] });
+      continue;
+    }
+    let group = byTheme.get(theme);
+    if (!group) {
+      group = { key: theme, theme, variants: [] };
+      byTheme.set(theme, group);
+      out.push(group);
+    }
+    group.variants.push(e);
+  }
+  const rank = (l: ExperienceLevel): number => EXPERIENCE_LEVELS.indexOf(l);
+  for (const g of out) {
+    g.variants.sort((a, b) => a.lengthMin - b.lengthMin || rank(a.level) - rank(b.level));
+  }
+  return out;
+}
+
+/**
+ * Short name of a variant inside its series: the title without the series name ("Neon Grid Light
+ * 45" -> "Light 45"); a bare number gets "min" ("Neon Grid 30" -> "30 min"). A title that does not
+ * start with the series name is kept whole.
+ */
+export function variantLabel(title: string, seriesTitle: string, minLabel = 'min'): string {
+  const rest = title.startsWith(seriesTitle) ? title.slice(seriesTitle.length).trim() : title;
+  if (rest === '') return title;
+  return /^\d+$/.test(rest) ? `${rest} ${minLabel}` : rest;
+}
+
+/** The variant to open on: the first that fits the level filter, else the first. */
+export function defaultVariant(series: ExperienceSeries, f: LevelFilter): Experience {
+  return series.variants.find((e) => matchesLevel(e, f)) ?? series.variants[0]!;
 }

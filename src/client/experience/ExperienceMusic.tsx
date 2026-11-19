@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { duplicateHintSlots, type Experience } from '../../domain/experience';
 import type { TrackRef, Workout } from '../../domain/workout';
 import { useT, type MessageKey } from '../i18n';
@@ -10,6 +9,7 @@ import type { SpotifyProvider } from '../music/spotify';
 import { lookupSpotifyTrack } from '../music/spotify/track-info';
 import { SlotQueue } from '../music/SlotQueue';
 import { Button } from '../ui/Button';
+import { SettingRow } from '../ui/SettingRow';
 import { formatSongTime } from './model';
 import { saveChoices, type Choices } from './musicChoices';
 import { resolveAllQueues, slotInfo, type ItemHow, type QueueMatch } from './musicMatch';
@@ -81,17 +81,8 @@ export function ExperienceMusic({
     return s && choices[s.id];
   }).length;
 
-  if (!connected) {
-    return (
-      <section className={styles.panel} data-testid="exp-music-offline">
-        <h4 className={styles.title}>{t('experience.music.title')}</h4>
-        <p className={styles.note}>{t('experience.music.offline')}</p>
-        <Link to="/settings" className={styles.link} data-testid="exp-music-connect">
-          {t('experience.music.connect')}
-        </Link>
-      </section>
-    );
-  }
+  // Without Spotify there is nothing to match: the ride plays from YouTube (see the music source).
+  if (!connected) return null;
 
   const start = async (): Promise<void> => {
     const mine = ++run.current;
@@ -167,30 +158,43 @@ export function ExperienceMusic({
 
   return (
     <section className={styles.panel} data-testid="exp-music">
-      <h4 className={styles.title}>{t('experience.music.title')}</h4>
       {duplicates.map(([a, b]) => (
         <p key={`${a}-${b}`} className={styles.warn} data-testid="exp-music-duplicate">
           {t('experience.music.duplicate', { a: a + 1, b: b + 1 })}
         </p>
       ))}
       {phase.kind === 'idle' && (
-        <>
-          <p className={styles.note} data-testid="exp-music-state">
-            {matched > 0
-              ? t('experience.music.saved', { n: matched, total: hints.length })
-              : t('experience.music.intro')}
-          </p>
-          <div className={styles.actions}>
-            <Button onClick={() => void start()} data-testid="exp-music-match">
-              {matched > 0 ? t('experience.music.rematch') : t('experience.music.match')}
-            </Button>
-            {matched > 0 && (
-              <Button onClick={clear} data-testid="exp-music-clear">
-                {t('experience.music.clear')}
-              </Button>
-            )}
-          </div>
-        </>
+        <SettingRow
+          topic={t('experience.music.title')}
+          help={t('experience.music.help')}
+          status={
+            <>
+              <span data-testid="exp-music-state">
+                {matched > 0
+                  ? t('experience.music.saved', { n: matched, total: hints.length })
+                  : t('experience.music.intro')}
+              </span>
+              {matched > 0 && (
+                <>
+                  {' '}
+                  <button
+                    type="button"
+                    className={styles.linkBtn}
+                    onClick={clear}
+                    data-testid="exp-music-clear"
+                  >
+                    {t('experience.music.clear')}
+                  </button>
+                </>
+              )}
+            </>
+          }
+        >
+          <span className={styles.rowLabel}>{t('experience.music.title')}</span>
+          <Button onClick={() => void start()} data-testid="exp-music-match">
+            {matched > 0 ? t('experience.music.rematch') : t('experience.music.match')}
+          </Button>
+        </SettingRow>
       )}
       {phase.kind === 'working' && (
         <p role="status" className={styles.note} data-testid="exp-music-working">

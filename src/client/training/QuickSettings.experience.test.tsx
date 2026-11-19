@@ -34,7 +34,7 @@ describe('QuickSettings in an Experience', () => {
     const panel = screen.getByTestId('quick-settings');
     expect(within(panel).getAllByRole('radio')).toHaveLength(5);
     expect(within(panel).getAllByRole('switch')).toHaveLength(1);
-    expect(within(panel).getByRole('switch', { name: 'Lite / no visuals' })).not.toBeChecked();
+    expect(within(panel).getByRole('switch', { name: 'Lite (weaker device)' })).not.toBeChecked();
     for (const gone of ['Basic', 'World', 'YouTube', 'Beeps', 'Show riders']) {
       expect(within(panel).queryByText(new RegExp(gone, 'i'))).toBeNull();
     }
@@ -43,18 +43,18 @@ describe('QuickSettings in an Experience', () => {
   it('Lite switches to the plain background and back', () => {
     const onBackground = vi.fn();
     const { rerender } = render(<QuickSettings {...props({ experience: true, onBackground })} />);
-    fireEvent.click(screen.getByRole('switch', { name: 'Lite / no visuals' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Lite (weaker device)' }));
     expect(onBackground).toHaveBeenLastCalledWith('basic');
     rerender(<QuickSettings {...props({ experience: true, onBackground, background: 'basic' })} />);
-    expect(screen.getByRole('switch', { name: 'Lite / no visuals' })).toBeChecked();
-    fireEvent.click(screen.getByRole('switch', { name: 'Lite / no visuals' }));
+    expect(screen.getByRole('switch', { name: 'Lite (weaker device)' })).toBeChecked();
+    fireEvent.click(screen.getByRole('switch', { name: 'Lite (weaker device)' }));
     expect(onBackground).toHaveBeenLastCalledWith('hyperride');
   });
 
   it('speaks Polish', () => {
     setLang('pl');
     render(<QuickSettings {...props({ experience: true })} />);
-    expect(screen.getByRole('switch', { name: 'Lite / bez wizualizacji' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Lite (słabsze urządzenie)' })).toBeInTheDocument();
   });
 
   it('the regular menu keeps the background choice', () => {

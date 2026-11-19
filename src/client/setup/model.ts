@@ -2,11 +2,12 @@ import { DEFAULT_PLAN_SETTINGS, type PlanSettings, type PlanSlot } from '../../d
 import type { Player } from '../../domain/player';
 import { scaleForPlan } from '../../domain/scale';
 import type { Segment } from '../../domain/segments';
-import type { SessionConfig } from '../../domain/settings';
+import type { SessionConfig, WorldSettingId } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
 import type { MessageKey } from '../i18n';
 import {
   layoutChoices,
+  layoutKindOf,
   storedHud,
   supportsRiders,
   type LayoutKind,
@@ -135,6 +136,47 @@ export function effectiveHud(
 ): Hud {
   const kind = effectiveLayout(background, chosen);
   return storedHud(kind, showRiders && ridersAvailable(kind, hasPlayers));
+}
+
+export interface InitialSetup {
+  background: Background;
+  /** Undefined means the background's default layout. */
+  hud: LayoutKind | undefined;
+  showRiders: boolean;
+  music: boolean;
+  world: WorldSettingId;
+}
+
+/**
+ * What the setup screen opens with, from the saved last ride and the saved defaults. Anything a
+ * saved ride holds that this mode cannot use (a tiled Classic layout, a Basic background, a hidden
+ * riders panel, an old world id) is read but not obeyed, so old stored settings keep working.
+ *
+ * An Experience always runs on its own scenes, starts with its music on and shows the riders
+ * whenever someone is picked and the layout has room (there is no switch for it there).
+ */
+export function initialSetup(
+  last: SessionConfig | undefined,
+  defaults: { hyperrideWorld: WorldSettingId },
+  experience: boolean,
+): InitialSetup {
+  const hud = last ? layoutKindOf(last.hud, last.background) : undefined;
+  if (experience) {
+    return {
+      background: 'hyperride',
+      hud: hud !== undefined && layoutChoices('hyperride', true).includes(hud) ? hud : undefined,
+      showRiders: true,
+      music: true,
+      world: 'scenes',
+    };
+  }
+  return {
+    background: last?.background ?? 'basic',
+    hud,
+    showRiders: last?.showRiders ?? (last !== undefined && last.hud !== 'solo'),
+    music: last?.music ?? false,
+    world: defaults.hyperrideWorld,
+  };
 }
 
 export interface SetupChoices {

@@ -24,37 +24,58 @@ function renderPicker() {
   );
 }
 
+const card = (): HTMLElement => screen.getByTestId('experience-card');
+
 describe('ExperiencePicker', () => {
-  it('lists the built-in Experience as a card', () => {
+  it('shows the Neon Grid rides as one series card with a variant switch', () => {
     renderPicker();
-    const cards = screen.getAllByTestId('experience-card');
-    expect(cards.length).toBeGreaterThan(0);
-    expect(cards.map((c) => c.getAttribute('data-experience')).sort()).toEqual([
-      'neon-grid-30',
-      'neon-grid-45',
-      'neon-grid-45-light',
+    expect(screen.getAllByTestId('experience-card')).toHaveLength(1);
+    expect(card().getAttribute('data-experience')).toBe('neon-grid-30'); // shortest first
+    const variants = within(screen.getByRole('radiogroup', { name: 'Length and variant' }));
+    expect(variants.getAllByRole('radio').map((r) => r.parentElement?.textContent)).toEqual([
+      '30 min',
+      'Light 45',
+      '45 min',
     ]);
   });
 
-  it('filters by level', () => {
+  it('has no tags and no song count in a sentence; level, effort and songs are chips', () => {
+    renderPicker();
+    expect(card()).not.toHaveTextContent('electronic');
+    const facts = within(card())
+      .getAllByRole('listitem')
+      .map((li) => li.textContent);
+    expect(facts).toEqual(['Medium', 'effort 3–9', '7 songs']);
+  });
+
+  it('picking a variant changes the card to that ride', () => {
+    renderPicker();
+    fireEvent.click(screen.getByRole('radio', { name: '45 min' }));
+    expect(card().getAttribute('data-experience')).toBe('neon-grid-45');
+    expect(card()).toHaveTextContent('Hard');
+    expect(card()).toHaveTextContent('11 songs');
+  });
+
+  it('filters by level: a series stays while one of its variants fits, opening on it', () => {
     renderPicker();
     fireEvent.click(screen.getByRole('button', { name: 'Easy' }));
     expect(screen.queryAllByTestId('experience-card')).toHaveLength(0);
     fireEvent.click(screen.getByRole('button', { name: 'Hard' }));
-    expect(screen.getAllByTestId('experience-card')).toHaveLength(1);
+    expect(card().getAttribute('data-experience')).toBe('neon-grid-45');
     fireEvent.click(screen.getByRole('button', { name: 'Medium' }));
-    expect(screen.getAllByTestId('experience-card')).toHaveLength(2);
+    expect(card().getAttribute('data-experience')).toBe('neon-grid-30');
     fireEvent.click(screen.getByRole('button', { name: 'All' }));
-    expect(screen.getAllByTestId('experience-card').length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('experience-card')).toHaveLength(1);
   });
 
-  it('shows the scenario on request', () => {
+  it('shows the scenario on request, with a summary line and one row per song', () => {
     renderPicker();
     expect(screen.queryByTestId('experience-scenario')).toBeNull();
-    const card = screen
-      .getAllByTestId('experience-card')
-      .find((c) => c.getAttribute('data-experience') === 'neon-grid-45')!;
-    fireEvent.click(within(card).getByRole('button', { name: 'Show scenario' }));
+    fireEvent.click(screen.getByRole('radio', { name: '45 min' }));
+    fireEvent.click(within(card()).getByRole('button', { name: 'Show scenario' }));
+    expect(screen.getByTestId('experience-scenario-summary')).toHaveTextContent(
+      '45 min · 11 songs · peak 9',
+    );
     const rows = screen.getByTestId('experience-scenario').children;
     expect(rows.length).toBe(11);
     // m:ss, so the rows add up to the 45 minutes of the class
@@ -74,12 +95,18 @@ describe('ExperiencePicker', () => {
     expect(sec).toBe(45 * 60);
   });
 
-  it('Start opens Setup with the workout and the experience id', () => {
+  it('switching the variant folds the scenario away', () => {
     renderPicker();
-    const card = screen
-      .getAllByTestId('experience-card')
-      .find((c) => c.getAttribute('data-experience') === 'neon-grid-45')!;
-    fireEvent.click(within(card).getByTestId('experience-start'));
+    fireEvent.click(within(card()).getByRole('button', { name: 'Show scenario' }));
+    expect(screen.getByTestId('experience-scenario')).toBeTruthy();
+    fireEvent.click(screen.getByRole('radio', { name: 'Light 45' }));
+    expect(screen.queryByTestId('experience-scenario')).toBeNull();
+  });
+
+  it('Start opens Setup with the workout and the experience id of the chosen variant', () => {
+    renderPicker();
+    fireEvent.click(screen.getByRole('radio', { name: '45 min' }));
+    fireEvent.click(within(card()).getByTestId('experience-start'));
     expect(screen.getByTestId('where')).toHaveTextContent(
       '/setup/class-neon-grid-45?exp=neon-grid-45',
     );

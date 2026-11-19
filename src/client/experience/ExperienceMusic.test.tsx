@@ -61,10 +61,19 @@ function setup(opts: {
 beforeEach(() => localStorage.clear());
 
 describe('ExperienceMusic', () => {
-  it('without Spotify shows the connect link and no match button', () => {
-    setup({ connected: false });
-    expect(screen.getByTestId('exp-music-connect').getAttribute('href')).toBe('/settings');
-    expect(screen.queryByTestId('exp-music-match')).toBeNull();
+  it('without Spotify shows nothing: the music plays from YouTube (the source row has the link)', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <ExperienceMusic
+          experience={exp}
+          workout={workout}
+          connected={false}
+          choices={{}}
+          onChoices={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('matches, shows the list and saves the approved songs locally', async () => {

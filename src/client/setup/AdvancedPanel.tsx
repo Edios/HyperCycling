@@ -30,13 +30,15 @@ interface AdvancedPanelProps {
   right: ReactNode;
   /** The element the "More" shortcut scrolls to. */
   panelRef?: Ref<HTMLDivElement>;
+  /** The quiet line beside the title while closed: what is inside. */
+  hint: string;
 }
 
 /**
  * "Advanced settings": a collapsed accordion under "Who rides". Closed it is one quiet line; open it
  * shows named groups (see {@link Group}) in two columns on a wide screen and one list on a phone.
  */
-export function AdvancedPanel({ open, onToggle, left, right, panelRef }: AdvancedPanelProps) {
+export function AdvancedPanel({ open, onToggle, left, right, panelRef, hint }: AdvancedPanelProps) {
   const t = useT();
   const bodyId = useId();
   return (
@@ -50,7 +52,7 @@ export function AdvancedPanel({ open, onToggle, left, right, panelRef }: Advance
         data-testid="advanced-toggle"
       >
         <span className={styles.title}>{t('setup.advanced')}</span>
-        {!open && <span className={styles.hint}>{t('setup.advancedHint')}</span>}
+        {!open && <span className={styles.hint}>{hint}</span>}
         <span className={`${styles.chev} ${open ? styles.chevOpen : ''}`}>
           <Icon name="chevron" size={20} />
         </span>

@@ -4,6 +4,9 @@
   border-radius: 1rem;
   overflow: hidden;
   scroll-margin-top: 1rem;
+  /* The groups go side by side by the width the panel really has (a landscape phone is wide but
+     its options column is narrow), not by the width of the screen. */
+  container-type: inline-size;
 }
 
 .head {
@@ -95,7 +98,7 @@
   font-size: 0.875rem;
 }
 
-@media (min-width: 761px) {
+@container (min-width: 38rem) {
   .cols {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
