@@ -100,6 +100,42 @@ export function stepPreCue(
   };
 }
 
+/** What the rider does with the knob at a change of effort; there is no knob position any more. */
+export type ResistanceCommand = 'add' | 'ease' | 'hold';
+
+/** How long the HUD keeps asking for a change before it settles on 'hold'. */
+export const RESISTANCE_COMMAND_SEC = 15;
+
+/**
+ * Relative knob command for this moment of a block, or null in the first block (nothing to compare
+ * with). Effort is resistance times cadence, so CADENCE_DELTA rpm counts as one effort level: the
+ * same effort at a higher cadence means less resistance, and effort gained by spinning faster
+ * needs no turn of the knob. Inside a stepped ramp the reference is the previous step.
+ */
+export function resistanceCommand(
+  prev: Segment | undefined,
+  seg: Segment,
+  segElapsedSec: number,
+): ResistanceCommand | null {
+  const steps = seg.steps;
+  const index = stepAt(seg, segElapsedSec).index;
+  const step = steps?.[index];
+  const before = steps?.[index - 1];
+  if (!before && !prev) return null;
+  if (segElapsedSec - (step?.offsetSec ?? 0) >= RESISTANCE_COMMAND_SEC) return 'hold';
+  const prevSteps = prev?.steps;
+  const fromEffort =
+    before?.effort ?? prevSteps?.[prevSteps.length - 1]?.effort ?? prev?.effortEnd ?? 0;
+  const fromRpm = before ? seg.rpm : prev?.rpm;
+  const toEffort = step?.effort ?? seg.effortStart;
+  const fromCadence =
+    fromRpm !== undefined && seg.rpm !== undefined
+      ? Math.trunc((seg.rpm - fromRpm) / CADENCE_DELTA)
+      : 0;
+  const net = toEffort - fromEffort - fromCadence;
+  return net > 0 ? 'add' : net < 0 ? 'ease' : 'hold';
+}
+
 /** Lead of the announcement before a command (M2: announce, command, closing). */
 export const PRE_LEAD_SEC = 10;
 /** A block that cannot hold at least this much lead gets no announcement. */

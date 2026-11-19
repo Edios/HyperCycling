@@ -56,6 +56,24 @@ describe('EffortGroup', () => {
     expect(screen.getByTestId('effort-value-number')).toHaveTextContent('07');
     expect(root).toHaveTextContent('Hard · ~92% FTP');
   });
+  it('without watts shows the effort word alone, with no % FTP', () => {
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" showFtp={false} />);
+    const name = screen.getByTestId('effort-name');
+    expect(name).toHaveTextContent(/^Hard$/);
+    expect(name).not.toHaveAttribute('title');
+  });
+  it.each([
+    ['add', 'Turn up'],
+    ['ease', 'Ease off'],
+    ['hold', 'Hold'],
+  ] as const)('shows the relative knob command %s', (command, text) => {
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" resistanceCommand={command} />);
+    expect(screen.getByTestId('resistance-command')).toHaveTextContent(text);
+  });
+  it('has no knob command unless the bike has a knob', () => {
+    render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" />);
+    expect(screen.queryByTestId('resistance-command')).toBeNull();
+  });
   it('is group W', () => {
     render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" />);
     expect(screen.getByTestId('effort-group')).toHaveAttribute('data-g', 'W');

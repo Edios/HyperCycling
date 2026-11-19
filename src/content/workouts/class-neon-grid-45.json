@@ -1,11 +1,11 @@
 {
   "id": "class-neon-grid-45",
   "name": "Class: Neon Grid 45",
-  "description": "Eleven songs on a five-step resistance knob: intervals, rolling hills, a pyramid, a summit climb and a sprint finish.",
+  "description": "Eleven songs, effort 3–9: intervals, rolling hills, a pyramid, a summit climb and a sprint finish.",
   "localized": {
     "en": {
       "name": "Class: Neon Grid 45",
-      "description": "Eleven songs on a five-step resistance knob: intervals, rolling hills, a pyramid, a summit climb and a sprint finish.",
+      "description": "Eleven songs, effort 3–9: intervals, rolling hills, a pyramid, a summit climb and a sprint finish.",
       "songHints": {
         "class-neon-grid-45-s1": "Easy electronic warm-up, about 5 min. Aim for about 90 BPM. Idea: Kavinsky – Nightcall (91).",
         "class-neon-grid-45-s2": "Four-on-the-floor groove for the first hill. Aim for about 128 BPM. Idea: Daft Punk – One More Time (123).",
@@ -22,7 +22,7 @@
     },
     "pl": {
       "name": "Zajęcia: Neon Grid 45",
-      "description": "Jedenaście piosenek na pięciostopniowym pokrętle oporu: interwały, toczące się wzgórza, piramida, podjazd na szczyt i sprint na koniec.",
+      "description": "Jedenaście piosenek, wysiłek 3–9: interwały, toczące się wzgórza, piramida, podjazd na szczyt i sprint na koniec.",
       "songHints": {
         "class-neon-grid-45-s1": "Lekka elektronika na rozgrzewkę, ok. 5 min. Szukaj ok. 90 BPM. Pomysł: Kavinsky – Nightcall (91).",
         "class-neon-grid-45-s2": "Równy rytm na pierwsze wzniesienie. Szukaj ok. 128 BPM. Pomysł: Daft Punk – One More Time (123).",

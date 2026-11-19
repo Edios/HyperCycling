@@ -45,7 +45,6 @@
   "lengthMin": 30,
   "level": "medium",
   "bike": "manual-stepped",
-  "stepCount": 5,
   "tags": [
     "electronic",
     "intervals",

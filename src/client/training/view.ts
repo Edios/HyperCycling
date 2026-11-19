@@ -1,3 +1,4 @@
+import { resistanceCommand, type ResistanceCommand } from '../../domain/coach';
 import { effortRow, type EffortLabelKey, type EffortTable } from '../../domain/effort';
 import type { Segment } from '../../domain/segments';
 import { intensityAt, positionOf, stepAt } from '../../domain/segments';
@@ -28,6 +29,8 @@ export interface TrainingView {
   stepCount: number;
   /** Seconds until the next step, null on the last step or outside a stepped ramp. */
   nextStepInSec: number | null;
+  /** Relative knob command now; null in the first block. Shown only on knob bikes. */
+  resistanceCommand: ResistanceCommand | null;
   /** Last seconds of a running block. */
   pulse: boolean;
 }
@@ -60,6 +63,11 @@ export function buildTrainingView(
     stepIndex: step.index,
     stepCount: step.count,
     nextStepInSec: step.nextInSec,
+    resistanceCommand: resistanceCommand(
+      segments[state.segmentIndex - 1],
+      segment,
+      state.segmentElapsedSec,
+    ),
     remainingSec,
     durationSec: segment.durationSec,
     elapsedSec: state.workoutElapsedSec,

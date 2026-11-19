@@ -52,7 +52,6 @@ const RAW = {
   lengthMin: 30,
   level: 'easy',
   bike: 'manual-stepped',
-  stepCount: 5,
   tags: [],
   schemaVersion: 1,
   updatedAt: '2026-11-07T00:00:00.000Z',

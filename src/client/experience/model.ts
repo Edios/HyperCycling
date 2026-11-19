@@ -1,3 +1,4 @@
+import { flattenWorkout } from '../../domain/segments';
 import { songDurationSec, type Workout } from '../../domain/workout';
 import type { Experience, ExperienceLevel } from '../../domain/experience';
 
@@ -17,6 +18,12 @@ export function formatSongTime(sec: number): string {
 /** Song slots of the experience's workout with their length as m:ss. */
 export function scenarioRows(w: Workout): { id: string; time: string }[] {
   return (w.songs ?? []).map((s) => ({ id: s.id, time: formatSongTime(songDurationSec(w, s)) }));
+}
+
+/** Lowest and highest effort (1-10) of the ride, for the card; undefined for an empty workout. */
+export function effortRange(w: Workout): { min: number; max: number } | undefined {
+  const efforts = flattenWorkout(w).flatMap((s) => [s.effortStart, s.effortEnd]);
+  return efforts.length > 0 ? { min: Math.min(...efforts), max: Math.max(...efforts) } : undefined;
 }
 
 /** The experience to feature on the start page: the longest one; a tie goes to the first by id (explicit, not by accident). */

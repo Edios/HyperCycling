@@ -8,7 +8,7 @@ import { useLang, useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
-import { matchesLevel, scenarioRows, type LevelFilter } from './model';
+import { effortRange, matchesLevel, scenarioRows, type LevelFilter } from './model';
 import styles from './ExperiencePicker.module.css';
 
 const FILTERS: readonly LevelFilter[] = ['all', 'easy', 'medium', 'hard'];
@@ -51,6 +51,7 @@ export function ExperiencePicker() {
           const text = experienceText(e, lang);
           const workout = workouts.find((w) => w.id === e.workoutRef.id);
           const rows = workout ? scenarioRows(workout) : [];
+          const range = workout ? effortRange(workout) : undefined;
           const expanded = open === e.id;
           return (
             <Card
@@ -67,9 +68,9 @@ export function ExperiencePicker() {
               <div className={styles.meta}>
                 {t('experience.cardMeta', {
                   minutes: e.lengthMin,
-                  steps: e.stepCount,
                   songs: rows.length,
                 })}
+                {range && ` · ${t('experience.cardEffort', { ...range })}`}
               </div>
               <p className={styles.desc}>{text.description}</p>
               <ul className={styles.tags}>

@@ -38,6 +38,10 @@ test('knob mode: stepped ramp shows the position badge, the step line and the pr
   await page.clock.runFor(6_000);
   await expect(page.getByTestId('step-line')).toHaveText('Step 2/3');
   await expect(page.getByTestId('effort-value-number')).toHaveText('03');
+  // The HUD says what to do with the knob, then settles once the change had time to happen.
+  await expect(page.getByTestId('resistance-command')).toHaveText('Turn up');
+  await page.clock.runFor(15_000);
+  await expect(page.getByTestId('resistance-command')).toHaveText('Hold');
   expect(errors).toEqual([]);
 });
 

@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+import { DEFAULT_SETTINGS } from '../../src/domain/settings';
 import { seedSettings } from './seed-settings';
 
 // Experience ride on phones and wide landscape screens: no text sticks out of its panel or the
@@ -160,43 +161,39 @@ test('Experience preview offers only the HUD layout and Lite (no background or w
   await expect(page.getByRole('heading', { name: 'Background' })).toBeVisible();
 });
 
-// Knob calibration (E15): the HUD shows the saved position for the current step; without a
-// calibration nothing is added. Geometry must hold either way.
+// Manual-knob bike: effort word without % FTP and the relative command beside the step line (the
+// widest content of that row). Geometry must hold.
 for (const size of [
   { width: 390, height: 844 },
   { width: 1280, height: 720 },
 ]) {
-  for (const calibrated of [true, false]) {
-    test(`Knob calibration HUD ${calibrated ? 'with' : 'without'} calibration at ${size.width}x${size.height}`, async ({
-      page,
-    }, info) => {
-      test.skip(info.project.name !== 'pages', 'runs on the pages build only');
-      test.setTimeout(120_000);
-      await page.setViewportSize(size);
-      await seedSettings(
-        page,
-        info,
-        null,
-        calibrated ? { resistanceMode: 'knob', knobSteps: [2, 4, 6, 8, 10] } : {},
-      );
-      await startExperience(page);
-      const line = page.getByTestId('knob-line');
-      if (calibrated) await expect(line.first()).toBeVisible();
-      else await expect(line).toHaveCount(0);
-      const bad: string[] = [];
-      for (let i = 0; i < 5; i += 1) {
-        await page.waitForTimeout(350);
-        const id = await page
-          .locator('[data-testid^="layout-"]')
-          .first()
-          .getAttribute('data-testid');
-        for (const p of await geometryProblems(page)) bad.push(`${id}: ${p.what}`);
-        await page.keyboard.press('KeyH');
-      }
-      expect(bad).toEqual([]);
-      await page.screenshot({
-        path: `test-results/knob-hud-${calibrated ? 'cal' : 'nocal'}-${size.width}.png`,
-      });
+  test(`Knob bike HUD at ${size.width}x${size.height}`, async ({ page }, info) => {
+    test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+    test.setTimeout(120_000);
+    await page.clock.install();
+    await page.setViewportSize(size);
+    await seedSettings(page, info, null, {
+      resistanceMode: 'knob',
+      equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
     });
-  }
+    await page.goto('./?dev#/dev');
+    const row = page.getByTestId('workout-row').filter({ hasText: 'Demo mix' });
+    await row.getByRole('button', { name: 'Ride', exact: true }).click();
+    await expect(page.getByTestId('training-screen')).toBeVisible();
+    await expect(async () => {
+      await page.keyboard.press('Space');
+      await expect(page.getByTestId('training-screen')).toHaveAttribute(
+        'data-status',
+        'countdown',
+        { timeout: 1000 },
+      );
+    }).toPass({ timeout: 15_000 });
+    await page.clock.runFor(3200);
+    await page.clock.runFor(41_000); // just past the first step of the opening ramp
+    await expect(page.getByTestId('step-line').first()).toHaveText('Step 2/3');
+    await expect(page.getByTestId('resistance-command').first()).toHaveText('Turn up');
+    await expect(page.getByTestId('effort-name').first()).not.toContainText('FTP');
+    expect(await geometryProblems(page)).toEqual([]);
+    await page.screenshot({ path: `test-results/knob-hud-${size.width}.png` });
+  });
 }

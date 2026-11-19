@@ -19,6 +19,7 @@ export function Classic({
   segments,
   players,
   showsWatts,
+  knobCommand = false,
   rpmIsTarget,
   hideRpmTile,
   reducedMotion,
@@ -69,6 +70,10 @@ export function Classic({
           position={view.position}
           step={{ index: view.stepIndex, count: view.stepCount }}
           motion={!reducedMotion}
+          showFtp={showsWatts}
+          {...(knobCommand && view.resistanceCommand
+            ? { resistanceCommand: view.resistanceCommand }
+            : {})}
           hr={
             <HrTarget
               segment={view.segment}
