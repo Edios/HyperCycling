@@ -21,11 +21,9 @@ test('Neon Grid 45: Home tile → picker → Setup → ride (shortened) → summ
   await page.clock.install();
   await seedSettings(page, info, null);
 
-  // Home: the Experience tile features Neon Grid; the secondary action opens the catalogue
+  // Home: the Experience tile opens the catalogue
   await page.goto('./#/');
   await page.locator('[data-tile="experience"]').click();
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Neon Grid');
-  await page.getByTestId('home-secondary').click();
   // The catalogue holds the 30-minute, the 45-minute and the light variant; ride the full 45.
   await expect(page.getByTestId('experience-card')).toHaveCount(3);
   const card = page.locator('[data-testid="experience-card"][data-experience="neon-grid-45"]');

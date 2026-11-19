@@ -15,6 +15,7 @@ import { formatClock } from '../training/format';
 import type { EditorAction } from './editor-state';
 import { findBlock, intensityEffort, rpmOutsideUsual, type Leaf } from './model';
 import styles from './Inspector.module.css';
+import { Icon } from '../ui/Icon';
 
 const LEVELS: EffortLevel[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
@@ -751,7 +752,10 @@ function FallbackPlaylist({
                 <span className={styles.trackName}>
                   {tr.title || `${tr.provider === 'spotify' ? 'Spotify' : 'YouTube'} · ${tr.id}`}
                   {tr.notEmbeddable && (
-                    <em className={styles.badge}> ⚠ {t('music.notEmbeddableBadge')}</em>
+                    <em className={styles.badge}>
+                      {' '}
+                      <Icon name="warning" size={14} /> {t('music.notEmbeddableBadge')}
+                    </em>
                   )}
                 </span>
                 <button
@@ -760,7 +764,7 @@ function FallbackPlaylist({
                   disabled={i === 0}
                   onClick={() => move(i, i - 1)}
                 >
-                  ↑
+                  <Icon name="up" size={16} />
                 </button>
                 <button
                   type="button"
@@ -768,7 +772,7 @@ function FallbackPlaylist({
                   disabled={i === list.length - 1}
                   onClick={() => move(i, i + 1)}
                 >
-                  ↓
+                  <Icon name="down" size={16} />
                 </button>
                 <button
                   type="button"

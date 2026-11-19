@@ -28,6 +28,7 @@ import { Palette, PALETTE_PREFIX } from './Palette';
 import { SongSection } from './SongSection';
 import { Timeline, TIMELINE_DROP_ID } from './Timeline';
 import styles from './Editor.module.css';
+import { Icon } from '../ui/Icon';
 
 export interface EditorProps {
   initial: Workout;
@@ -267,7 +268,7 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
             disabled={readOnly || state.past.length === 0}
             onClick={() => dispatch({ type: 'undo' })}
           >
-            ↶
+            <Icon name="undo" />
           </button>
           <button
             type="button"
@@ -277,10 +278,10 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
             disabled={readOnly || state.future.length === 0}
             onClick={() => dispatch({ type: 'redo' })}
           >
-            ↷
+            <Icon name="redo" />
           </button>
           <Link to="/settings" className={styles.back} title={t('nav.settings')}>
-            <span aria-hidden="true">⚙</span> {t('nav.settings')}
+            <Icon name="settings" /> {t('nav.settings')}
           </Link>
           {!isNew && !readOnly && (
             <>

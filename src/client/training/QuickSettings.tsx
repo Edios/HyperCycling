@@ -8,6 +8,7 @@ import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
 import { useRestoreFocus } from '../ui/useRestoreFocus';
 import styles from './QuickSettings.module.css';
+import { Icon } from '../ui/Icon';
 
 type Background = SessionConfig['background'];
 
@@ -78,7 +79,7 @@ export function QuickSettings(p: QuickSettingsProps) {
             aria-label={t('training.quickClose')}
             onClick={p.onClose}
           >
-            <span aria-hidden="true">✕</span>
+            <Icon name="close" />
           </button>
         </header>
         <span className={styles.label} aria-hidden="true">
@@ -117,7 +118,7 @@ export function QuickSettings(p: QuickSettingsProps) {
           aria-label={t('training.quickClose')}
           onClick={p.onClose}
         >
-          <span aria-hidden="true">✕</span>
+          <Icon name="close" />
         </button>
       </header>
       <span className={styles.label} aria-hidden="true">

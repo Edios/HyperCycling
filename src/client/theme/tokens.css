@@ -38,7 +38,7 @@
 
   /* Mode accents: only the tab, the primary button, the mode icon and the selected-row bar. */
   --plan: #84e044;
-  --free: #b07dff;
+  --free: #4cc9f0;
   --world: #f35bd2;
   --coach: #e8dcc0;
   --acc: var(--plan);
