@@ -1123,11 +1123,11 @@ export const pl: Messages = {
     modesTitle: 'Trzy sposoby jazdy',
     plan: {
       title: 'Plan',
-      body: 'Odpowiadasz na trzy pytania i dostajesz tydzień treningów, który rośnie razem z Tobą.',
+      body: 'Odpowiadasz na kilka pytań i dostajesz tydzień treningów, który rośnie razem z Tobą.',
     },
     free: {
       title: 'Freestyle',
-      body: 'Wybierasz jeden z około stu gotowych treningów i jedziesz od razu.',
+      body: 'Wybierasz jeden z ponad sto gotowych treningów i jedziesz od razu.',
     },
     experience: {
       title: 'Experience',
@@ -1148,7 +1148,7 @@ export const pl: Messages = {
     },
     bike: {
       title: 'Rowery i czujniki',
-      body: 'Pokrętło, rower z miernikiem mocy albo trenażer: każdy się nada. Siła to skala 1–10, waty tylko gdy Twój rower je zna. Czujniki nie są potrzebne; wpisz tętno maksymalne, a zobaczysz strefy.',
+      body: 'Pokrętło, rower z miernikiem mocy albo trenażer: każdy się nada. Wysiłek to skala 1–10, waty tylko gdy Twój rower je zna. Czujniki nie są potrzebne; wpisz tętno maksymalne, a zobaczysz strefy.',
     },
     local: {
       title: 'Dane zostają u Ciebie',

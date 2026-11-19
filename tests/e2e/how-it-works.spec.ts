@@ -54,3 +54,29 @@ test('page has no horizontal scroll on a phone, portrait and landscape', async (
     await shot(page, `how-it-works-${size.width}x${size.height}-${info.project.name}`);
   }
 });
+
+test('top bar keeps all four icon links on the logo row on small phones', async ({
+  page,
+}, info) => {
+  await seedSettings(page, info, null);
+  for (const size of [
+    { width: 390, height: 844 },
+    { width: 360, height: 740 },
+    { width: 320, height: 568 },
+  ]) {
+    await page.setViewportSize(size);
+    await page.goto('./#/how-it-works');
+    await expect(page.getByTestId('how-it-works')).toBeVisible();
+    const label = `${size.width}x${size.height}`;
+    const logo = await page.locator('header:has(nav) > a').first().boundingBox();
+    const help = await page.getByTestId('nav-how-it-works').boundingBox();
+    const tabs = await page.locator('header:has(nav) > nav').boundingBox();
+    const bar = await page.locator('header:has(nav)').first().boundingBox();
+    expect(logo && help && tabs && bar, label).toBeTruthy();
+    // The help link sits on the same row as the logo, above the tabs; the bar stays two rows (~96 px).
+    expect(Math.abs(help!.y - logo!.y), label).toBeLessThan(12);
+    expect(help!.y + help!.height, label).toBeLessThanOrEqual(tabs!.y + 1);
+    expect(bar!.height, label).toBeLessThan(110);
+    expect(help!.x + help!.width, label).toBeLessThanOrEqual(size.width);
+  }
+});

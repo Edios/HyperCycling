@@ -1123,11 +1123,11 @@ export const en = {
     modesTitle: 'Three ways to ride',
     plan: {
       title: 'Plan',
-      body: 'Answer three questions and get a week of workouts that grows with you.',
+      body: 'Answer a few questions and get a week of workouts that grows with you.',
     },
     free: {
       title: 'Freestyle',
-      body: 'Pick one of about a hundred ready workouts and ride right away.',
+      body: 'Pick one of over a hundred ready workouts and ride right away.',
     },
     experience: {
       title: 'Experience',
