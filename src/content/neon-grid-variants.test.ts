@@ -3,9 +3,14 @@ import { builtinExperiences, getWorkout } from '../client/data/builtin';
 import { sceneChangeAllowed } from '../client/world/worlds/scenes-schedule';
 import { THEMES } from '../client/world/worlds/scenes-themes';
 import { doseWarnings } from '../domain/dose-rules';
-import { experienceProblems, resolveChapters, songStartsSec } from '../domain/experience';
+import {
+  experienceProblems,
+  hintQueue,
+  resolveChapters,
+  songStartsSec,
+} from '../domain/experience';
 import { flattenWorkout } from '../domain/segments';
-import { totalDurationSec } from '../domain/workout';
+import { songDurationSec, totalDurationSec } from '../domain/workout';
 
 const STEP_EFFORTS = [3, 4, 6, 7, 9];
 const VARIANTS = [
@@ -98,3 +103,39 @@ describe('Neon Grid variants differ as designed', () => {
     expect(sprintStart - summitEnd).toBeGreaterThanOrEqual(3 * 60);
   });
 });
+
+/**
+ * Regression (A4): the penultimate song of every Neon Grid used to be "Basket Case" (3:01) in a
+ * 4:00 slot, so a second track (Tidal Wave) played for only the last 59 s: a rider heard "one
+ * short section". Rule: a slot is never shorter than MIN_SLOT_SEC except a deliberate finale
+ * (none today), and no track of an authored queue plays for less than MIN_PLAYED_SEC.
+ */
+const MIN_SLOT_SEC = 90;
+const MIN_PLAYED_SEC = 90;
+describe.each(['neon-grid-30', 'neon-grid-45', 'neon-grid-45-light'])(
+  'Neon Grid song slots of %s',
+  (id) => {
+    const exp = builtinExperiences.find((e) => e.id === id)!;
+    const workout = getWorkout(exp.workoutRef.id)!;
+
+    it(`has no slot shorter than ${MIN_SLOT_SEC} s`, () => {
+      for (const s of workout.songs ?? []) {
+        expect(songDurationSec(workout, s), s.id).toBeGreaterThanOrEqual(MIN_SLOT_SEC);
+      }
+    });
+
+    it(`never plays a queued track for less than ${MIN_PLAYED_SEC} s of its slot`, () => {
+      for (const h of exp.musicHints ?? []) {
+        let left = songDurationSec(workout, workout.songs![h.slot]!);
+        for (const item of hintQueue(h)) {
+          if (left <= 0 || item.durationSec === undefined) break;
+          const played = Math.min(item.durationSec - (item.startOffsetSec ?? 0), left);
+          expect(played, `slot ${h.slot + 1}: ${item.title}`).toBeGreaterThanOrEqual(
+            MIN_PLAYED_SEC,
+          );
+          left -= played;
+        }
+      }
+    });
+  },
+);

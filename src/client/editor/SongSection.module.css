@@ -143,17 +143,7 @@
   min-width: 0;
   width: auto;
 }
-.inline select {
-  box-sizing: border-box;
-  height: 2.75rem;
-  padding: 0 0.75rem;
-  border-radius: 0.625rem;
-  background: var(--bg);
-  border: 1px solid var(--line);
-  font: inherit;
-  font-size: 1rem;
-  color: var(--fg);
-}
+
 .hitText a,
 .cap a {
   color: var(--act);

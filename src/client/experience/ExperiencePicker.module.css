@@ -65,7 +65,51 @@
 }
 .scenario {
   margin: 0 0 0.75rem;
-  padding-left: 1.5rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.375rem;
+}
+.slot {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr) 2.5rem 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+}
+.slotNum,
+.slotSub {
+  color: var(--mut);
+  font-size: 0.8125rem;
+}
+.slotSub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.slotMain {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.slotTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.slotBar {
+  height: 0.375rem;
+  border-radius: 0.25rem;
+  background: var(--line);
+  overflow: hidden;
+}
+.slotBar > span {
+  display: block;
+  height: 100%;
+}
+.slotTime {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 .actions {
   margin-top: auto;

@@ -2,8 +2,9 @@ import { Link, NavLink } from 'react-router-dom';
 import { LogoMark, ModeIcon, Wordmark, type Mode } from '../brand';
 import { useT } from '../i18n';
 import styles from './AppBar.module.css';
+import { Icon } from './Icon';
 
-/** Top bar of the select screens: logo, Plan | Freestyle tabs, Players and Settings links. */
+/** Top bar of the select screens: logo, Plan | Freestyle | Experience tabs, Players and Settings links. */
 export function AppBar() {
   const t = useT();
   const tab =
@@ -25,16 +26,20 @@ export function AppBar() {
           <ModeIcon mode="free" />
           {t('nav.freestyle')}
         </NavLink>
+        <NavLink to="/experiences" className={tab('world')} data-testid="nav-experience">
+          <ModeIcon mode="world" />
+          {t('nav.experience')}
+        </NavLink>
       </nav>
       <div className={styles.sp} />
       <Link to="/editor/new" className={styles.ico}>
-        <span aria-hidden="true">✎</span> <span className={styles.lbl}>{t('nav.editor')}</span>
+        <Icon name="edit" /> <span className={styles.lbl}>{t('nav.editor')}</span>
       </Link>
       <Link to="/players" className={styles.ico}>
-        <span aria-hidden="true">👥</span> <span className={styles.lbl}>{t('nav.players')}</span>
+        <Icon name="players" /> <span className={styles.lbl}>{t('nav.players')}</span>
       </Link>
       <Link to="/settings" className={styles.ico}>
-        <span aria-hidden="true">⚙</span> <span className={styles.lbl}>{t('nav.settings')}</span>
+        <Icon name="settings" /> <span className={styles.lbl}>{t('nav.settings')}</span>
       </Link>
     </header>
   );

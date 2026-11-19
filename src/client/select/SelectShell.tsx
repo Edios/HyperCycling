@@ -6,7 +6,11 @@ import styles from './SelectShell.module.css';
 /** App bar plus a tab body; the page background matches the mockups. */
 export function SelectShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  const mode = pathname.startsWith('/freestyle') ? 'free' : 'plan';
+  const mode = pathname.startsWith('/freestyle')
+    ? 'free'
+    : pathname.startsWith('/experiences')
+      ? 'world'
+      : 'plan';
   return (
     <div data-testid="app-shell" data-mode={mode} className={styles.shell}>
       <AppBar />

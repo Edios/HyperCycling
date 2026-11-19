@@ -23,6 +23,7 @@ import { Button } from '../ui/Button';
 import type { EditorAction } from './editor-state';
 import { blockTotalSec } from './model';
 import styles from './SongSection.module.css';
+import { Icon } from '../ui/Icon';
 
 type Active = { kind: 'song'; id: string } | { kind: 'cooldown' } | undefined;
 
@@ -459,7 +460,8 @@ export function SongSection({ workout, selectedId, readOnly, lang, dispatch }: S
               style={{ left: `${pct(span.start)}%`, width: `calc(${pct(span.len)}% - 4px)` }}
               onClick={() => setActive(on ? undefined : { kind: 'song', id: s.id })}
             >
-              {s.track ? '♫ ' : ''}
+              {s.track ? <Icon name="music" size={12} /> : null}
+              {s.track ? ' ' : ''}
               {i + 1}
               {name ? ` · ${name}` : ''}
             </button>

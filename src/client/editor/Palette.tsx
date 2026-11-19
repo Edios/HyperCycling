@@ -2,15 +2,16 @@ import { useDraggable } from '@dnd-kit/core';
 import { useT, type MessageKey } from '../i18n';
 import type { NewBlockKind } from './editor-state';
 import styles from './Palette.module.css';
+import { Icon, type IconName } from '../ui/Icon';
 
 export const PALETTE_PREFIX = 'palette:';
 
-const ITEMS: { kind: NewBlockKind; icon: string; label: MessageKey }[] = [
-  { kind: 'warmup', icon: '↗', label: 'editor.palette.warmup' },
-  { kind: 'steady', icon: '▬', label: 'editor.palette.steady' },
-  { kind: 'interval', icon: '⟳', label: 'editor.palette.interval' },
-  { kind: 'ramp', icon: '⟋', label: 'editor.palette.ramp' },
-  { kind: 'cooldown', icon: '↘', label: 'editor.palette.cooldown' },
+const ITEMS: { kind: NewBlockKind; icon: IconName; label: MessageKey }[] = [
+  { kind: 'warmup', icon: 'trendUp', label: 'editor.palette.warmup' },
+  { kind: 'steady', icon: 'steady', label: 'editor.palette.steady' },
+  { kind: 'interval', icon: 'repeat', label: 'editor.palette.interval' },
+  { kind: 'ramp', icon: 'ramp', label: 'editor.palette.ramp' },
+  { kind: 'cooldown', icon: 'trendDown', label: 'editor.palette.cooldown' },
 ];
 
 function PaletteItem({
@@ -21,7 +22,7 @@ function PaletteItem({
   onAdd,
 }: {
   kind: NewBlockKind;
-  icon: string;
+  icon: IconName;
   label: string;
   disabled: boolean;
   onAdd: (kind: NewBlockKind) => void;
@@ -45,7 +46,7 @@ function PaletteItem({
       onClick={() => onAdd(kind)}
       {...listeners}
     >
-      <span aria-hidden="true">{icon}</span> {label}
+      <Icon name={icon} /> {label}
     </button>
   );
 }

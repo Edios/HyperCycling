@@ -23,7 +23,7 @@ export const QUIET_TEXT = '#b4bcc9';
 /** Mode accents. Used only for the tab, the primary button, the mode icon and the selected-row bar. */
 export const MODE_ACCENTS = {
   plan: '#84e044',
-  free: '#b07dff',
+  free: '#4cc9f0',
   world: '#f35bd2',
   coach: '#e8dcc0',
 } as const;

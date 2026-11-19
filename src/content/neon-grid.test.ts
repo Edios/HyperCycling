@@ -194,7 +194,7 @@ describe('Neon Grid owner picks', () => {
       'Pendulum - Witchcraft',
       'Kavinsky - Nightcall',
       'Eric Prydz - Pjanoo',
-      'Green Day - Basket Case',
+      'Sub Focus - Tidal Wave',
       'Brian Eno - An Ending (Ascent) (Remastered 2019)',
     ]);
   });
@@ -232,8 +232,10 @@ describe('Neon Grid authored music queues', () => {
       expect(dywc.queue?.map((q) => q.title)).toEqual(['Clarity']);
     }
     for (const id of ['neon-grid-45', 'neon-grid-45-light', 'neon-grid-30']) {
-      const bc = hints(id).find((h) => h.title === 'Basket Case')!;
-      expect(bc.queue?.map((q) => q.title)).toEqual(['Tidal Wave']);
+      // One song fills the 4:00 sprint slot (a second track used to play for only 59 s).
+      const tw = hints(id).find((h) => h.title === 'Tidal Wave')!;
+      expect(tw.queue).toBeUndefined();
+      expect(tw.alternatives?.[0]?.title).toBe('Basket Case');
     }
     for (const id of ['neon-grid-45', 'neon-grid-30']) {
       const pj = hints(id).find((h) => h.title === 'Pjanoo')!;
@@ -247,7 +249,7 @@ describe('Neon Grid authored music queues', () => {
       const w = getWorkout(e.workoutRef.id)!;
       const fixed = new Set(
         (e.musicHints ?? [])
-          .filter((h) => ["Don't You Worry Child", 'Pjanoo', 'Basket Case'].includes(h.title))
+          .filter((h) => ["Don't You Worry Child", 'Pjanoo', 'Tidal Wave'].includes(h.title))
           .map((h) => h.slot),
       );
       const warns = validateHintQueues(e, w);
