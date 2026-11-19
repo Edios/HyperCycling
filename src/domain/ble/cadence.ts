@@ -25,6 +25,14 @@ export interface CadenceTrackerOptions {
 
 const WRAP = 0x10000;
 
+/**
+ * Difference between two readings of a wrapping counter (uint16: 2 ** 16, uint32: 2 ** 32),
+ * assuming it wrapped at most once.
+ */
+export function counterDelta(current: number, previous: number, modulo: number): number {
+  return (((current - previous) % modulo) + modulo) % modulo;
+}
+
 export function createCadenceTracker({
   staleMs = 3000,
   maxRpm = 250,
@@ -43,8 +51,8 @@ export function createCadenceTracker({
         prev = sample;
         return rpm(receivedAtMs);
       }
-      const dRev = (sample.revs - last.revs + WRAP) % WRAP;
-      const dTime = (sample.eventTime1024 - last.eventTime1024 + WRAP) % WRAP;
+      const dRev = counterDelta(sample.revs, last.revs, WRAP);
+      const dTime = counterDelta(sample.eventTime1024, last.eventTime1024, WRAP);
       // dT = 0: the sensor repeats its last event (crank stopped or duplicate); nothing new.
       if (dTime === 0 || dRev === 0) return rpm(receivedAtMs);
       prev = sample;

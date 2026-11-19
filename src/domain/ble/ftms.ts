@@ -388,7 +388,10 @@ export function parseMachineStatus(data: BleBytes): MachineStatus {
     case STATUS_OPCODE.startedOrResumed:
       return { kind: 'startedOrResumed' };
     case STATUS_OPCODE.targetResistanceChanged:
-      return { kind: 'targetResistanceChanged', level: r.uint8('New Target Resistance Level') / 10 };
+      return {
+        kind: 'targetResistanceChanged',
+        level: r.uint8('New Target Resistance Level') / 10,
+      };
     case STATUS_OPCODE.targetPowerChanged:
       return { kind: 'targetPowerChanged', watts: r.sint16('New Target Power') };
     case STATUS_OPCODE.simulationChanged:
