@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 async function nextSessionMinutes(page: Page): Promise<number> {
   // The hero card shows the scaled length as "<n> min" next to the title.

@@ -1,11 +1,97 @@
+import { spawn } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { test as base, expect } from '@playwright/test';
+import { assertSafeE2eDbPath } from '../../src/server/e2e-db-guard';
+
+/** Asks the OS for a free TCP port (so parallel e2e runs on one machine never collide). */
+function freePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const probe = createServer();
+    probe.once('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const { port } = probe.address() as { port: number };
+      probe.close(() => resolve(port));
+    });
+  });
+}
+
+async function waitForHealth(url: string, isAlive: () => boolean): Promise<void> {
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    if (!isAlive()) throw new Error('The e2e server exited before it became healthy.');
+    try {
+      if ((await fetch(`${url}/api/health`)).ok) return;
+    } catch {
+      // not listening yet
+    }
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error(`The e2e server did not become healthy at ${url} within 60 s.`);
+}
 
 /**
- * The local project shares one database across tests. A stored interrupted session would pop the
- * resume prompt in the next test, so it is cleared before each test (the pages build has a fresh
- * IndexedDB per test context and needs nothing).
+ * The local project gives every worker its own server on its own port with its own throwaway
+ * SQLite database. Settings, players and plan progress live in that database, so workers running
+ * specs in parallel can no longer overwrite each other's state. (The pages build keeps its data in
+ * IndexedDB, which is already separate for every test, and needs nothing.)
  */
-export const test = base.extend<{ cleanActiveSession: void; advancedOpen: void }>({
+export const test = base.extend<
+  { cleanActiveSession: void; advancedOpen: void },
+  { localServer: string | null }
+>({
+  localServer: [
+    // Playwright requires the destructuring pattern for the (empty) fixture dependencies.
+    // eslint-disable-next-line no-empty-pattern
+    async ({}, use, workerInfo) => {
+      if (!workerInfo.project.name.startsWith('local')) {
+        await use(null);
+        return;
+      }
+      const dir = mkdtempSync(path.join(tmpdir(), `spinning-tutor-e2e-w${workerInfo.workerIndex}-`));
+      const dbPath = assertSafeE2eDbPath(path.join(dir, 'e2e.db'));
+      const port = await freePort();
+      const url = `http://127.0.0.1:${port}`;
+      // Run node directly (not through npm or scripts/start.ts) so the child's PID is the server's.
+      const server = spawn(process.execPath, ['--import', 'tsx', 'src/server/main.ts'], {
+        stdio: 'ignore',
+        env: {
+          ...process.env,
+          PORT: String(port),
+          DB_PATH: dbPath,
+          // The e2e client (with test fixtures) is built into dist/e2e by the global setup.
+          STATIC_DIR: 'dist/e2e',
+        },
+      });
+      let exited = false;
+      const exit = new Promise<void>((resolve) => {
+        server.once('exit', () => {
+          exited = true;
+          resolve();
+        });
+      });
+      try {
+        await waitForHealth(url, () => !exited);
+        await use(url);
+      } finally {
+        if (!exited) server.kill();
+        await Promise.race([exit, new Promise((r) => setTimeout(r, 5_000))]);
+        try {
+          rmSync(dir, { recursive: true, force: true });
+        } catch {
+          // still locked by the server shutting down; the OS temp dir is cleaned eventually
+        }
+      }
+    },
+    { scope: 'worker' },
+  ],
+
+  baseURL: async ({ localServer, baseURL }, use) => {
+    await use(localServer ?? baseURL);
+  },
+
   /**
    * The ride setup keeps "Advanced settings" closed until the rider opens it (and remembers that).
    * Most tests work with the options inside it, so they start with it open; the specs about the
@@ -26,6 +112,10 @@ export const test = base.extend<{ cleanActiveSession: void; advancedOpen: void }
     },
     { auto: true },
   ],
+  /**
+   * A stored interrupted session would pop the resume prompt in the next test of the same worker,
+   * so it is cleared before each test (the pages build has a fresh IndexedDB per test context).
+   */
   cleanActiveSession: [
     async ({ request }, use, info) => {
       if (info.project.name.startsWith('local')) {
