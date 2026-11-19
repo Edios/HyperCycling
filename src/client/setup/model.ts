@@ -15,6 +15,9 @@ import type { SessionOptions, SessionRuntime } from '../training/session-store';
 
 export const MAX_SESSION_PLAYERS = 10;
 
+/** Stored FTP of a rider added without one (a bike that shows no watts never asks for it). */
+export const DEFAULT_PLAYER_FTP = 200;
+
 export type Background = SessionConfig['background'];
 export type Hud = SessionConfig['hud'];
 

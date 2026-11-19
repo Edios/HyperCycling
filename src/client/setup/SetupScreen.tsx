@@ -2,6 +2,7 @@ import { effectiveMusicCues } from '../../domain/workout';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
+import { bikeKindOf, type BikeKind } from '../../domain/bike';
 import { resolveResistanceMode, type WorldSettingId } from '../../domain/settings';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
 import { playerSchema, type Player } from '../../domain/player';
@@ -30,6 +31,7 @@ import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
 import { Field } from '../ui/Field';
 import { ProfileChart } from '../ui/ProfileChart';
+import { Modal } from '../ui/Modal';
 import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
 import { parseYoutubeUrl } from '../youtube/parseYoutubeUrl';
@@ -38,8 +40,10 @@ import {
   applyPlanSettings,
   buildConfig,
   buildRuntime,
+  DEFAULT_PLAYER_FTP,
   effectiveLayout,
   ENABLED_BACKGROUNDS,
+  layoutLabelKey,
   layoutOptions,
   initialSelection,
   MAX_SESSION_PLAYERS,
@@ -53,8 +57,17 @@ import {
 } from './model';
 import { layoutKindOf, type LayoutKind } from '../training/overlay-layouts';
 import { BikeCard } from '../bike/BikeCard';
+import { BikeWizard } from '../bike/BikeWizard';
+import { AdvancedPanel, Group, readAdvancedOpen, saveAdvancedOpen } from './AdvancedPanel';
+import { StartBar } from './StartBar';
 import styles from './SetupScreen.module.css';
 import { Icon } from '../ui/Icon';
+
+const BIKE_LABEL: Record<BikeKind, MessageKey> = {
+  knob: 'bike.shortKnob',
+  knobPower: 'bike.shortKnobPower',
+  smart: 'bike.shortSmart',
+};
 
 const BACKGROUNDS: readonly { value: Background; labelKey: MessageKey }[] = [
   { value: 'basic', labelKey: 'setup.backgroundBasic' },
@@ -150,11 +163,18 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   );
   const [beeps, setBeeps] = useState(settings.sounds);
   const [coach, setCoach] = useState(settings.coach);
-  const [music, setMusic] = useState(last?.music ?? false);
+  // An Experience is built around its music, so it starts on; the rider can switch it off here.
+  const [music, setMusic] = useState(experience ? true : (last?.music ?? false));
   const [world, setWorld] = useState<WorldSettingId>(
     experience ? 'scenes' : settings.hyperrideWorld,
   );
   const [adding, setAdding] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(readAdvancedOpen);
+  const [layoutOpen, setLayoutOpen] = useState(false);
+  const [bikeOpen, setBikeOpen] = useState(false);
+  const advancedRef = useRef<HTMLDivElement>(null);
+  const bikeKind = bikeKindOf(resolveResistanceMode(settings), settings.equipment);
+  const showsWatts = settings.equipment.showsWatts;
   const spotifyConnected = useSpotifyConnected();
   // Songs the rider matched to their Spotify for this Experience (kept in this browser only).
   const [matched, setMatched] = useState<Choices>(() =>
@@ -207,6 +227,20 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   const layout = effectiveLayout(background, chosenHud, experience !== undefined);
   const ridersOk = ridersAvailable(layout, hasPlayers);
   const ridersHint = ridersHintKey(layout, hasPlayers);
+
+  const setAdvanced = (open: boolean): void => {
+    setAdvancedOpen(open);
+    saveAdvancedOpen(open);
+  };
+
+  /** Opens the accordion and brings it into view (the "More" shortcut and the Start notice). */
+  const showAdvanced = (): void => {
+    setAdvanced(true);
+    const calm = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    window.requestAnimationFrame(() =>
+      advancedRef.current?.scrollIntoView({ block: 'start', behavior: calm ? 'auto' : 'smooth' }),
+    );
+  };
 
   const togglePlayer = (id: string): void => {
     setSelected((cur) => {
@@ -266,9 +300,198 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   };
 
   const peak = peakEffort(segments);
+  const musicOn = music && hasCues;
+  const mode = experience ? 'world' : plan ? 'plan' : 'free';
+  const sourceKey = (['youtube', 'spotify', 'auto'] as const).find((k) => k === musicSource);
+  const layoutLabel = t(layoutLabelKey(layout));
+  const musicStatus = !hasCues
+    ? t('setup.musicStatusNone')
+    : musicOn
+      ? t('setup.musicStatusOn', { source: t(`setup.source.${sourceKey ?? 'youtube'}`) })
+      : t('setup.musicStatusOff');
+  const bikeName = t(BIKE_LABEL[bikeKind]);
+
+  const musicGroup = (
+    <Group title={t('setup.group.music')} id="setup-music">
+      <Toggle
+        label={t('setup.musicInRide')}
+        checked={musicOn}
+        onChange={setMusic}
+        disabled={!hasCues}
+      />
+      {!hasCues && (
+        <p className={styles.note} data-testid="music-hint">
+          {t('setup.musicDisabled')}
+        </p>
+      )}
+      {experience && (
+        <ExperienceMusicCheck
+          experience={experience}
+          workout={workout}
+          chains={chains}
+          results={checked}
+          onResults={setChecked}
+          spotifyConnected={spotifyConnected}
+        />
+      )}
+      {experience && (
+        <ExperienceMusic
+          experience={experience}
+          workout={workout}
+          connected={spotifyConnected}
+          choices={matched}
+          onChoices={setMatched}
+        />
+      )}
+    </Group>
+  );
+
+  const screenGroup = (
+    <Group title={t('setup.group.screen')}>
+      <div>
+        <h4 className={styles.label}>{t('setup.layout')}</h4>
+        <div className={styles.layoutSeg}>
+          <Segmented
+            label={t('setup.layout')}
+            value={layout}
+            options={layoutOptions(background, experience !== undefined).map((o) => ({
+              value: o.value,
+              label: t(o.labelKey),
+            }))}
+            onChange={setChosenHud}
+          />
+        </div>
+        <div className={styles.ridersRow}>
+          <Toggle
+            label={t('setup.riders')}
+            checked={ridersOk && showRiders}
+            onChange={setShowRiders}
+            disabled={!ridersOk}
+          />
+        </div>
+        {ridersHint && (
+          <p className={styles.note} data-testid="layout-hint">
+            {t(ridersHint)}
+          </p>
+        )}
+      </div>
+
+      {experience ? (
+        <div>
+          <Toggle
+            label={t('experience.lite')}
+            checked={background === 'basic'}
+            onChange={(on) => setBackground(on ? 'basic' : 'hyperride')}
+          />
+          <p className={styles.note}>{t('experience.liteHint')}</p>
+        </div>
+      ) : (
+        <div>
+          <h4 className={styles.label}>{t('setup.background')}</h4>
+          <div className={styles.tiles}>
+            {BACKGROUNDS.map((b) => {
+              const enabled = ENABLED_BACKGROUNDS.includes(b.value);
+              return (
+                <button
+                  key={b.value}
+                  type="button"
+                  disabled={!enabled}
+                  aria-pressed={background === b.value}
+                  onClick={() => setBackground(b.value)}
+                  className={`${styles.tile} ${background === b.value ? styles.tileOn : ''}`}
+                >
+                  <span className={`${styles.thumb} ${styles[`thumb_${b.value}`] ?? ''}`}>
+                    {b.value === 'basic' && <b>{peak}</b>}
+                    {b.value === 'youtube' && <Icon name="play" size={20} />}
+                  </span>
+                  <span className={styles.tileName}>
+                    {t(b.labelKey)}
+                    {!enabled && <small> · {t('setup.soon')}</small>}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {!experience && background === 'hyperride' && (
+        <div>
+          <h4 className={styles.label}>{t('setup.world')}</h4>
+          <Segmented
+            label={t('setup.world')}
+            value={world}
+            options={WORLD_CHOICES.map((w) => ({ value: w.value, label: t(w.labelKey) }))}
+            onChange={setWorld}
+          />
+        </div>
+      )}
+
+      {!experience && background === 'youtube' && (
+        <div data-testid="youtube-section">
+          <Field
+            label={t('setup.youtubeUrl')}
+            {...(youtubeTrimmed !== '' && youtubeInvalid
+              ? { error: t('setup.youtubeInvalid') }
+              : { hint: t('setup.youtubeHint') })}
+          >
+            {(id) => (
+              <input
+                id={id}
+                type="url"
+                inputMode="url"
+                placeholder="https://www.youtube.com/watch?v=…"
+                value={youtubeUrl}
+                aria-invalid={youtubeTrimmed !== '' && youtubeInvalid}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+              />
+            )}
+          </Field>
+          {settings.recentYoutubeUrls.length > 0 && (
+            <div>
+              <h5 className={styles.recentTitle}>{t('setup.youtubeRecent')}</h5>
+              <ul className={styles.recent} aria-label={t('setup.youtubeRecent')}>
+                {settings.recentYoutubeUrls.map((u) => (
+                  <li key={u}>
+                    <button type="button" onClick={() => setYoutubeUrl(u)}>
+                      {u}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </Group>
+  );
+
+  const coachGroup = (
+    <Group title={t('setup.group.coach')}>
+      <Toggle label={t('setup.beeps')} checked={beeps} onChange={setBeeps} />
+      <Toggle label={t('setup.coachCues')} checked={coach} onChange={setCoach} />
+    </Group>
+  );
+
+  const gearGroup = (
+    <Group title={t('setup.group.gear')}>
+      <div className={styles.gearRow}>
+        <span>{t('setup.bikeRow')}</span>
+        <button
+          type="button"
+          className={styles.linkBtn}
+          onClick={() => setBikeOpen(true)}
+          data-testid="setup-bike-edit"
+          aria-label={`${t('setup.bikeEdit')}: ${bikeName}`}
+        >
+          {bikeName} <Icon name="edit" size={15} />
+        </button>
+      </div>
+    </Group>
+  );
 
   return (
-    <div data-testid="setup-screen" className={styles.page}>
+    <div data-testid="setup-screen" data-mode={mode} className={styles.page}>
       <AppBar />
 
       <div className={styles.grid}>
@@ -300,7 +523,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
             </Link>
           )}
           <div className={styles.chart}>
-            <ProfileChart segments={segments} height="6.875rem" thick />
+            <ProfileChart segments={segments} height="clamp(4.5rem, 16vw, 6.875rem)" thick />
           </div>
           <div className={styles.stats}>
             <div>
@@ -322,144 +545,10 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
         </Card>
 
         <div className={styles.options}>
-          <BikeCard onSkipRide={start} />
-          {experience && (
-            <section>
-              <Toggle
-                label={t('experience.lite')}
-                checked={background === 'basic'}
-                onChange={(on) => setBackground(on ? 'basic' : 'hyperride')}
-              />
-              <p className={styles.note}>{t('experience.liteHint')}</p>
-            </section>
-          )}
-          {experience && (
-            <ExperienceMusicCheck
-              experience={experience}
-              workout={workout}
-              chains={chains}
-              results={checked}
-              onResults={setChecked}
-              spotifyConnected={spotifyConnected}
-            />
-          )}
-          {experience && (
-            <ExperienceMusic
-              experience={experience}
-              workout={workout}
-              connected={spotifyConnected}
-              choices={matched}
-              onChoices={setMatched}
-            />
-          )}
-
-          {!experience && (
-            <section>
-              <h2 className={styles.label}>{t('setup.background')}</h2>
-              <div className={styles.tiles}>
-                {BACKGROUNDS.map((b) => {
-                  const enabled = ENABLED_BACKGROUNDS.includes(b.value);
-                  return (
-                    <button
-                      key={b.value}
-                      type="button"
-                      disabled={!enabled}
-                      aria-pressed={background === b.value}
-                      onClick={() => setBackground(b.value)}
-                      className={`${styles.tile} ${background === b.value ? styles.tileOn : ''}`}
-                    >
-                      <span className={`${styles.thumb} ${styles[`thumb_${b.value}`] ?? ''}`}>
-                        {b.value === 'basic' && <b>{peak}</b>}
-                        {b.value === 'youtube' && <Icon name="play" size={20} />}
-                      </span>
-                      <span className={styles.tileName}>
-                        {t(b.labelKey)}
-                        {!enabled && <small> · {t('setup.soon')}</small>}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          {!experience && background === 'hyperride' && (
-            <section>
-              <h2 className={styles.label}>{t('setup.world')}</h2>
-              <Segmented
-                label={t('setup.world')}
-                value={world}
-                options={WORLD_CHOICES.map((w) => ({ value: w.value, label: t(w.labelKey) }))}
-                onChange={setWorld}
-              />
-            </section>
-          )}
-
-          {!experience && background === 'youtube' && (
-            <section data-testid="youtube-section">
-              <Field
-                label={t('setup.youtubeUrl')}
-                {...(youtubeTrimmed !== '' && youtubeInvalid
-                  ? { error: t('setup.youtubeInvalid') }
-                  : { hint: t('setup.youtubeHint') })}
-              >
-                {(id) => (
-                  <input
-                    id={id}
-                    type="url"
-                    inputMode="url"
-                    placeholder="https://www.youtube.com/watch?v=…"
-                    value={youtubeUrl}
-                    aria-invalid={youtubeTrimmed !== '' && youtubeInvalid}
-                    onChange={(e) => setYoutubeUrl(e.target.value)}
-                  />
-                )}
-              </Field>
-              {settings.recentYoutubeUrls.length > 0 && (
-                <div>
-                  <h3 className={styles.recentTitle}>{t('setup.youtubeRecent')}</h3>
-                  <ul className={styles.recent} aria-label={t('setup.youtubeRecent')}>
-                    {settings.recentYoutubeUrls.map((u) => (
-                      <li key={u}>
-                        <button type="button" onClick={() => setYoutubeUrl(u)}>
-                          {u}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </section>
-          )}
-
-          <section>
-            <h2 className={styles.label}>{t('setup.layout')}</h2>
-            <Segmented
-              label={t('setup.layout')}
-              value={layout}
-              options={layoutOptions(background, experience !== undefined).map((o) => ({
-                value: o.value,
-                label: t(o.labelKey),
-              }))}
-              onChange={setChosenHud}
-            />
-            <div className={styles.ridersRow}>
-              <Toggle
-                label={t('setup.riders')}
-                checked={ridersOk && showRiders}
-                onChange={setShowRiders}
-                disabled={!ridersOk}
-              />
-            </div>
-            {ridersHint && (
-              <p className={styles.note} data-testid="layout-hint">
-                {t(ridersHint)}
-              </p>
-            )}
-          </section>
-
-          <section>
-            <h2 className={styles.label}>{t('setup.who')}</h2>
+          <section aria-labelledby="setup-who">
+            <h2 id="setup-who" className={styles.who}>
+              {t('setup.who')}
+            </h2>
             <div className={styles.chips}>
               {players.map((p) => {
                 const on = selected.includes(p.id);
@@ -467,60 +556,134 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
                   <Chip
                     key={p.id}
                     on={on}
+                    className={styles.person}
                     disabled={!on && selected.length >= MAX_SESSION_PLAYERS}
                     onClick={() => togglePlayer(p.id)}
                   >
-                    {t('setup.watts', { name: p.name, ftp: p.ftp })}
+                    <span className={styles.avatar} aria-hidden="true">
+                      {p.name.trim().charAt(0).toUpperCase()}
+                    </span>
+                    {showsWatts ? t('setup.watts', { name: p.name, ftp: p.ftp }) : p.name}
                   </Chip>
                 );
               })}
-              <Chip className={styles.add} onClick={() => setAdding((v) => !v)}>
+              <Chip
+                className={`${styles.person} ${styles.add}`}
+                onClick={() => setAdding((v) => !v)}
+                aria-expanded={adding}
+              >
+                <Icon name="plus" size={16} />
                 {t('setup.add')}
               </Chip>
             </div>
             {selected.length >= MAX_SESSION_PLAYERS && (
               <p className={styles.note}>{t('setup.maxPlayers')}</p>
             )}
-            {adding && <AddPlayerForm onAdd={addPlayer} onCancel={() => setAdding(false)} />}
+            {adding && (
+              <AddPlayerForm
+                showsWatts={showsWatts}
+                onAdd={addPlayer}
+                onCancel={() => setAdding(false)}
+              />
+            )}
+            <p className={styles.info}>
+              <button
+                type="button"
+                className={styles.linkBtn}
+                onClick={() => setBikeOpen(true)}
+                aria-label={`${t('setup.bikeEdit')}: ${bikeName}`}
+              >
+                {t('setup.bikeLine', { bike: bikeName })} <Icon name="edit" size={14} />
+              </button>
+            </p>
           </section>
 
-          <Card className={styles.toggles}>
-            <Toggle label={t('setup.beeps')} checked={beeps} onChange={setBeeps} />
-            <Toggle label={t('setup.coachCues')} checked={coach} onChange={setCoach} />
-            <Toggle
-              label={t('setup.music')}
-              checked={music && hasCues}
-              onChange={setMusic}
-              disabled={!hasCues}
-            />
-            {!hasCues && (
-              <p className={styles.note} data-testid="music-hint">
-                {t('setup.musicDisabled')}
-              </p>
-            )}
-          </Card>
+          <BikeCard onSkipRide={start} />
 
-          <div className={styles.startRow}>
-            <span className={styles.note}>{t('setup.remembered')}</span>
-            <Button
-              variant="primary"
-              size="big"
-              onClick={start}
-              disabled={youtubeInvalid || unplayable.length > 0}
-            >
-              {t('setup.start')}
-            </Button>
-          </div>
+          <AdvancedPanel
+            open={advancedOpen}
+            onToggle={setAdvanced}
+            panelRef={advancedRef}
+            left={
+              <>
+                {musicGroup}
+                {screenGroup}
+              </>
+            }
+            right={
+              <>
+                {coachGroup}
+                {gearGroup}
+              </>
+            }
+          />
         </div>
       </div>
+
+      <StartBar
+        variant={experience ? 'status' : 'shortcuts'}
+        status={musicStatus}
+        music={{
+          label: t(musicOn ? 'setup.musicOn' : 'setup.musicOff'),
+          pressed: musicOn,
+          disabled: !hasCues,
+          onClick: () => setMusic(!musicOn),
+          testId: 'bar-music',
+        }}
+        layout={{
+          label: layoutLabel,
+          ariaLabel: t('setup.layoutChip', { layout: layoutLabel }),
+          onClick: () => setLayoutOpen(true),
+          testId: 'bar-layout',
+        }}
+        more={{
+          label: t('setup.more'),
+          onClick: showAdvanced,
+          testId: 'bar-more',
+        }}
+        {...(youtubeInvalid
+          ? {
+              notice: {
+                text: t('setup.youtubeNeeded'),
+                action: t('setup.fix'),
+                onAction: showAdvanced,
+              },
+            }
+          : {})}
+        disabled={youtubeInvalid || unplayable.length > 0}
+        onStart={start}
+      />
+
+      {layoutOpen && (
+        <Modal title={t('setup.layout')} onClose={() => setLayoutOpen(false)}>
+          <div className={styles.layoutSeg}>
+            <Segmented
+              label={t('setup.layout')}
+              value={layout}
+              options={layoutOptions(background, experience !== undefined).map((o) => ({
+                value: o.value,
+                label: t(o.labelKey),
+              }))}
+              onChange={(v) => {
+                setChosenHud(v);
+                setLayoutOpen(false);
+              }}
+            />
+          </div>
+        </Modal>
+      )}
+      {bikeOpen && <BikeWizard onClose={() => setBikeOpen(false)} />}
     </div>
   );
 }
 
 function AddPlayerForm({
+  showsWatts,
   onAdd,
   onCancel,
 }: {
+  /** Whether the bike measures power; if not, only the name is asked for. */
+  showsWatts: boolean;
   onAdd: (p: Player) => Promise<void>;
   onCancel: () => void;
 }) {
@@ -539,7 +702,7 @@ function AddPlayerForm({
     const parsed = playerSchema.safeParse({
       id: newId(),
       name,
-      ftp: trimmed === '' ? Number.NaN : Number(trimmed),
+      ftp: !showsWatts ? DEFAULT_PLAYER_FTP : trimmed === '' ? Number.NaN : Number(trimmed),
     });
     if (!parsed.success) {
       const fields = new Set(parsed.error.issues.map((i) => i.path[0]));
@@ -576,11 +739,18 @@ function AddPlayerForm({
           />
         )}
       </Field>
-      <Field label={t('setup.playerFtp')} {...(errors.ftp ? { error: errors.ftp } : {})}>
-        {(id) => (
-          <input id={id} inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} />
-        )}
-      </Field>
+      {showsWatts && (
+        <Field label={t('setup.playerFtp')} {...(errors.ftp ? { error: errors.ftp } : {})}>
+          {(id) => (
+            <input
+              id={id}
+              inputMode="numeric"
+              value={ftp}
+              onChange={(e) => setFtp(e.target.value)}
+            />
+          )}
+        </Field>
+      )}
       {errors.save && (
         <p role="alert" className={styles.saveError}>
           {errors.save}

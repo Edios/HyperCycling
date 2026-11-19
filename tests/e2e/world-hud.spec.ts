@@ -18,7 +18,7 @@ async function startWorld(page: Page, withPlayer: boolean): Promise<void> {
   await page.getByRole('button', { name: /^World/ }).click();
   await expect(page.getByRole('radio', { name: 'Corners' })).toBeChecked();
   if (withPlayer) {
-    await page.getByRole('button', { name: '+ Add' }).click();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
     const form = page.getByTestId('add-player-form');
     await form.getByLabel('Name').fill('Mirek');
     await form.getByLabel('FTP (W)').fill('250');
@@ -147,7 +147,7 @@ test('Phone: riders panel lists every rider with FTP and target, unclipped betwe
     ['Ania', '190'],
     ['Bartek', '300'],
   ] as const) {
-    await page.getByRole('button', { name: '+ Add' }).click();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
     const form = page.getByTestId('add-player-form');
     await form.getByLabel('Name').fill(name);
     await form.getByLabel('FTP (W)').fill(ftp);
@@ -261,7 +261,7 @@ test('HUD geometry: no panel intersects another at phone sizes, riders on and of
     ['Ania', '190'],
     ['Bartek', '300'],
   ] as const) {
-    await page.getByRole('button', { name: '+ Add' }).click();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
     const form = page.getByTestId('add-player-form');
     await form.getByLabel('Name').fill(name);
     await form.getByLabel('FTP (W)').fill(ftp);

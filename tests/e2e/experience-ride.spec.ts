@@ -35,6 +35,10 @@ test('Neon Grid 45: Home tile → picker → Setup → ride (shortened) → summ
   // Setup is preset for the Experience: the Scenes world
   await card.getByTestId('experience-start').click();
   await expect(page.getByTestId('setup-experience')).toContainText('Neon Grid 45');
+  // The Experience's music is on by default; this ride is about the chapters and must stay silent.
+  const music = page.getByRole('switch', { name: 'Music in this ride' });
+  await expect(music).toBeChecked();
+  await music.setChecked(false);
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
 

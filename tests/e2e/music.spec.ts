@@ -127,7 +127,7 @@ async function rideWithRider(page: Page, name: string, world: boolean): Promise<
   await page.getByTestId('workout-ride').click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
   if (world) await page.getByRole('button', { name: /^World/ }).click();
-  await page.getByRole('button', { name: '+ Add' }).click();
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
   const form = page.getByTestId('add-player-form');
   await form.getByLabel('Name').fill('Mirek');
   await form.getByLabel('FTP (W)').fill('250');

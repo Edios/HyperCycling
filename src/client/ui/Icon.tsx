@@ -27,6 +27,10 @@ const PATHS = {
   repeat: 'M17 3l3 3-3 3M4 11V9a3 3 0 0 1 3-3h13M7 21l-3-3 3-3M20 13v2a3 3 0 0 1-3 3H4',
   ramp: 'M4 19L20 5',
   check: 'M5 12.5l4.5 4.5L19 7.5',
+  plus: 'M12 5v14M5 12h14',
+  chevron: 'M6 9l6 6 6-6',
+  layout:
+    'M6 3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3zM3 11h18M12 11v10',
 } as const;
 
 export type IconName = keyof typeof PATHS;

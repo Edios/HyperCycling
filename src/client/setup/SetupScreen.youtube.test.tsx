@@ -50,6 +50,8 @@ async function pickYoutube() {
 }
 
 beforeEach(() => {
+  // These tests work with the advanced settings, which start closed.
+  localStorage.setItem('hypercycling.setup.advanced', '1');
   db.settings = undefined;
   db.failSave = false;
   saved.length = 0;
