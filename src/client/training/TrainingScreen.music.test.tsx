@@ -161,7 +161,7 @@ describe('music in the training screen', () => {
     load(workoutWith({ fallbackPlaylist: [fallback] }), true);
     await renderScreen();
     await startRunning();
-    expect(screen.getByText(/Cannot play "Warm up jam"/)).toBeInTheDocument();
+    expect(screen.getByText(/Cannot play “Warm up jam”/)).toBeInTheDocument();
     const state = useSessionStore.getState().state;
     expect(state.status).toBe('running');
     now += 2000;
@@ -271,6 +271,6 @@ describe('now playing, mute and warnings', () => {
     await renderScreen();
     await startRunning();
     const stack = screen.getByTestId('toast-stack');
-    expect(stack).toContainElement(screen.getByText(/Cannot play "Warm up jam"/));
+    expect(stack).toContainElement(screen.getByText(/Cannot play “Warm up jam”/));
   });
 });

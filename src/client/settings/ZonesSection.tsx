@@ -21,7 +21,7 @@ const SCALE_MAX = 200;
 function hrCell(level: number): string {
   const zone = zoneForEffort(level);
   const def = HR_ZONES[zone - 1];
-  return def ? `Z${zone} · ${def.minPct}–${def.maxPct} %` : '';
+  return def ? `Z${zone} · ${def.minPct}–${def.maxPct}%` : '';
 }
 
 export function ZonesSection() {

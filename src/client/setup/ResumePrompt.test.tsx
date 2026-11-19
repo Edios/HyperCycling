@@ -131,8 +131,8 @@ describe('ResumePrompt', () => {
     db.active = active();
     renderApp();
     const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent('Finish the session?');
-    expect(dialog).toHaveTextContent(`${workout.name} was interrupted 12 min ago.`);
+    expect(dialog).toHaveTextContent('Resume your interrupted workout?');
+    expect(dialog).toHaveTextContent(`“${workout.name}” was interrupted 12 min ago.`);
     expect(screen.getByTestId('resume-progress')).toHaveTextContent(
       new RegExp(`^Block 2 of [0-9]+ · ${formatClock(elapsed, { round: 'floor' })} of `),
     );

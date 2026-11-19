@@ -102,7 +102,7 @@ describe('SetupScreen', () => {
     db.progress = [progress(DEFAULT_PLAN_SETTINGS)];
     renderSetup(`/setup/${scalable.id}?plan=plan-x&week=3&slot=progres`);
     expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(scalable.name);
-    expect(screen.getByTestId('setup-badge')).toHaveTextContent('Progres · week 3');
+    expect(screen.getByTestId('setup-badge')).toHaveTextContent('Progress · week 3');
     expect(screen.getByTestId('profile-chart')).toBeInTheDocument();
     expect(screen.getByTestId('setup-time')).toBeInTheDocument();
   });

@@ -42,7 +42,7 @@ describe('Settings, Music section on localhost', () => {
   it('warns that Spotify rejects localhost, links to 127.0.0.1 and disables Connect', async () => {
     renderScreen();
     const warning = await screen.findByTestId('localhost-warning');
-    expect(warning).toHaveTextContent('does not accept "localhost"');
+    expect(warning).toHaveTextContent('does not accept “localhost”');
     const href = screen.getByTestId('loopback-link').getAttribute('href');
     expect(href).toBe(`http://127.0.0.1:${location.port}${location.pathname}${location.hash}`);
     expect(screen.getByTestId('spotify-connect')).toBeDisabled();
