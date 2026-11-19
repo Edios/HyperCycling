@@ -1156,7 +1156,7 @@ export const en = {
     },
     experience: {
       title: 'Experience',
-      body: 'A class-style ride with music, parts and a light that grows with the effort.',
+      body: 'Experience the immersion of the ride',
     },
     moreTitle: 'And inside',
     coach: {

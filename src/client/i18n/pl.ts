@@ -1161,7 +1161,7 @@ export const pl: Messages = {
     },
     experience: {
       title: 'Experience',
-      body: 'Jazda w stylu zajęć: muzyka, części i światło, które rośnie razem z wysiłkiem.',
+      body: 'Doświadcz immersji jazdy',
     },
     moreTitle: 'A w środku',
     coach: {
