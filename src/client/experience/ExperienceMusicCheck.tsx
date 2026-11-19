@@ -17,7 +17,7 @@ import {
 } from '../music/preflight';
 import { Button } from '../ui/Button';
 import styles from './ExperienceMusic.module.css';
-import { MusicSourceSelect } from './MusicSourceSelect';
+import { SettingRow } from '../ui/SettingRow';
 
 const HEALTH_KEY: Record<Health, MessageKey> = {
   green: 'experience.check.health.green',
@@ -101,39 +101,53 @@ export function ExperienceMusicCheck({
 
   const checked = results.size > 0;
   const red = redSlots(experience, workout, chains, results);
+  const ready = hints.filter((h) => {
+    const slot = workout.songs?.[h.slot];
+    return slot && slotHealth(chains[slot.id] ?? [], results) === 'green';
+  }).length;
 
   return (
-    <section className={styles.panel} data-testid="exp-check">
-      <h4 className={styles.title}>
-        {t('experience.check.title')}{' '}
-        <span className={styles.optional}>{t('setup.checkOptional')}</span>
-      </h4>
-      <p className={styles.note}>{t('experience.check.intro')}</p>
+    <div className={styles.block} data-testid="exp-check">
+      <SettingRow
+        topic={t('experience.check.title')}
+        help={
+          <>
+            <p>{t('experience.check.intro')}</p>
+            <p>{t('experience.check.help')}</p>
+          </>
+        }
+        status={
+          progress ? (
+            <span role="status" data-testid="exp-check-working">
+              {t('experience.check.working', progress)}
+            </span>
+          ) : checked ? (
+            <span data-testid="exp-check-summary">
+              {t('experience.check.summary', { ok: ready, total: hints.length })}
+            </span>
+          ) : (
+            <span data-testid="exp-check-notrun">{t('experience.check.notRun')}</span>
+          )
+        }
+      >
+        <span className={styles.rowLabel}>
+          {t('experience.check.title')}{' '}
+          <span className={styles.optional}>{t('setup.checkOptional')}</span>
+        </span>
+        <Button
+          aria-label={t(checked ? 'experience.check.rerun' : 'experience.check.run')}
+          onClick={() => void run()}
+          disabled={progress !== undefined}
+          data-testid="exp-check-run"
+        >
+          {t(checked ? 'experience.check.rerun' : 'experience.check.runShort')}
+        </Button>
+      </SettingRow>
       {ip && (
         <p role="note" className={styles.warn} data-testid="exp-check-ip">
           {t(spotifyConnected ? 'experience.check.ipOriginAuto' : 'experience.check.ipOrigin', {
             host: ip,
           })}
-        </p>
-      )}
-      <MusicSourceSelect className={styles.note} />
-      <div className={styles.actions}>
-        <Button
-          onClick={() => void run()}
-          disabled={progress !== undefined}
-          data-testid="exp-check-run"
-        >
-          {t(checked ? 'experience.check.rerun' : 'experience.check.run')}
-        </Button>
-      </div>
-      {progress && (
-        <p role="status" className={styles.note} data-testid="exp-check-working">
-          {t('experience.check.working', progress)}
-        </p>
-      )}
-      {!checked && !progress && (
-        <p className={styles.cap} data-testid="exp-check-notrun">
-          {t('experience.check.notRun')}
         </p>
       )}
       {checked && (
@@ -191,6 +205,6 @@ export function ExperienceMusicCheck({
           )}
         </div>
       )}
-    </section>
+    </div>
   );
 }

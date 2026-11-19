@@ -75,7 +75,9 @@ async function mockSpotify(page: Page): Promise<string[]> {
 test('matches the suggested songs to Spotify, approves them and keeps them', async ({ page }) => {
   const queries = await mockSpotify(page);
   await page.goto('./#/setup/class-neon-grid-45?exp=neon-grid-45');
-  // Not connected yet: a link to Settings instead of the button.
+  // Not connected yet: no Spotify row; the link to Settings is in the help of the music source.
+  await expect(page.getByTestId('exp-music-connect')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Help: Music source' }).click();
   await expect(page.getByTestId('exp-music-connect')).toBeVisible();
   await expect(page.getByTestId('exp-music-match')).toHaveCount(0);
   await shot(page, 'experience-music-offline');

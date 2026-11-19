@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 /** No screen may scroll sideways, on a small phone or on a laptop (editor toolbar included). */
 const SIZES = [

@@ -15,6 +15,7 @@ import { useLang, useT, type MessageKey } from '../i18n';
 import { getExperience } from '../data/builtin';
 import { experienceText, type Experience } from '../../domain/experience';
 import { ExperienceMusic } from '../experience/ExperienceMusic';
+import { MusicSourceSelect } from '../experience/MusicSourceSelect';
 import { loadChoices, type Choices } from '../experience/musicChoices';
 import { chainChoices, withUserMusic } from '../experience/musicMatch';
 import { ExperienceMusicCheck, redSlots } from '../experience/ExperienceMusicCheck';
@@ -33,6 +34,7 @@ import { Field } from '../ui/Field';
 import { ProfileChart } from '../ui/ProfileChart';
 import { Modal } from '../ui/Modal';
 import { Segmented } from '../ui/Segmented';
+import { SettingRow } from '../ui/SettingRow';
 import { Toggle } from '../ui/Toggle';
 import { parseYoutubeUrl } from '../youtube/parseYoutubeUrl';
 import {
@@ -46,6 +48,7 @@ import {
   layoutLabelKey,
   layoutOptions,
   initialSelection,
+  initialSetup,
   MAX_SESSION_PLAYERS,
   parsePlanRef,
   peakEffort,
@@ -55,7 +58,7 @@ import {
   totalSec,
   type Background,
 } from './model';
-import { layoutKindOf, type LayoutKind } from '../training/overlay-layouts';
+import type { LayoutKind } from '../training/overlay-layouts';
 import { BikeCard } from '../bike/BikeCard';
 import { BikeWizard } from '../bike/BikeWizard';
 import { AdvancedPanel, Group, readAdvancedOpen, saveAdvancedOpen } from './AdvancedPanel';
@@ -147,27 +150,21 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   const { settings, updateSettings } = useSettings();
   const last = settings.lastSession;
 
+  // What the screen opens with, from the saved last ride and the saved defaults (see initialSetup).
+  const [init] = useState(() => initialSetup(last, settings, experience !== undefined));
   const [players, setPlayers] = useState(initialPlayers);
-  const [background, setBackground] = useState<Background>(
-    experience ? 'hyperride' : (last?.background ?? 'basic'),
-  );
+  const [background, setBackground] = useState<Background>(init.background);
   // The Settings default layout, also with a preselected rider.
-  const [chosenHud, setChosenHud] = useState<LayoutKind | undefined>(
-    last ? layoutKindOf(last.hud, last.background) : undefined,
-  );
-  const [showRiders, setShowRiders] = useState(
-    last?.showRiders ?? (last !== undefined && last.hud !== 'solo'),
-  );
+  const [chosenHud, setChosenHud] = useState<LayoutKind | undefined>(init.hud);
+  const [showRiders, setShowRiders] = useState(init.showRiders);
   const [selected, setSelected] = useState<string[]>(() =>
     initialSelection(initialPlayers, last?.playerIds),
   );
   const [beeps, setBeeps] = useState(settings.sounds);
   const [coach, setCoach] = useState(settings.coach);
   // An Experience is built around its music, so it starts on; the rider can switch it off here.
-  const [music, setMusic] = useState(experience ? true : (last?.music ?? false));
-  const [world, setWorld] = useState<WorldSettingId>(
-    experience ? 'scenes' : settings.hyperrideWorld,
-  );
+  const [music, setMusic] = useState(init.music);
+  const [world, setWorld] = useState<WorldSettingId>(init.world);
   const [adding, setAdding] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(readAdvancedOpen);
   const [layoutOpen, setLayoutOpen] = useState(false);
@@ -321,36 +318,85 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
 
   const musicGroup = (
     <Group title={t('setup.group.music')} id="setup-music">
-      <Toggle
-        label={t('setup.musicInRide')}
-        checked={musicOn}
-        onChange={setMusic}
-        disabled={!hasCues}
-      />
+      <SettingRow>
+        <Toggle
+          label={t('setup.musicInRide')}
+          checked={musicOn}
+          onChange={setMusic}
+          disabled={!hasCues}
+        />
+      </SettingRow>
       {!hasCues && (
         <p className={styles.note} data-testid="music-hint">
           {t('setup.musicDisabled')}
         </p>
       )}
       {experience && (
-        <ExperienceMusicCheck
-          experience={experience}
-          workout={workout}
-          chains={chains}
-          results={checked}
-          onResults={setChecked}
-          spotifyConnected={spotifyConnected}
-        />
+        <>
+          <SettingRow
+            topic={t('experience.check.source.label')}
+            help={
+              <>
+                <p>{t('setup.sourceHelp')}</p>
+                {!spotifyConnected && (
+                  <p>
+                    <Link to="/settings" data-testid="exp-music-connect">
+                      {t('experience.music.connect')}
+                    </Link>
+                  </p>
+                )}
+              </>
+            }
+          >
+            <MusicSourceSelect />
+          </SettingRow>
+          <ExperienceMusicCheck
+            experience={experience}
+            workout={workout}
+            chains={chains}
+            results={checked}
+            onResults={setChecked}
+            spotifyConnected={spotifyConnected}
+          />
+          <ExperienceMusic
+            experience={experience}
+            workout={workout}
+            connected={spotifyConnected}
+            choices={matched}
+            onChoices={setMatched}
+          />
+        </>
       )}
-      {experience && (
-        <ExperienceMusic
-          experience={experience}
-          workout={workout}
-          connected={spotifyConnected}
-          choices={matched}
-          onChoices={setMatched}
+    </Group>
+  );
+
+  const layoutOpts = layoutOptions(background, experience !== undefined);
+  // An Experience keeps to what matters: a layout and Lite. The riders appear on their own once
+  // someone is picked, and the world and its scenes are fixed by the scenario.
+  const experienceScreenGroup = (
+    <Group title={t('setup.group.screen')}>
+      <SettingRow topic={t('setup.layout')} help={t('setup.layoutHelp')}>
+        <label htmlFor="setup-layout-select">{t('setup.layout')}</label>
+        <select
+          id="setup-layout-select"
+          value={layout}
+          data-testid="setup-layout-select"
+          onChange={(e) => setChosenHud(e.target.value as LayoutKind)}
+        >
+          {layoutOpts.map((o) => (
+            <option key={o.value} value={o.value}>
+              {t(o.labelKey)}
+            </option>
+          ))}
+        </select>
+      </SettingRow>
+      <SettingRow topic={t('experience.lite')} help={t('experience.liteHint')}>
+        <Toggle
+          label={t('experience.lite')}
+          checked={background === 'basic'}
+          onChange={(on) => setBackground(on ? 'basic' : 'hyperride')}
         />
-      )}
+      </SettingRow>
     </Group>
   );
 
@@ -384,45 +430,33 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
         )}
       </div>
 
-      {experience ? (
-        <div>
-          <Toggle
-            label={t('experience.lite')}
-            checked={background === 'basic'}
-            onChange={(on) => setBackground(on ? 'basic' : 'hyperride')}
-          />
-          <p className={styles.note}>{t('experience.liteHint')}</p>
+      <div>
+        <h4 className={styles.label}>{t('setup.background')}</h4>
+        <div className={styles.tiles}>
+          {BACKGROUNDS.map((b) => {
+            const enabled = ENABLED_BACKGROUNDS.includes(b.value);
+            return (
+              <button
+                key={b.value}
+                type="button"
+                disabled={!enabled}
+                aria-pressed={background === b.value}
+                onClick={() => setBackground(b.value)}
+                className={`${styles.tile} ${background === b.value ? styles.tileOn : ''}`}
+              >
+                <span className={`${styles.thumb} ${styles[`thumb_${b.value}`] ?? ''}`}>
+                  {b.value === 'basic' && <b>{peak}</b>}
+                  {b.value === 'youtube' && <Icon name="play" size={20} />}
+                </span>
+                <span className={styles.tileName}>
+                  {t(b.labelKey)}
+                  {!enabled && <small> · {t('setup.soon')}</small>}
+                </span>
+              </button>
+            );
+          })}
         </div>
-      ) : (
-        <div>
-          <h4 className={styles.label}>{t('setup.background')}</h4>
-          <div className={styles.tiles}>
-            {BACKGROUNDS.map((b) => {
-              const enabled = ENABLED_BACKGROUNDS.includes(b.value);
-              return (
-                <button
-                  key={b.value}
-                  type="button"
-                  disabled={!enabled}
-                  aria-pressed={background === b.value}
-                  onClick={() => setBackground(b.value)}
-                  className={`${styles.tile} ${background === b.value ? styles.tileOn : ''}`}
-                >
-                  <span className={`${styles.thumb} ${styles[`thumb_${b.value}`] ?? ''}`}>
-                    {b.value === 'basic' && <b>{peak}</b>}
-                    {b.value === 'youtube' && <Icon name="play" size={20} />}
-                  </span>
-                  <span className={styles.tileName}>
-                    {t(b.labelKey)}
-                    {!enabled && <small> · {t('setup.soon')}</small>}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
+      </div>
       {!experience && background === 'hyperride' && (
         <div>
           <h4 className={styles.label}>{t('setup.world')}</h4>
@@ -476,8 +510,12 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
 
   const coachGroup = (
     <Group title={t('setup.group.coach')}>
-      <Toggle label={t('setup.beeps')} checked={beeps} onChange={setBeeps} />
-      <Toggle label={t('setup.coachCues')} checked={coach} onChange={setCoach} />
+      <SettingRow>
+        <Toggle label={t('setup.beeps')} checked={beeps} onChange={setBeeps} />
+      </SettingRow>
+      <SettingRow topic={t('setup.coachCues')} help={t('setup.coachCuesHelp')}>
+        <Toggle label={t('setup.coachCues')} checked={coach} onChange={setCoach} />
+      </SettingRow>
     </Group>
   );
 
@@ -515,12 +553,12 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
               })}
             </span>
           )}
-          <h1>{text.name}</h1>
           {experience && (
-            <p className={styles.music} data-testid="setup-experience">
-              {t('experience.setupBadge', { title: experienceText(experience, lang).title })}
+            <p className={styles.kicker} data-testid="setup-experience">
+              {t('experience.kicker')}
             </p>
           )}
+          <h1>{experience ? experienceText(experience, lang).title : text.name}</h1>
           {workout.source.kind === 'user' && (
             <Link
               to={`/editor/${encodeURIComponent(workout.id)}`}
@@ -538,18 +576,27 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
               <b data-testid="setup-time">{formatClock(totalSec(segments))}</b>
               <span>{t('setup.time')}</span>
             </div>
-            <div>
-              <b data-testid="setup-blocks">{segments.length}</b>
-              <span>{t('setup.blocks')}</span>
-            </div>
+            {experience ? (
+              <div>
+                <b data-testid="setup-songs">{scaled.songs?.length ?? 0}</b>
+                <span>{t('setup.songs')}</span>
+              </div>
+            ) : (
+              <div>
+                <b data-testid="setup-blocks">{segments.length}</b>
+                <span>{t('setup.blocks')}</span>
+              </div>
+            )}
             <div>
               <b className={styles.peak}>{peak}</b>
               <span>{t('setup.peak')}</span>
             </div>
           </div>
-          <p className={styles.music}>
-            {hasCues ? t('setup.musicSome', { n: cueCount }) : t('setup.musicNone')}
-          </p>
+          {!experience && (
+            <p className={styles.music}>
+              {hasCues ? t('setup.musicSome', { n: cueCount }) : t('setup.musicNone')}
+            </p>
+          )}
         </Card>
 
         <div className={styles.options}>
@@ -594,16 +641,18 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
                 onCancel={() => setAdding(false)}
               />
             )}
-            <p className={styles.info}>
-              <button
-                type="button"
-                className={styles.linkBtn}
-                onClick={() => setBikeOpen(true)}
-                aria-label={`${t('setup.bikeEdit')}: ${bikeName}`}
-              >
-                {t('setup.bikeLine', { bike: bikeName })} <Icon name="edit" size={14} />
-              </button>
-            </p>
+            {!experience && (
+              <p className={styles.info}>
+                <button
+                  type="button"
+                  className={styles.linkBtn}
+                  onClick={() => setBikeOpen(true)}
+                  aria-label={`${t('setup.bikeEdit')}: ${bikeName}`}
+                >
+                  {t('setup.bikeLine', { bike: bikeName })} <Icon name="edit" size={14} />
+                </button>
+              </p>
+            )}
           </section>
 
           <BikeCard onSkipRide={start} />
@@ -612,10 +661,11 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
             open={advancedOpen}
             onToggle={setAdvanced}
             panelRef={advancedRef}
+            hint={t(experience ? 'setup.advancedHintExperience' : 'setup.advancedHint')}
             left={
               <>
                 {musicGroup}
-                {screenGroup}
+                {experience ? experienceScreenGroup : screenGroup}
               </>
             }
             right={

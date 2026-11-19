@@ -182,6 +182,14 @@ export const pl: Messages = {
     watts: '{name} · {ftp} W',
     advanced: 'Ustawienia zaawansowane',
     advancedHint: 'Układ, tło, muzyka, prowadzący, rower',
+    advancedHintExperience: 'Muzyka, ekran, prowadzący, rower',
+    songs: 'utworów',
+    sourceHelp:
+      'Muzyka gra z YouTube i nie wymaga logowania. Spotify możesz połączyć w Ustawieniach, żeby użyć własnego konta jako źródła albo zapasu.',
+    layoutHelp:
+      'Jak liczby i wykres są rozłożone na ekranie jazdy. Kokpit i Minimal nie mają miejsca na panel graczy.',
+    coachCuesHelp:
+      'Podpowiedzi na ekranie przed zmianą, na przykład „Dodaj opór”. Wyłącz, jeśli prowadzi żywy instruktor.',
     group: {
       music: 'Muzyka',
       screen: 'Ekran',
@@ -211,6 +219,10 @@ export const pl: Messages = {
     paused: 'Wznowi się w pauzie',
     resume: 'Wznów',
     discard: 'Odrzuć',
+  },
+  ui: {
+    help: 'Pomoc',
+    helpFor: 'Pomoc: {topic}',
   },
   common: {
     back: 'Wróć',
@@ -912,7 +924,15 @@ export const pl: Messages = {
       afterglow: 'Poświata',
     },
     theme: { abstract: 'Abstrakcja', 'neon-grid': 'Neon Grid' },
-    cardMeta: '{minutes} min · utwory: {songs}',
+    seriesKicker: '{title} · seria',
+    variantLabel: 'Długość i wariant',
+    peak: 'szczyt {n}',
+    scenarioTitle: 'Scenariusz',
+    noSong: 'bez muzyki',
+    songsOne: '{n} utwór',
+    songsFew: '{n} utwory',
+    songsMany: '{n} utworów',
+    songsOther: '{n} utworu',
     cardEffort: 'wysiłek {min}–{max}',
     songRow: 'Utwór {n}: {time}',
     slotUnnamed: 'Utwór {n}',
@@ -920,14 +940,13 @@ export const pl: Messages = {
     start: 'Start',
     showScenario: 'Pokaż scenariusz',
     hideScenario: 'Ukryj scenariusz',
-    lite: 'Lite / bez wizualizacji',
-    liteHint: 'Opcja dla słabszego urządzenia: zwykły ekran, ten sam trening i muzyka.',
-    setupBadge: 'Experience: {title}. Świat i jego sceny są już ustawione.',
+    lite: 'Lite (słabsze urządzenie)',
+    liteHint: 'Zwykły ekran zamiast wizualizacji, ten sam trening i muzyka.',
     music: {
-      title: 'Muzyka do tej jazdy',
-      intro:
-        'Ta jazda podpowiada utwór do każdej części. Dopasuj je do swojego Spotify, sprawdź listę i zapisz. Nic nie jest wysyłane poza wyszukiwaniem na Twoim koncie Spotify.',
-      saved: 'Dopasowane utwory: {n} z {total}. Obowiązują w tej jeździe na tym urządzeniu.',
+      title: 'Utwory ze Spotify',
+      intro: 'Dopasuj utwory ze scenariusza do swojego konta Spotify.',
+      saved: 'Dopasowane: {n} z {total}.',
+      help: 'Nic nie jest wysyłane poza wyszukiwaniem na Twoim koncie Spotify. Dopasowanie obowiązuje w tej jeździe na tym urządzeniu.',
       match: 'Dopasuj utwory ze Spotify',
       rematch: 'Dopasuj ponownie',
       clear: 'Wyczyść dopasowanie',
@@ -961,14 +980,13 @@ export const pl: Messages = {
       reject: 'Odrzuć',
       retry: 'Spróbuj ponownie',
       skip: 'Jedź bez tych utworów',
-      offline:
-        'Muzyka gra z YouTube i nie wymaga logowania. Opcjonalnie połącz Spotify w Ustawieniach: użyjesz własnego konta jako źródła albo zapasu.',
       connect: 'Połącz Spotify w Ustawieniach',
     },
     check: {
       title: 'Sprawdź muzykę',
-      intro:
-        'Przed jazdą sprawdź, czy każdy utwór zagra na tym urządzeniu. Test jest bez dźwięku. Najlepiej uruchom go na miejscu, w salce: blokady regionalne i słabe łącze wychodzą dopiero tam.',
+      intro: 'Sprawdź przed jazdą, czy każdy utwór zagra na tym urządzeniu. Test jest bez dźwięku.',
+      help: 'Najlepiej uruchom go na miejscu, w salce: blokady regionalne i słabe łącze wychodzą dopiero tam.',
+      summary: 'Sprawdzono: gotowe {ok} z {total} części.',
       source: {
         label: 'Źródło muzyki',
         youtube: 'YouTube (domyślnie)',
@@ -976,9 +994,10 @@ export const pl: Messages = {
         auto: 'Auto (Spotify, gdy połączony)',
       },
       run: 'Sprawdź muzykę',
+      runShort: 'Sprawdź',
       rerun: 'Sprawdź ponownie',
       working: 'Sprawdzam wersje… {done} z {total}',
-      notRun: 'Muzyka nie była jeszcze sprawdzana na tym urządzeniu.',
+      notRun: 'Jeszcze nie sprawdzano na tym urządzeniu.',
       health: {
         green: 'Gotowe',
         yellow: 'Tylko zapas',

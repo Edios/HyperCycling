@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test('heart-rate zones: HRmax from age, zone column and toggle in Settings', async ({ page }) => {
   const errors: string[] = [];
