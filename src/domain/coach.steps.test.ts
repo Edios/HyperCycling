@@ -86,13 +86,15 @@ describe('stepPreCue', () => {
 });
 
 describe('resistanceCommand', () => {
-  const block = (effort: number, rpm?: number): Segment =>
+  const block = (effort: number, rpm?: number, ftpPct = effort * 10): Segment =>
     ({
       index: 1,
       startSec: 0,
       durationSec: 120,
       effortStart: effort,
       effortEnd: effort,
+      ftpPctStart: ftpPct,
+      ftpPctEnd: ftpPct,
       rep: 1,
       reps: 1,
       ...(rpm !== undefined ? { rpm } : {}),
@@ -106,16 +108,15 @@ describe('resistanceCommand', () => {
     expect(resistanceCommand(block(6), block(4), 0)).toBe('ease');
     expect(resistanceCommand(block(5), block(5), 0)).toBe('hold');
   });
-  it('counts 15 rpm as one effort level', () => {
-    // Same effort, faster legs: less resistance. Same effort, slower legs: more.
-    expect(resistanceCommand(block(5, 80), block(5, 95), 0)).toBe('ease');
-    expect(resistanceCommand(block(5, 95), block(5, 80), 0)).toBe('add');
-    // The extra effort comes from the cadence alone: leave the knob.
-    expect(resistanceCommand(block(4, 80), block(5, 95), 0)).toBe('hold');
-    // A small cadence change does not count.
-    expect(resistanceCommand(block(5, 80), block(5, 90), 0)).toBe('hold');
-    // A climb: harder and slower is clearly more resistance.
+  it('ignores cadence: a sprint or pick-up at the same effort keeps the resistance', () => {
+    expect(resistanceCommand(block(6, 88), block(6, 105), 0)).toBe('hold');
+    expect(resistanceCommand(block(6, 105), block(6, 85), 0)).toBe('hold');
     expect(resistanceCommand(block(5, 90), block(7, 60), 0)).toBe('add');
+  });
+  it('follows the watt target inside one effort level (power meter)', () => {
+    expect(resistanceCommand(block(5, undefined, 70), block(5, undefined, 76), 0)).toBe('add');
+    expect(resistanceCommand(block(5, undefined, 76), block(5, undefined, 70), 0)).toBe('ease');
+    expect(resistanceCommand(block(5, undefined, 70), block(5, undefined, 72), 0)).toBe('hold');
   });
   it('settles on hold once the change had time to happen', () => {
     expect(resistanceCommand(block(4), block(6), RESISTANCE_COMMAND_SEC - 1)).toBe('add');
@@ -126,10 +127,26 @@ describe('resistanceCommand', () => {
     expect(resistanceCommand(undefined, seg, 0)).toBeNull();
     expect(resistanceCommand(undefined, seg, 40)).toBe('add');
     expect(resistanceCommand(undefined, seg, 40 + RESISTANCE_COMMAND_SEC)).toBe('hold');
-    const down = ramp(8, 3, 240, 90);
-    expect(resistanceCommand(undefined, down, 40)).toBe('ease');
+    expect(resistanceCommand(undefined, ramp(8, 3, 240, 90), 40)).toBe('ease');
   });
   it('enters a block from the last step of a stepped ramp', () => {
-    expect(resistanceCommand(ramp(3, 8, 240), block(6), 0)).toBe('ease');
+    expect(resistanceCommand(ramp(3, 8, 240), block(6, undefined, 80), 0)).toBe('ease');
+  });
+  it('says the same as the step cue, also for a step inside one effort level', () => {
+    const base = block(5);
+    const steps = [
+      { offsetSec: 0, durationSec: 40, effort: 5, ftpPct: 70 },
+      { offsetSec: 40, durationSec: 40, effort: 5, ftpPct: 76 },
+      { offsetSec: 80, durationSec: 40, effort: 5, ftpPct: 77 },
+      { offsetSec: 120, durationSec: 40, effort: 4, ftpPct: 60 },
+    ];
+    const seg = { ...base, durationSec: 160, steps } as Segment;
+    const expected = { addResistance: 'add', reduceResistance: 'ease' } as const;
+    for (const s of steps.slice(1)) {
+      const kind = stepPreCue(seg, s.offsetSec - 1)?.cue.kind;
+      const said =
+        kind === 'addResistance' || kind === 'reduceResistance' ? expected[kind] : 'hold';
+      expect(resistanceCommand(undefined, seg, s.offsetSec)).toBe(said);
+    }
   });
 });

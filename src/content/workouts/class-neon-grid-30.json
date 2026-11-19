@@ -321,7 +321,7 @@
       },
       "rpm": 85,
       "position": "seated",
-      "cue": "@ngOneOff",
+      "cue": "@breathe",
       "label": "@recovery"
     },
     {

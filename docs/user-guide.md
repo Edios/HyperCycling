@@ -36,7 +36,7 @@ An **Experience** is a ready-made ride: a class-style workout (song by song, wit
 
 The first one is **Neon Grid 45**: 11 songs at effort 3–9, with 30/30 intervals, rolling hills, a pyramid, a summit climb, three sprints and a quiet cool-down. The grid brightens with every chapter (Grid Wake, Light Lanes, Arches, Surge, Summit Scan, Overdrive, Afterglow); the scene only changes at song boundaries, never into a sprint or the hardest effort. No music is bundled: every song slot shows a tempo and an idea, and you pin your own track in the Editor (slot 8 is left open on purpose). The summary lists the chapters you rode and **Ride again** reopens the same Experience.
 
-**Riding with a knob.** A manual knob needs no setup: effort is the shared 1–10 scale and you decide where "hard" is on your own knob. At each change the effort panel says what to do, **Turn up**, **Ease off** or **Hold**, based on the change in effort and cadence since the previous block. Watts and % FTP appear only on bikes that measure power.
+**Riding with a knob.** A manual knob needs no setup: effort is the shared 1–10 scale and you decide where "hard" is on your own knob. At each change the effort panel says what to do, **Turn up**, **Ease off** or **Hold**, based on the change in effort since the previous block. Watts and % FTP appear only on bikes that measure power.
 
 ![Neon Grid: Arches (phone)](images/experience-arches-390.png)
 
