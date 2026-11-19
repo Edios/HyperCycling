@@ -178,6 +178,14 @@ export const en = {
     watts: '{name} · {ftp} W',
     advanced: 'Advanced settings',
     advancedHint: 'Layout, background, music, coach, bike',
+    advancedHintExperience: 'Music, screen, coach, bike',
+    songs: 'songs',
+    sourceHelp:
+      'The music plays from YouTube and needs no sign-in. Connect Spotify in Settings to use your own account as the source or as a backup.',
+    layoutHelp:
+      'How the numbers and the chart are laid out on the ride screen. Cockpit and Minimal have no room for the riders panel.',
+    coachCuesHelp:
+      'On-screen prompts before a change, such as “Add resistance”. Turn off if a live instructor leads.',
     group: {
       music: 'Music',
       screen: 'Screen',
@@ -207,6 +215,10 @@ export const en = {
     paused: 'Resumes paused',
     resume: 'Resume',
     discard: 'Discard',
+  },
+  ui: {
+    help: 'Help',
+    helpFor: 'Help: {topic}',
   },
   common: {
     back: 'Back',
@@ -893,8 +905,7 @@ export const en = {
   experience: {
     tagline: 'Experience the immersion',
     title: 'Experience',
-    intro:
-      'A ready-made ride: a class-style workout, a world and a music path. Pick one and press Start.',
+    intro: 'Ready-made rides with music and light. Pick one and press Start.',
     filterLabel: 'Filter by level',
     filters: { all: 'All', easy: 'Easy', medium: 'Medium', hard: 'Hard' },
     level: { easy: 'Easy', medium: 'Medium', hard: 'Hard' },
@@ -908,7 +919,15 @@ export const en = {
       afterglow: 'Afterglow',
     },
     theme: { abstract: 'Abstract', 'neon-grid': 'Neon Grid' },
-    cardMeta: '{minutes} min · {songs} songs',
+    seriesKicker: '{title} · series',
+    variantLabel: 'Length and variant',
+    peak: 'peak {n}',
+    scenarioTitle: 'Scenario',
+    noSong: 'no music',
+    songsOne: '{n} song',
+    songsFew: '{n} songs',
+    songsMany: '{n} songs',
+    songsOther: '{n} songs',
     cardEffort: 'effort {min}–{max}',
     songRow: 'Song {n}: {time}',
     slotUnnamed: 'Song {n}',
@@ -916,14 +935,13 @@ export const en = {
     start: 'Start',
     showScenario: 'Show scenario',
     hideScenario: 'Hide scenario',
-    lite: 'Lite / no visuals',
-    liteHint: 'A fallback for a weak device: plain screen, same workout and music.',
-    setupBadge: 'Experience: {title}. The world and its scenes are set for you.',
+    lite: 'Lite (weaker device)',
+    liteHint: 'Plain screen instead of the visuals, same workout and music.',
     music: {
-      title: 'Music for this ride',
-      intro:
-        'This ride suggests a song for every part. Match them to your Spotify, check the list and save it. Nothing is sent anywhere except the search on your own Spotify account.',
-      saved: 'Songs matched: {n} of {total}. They apply to this ride on this device.',
+      title: 'Songs from Spotify',
+      intro: 'Match the scenario’s songs to your own Spotify account.',
+      saved: 'Matched: {n} of {total}.',
+      help: 'Nothing is sent anywhere except the search on your own Spotify account. The match applies to this ride on this device.',
       match: 'Match songs from Spotify',
       rematch: 'Match again',
       clear: 'Clear matches',
@@ -958,14 +976,13 @@ export const en = {
       reject: 'Discard',
       retry: 'Try again',
       skip: 'Ride without these songs',
-      offline:
-        'The music plays from YouTube and needs no sign-in. Optionally connect Spotify in Settings to use your own account as the source or as a backup.',
       connect: 'Connect Spotify in Settings',
     },
     check: {
       title: 'Check the music',
-      intro:
-        'Before the ride, check that every song will play on this device. The test is silent. Best run it on site, in the training room: regional blocks and a weak connection only show up there.',
+      intro: 'Check before the ride that every song will play on this device. The test is silent.',
+      help: 'Best run it on site, in the training room: regional blocks and a weak connection only show up there.',
+      summary: 'Checked: {ok} of {total} parts ready.',
       source: {
         label: 'Music source',
         youtube: 'YouTube (default)',
@@ -973,9 +990,10 @@ export const en = {
         auto: 'Auto (Spotify when connected)',
       },
       run: 'Check the music',
+      runShort: 'Check',
       rerun: 'Check again',
       working: 'Checking versions… {done} of {total}',
-      notRun: 'The music has not been checked on this device yet.',
+      notRun: 'Not checked on this device yet.',
       health: {
         green: 'Ready',
         yellow: 'Backup only',

@@ -51,6 +51,13 @@
   color: var(--z5);
 }
 
+.kicker {
+  margin: 0;
+  color: var(--world);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 .summary h1 {
   margin: 0.625rem 0 0;
   font-family: var(--font-display);

@@ -149,10 +149,10 @@ test('Experience preview offers only the HUD layout and Lite (no background or w
   test.skip(info.project.name !== 'pages', 'runs on the pages build only');
   await page.goto('./#/setup/class-neon-grid-45?exp=neon-grid-45');
   await expect(page.getByTestId('setup-experience')).toBeVisible();
-  await expect(page.getByRole('switch', { name: 'Lite / no visuals' })).toBeVisible();
-  await expect(
-    page.getByRole('radiogroup', { name: 'Screen layout' }).getByRole('radio'),
-  ).toHaveCount(5);
+  await expect(page.getByRole('switch', { name: 'Lite (weaker device)' })).toBeVisible();
+  await expect(page.getByTestId('setup-layout-select').locator('option')).toHaveCount(5);
+  // No riders switch: the panel appears by itself once someone is picked.
+  await expect(page.getByRole('switch', { name: 'Show riders' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Background' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'World', exact: true })).toHaveCount(0);
   await expect(page.getByText('YouTube', { exact: true })).toHaveCount(0);

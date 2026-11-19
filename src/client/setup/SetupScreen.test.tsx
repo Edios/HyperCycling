@@ -490,6 +490,83 @@ describe('SetupScreen redesign: who rides, advanced settings, sticky Start', () 
     expect(useSessionStore.getState().runtime!.config.music).toBe(true);
   });
 
+  it('an Experience is lean: its own title, songs instead of blocks, no Class: prefix', async () => {
+    renderSetup('/setup/class-neon-grid-45?exp=neon-grid-45');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Neon Grid 45' })).toBeVisible();
+    expect(screen.getByTestId('setup-experience')).toHaveTextContent('Experience');
+    expect(screen.getByTestId('setup-songs')).toHaveTextContent('11');
+    expect(screen.queryByTestId('setup-blocks')).not.toBeInTheDocument();
+    // one place for the bike (Equipment); no second "Bike: …" line under the riders
+    expect(screen.queryByText(/^Bike:/)).not.toBeInTheDocument();
+  });
+
+  it('Experience advanced settings: four ordered groups, a layout list, no riders switch', async () => {
+    renderSetup('/setup/class-neon-grid-45?exp=neon-grid-45');
+    await screen.findByTestId('advanced-toggle');
+    const groups = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+    expect(groups).toEqual(['Music', 'Screen', 'Coach', 'Equipment']);
+    expect(screen.getByRole('combobox', { name: 'Screen layout' })).toHaveValue('immersive');
+    expect(screen.getAllByRole('option')).toHaveLength(
+      5 + 3, // the five layouts and the three music sources
+    );
+    expect(screen.getByRole('switch', { name: 'Lite (weaker device)' })).not.toBeChecked();
+    expect(screen.queryByRole('switch', { name: 'Show riders' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup', { name: 'Screen layout' })).not.toBeInTheDocument();
+  });
+
+  it('the "?" of a row reveals its explanation in place, and Escape closes it', async () => {
+    renderSetup('/setup/class-neon-grid-45?exp=neon-grid-45');
+    const help = await screen.findByRole('button', { name: 'Help: Screen layout' });
+    expect(help).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText(/no room for the riders panel/)).not.toBeInTheDocument();
+    fireEvent.click(help);
+    expect(help).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/no room for the riders panel/)).toBeVisible();
+    fireEvent.keyDown(help, { key: 'Escape' });
+    expect(help).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText(/no room for the riders panel/)).not.toBeInTheDocument();
+  });
+
+  it('an Experience shows the riders by itself and keeps the chosen layout', async () => {
+    renderSetup('/setup/class-neon-grid-45?exp=neon-grid-45');
+    const layout = await screen.findByRole('combobox', { name: 'Screen layout' });
+    fireEvent.click(screen.getByRole('button', { name: /Mirek/ }));
+    fireEvent.change(layout, { target: { value: 'column' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    await screen.findByTestId('where');
+    expect(useSessionStore.getState().runtime!.config).toMatchObject({
+      background: 'hyperride',
+      hud: 'column',
+      playerIds: ['p1'],
+    });
+    expect(useSessionStore.getState().runtime!.config.showRiders).toBeUndefined(); // on
+  });
+
+  it('an older saved ride (Basic, Solo, riders off) does not leak into an Experience', async () => {
+    db.settings = {
+      ...DEFAULT_SETTINGS,
+      lastSession: {
+        background: 'basic',
+        hud: 'solo',
+        showRiders: false,
+        playerIds: [],
+        music: false,
+      },
+    };
+    renderSetup('/setup/class-neon-grid-45?exp=neon-grid-45');
+    await screen.findByRole('heading', { level: 1, name: 'Neon Grid 45' });
+    expect(screen.getByRole('combobox', { name: 'Screen layout' })).toHaveValue('immersive');
+    expect(screen.getByRole('switch', { name: 'Lite (weaker device)' })).not.toBeChecked();
+    expect(screen.getByRole('switch', { name: 'Music in this ride' })).toBeChecked();
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    await screen.findByTestId('where');
+    expect(useSessionStore.getState().runtime!.config).toMatchObject({
+      background: 'hyperride',
+      hud: 'immersive',
+      music: true,
+    });
+  });
+
   it('a manual knob never shows or asks for watts', async () => {
     db.settings = knobSettings();
     renderSetup(`/setup/${scalable.id}`);

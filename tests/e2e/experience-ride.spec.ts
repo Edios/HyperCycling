@@ -24,8 +24,9 @@ test('Neon Grid 45: Home tile → picker → Setup → ride (shortened) → summ
   // Home: the Experience tile opens the catalogue
   await page.goto('./#/');
   await page.locator('[data-tile="experience"]').click();
-  // The catalogue holds the 30-minute, the 45-minute and the light variant; ride the full 45.
-  await expect(page.getByTestId('experience-card')).toHaveCount(3);
+  // One series card holds the 30-minute, the light 45 and the full 45; ride the full 45.
+  await expect(page.getByTestId('experience-card')).toHaveCount(1);
+  await page.getByRole('radio', { name: '45 min' }).check({ force: true });
   const card = page.locator('[data-testid="experience-card"][data-experience="neon-grid-45"]');
   await expect(card).toHaveCount(1);
   await expect(card).toContainText('11 songs');
@@ -34,7 +35,8 @@ test('Neon Grid 45: Home tile → picker → Setup → ride (shortened) → summ
 
   // Setup is preset for the Experience: the Scenes world
   await card.getByTestId('experience-start').click();
-  await expect(page.getByTestId('setup-experience')).toContainText('Neon Grid 45');
+  await expect(page.getByTestId('setup-experience')).toHaveText('Experience');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Neon Grid 45');
   // The Experience's music is on by default; this ride is about the chapters and must stay silent.
   const music = page.getByRole('switch', { name: 'Music in this ride' });
   await expect(music).toBeChecked();
@@ -61,6 +63,7 @@ test('Neon Grid 45: Home tile → picker → Setup → ride (shortened) → summ
 
   // Ride again returns to the same Experience's setup
   await page.getByRole('button', { name: 'Ride again' }).click();
-  await expect(page.getByTestId('setup-experience')).toContainText('Neon Grid 45');
+  await expect(page.getByTestId('setup-experience')).toHaveText('Experience');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Neon Grid 45');
   expect(errors).toEqual([]);
 });

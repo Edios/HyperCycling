@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_PLAN_SETTINGS } from '../../domain/plan';
+import type { SessionConfig } from '../../domain/settings';
 import { totalDurationSec } from '../../domain/workout';
 import { builtinWorkouts } from '../data/builtin';
 import {
@@ -7,6 +8,7 @@ import {
   buildConfig,
   effectiveHud,
   initialSelection,
+  initialSetup,
   layoutOptions,
   parsePlanRef,
   pickPlayers,
@@ -141,5 +143,70 @@ describe('parsePlanRef / pickPlayers', () => {
     const a = { id: 'a', name: 'A', ftp: 100 };
     const b = { id: 'b', name: 'B', ftp: 100 };
     expect(pickPlayers([a, b], ['b', 'zzz', 'a'])).toEqual([b, a]);
+  });
+});
+
+describe('initialSetup: what the screen opens with, from older saved rides', () => {
+  const defaults = { hyperrideWorld: 'road' } as const;
+  const ride = (over: Partial<SessionConfig>): SessionConfig => ({
+    background: 'basic',
+    hud: 'solo',
+    playerIds: [],
+    music: false,
+    ...over,
+  });
+
+  it('a first visit: Plan and Freestyle open on Basic, music off, the saved default world', () => {
+    expect(initialSetup(undefined, defaults, false)).toEqual({
+      background: 'basic',
+      hud: undefined,
+      showRiders: false,
+      music: false,
+      world: 'road',
+    });
+  });
+
+  it('Plan and Freestyle keep reading everything the last ride saved', () => {
+    const last = ride({ background: 'youtube', hud: 'cockpit', showRiders: false, music: true });
+    expect(initialSetup(last, defaults, false)).toEqual({
+      background: 'youtube',
+      hud: 'cockpit',
+      showRiders: false,
+      music: true,
+      world: 'road',
+    });
+    // older rides have no showRiders: any layout but Solo meant riders on
+    expect(initialSetup(ride({ hud: 'players' }), defaults, false).showRiders).toBe(true);
+    expect(initialSetup(ride({ hud: 'solo' }), defaults, false).showRiders).toBe(false);
+  });
+
+  it('an Experience always opens on its scenes with music on, whatever was saved', () => {
+    for (const last of [
+      undefined,
+      ride({}),
+      ride({ background: 'youtube', youtubeUrl: 'https://youtu.be/x', music: false }),
+      ride({ background: 'hyperride', hud: 'column', music: false }),
+    ]) {
+      const s = initialSetup(last, defaults, true);
+      expect(s.background).toBe('hyperride');
+      expect(s.world).toBe('scenes');
+      expect(s.music).toBe(true);
+    }
+  });
+
+  it('an Experience has no riders switch: the panel is on, a saved "off" is read but not obeyed', () => {
+    expect(initialSetup(ride({ hud: 'solo', showRiders: false }), defaults, true).showRiders).toBe(
+      true,
+    );
+    expect(initialSetup(undefined, defaults, true).showRiders).toBe(true);
+  });
+
+  it('an Experience keeps a saved overlay layout and drops one it does not offer (tiled Classic)', () => {
+    expect(initialSetup(ride({ background: 'hyperride', hud: 'focus' }), defaults, true).hud).toBe(
+      'focus',
+    );
+    // Solo / Players are the stored forms of the tiled Classic layout, which has no place there
+    expect(initialSetup(ride({ hud: 'solo' }), defaults, true).hud).toBeUndefined();
+    expect(initialSetup(ride({ hud: 'players' }), defaults, true).hud).toBeUndefined();
   });
 });

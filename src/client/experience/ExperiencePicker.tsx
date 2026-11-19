@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashLine } from '../brand';
+import { flattenWorkout } from '../../domain/segments';
 import { experienceText, type Experience } from '../../domain/experience';
 import { builtinExperiences } from '../data/builtin';
 import { useLibrary } from '../data/useLibrary';
@@ -9,7 +10,20 @@ import { useLang, useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
-import { effortRange, matchesLevel, scenarioRows, type LevelFilter } from './model';
+import { Icon } from '../ui/Icon';
+import { ProfileChart } from '../ui/ProfileChart';
+import { Segmented } from '../ui/Segmented';
+import {
+  defaultVariant,
+  effortRange,
+  groupSeries,
+  matchesLevel,
+  scenarioRows,
+  variantLabel,
+  type ExperienceSeries,
+  type LevelFilter,
+} from './model';
+import { useSongsLabel } from './useSongsLabel';
 import styles from './ExperiencePicker.module.css';
 
 const FILTERS: readonly LevelFilter[] = ['all', 'easy', 'medium', 'hard'];
@@ -18,18 +32,16 @@ export function experienceSetupUrl(e: Experience): string {
   return `/setup/${encodeURIComponent(e.workoutRef.id)}?exp=${encodeURIComponent(e.id)}`;
 }
 
-/** Experience catalogue: one card per ready-made ride with a scenario preview and Start. */
+/** Experience catalogue: one card per world (its variants one tap apart), with a scenario preview. */
 export function ExperiencePicker() {
   const t = useT();
-  const [lang] = useLang();
-  const navigate = useNavigate();
-  const { workouts } = useLibrary();
-  const { settings } = useSettings();
   const [filter, setFilter] = useState<LevelFilter>('all');
-  const [open, setOpen] = useState<string | undefined>();
 
   const visible = useMemo(
-    () => builtinExperiences.filter((e) => matchesLevel(e, filter)),
+    () =>
+      groupSeries(builtinExperiences).filter((s) =>
+        s.variants.some((e) => matchesLevel(e, filter)),
+      ),
     [filter],
   );
 
@@ -49,99 +61,127 @@ export function ExperiencePicker() {
       <p className={styles.intro}>{t('experience.intro')}</p>
 
       <div className={styles.grid}>
-        {visible.map((e) => {
-          const text = experienceText(e, lang);
-          const workout = workouts.find((w) => w.id === e.workoutRef.id);
-          const rows = workout ? scenarioRows(workout, e, settings.effortTable) : [];
-          const range = workout ? effortRange(workout, settings.effortTable) : undefined;
-          const expanded = open === e.id;
-          return (
-            <Card
-              key={e.id}
-              className={styles.card}
-              data-testid="experience-card"
-              data-experience={e.id}
-            >
-              <div className={styles.level}>
-                <span>{t(`experience.theme.${e.worldTheme.theme}` as MessageKey)}</span>
-                <span>{t(`experience.level.${e.level}` as MessageKey)}</span>
-              </div>
-              <h2>{text.title}</h2>
-              <div className={styles.meta}>
-                {t('experience.cardMeta', {
-                  minutes: e.lengthMin,
-                  songs: rows.length,
-                })}
-                {range && ` · ${t('experience.cardEffort', { ...range })}`}
-              </div>
-              <p className={styles.desc}>{text.description}</p>
-              <ul className={styles.tags}>
-                {e.tags.map((tag) => (
-                  <li key={tag}>{tag}</li>
-                ))}
-              </ul>
-              {expanded && (
-                <ol className={styles.scenario} data-testid="experience-scenario">
-                  {rows.map((r, i) => (
-                    <li key={r.id} className={styles.slot}>
-                      <span className={styles.slotNum}>{i + 1}</span>
-                      <span className={styles.slotMain}>
-                        <span className={styles.slotTitle}>
-                          {r.title
-                            ? r.artist
-                              ? `${r.artist} – ${r.title}`
-                              : r.title
-                            : t('experience.slotUnnamed', { n: i + 1 })}
-                        </span>
-                        <span className={styles.slotSub}>
-                          {r.look ? `${t(`experience.looks.${r.look}` as MessageKey)} · ` : ''}
-                          {t('experience.slotEffort', {
-                            effort:
-                              r.minEffort === r.maxEffort
-                                ? String(r.maxEffort)
-                                : `${r.minEffort}–${r.maxEffort}`,
-                          })}
-                        </span>
-                      </span>
-                      <span
-                        className={styles.slotBar}
-                        aria-hidden="true"
-                        title={t('experience.slotEffort', { effort: String(r.maxEffort) })}
-                      >
-                        <span
-                          style={{
-                            width: `${Math.max(10, r.maxEffort * 10)}%`,
-                            background: `var(--z${Math.min(10, Math.max(1, r.maxEffort))})`,
-                          }}
-                        />
-                      </span>
-                      <span className={styles.slotTime} data-testid="scenario-time">
-                        {r.time}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              )}
-              <div className={styles.actions}>
-                <Button
-                  variant="primary"
-                  data-testid="experience-start"
-                  onClick={() => navigate(experienceSetupUrl(e))}
-                  disabled={!workout}
-                >
-                  {t('experience.start')}
-                </Button>
-                <Button
-                  aria-expanded={expanded}
-                  onClick={() => setOpen(expanded ? undefined : e.id)}
-                >
-                  {t(expanded ? 'experience.hideScenario' : 'experience.showScenario')}
-                </Button>
-              </div>
-            </Card>
-          );
-        })}
+        {visible.map((s) => (
+          <SeriesCard key={s.key} series={s} filter={filter} />
+        ))}
       </div>
     </div>
+  );
+}
+
+function SeriesCard({ series, filter }: { series: ExperienceSeries; filter: LevelFilter }) {
+  const t = useT();
+  const [lang] = useLang();
+  const navigate = useNavigate();
+  const songsLabel = useSongsLabel();
+  const { workouts } = useLibrary();
+  const { settings } = useSettings();
+  const [pickedId, setPickedId] = useState<string | undefined>();
+  const [expanded, setExpanded] = useState(false);
+
+  const e = series.variants.find((v) => v.id === pickedId) ?? defaultVariant(series, filter);
+  const text = experienceText(e, lang);
+  const seriesTitle = series.theme
+    ? t(`experience.theme.${series.theme}` as MessageKey)
+    : text.title;
+  const workout = workouts.find((w) => w.id === e.workoutRef.id);
+  const rows = workout ? scenarioRows(workout, e, settings.effortTable) : [];
+  const range = workout ? effortRange(workout, settings.effortTable) : undefined;
+  const segments = workout ? flattenWorkout(workout, settings.effortTable) : [];
+  const heading = `${e.lengthMin} ${t('common.min')}${range ? ` · ${songsLabel(rows.length)} · ${t('experience.peak', { n: range.max })}` : ''}`;
+
+  return (
+    <Card className={styles.card} data-testid="experience-card" data-experience={e.id}>
+      <p className={styles.kicker}>
+        {series.theme
+          ? t('experience.seriesKicker', { title: seriesTitle })
+          : t('experience.kicker')}
+      </p>
+      <h2>{seriesTitle}</h2>
+      {series.variants.length > 1 && (
+        <div className={styles.variants}>
+          <Segmented
+            label={t('experience.variantLabel')}
+            value={e.id}
+            options={series.variants.map((v) => ({
+              value: v.id,
+              label: variantLabel(experienceText(v, lang).title, seriesTitle, t('common.min')),
+            }))}
+            onChange={(id) => {
+              setPickedId(id);
+              setExpanded(false);
+            }}
+          />
+        </div>
+      )}
+      <p className={styles.desc}>{text.description}</p>
+      {segments.length > 0 && (
+        <div className={styles.chart} aria-hidden="true">
+          <ProfileChart segments={segments} height="3.25rem" />
+        </div>
+      )}
+      <ul className={styles.facts}>
+        <li>{t(`experience.level.${e.level}` as MessageKey)}</li>
+        {range && <li>{t('experience.cardEffort', { ...range })}</li>}
+        <li>{songsLabel(rows.length)}</li>
+      </ul>
+      <div className={styles.actions}>
+        <Button
+          variant="primary"
+          data-testid="experience-start"
+          onClick={() => navigate(experienceSetupUrl(e))}
+          disabled={!workout}
+        >
+          <Icon name="play" size={18} />
+          {t('experience.start')}
+        </Button>
+        <Button aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
+          {t(expanded ? 'experience.hideScenario' : 'experience.showScenario')}
+        </Button>
+      </div>
+      {expanded && (
+        <section className={styles.scenarioBox} aria-label={t('experience.scenarioTitle')}>
+          <h3 className={styles.scenarioHead}>{t('experience.scenarioTitle')}</h3>
+          <p className={styles.scenarioSum} data-testid="experience-scenario-summary">
+            {heading}
+          </p>
+          <ol className={styles.scenario} data-testid="experience-scenario">
+            {rows.map((r, i) => {
+              const song = r.title ? (r.artist ? `${r.artist} – ${r.title}` : r.title) : undefined;
+              const effort =
+                r.minEffort === r.maxEffort ? String(r.maxEffort) : `${r.minEffort}–${r.maxEffort}`;
+              return (
+                <li key={r.id} className={styles.slot}>
+                  <span className={styles.slotNum}>{i + 1}</span>
+                  <span className={styles.slotMain}>
+                    <span className={styles.slotTitle}>
+                      {r.look
+                        ? t(`experience.looks.${r.look}` as MessageKey)
+                        : t('experience.slotUnnamed', { n: i + 1 })}
+                    </span>
+                    <span className={styles.slotSub}>
+                      <Icon name="music" size={13} />
+                      {song ?? t('experience.noSong')}
+                    </span>
+                  </span>
+                  <span className={styles.slotBar} aria-hidden="true">
+                    <span
+                      style={{
+                        width: `${Math.max(10, r.maxEffort * 10)}%`,
+                        background: `var(--z${Math.min(10, Math.max(1, r.maxEffort))})`,
+                      }}
+                    />
+                  </span>
+                  <span className={styles.srOnly}>{t('experience.slotEffort', { effort })}</span>
+                  <span className={styles.slotTime} data-testid="scenario-time">
+                    {r.time}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      )}
+    </Card>
   );
 }

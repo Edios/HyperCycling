@@ -1,0 +1,95 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 3rem;
+}
+
+/* The control line grows: a label sits left, its switch, select or button right. */
+.control {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.control > label {
+  flex: 1;
+  min-width: 0;
+}
+
+.control > label:has(select) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  white-space: nowrap;
+}
+
+.control > label:has(select) select {
+  flex: 0 1 12rem;
+  min-width: 0;
+}
+
+/* A 44 px target around an 18 px icon. */
+.help {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max(44px, 2.75rem);
+  height: max(44px, 2.75rem);
+  margin-right: -0.625rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--mut);
+  cursor: pointer;
+}
+
+.help:hover {
+  color: var(--fg);
+}
+
+.help:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: -2px;
+}
+
+.helpOn {
+  color: var(--fg);
+}
+
+.status {
+  margin: 0;
+  color: var(--mut);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.text {
+  margin: 0 0 0.25rem;
+  padding: 0.625rem 0.75rem;
+  border-left: 2px solid var(--line2);
+  color: var(--mut);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.text p {
+  margin: 0;
+}
+
+.text a {
+  color: var(--fg);
+}
