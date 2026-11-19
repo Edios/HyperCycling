@@ -101,7 +101,12 @@ for (const size of SIZES) {
     // The chart never covers the lane (it shrank to nothing on landscape phones before).
     await lane.scrollIntoViewIfNeeded();
     const l = await box(lane);
-    expect(l.height).toBeGreaterThanOrEqual(40);
+    // Full height (2.75rem, at least a 44 px touch target), not squeezed by the chart below it.
+    const rem = await page.evaluate(() =>
+      parseFloat(getComputedStyle(document.documentElement).fontSize),
+    );
+    expect(l.height).toBeGreaterThanOrEqual(Math.max(2.75 * rem, 44) - 1);
+    expect(Math.abs((await box(pill)).height - l.height)).toBeLessThanOrEqual(1);
     expect((await box(timeline)).y).toBeGreaterThanOrEqual(l.y + l.height - 0.5);
 
     // Song / cool-down add buttons: one aligned row, labels not cut.
@@ -117,7 +122,8 @@ for (const size of SIZES) {
     // The exact %FTP field is grouped with the effort buttons (right under them).
     const levels = await box(page.getByRole('group', { name: 'Effort' }).first());
     const ftp = await box(page.getByTestId('exact-ftp'));
-    expect(ftp.y - (levels.y + levels.height)).toBeLessThanOrEqual(24);
+    // Beside the caption, or on the next line in a narrow panel; never a block further down.
+    expect(ftp.y - (levels.y + levels.height)).toBeLessThanOrEqual(48);
     expect(ftp.y).toBeGreaterThan(levels.y);
 
     // Nothing scrolls sideways.

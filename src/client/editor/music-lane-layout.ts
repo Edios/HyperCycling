@@ -16,7 +16,7 @@ export const ESTIMATE_SEC = 210;
 export const BAR_GAP_PX = 2;
 
 /** A free stretch narrower than this share of the workout gets no "+ next track" button. */
-const MIN_GHOST_SHARE = 0.03;
+const MIN_GHOST_SHARE = 0.05;
 
 /**
  * The timeline's horizontal scale. Top-level blocks are flex items sized by duration with a fixed

@@ -9,7 +9,7 @@
 /* Same scale and inset as the timeline bars (see MusicLane.module.css). */
 .lane {
   position: relative;
-  height: 2.5rem;
+  height: max(2.5rem, 44px);
   margin: 0 calc(0.75rem + 1px) 0.875rem;
 }
 .lane[hidden] {

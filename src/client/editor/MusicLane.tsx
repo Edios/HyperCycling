@@ -205,7 +205,9 @@ export function MusicLane({
               data-estimated={p.estimated || undefined}
               data-clipped={p.clipped || undefined}
               className={`${styles.pill} ${p.estimated ? styles.estimated : ''} ${p.clipped ? styles.clipped : ''}`}
-              title={titleBits.join(' ') || undefined}
+              title={[pillLabel(t, shownTrack, p.endSec - from, p.estimated), ...titleBits].join(
+                '\n',
+              )}
               onClick={() => {
                 if (justDragged.current) return;
                 onPick(p.blockId);
