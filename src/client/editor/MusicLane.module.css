@@ -1,13 +1,36 @@
+/*
+ * Same horizontal scale as the timeline bars: the timeline canvas has a 1px border and 0.75rem
+ * padding (Timeline.module.css `.canvas`), so the lane is inset by the same amount.
+ */
 .lane {
   position: relative;
-  height: 2.5rem;
-  margin-bottom: 0.875rem;
+  /* Never squeezed by the chart below it when the screen is short (landscape phones). */
+  flex: 0 0 auto;
+  height: 2.75rem;
+  margin: 0 calc(0.75rem + 1px) 0.875rem;
+}
+
+.slot {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 0.75rem;
+}
+
+.active {
+  z-index: 1;
+}
+
+.lane[data-dragging] .active {
+  z-index: 3;
 }
 
 .pill {
   position: absolute;
   top: 0;
   bottom: 0;
+  left: 0;
+  width: 100%;
   box-sizing: border-box;
   padding: 0 0.625rem;
   border-radius: 0.5rem;
@@ -23,13 +46,94 @@
   cursor: pointer;
 }
 
+.active .pill {
+  border-color: var(--act);
+  padding-inline: 1rem;
+}
+
 .pill:focus-visible {
   outline: 2px solid var(--act);
   outline-offset: 1px;
 }
 
+/* Length unknown: the shown length is an estimate. */
+.estimated {
+  border-right-style: dashed;
+}
+
+/* Cut short by the next track or the end of the workout: the end fades out. */
+.clipped {
+  border-right-color: transparent;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 1.25rem), rgb(0 0 0 / 0.35));
+  mask-image: linear-gradient(to right, #000 calc(100% - 1.25rem), rgb(0 0 0 / 0.35));
+}
+
+/* An unknown length holds its slot after the estimate. */
+.tail {
+  position: absolute;
+  top: 0.375rem;
+  bottom: 0.375rem;
+  box-sizing: border-box;
+  border-radius: 0 0.5rem 0.5rem 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgb(47 90 58 / 0.35) 0 6px,
+    transparent 6px 12px
+  );
+}
+
 .ghost {
+  position: absolute;
+  width: auto;
   background: transparent;
   border-style: dashed;
   color: var(--mut);
+  text-align: center;
+  padding: 0 0.375rem;
+}
+
+/* Trim handles on the selected block's tracks: a wide grip, a thin visible bar. */
+.handle {
+  position: absolute;
+  top: -0.25rem;
+  bottom: -0.25rem;
+  width: 1.25rem;
+  z-index: 2;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.handle::after {
+  content: '';
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  left: calc(50% - 2px);
+  width: 4px;
+  border-radius: 2px;
+  background: #fff;
+}
+
+.hStart {
+  left: -0.625rem;
+}
+
+.hEnd {
+  right: -0.625rem;
+}
+
+@media (pointer: coarse) {
+  .handle {
+    width: 1.75rem;
+  }
+
+  .hStart {
+    left: -0.875rem;
+  }
+
+  .hEnd {
+    right: -0.875rem;
+  }
 }

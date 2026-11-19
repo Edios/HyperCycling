@@ -3,6 +3,7 @@ import { newId } from '../../domain/ids';
 import {
   repairSongs,
   slotTracks,
+  trimTrack,
   workoutSchema,
   type Block,
   type RampBlock,
@@ -60,8 +61,21 @@ export type EditorAction =
   | { type: 'duplicateBlock'; id: string }
   | { type: 'addRepeatChild'; repeatId: string; kind: ChildKind; atIndex?: number }
   | { type: 'removeChild'; repeatId: string; childId: string }
+  /** Pins (or replaces) the cue's track; the tracks queued after it stay. */
   | { type: 'setCue'; blockId: string; rep: number; track: TrackRef }
   | { type: 'clearCue'; blockId: string; rep: number }
+  /** Replaces the tracks that play right after the cue's track (empty = none). */
+  | { type: 'setCueQueue'; blockId: string; rep: number; queue: TrackRef[] }
+  /** Trims one track of a cue's run: index 0 = the cue's track, 1.. = its queue. */
+  | {
+      type: 'trimCueTrack';
+      blockId: string;
+      rep: number;
+      index: number;
+      startAtSec: number;
+      /** null = play to the end of the recording. */
+      endAtSec: number | null;
+    }
   | { type: 'addSong'; blockId: string }
   | { type: 'removeSong'; id: string }
   | { type: 'resizeSong'; id: string; edge: 'start' | 'end'; delta: 1 | -1 }
@@ -432,10 +446,41 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
     case 'setCue':
       return apply(state, (w) => {
+        const old = w.musicCues.find((c) => c.blockId === action.blockId && c.rep === action.rep);
         w.musicCues = [
-          ...w.musicCues.filter((c) => !(c.blockId === action.blockId && c.rep === action.rep)),
-          { blockId: action.blockId, rep: action.rep, track: action.track },
+          ...w.musicCues.filter((c) => c !== old),
+          {
+            blockId: action.blockId,
+            rep: action.rep,
+            track: action.track,
+            ...(old?.queue?.length ? { queue: old.queue } : {}),
+          },
         ];
+        return { selectedId: state.selectedId };
+      });
+
+    case 'setCueQueue':
+      return apply(state, (w) => {
+        const cue = w.musicCues.find((c) => c.blockId === action.blockId && c.rep === action.rep);
+        if (!cue) return notFound;
+        if (action.queue.length > 0) cue.queue = action.queue;
+        else delete cue.queue;
+        return { selectedId: state.selectedId };
+      });
+
+    case 'trimCueTrack':
+      return apply(state, (w) => {
+        const cue = w.musicCues.find((c) => c.blockId === action.blockId && c.rep === action.rep);
+        const track = cue
+          ? action.index === 0
+            ? cue.track
+            : cue.queue?.[action.index - 1]
+          : undefined;
+        if (!track) return notFound;
+        const trimmed = trimTrack(track, action.startAtSec, action.endAtSec);
+        if (!trimmed) return invalid;
+        if (action.index === 0 && cue) cue.track = trimmed;
+        else if (cue?.queue) cue.queue[action.index - 1] = trimmed;
         return { selectedId: state.selectedId };
       });
 

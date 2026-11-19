@@ -20,7 +20,7 @@ import {
   type EditorState,
   type NewBlockKind,
 } from './editor-state';
-import { Inspector } from './Inspector';
+import { Inspector, type TrackFocus } from './Inspector';
 import { MetaBar } from './MetaBar';
 import { findBlock, hardMinutes, saveIssue, shortcutToAction } from './model';
 import { MusicLane } from './MusicLane';
@@ -59,7 +59,7 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
   const [toast, setToast] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [focusTrack, setFocusTrack] = useState(false);
+  const [focusTrack, setFocusTrack] = useState<TrackFocus>(false);
   const [showCard, setShowCard] = useState(false);
   // Built-ins are shown in the UI language, like the tiles; own workouts show their stored text.
   const shown = readOnly ? localizedText(workout, lang) : workout;
@@ -223,7 +223,7 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
       <div className={styles.screen} data-testid="editor-screen" data-readonly={readOnly}>
         <header className={styles.bar}>
           <Link to="/" className={styles.back} title={t('nav.mainMenu')}>
-            <span aria-hidden="true">⌂</span> {t('nav.mainMenu')}
+            <span aria-hidden="true">⌂</span> <span className={styles.lbl}>{t('nav.mainMenu')}</span>
           </Link>
           <Link to="/freestyle" className={styles.back}>
             {t('editor.back')}
@@ -281,7 +281,7 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
             <Icon name="redo" />
           </button>
           <Link to="/settings" className={styles.back} title={t('nav.settings')}>
-            <Icon name="settings" /> {t('nav.settings')}
+            <Icon name="settings" /> <span className={styles.lbl}>{t('nav.settings')}</span>
           </Link>
           {!isNew && !readOnly && (
             <>
@@ -340,8 +340,13 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
               readOnly={readOnly}
               onPick={(blockId) => {
                 dispatch({ type: 'select', id: blockId });
-                setFocusTrack(true);
+                setFocusTrack('track');
               }}
+              onAddNext={(blockId) => {
+                dispatch({ type: 'select', id: blockId });
+                setFocusTrack('next');
+              }}
+              dispatch={dispatch}
             />
             <Timeline
               workout={workout}

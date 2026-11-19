@@ -1,6 +1,14 @@
-import { useEffect, useId, useRef, useState, type Dispatch } from 'react';
+import { useEffect, useId, useRef, useState, type Dispatch, type RefObject } from 'react';
 import { effortRow, effortToFtpPct, type EffortLevel, type EffortTable } from '../../domain/effort';
-import type { Block, Intensity, Position, TrackRef, Workout } from '../../domain/workout';
+import {
+  trackEndSec,
+  trackPlaySec,
+  type Block,
+  type Intensity,
+  type Position,
+  type TrackRef,
+  type Workout,
+} from '../../domain/workout';
 import { parseClock, parseTrackUrl } from '../music/parse-track-url';
 import { useT } from '../i18n';
 import { lookupSpotifyTrack } from '../music/spotify/track-info';
@@ -19,14 +27,19 @@ import { Icon } from '../ui/Icon';
 
 const LEVELS: EffortLevel[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
+export type TrackFocus = false | 'track' | 'next';
+
 export interface InspectorProps {
   workout: Workout;
   selectedId: string | undefined;
   readOnly: boolean;
   table: EffortTable;
   dispatch: Dispatch<EditorAction>;
-  /** True when a music pill was clicked: move focus to the track field, then call onTrackFocused. */
-  focusTrack: boolean;
+  /**
+   * Set when the music lane asked for a field: 'track' (a pill or the pin placeholder) or 'next'
+   * (the free time after a track). Focus moves there, then onTrackFocused is called.
+   */
+  focusTrack: TrackFocus;
   onTrackFocused: () => void;
 }
 
@@ -322,7 +335,7 @@ function LeafInspector({
   workout: Workout;
   table: EffortTable;
   dispatch: Dispatch<EditorAction>;
-  focusTrack: boolean;
+  focusTrack: TrackFocus;
   onTrackFocused: () => void;
   draft: TrackDraft | undefined;
   onDraft: (d: TrackDraft | undefined) => void;
@@ -440,9 +453,10 @@ function LeafInspector({
       />
 
       <TrackField
-        key={`${id}:${cue ? `${cue.track.provider}:${cue.track.id}:${cue.track.startAtSec}` : ''}`}
+        key={`${id}:${cue ? `${cue.track.provider}:${cue.track.id}:${cue.track.startAtSec}:${cue.track.endAtSec ?? ''}` : ''}`}
         blockId={id}
         cue={cue?.track}
+        queue={cue?.queue ?? []}
         rpm={leaf.rpm}
         getCue={() =>
           workoutRef.current.musicCues.find((c) => c.blockId === id && c.rep === 1)?.track
@@ -462,6 +476,8 @@ function LeafInspector({
 export interface TrackDraft {
   url: string;
   start: string;
+  /** Trimmed end (m:ss); empty = to the end of the recording. */
+  end?: string;
 }
 
 function trackUrl(track: { provider: 'spotify' | 'youtube'; id: string }): string {
@@ -473,6 +489,7 @@ function trackUrl(track: { provider: 'spotify' | 'youtube'; id: string }): strin
 function TrackField({
   blockId,
   cue,
+  queue,
   rpm,
   getCue,
   dispatch,
@@ -483,31 +500,41 @@ function TrackField({
 }: {
   blockId: string;
   cue: Workout['musicCues'][number]['track'] | undefined;
+  /** Tracks that play right after the cue's track. */
+  queue: TrackRef[];
   /** Cadence of the block this track is pinned to (for the BPM hint). */
   rpm: number | undefined;
   /** The cue as it is now (after any later edits); used when an async check finishes. */
   getCue: () => TrackRef | undefined;
   dispatch: Dispatch<EditorAction>;
-  focusRequested: boolean;
+  focusRequested: TrackFocus;
   onFocused: () => void;
   draft: TrackDraft | undefined;
   onDraft: (d: TrackDraft | undefined) => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
+  const nextInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (!focusRequested) return;
-    input.current?.focus();
+    (focusRequested === 'next' && nextInput.current ? nextInput : input).current?.focus();
     onFocused();
   }, [focusRequested, onFocused]);
   const t = useT();
   const urlId = useId();
   const url = draft?.url ?? (cue ? trackUrl(cue) : '');
   const start = draft?.start ?? formatClock(cue?.startAtSec ?? 0);
+  const end =
+    draft?.end ??
+    (cue?.endAtSec !== undefined ? formatClock(trackEndSec(cue) ?? cue.endAtSec) : '');
   const [touched, setTouched] = useState(false);
   const parsed = parseTrackUrl(url);
   const startSec = parseClock(start);
+  const endSec = end.trim() === '' ? null : parseClock(end);
   const urlError = touched && url.trim() !== '' && !parsed;
   const startError = start.trim() !== '' && startSec === undefined;
+  const endError =
+    endSec === undefined || (endSec !== null && startSec !== undefined && endSec <= startSec);
+  const draftOf = (patch: Partial<TrackDraft>): TrackDraft => ({ url, start, end, ...patch });
   const providerName = (p: 'spotify' | 'youtube'): string =>
     p === 'spotify' ? 'Spotify' : 'YouTube';
 
@@ -518,7 +545,7 @@ function TrackField({
       next?.startAtSec !== undefined && (parseClock(start) ?? 0) === 0
         ? formatClock(next.startAtSec)
         : start;
-    onDraft({ url: value, start: fill });
+    onDraft(draftOf({ url: value, start: fill }));
   };
 
   const place = (track: TrackRef): void => {
@@ -536,7 +563,14 @@ function TrackField({
           type: 'setCue',
           blockId,
           rep: 1,
-          track: { ...now, title: info.title, ...(info.artist ? { artist: info.artist } : {}) },
+          track: {
+            ...now,
+            title: info.title,
+            ...(info.artist ? { artist: info.artist } : {}),
+            ...(info.durationSec !== undefined && now.durationSec === undefined
+              ? { durationSec: info.durationSec }
+              : {}),
+          },
         });
       });
       return;
@@ -555,20 +589,26 @@ function TrackField({
 
   const pin = (): void => {
     setTouched(true);
-    if (!parsed || startSec === undefined) return;
+    if (!parsed || startSec === undefined || endError) return;
     const same = cue?.provider === parsed.provider && cue.id === parsed.id;
+    // The title, length and tempo belong to the track: a different id starts without them.
+    const dur = same ? cue.durationSec : undefined;
     place({
       provider: parsed.provider,
       id: parsed.id,
-      // The title belongs to the track: a different id starts without one.
       title: same ? cue.title : '',
       ...(same && cue.artist ? { artist: cue.artist } : {}),
+      ...(dur !== undefined ? { durationSec: dur } : {}),
       ...(same && cue.notEmbeddable ? { notEmbeddable: true } : {}),
       ...(same && cue.bpm !== undefined ? { bpm: cue.bpm } : {}),
       ...(same && cue.bpmSource ? { bpmSource: cue.bpmSource } : {}),
+      ...(same && cue.alternates ? { alternates: cue.alternates } : {}),
       startAtSec: startSec,
+      // An end at or past the recording's end is the same as none.
+      ...(endSec !== null && !(dur !== undefined && endSec >= dur) ? { endAtSec: endSec } : {}),
     });
   };
+  const playSec = cue ? trackPlaySec(cue) : undefined;
 
   return (
     <div className={styles.group} data-testid="track-field">
@@ -582,6 +622,18 @@ function TrackField({
             provider: providerName(cue.provider),
             time: formatClock(cue.startAtSec),
           })}
+        </small>
+      )}
+      {cue && (
+        <small className={styles.caption} data-testid="track-length">
+          {playSec !== undefined
+            ? cue.durationSec !== undefined && playSec < cue.durationSec
+              ? t('editor.inspector.playsOf', {
+                  time: formatClock(playSec),
+                  full: formatClock(cue.durationSec),
+                })
+              : t('editor.inspector.plays', { time: formatClock(playSec) })
+            : t('editor.inspector.playsUnknown')}
         </small>
       )}
       {cue?.notEmbeddable && (
@@ -614,7 +666,20 @@ function TrackField({
             data-testid="track-start"
             value={start}
             aria-invalid={startError ? true : undefined}
-            onChange={(e) => onDraft({ url, start: e.target.value })}
+            onChange={(e) => onDraft(draftOf({ start: e.target.value }))}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') pin();
+            }}
+          />
+        </label>
+        <label className={styles.inline}>
+          <span>{t('editor.inspector.trackEnd')}</span>
+          <input
+            data-testid="track-end"
+            value={end}
+            placeholder={t('editor.inspector.trackEndEmpty')}
+            aria-invalid={end.trim() !== '' && endError ? true : undefined}
+            onChange={(e) => onDraft(draftOf({ end: e.target.value }))}
             onKeyDown={(e) => {
               if (e.key === 'Enter') pin();
             }}
@@ -624,6 +689,11 @@ function TrackField({
       {startError && (
         <small role="alert" className={styles.error}>
           {t('editor.inspector.trackStartError')}
+        </small>
+      )}
+      {!startError && end.trim() !== '' && endError && (
+        <small role="alert" className={styles.error}>
+          {t('editor.inspector.trackEndError')}
         </small>
       )}
       <div className={styles.row}>
@@ -664,7 +734,205 @@ function TrackField({
           place({ ...track, startAtSec: startSec ?? 0 });
         }}
       />
+      {cue && <CueQueue blockId={blockId} queue={queue} dispatch={dispatch} inputRef={nextInput} />}
     </div>
+  );
+}
+
+/** Tracks that play right after the cue's track: trim, remove, and add one more by link. */
+function CueQueue({
+  blockId,
+  queue,
+  dispatch,
+  inputRef,
+}: {
+  blockId: string;
+  queue: TrackRef[];
+  dispatch: Dispatch<EditorAction>;
+  inputRef: RefObject<HTMLInputElement | null>;
+}) {
+  const t = useT();
+  const urlId = useId();
+  const [url, setUrl] = useState('');
+  const [touched, setTouched] = useState(false);
+  const queueRef = useRef(queue);
+  useEffect(() => {
+    queueRef.current = queue;
+  });
+  const parsed = parseTrackUrl(url);
+  const urlError = touched && url.trim() !== '' && !parsed;
+  const set = (next: TrackRef[]): void => {
+    queueRef.current = next;
+    dispatch({ type: 'setCueQueue', blockId, rep: 1, queue: next });
+  };
+  const add = (): void => {
+    setTouched(true);
+    if (!parsed) return;
+    const added: TrackRef = {
+      provider: parsed.provider,
+      id: parsed.id,
+      title: '',
+      startAtSec: parsed.startAtSec ?? 0,
+    };
+    set([...queueRef.current, added]);
+    setUrl('');
+    setTouched(false);
+    // Fill in the entry that is still bare: its name and, from Spotify's Web API, its length.
+    const fill = (patch: (x: TrackRef) => TrackRef): void => {
+      const latest = queueRef.current;
+      const at = latest.findIndex(
+        (x) => x.provider === added.provider && x.id === added.id && !x.title,
+      );
+      const found = latest[at];
+      if (!found) return;
+      const named = patch(found);
+      if (named !== found) set(latest.map((x, i) => (i === at ? named : x)));
+    };
+    if (added.provider === 'spotify') {
+      void lookupSpotifyTrack(added.id).then((info) => {
+        if (!info) return;
+        fill((x) => ({
+          ...x,
+          title: info.title,
+          ...(info.artist ? { artist: info.artist } : {}),
+          ...(info.durationSec !== undefined ? { durationSec: info.durationSec } : {}),
+        }));
+      });
+    } else {
+      void checkYoutubeEmbeddable(added.id).then((check) =>
+        fill((x) => applyYoutubeCheck(x, check)),
+      );
+    }
+  };
+  return (
+    <div className={styles.group} data-testid="cue-queue">
+      <span className={styles.groupLabel}>{t('editor.inspector.queueTitle')}</span>
+      {queue.length > 0 && (
+        <ol className={styles.queueList}>
+          {queue.map((tr, i) => (
+            <QueueItem
+              key={`${tr.provider}:${tr.id}:${i}:${tr.startAtSec}:${tr.endAtSec ?? ''}`}
+              track={tr}
+              onTrim={(startAtSec, endAtSec) =>
+                dispatch({
+                  type: 'trimCueTrack',
+                  blockId,
+                  rep: 1,
+                  index: i + 1,
+                  startAtSec,
+                  endAtSec,
+                })
+              }
+              onRemove={() => set(queue.filter((_, k) => k !== i))}
+            />
+          ))}
+        </ol>
+      )}
+      <label className={styles.caption} htmlFor={urlId}>
+        {t('editor.inspector.queueAdd')}
+      </label>
+      <div className={styles.addRow}>
+        <input
+          id={urlId}
+          ref={inputRef}
+          data-testid="queue-url"
+          className={styles.wide}
+          placeholder={t('editor.inspector.trackUrl')}
+          value={url}
+          aria-invalid={urlError ? true : undefined}
+          onChange={(e) => setUrl(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') add();
+          }}
+        />
+        <Button onClick={add} data-testid="queue-add">
+          {t('editor.inspector.queueAddButton')}
+        </Button>
+      </div>
+      {urlError && (
+        <small role="alert" className={styles.error}>
+          {t('editor.inspector.trackError')}
+        </small>
+      )}
+    </div>
+  );
+}
+
+function QueueItem({
+  track,
+  onTrim,
+  onRemove,
+}: {
+  track: TrackRef;
+  onTrim: (startAtSec: number, endAtSec: number | null) => void;
+  onRemove: () => void;
+}) {
+  const t = useT();
+  const [start, setStart] = useState(formatClock(track.startAtSec));
+  const [end, setEnd] = useState(
+    track.endAtSec !== undefined ? formatClock(trackEndSec(track) ?? track.endAtSec) : '',
+  );
+  const startSec = parseClock(start);
+  const endSec = end.trim() === '' ? null : parseClock(end);
+  const bad =
+    startSec === undefined || endSec === undefined || (endSec !== null && endSec <= startSec);
+  const commit = (): void => {
+    if (bad || startSec === undefined || endSec === undefined) return;
+    const shownEnd = track.endAtSec !== undefined ? (trackEndSec(track) ?? null) : null;
+    if (startSec === track.startAtSec && endSec === shownEnd) return;
+    onTrim(startSec, endSec);
+  };
+  const play = trackPlaySec(track);
+  const provider = track.provider === 'spotify' ? 'Spotify' : 'YouTube';
+  const name = track.title
+    ? track.artist
+      ? `${track.artist} – ${track.title}`
+      : track.title
+    : provider;
+  return (
+    <li className={styles.queueItem} data-testid="cue-queue-item">
+      <span className={styles.queueName}>
+        {name}
+        <small className={styles.caption}>
+          {' · '}
+          {play !== undefined
+            ? t('editor.inspector.plays', { time: formatClock(play) })
+            : t('editor.inspector.playsUnknown')}
+        </small>
+      </span>
+      <span className={styles.queueTrim}>
+        <label className={styles.inline}>
+          <span>{t('editor.inspector.trackStart')}</span>
+          <input
+            data-testid="queue-start"
+            value={start}
+            aria-invalid={startSec === undefined ? true : undefined}
+            onChange={(e) => setStart(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commit();
+            }}
+          />
+        </label>
+        <label className={styles.inline}>
+          <span>{t('editor.inspector.trackEnd')}</span>
+          <input
+            data-testid="queue-end"
+            value={end}
+            placeholder={t('editor.inspector.trackEndEmpty')}
+            aria-invalid={end.trim() !== '' && bad ? true : undefined}
+            onChange={(e) => setEnd(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commit();
+            }}
+          />
+        </label>
+        <Button aria-label={`${t('editor.inspector.queueRemove')}: ${name}`} onClick={onRemove}>
+          <Icon name="close" size={16} />
+        </Button>
+      </span>
+    </li>
   );
 }
 

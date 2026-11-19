@@ -30,8 +30,9 @@ export interface MusicProvider {
   describeTrack?(track: TrackRef): Promise<TrackInfo | undefined>;
 }
 
-/** What a provider knows about a track's name. */
+/** What a provider knows about a track's name (and, when it says, its length). */
 export interface TrackInfo {
   title: string;
   artist?: string;
+  durationSec?: number;
 }

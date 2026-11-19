@@ -55,6 +55,11 @@ export interface TrackRef {
   artist?: string;
   durationSec?: number;
   startAtSec: number;
+  /**
+   * Where playback of this recording stops (seconds into the recording), set when the owner trims
+   * the end. Absent = the end of the recording. Older data has no end and plays as it always did.
+   */
+  endAtSec?: number;
   /** Tempo typed or tapped by the user (no audio analysis); used to match the block's RPM. */
   bpm?: number;
   /** Where `bpm` came from when it was looked up (absent = typed or tapped by the user). */
@@ -178,6 +183,8 @@ const plainTrackSchema = z.object({
   artist: z.string().optional(),
   durationSec: z.number().min(0).optional(),
   startAtSec: z.number().min(0),
+  // Lenient on purpose: an end at or before the start is ignored (see trackEndSec), not rejected.
+  endAtSec: z.number().min(0).optional(),
   bpm: z.number().min(BPM_MIN).max(BPM_MAX).optional(),
   bpmSource: z.enum(['getsongbpm', 'deezer']).optional(),
   notEmbeddable: z.boolean().optional(),
@@ -495,6 +502,49 @@ export function compileSongCues(w: Workout): MusicCue[] {
     }
   }
   return cues;
+}
+
+/**
+ * Where playback of a recording stops, in seconds into the recording: the trimmed end when it lies
+ * after the start (and before the recording's end), else the recording's length. Undefined when
+ * neither is known.
+ */
+export function trackEndSec(t: Pick<TrackRef, 'startAtSec' | 'endAtSec' | 'durationSec'>): number | undefined {
+  const end = t.endAtSec !== undefined && t.endAtSec > t.startAtSec ? t.endAtSec : undefined;
+  if (end === undefined) return t.durationSec;
+  return t.durationSec === undefined ? end : Math.min(end, t.durationSec);
+}
+
+/** How long a track plays (from `startAtSec` to its end); undefined when its length is unknown. */
+export function trackPlaySec(t: Pick<TrackRef, 'startAtSec' | 'endAtSec' | 'durationSec'>): number | undefined {
+  const end = trackEndSec(t);
+  return end === undefined ? undefined : Math.max(0, end - t.startAtSec);
+}
+
+/** Shortest stretch of a recording a trim may leave. */
+export const MIN_TRACK_PLAY_SEC = 5;
+
+/**
+ * The track trimmed to play from `startAtSec` to `endAtSec` (whole seconds; null = to the end of
+ * the recording). An end at or past the recording's end is dropped (same as no trim). Undefined
+ * when the trim leaves less than MIN_TRACK_PLAY_SEC or starts past the recording.
+ */
+export function trimTrack(
+  track: TrackRef,
+  startAtSec: number,
+  endAtSec: number | null,
+): TrackRef | undefined {
+  const start = Math.max(0, Math.round(startAtSec));
+  const dur = track.durationSec;
+  if (dur !== undefined && start > dur - MIN_TRACK_PLAY_SEC) return undefined;
+  const { endAtSec: _old, ...rest } = track;
+  void _old;
+  const out: TrackRef = { ...rest, startAtSec: start };
+  if (endAtSec === null) return out;
+  const end = Math.round(endAtSec);
+  if (end < start + MIN_TRACK_PLAY_SEC) return undefined;
+  if (dur !== undefined && end >= dur) return out;
+  return { ...out, endAtSec: end };
 }
 
 /** The slot's queue: `tracks`, else the legacy single `track` as a one-element list. */
