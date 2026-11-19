@@ -1,5 +1,5 @@
 import type { Segment } from './segments';
-import type { MusicCue, TrackRef } from './workout';
+import { trackPlaySec, type MusicCue, type TrackRef } from './workout';
 
 export interface ScheduledTrack {
   track: TrackRef;
@@ -70,44 +70,123 @@ function fallbackPieces(fallback: TrackRef[], anchor: number, limit: number): Pi
   return out;
 }
 
-function buildPieces(input: Omit<MusicScheduleInput, 'tSec'>): Piece[] {
-  const total = totalSec(input.segments);
-  const cues = resolveCues(input.segments, input.cues).filter((c) => c.startSec < total);
-  const pieces: Piece[] = [];
-  const firstCueStart = cues[0]?.startSec ?? total;
-  pieces.push(...fallbackPieces(input.fallback, 0, firstCueStart));
+/** One track of a cue's run, placed on the workout clock. */
+export interface RunItem {
+  track: TrackRef;
+  /** 0 = the cue's own track, 1.. = its queue. */
+  index: number;
+  startSec: number;
+  /** Exclusive; clipped to the run's limit (next cue or end of workout). */
+  endSec: number;
+  /** Where the track would end if nothing cut it (may lie past `endSec`). */
+  fullEndSec: number;
+  /** Its length is unknown: playback holds the slot to the limit; `fullEndSec` is an estimate. */
+  open: boolean;
+  /** Cut by the next cue or the end of the workout before it finished. */
+  clipped: boolean;
+}
 
-  cues.forEach((rc, n) => {
-    const limit = cues[n + 1]?.startSec ?? total;
-    // The cue's track and its queue play back to back; the one running at `limit` is cut there.
+/** A cue resolved on the workout clock with the tracks it plays back to back. */
+export interface CueRun {
+  cue: MusicCue;
+  startSec: number;
+  /** Start of the next cue, or the end of the workout. */
+  limitSec: number;
+  items: RunItem[];
+  /** When the run's music stops (<= limit); a later gap is free (fallback or silence). */
+  endSec: number;
+}
+
+export interface CueRunOptions {
+  /**
+   * Shown length of a track of unknown length (editor). Playback never guesses: such a track holds
+   * its slot to the limit. The run still ends at the limit; only `fullEndSec` uses the estimate.
+   */
+  estimateSec?: number;
+}
+
+/**
+ * Every cue on the clock with its run: the cue's track and queue play back to back from their
+ * `startAtSec` to their end (trimmed end or length), the one running at the limit is cut there,
+ * and a track of unknown length holds the slot to the limit.
+ */
+export function cueRuns(
+  segments: Segment[],
+  cues: MusicCue[],
+  options: CueRunOptions = {},
+): CueRun[] {
+  const total = totalSec(segments);
+  const resolved = resolveCues(segments, cues).filter((c) => c.startSec < total);
+  return resolved.map((rc, n) => {
+    const limit = resolved[n + 1]?.startSec ?? total;
     const run = [rc.cue.track, ...(rc.cue.queue ?? [])];
+    const items: RunItem[] = [];
     let time = rc.startSec;
-    let open = false; // a track of unknown length holds the slot to its end
+    let open = false;
     for (let i = 0; i < run.length && time < limit; i++) {
       const track = run[i] as TrackRef;
-      const dur = track.durationSec;
-      const end = dur === undefined ? Infinity : time + Math.max(0, dur - track.startAtSec);
+      const len = trackPlaySec(track);
+      if (len === undefined) {
+        open = true;
+        const guess = options.estimateSec;
+        items.push({
+          track,
+          index: i,
+          startSec: time,
+          endSec: limit,
+          fullEndSec: guess === undefined ? Infinity : time + guess,
+          open: true,
+          clipped: guess !== undefined && time + guess > limit,
+        });
+        break;
+      }
+      const end = time + len;
       if (end > time) {
-        pieces.push({
+        items.push({
+          track,
+          index: i,
           startSec: time,
           endSec: Math.min(end, limit),
-          track,
-          offsetAtStart: track.startAtSec,
-          source: 'cue',
-          key:
-            i === 0
-              ? `cue:${rc.cue.blockId}:${rc.cue.rep}`
-              : `cue:${rc.cue.blockId}:${rc.cue.rep}:${i}`,
+          fullEndSec: end,
+          open: false,
+          clipped: end > limit,
         });
-      }
-      if (dur === undefined) {
-        open = true;
-        break;
       }
       time = end;
     }
-    if (!open && time < limit) pieces.push(...fallbackPieces(input.fallback, time, limit));
+    return {
+      cue: rc.cue,
+      startSec: rc.startSec,
+      limitSec: limit,
+      items,
+      endSec: open ? limit : Math.min(time, limit),
+    };
   });
+}
+
+function buildPieces(input: Omit<MusicScheduleInput, 'tSec'>): Piece[] {
+  const total = totalSec(input.segments);
+  const runs = cueRuns(input.segments, input.cues);
+  const pieces: Piece[] = [];
+  const firstCueStart = runs[0]?.startSec ?? total;
+  pieces.push(...fallbackPieces(input.fallback, 0, firstCueStart));
+
+  for (const run of runs) {
+    const { blockId, rep } = run.cue;
+    for (const item of run.items) {
+      pieces.push({
+        startSec: item.startSec,
+        endSec: item.endSec,
+        track: item.track,
+        offsetAtStart: item.track.startAtSec,
+        source: 'cue',
+        key: item.index === 0 ? `cue:${blockId}:${rep}` : `cue:${blockId}:${rep}:${item.index}`,
+      });
+    }
+    if (run.endSec < run.limitSec) {
+      pieces.push(...fallbackPieces(input.fallback, run.endSec, run.limitSec));
+    }
+  }
   return pieces;
 }
 

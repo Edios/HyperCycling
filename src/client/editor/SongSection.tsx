@@ -22,6 +22,7 @@ import { formatClock } from '../training/format';
 import { Button } from '../ui/Button';
 import type { EditorAction } from './editor-state';
 import { blockTotalSec } from './model';
+import { axisBox, laneAxis } from './music-lane-layout';
 import styles from './SongSection.module.css';
 import { Icon } from '../ui/Icon';
 
@@ -99,7 +100,14 @@ function TrackPin({
       void lookupSpotifyTrack(next.id).then((info) => {
         const now = getTrack();
         if (!info || !now || now.id !== next.id || now.title) return;
-        onPlace({ ...now, title: info.title, ...(info.artist ? { artist: info.artist } : {}) });
+        onPlace({
+          ...now,
+          title: info.title,
+          ...(info.artist ? { artist: info.artist } : {}),
+          ...(info.durationSec !== undefined && now.durationSec === undefined
+            ? { durationSec: info.durationSec }
+            : {}),
+        });
       });
     } else {
       void checkYoutubeEmbeddable(next.id).then((check) => {
@@ -430,7 +438,7 @@ export function SongSection({ workout, selectedId, readOnly, lang, dispatch }: S
   if (total === 0) return null;
   if (readOnly && songs.length === 0 && !workout.cooldownTrack) return null;
 
-  const pct = (sec: number): number => (sec / total) * 100;
+  const axis = laneAxis(workout);
   const activeSong = active?.kind === 'song' ? songs.findIndex((s) => s.id === active.id) : -1;
   const ghostSpan = canAdd && selTop ? spanOf(workout, selTop, selTop) : undefined;
   const coolSpan = cooldown ? spanOf(workout, cooldown.id, cooldown.id) : undefined;
@@ -443,8 +451,8 @@ export function SongSection({ workout, selectedId, readOnly, lang, dispatch }: S
       data-testid="song-section"
       aria-label={t('editor.songs.title')}
     >
-      <div className={styles.laneLabel}>{t('editor.songs.title')}</div>
-      <div className={styles.lane} data-testid="song-lane">
+      {songs.length > 0 && <div className={styles.laneLabel}>{t('editor.songs.title')}</div>}
+      <div className={styles.lane} data-testid="song-lane" hidden={songs.length === 0}>
         {songs.map((s, i) => {
           const span = spanOf(workout, s.firstBlockId, s.lastBlockId);
           if (!span) return null;
@@ -457,7 +465,7 @@ export function SongSection({ workout, selectedId, readOnly, lang, dispatch }: S
               data-testid="song-pill"
               aria-pressed={on}
               className={`${styles.pill} ${on ? styles.on : ''}`}
-              style={{ left: `${pct(span.start)}%`, width: `calc(${pct(span.len)}% - 4px)` }}
+              style={axisBox(axis, span.start, span.start + span.len)}
               onClick={() => setActive(on ? undefined : { kind: 'song', id: s.id })}
             >
               {s.track ? <Icon name="music" size={12} /> : null}
@@ -467,44 +475,52 @@ export function SongSection({ workout, selectedId, readOnly, lang, dispatch }: S
             </button>
           );
         })}
-        {ghostSpan && (
-          <button
-            type="button"
-            data-testid="song-add"
-            className={`${styles.pill} ${styles.ghost}`}
-            style={{
-              left: `${pct(ghostSpan.start)}%`,
-              width: `calc(${Math.max(pct(ghostSpan.len), 14)}% - 4px)`,
-              maxWidth: `calc(${100 - pct(ghostSpan.start)}% - 4px)`,
-            }}
-            onClick={() => {
-              if (!selTop) return;
-              wantNew.current = true;
-              dispatch({ type: 'addSong', blockId: selTop });
-            }}
-          >
-            {t('editor.songs.add')}
-          </button>
-        )}
       </div>
-      {cooldown && coolSpan && (cool || !readOnly) && (
+      {cooldown && coolSpan && cool && (
         <>
           <div className={styles.laneLabel}>{t('editor.songs.cooldown')}</div>
           <div className={styles.lane} data-testid="cooldown-lane">
             <button
               type="button"
-              data-testid={cool ? 'cooldown-pill' : 'cooldown-add'}
+              data-testid="cooldown-pill"
               aria-pressed={coolOn}
-              className={`${styles.pill} ${cool ? '' : styles.ghost} ${coolOn ? styles.on : ''}`}
-              style={{ right: 0, width: `max(calc(${pct(coolSpan.len)}% - 4px), 12rem)` }}
+              className={`${styles.pill} ${coolOn ? styles.on : ''}`}
+              style={axisBox(axis, coolSpan.start, coolSpan.start + coolSpan.len)}
               onClick={() => setActive(coolOn ? undefined : { kind: 'cooldown' })}
             >
-              {cool
-                ? `♫ ${cool.title || t('editor.songs.cooldownTrack')}`
-                : t('editor.songs.cooldownAdd')}
+              {`♫ ${cool.title || t('editor.songs.cooldownTrack')}`}
             </button>
           </div>
         </>
+      )}
+      {(ghostSpan || (cooldown && coolSpan && !cool && !readOnly)) && (
+        <div className={styles.adds}>
+          {ghostSpan && (
+            <button
+              type="button"
+              data-testid="song-add"
+              className={`${styles.add} ${styles.ghost}`}
+              onClick={() => {
+                if (!selTop) return;
+                wantNew.current = true;
+                dispatch({ type: 'addSong', blockId: selTop });
+              }}
+            >
+              {t('editor.songs.add')}
+            </button>
+          )}
+          {cooldown && coolSpan && !cool && !readOnly && (
+            <button
+              type="button"
+              data-testid="cooldown-add"
+              aria-pressed={coolOn}
+              className={`${styles.add} ${styles.ghost} ${coolOn ? styles.on : ''}`}
+              onClick={() => setActive(coolOn ? undefined : { kind: 'cooldown' })}
+            >
+              {t('editor.songs.cooldownAdd')}
+            </button>
+          )}
+        </div>
       )}
       {activeSong >= 0 && songs[activeSong] && (
         <SongPanel

@@ -1,5 +1,5 @@
 import { longerVersion, queueSec, reserveList, type PlanCandidate } from '../../domain/slot-plan';
-import type { TrackRef } from '../../domain/workout';
+import { trackPlaySec, type TrackRef } from '../../domain/workout';
 import { formatSongTime } from '../experience/model';
 import { useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
@@ -66,7 +66,7 @@ export function SlotQueue({
   const t = useT();
   const total = queueSec(tracks);
   const gap = Math.round(slotSec - total);
-  const unknownLength = tracks.some((x) => x.durationSec === undefined);
+  const unknownLength = tracks.some((x) => trackPlaySec(x) === undefined);
   const reserve = reserveList(candidates, tracks, slotSec, targetBpm, usedIds);
   const status = tracks.length > 0 && !unknownLength ? statusOf(gap, rest, targetBpm) : undefined;
 
@@ -97,8 +97,8 @@ export function SlotQueue({
               <li key={`${tr.id}:${i}`} className={styles.item} data-testid={`${testId}-item`}>
                 <span className={styles.name}>
                   {label(tr)}
-                  {tr.durationSec !== undefined
-                    ? ` (${formatSongTime(tr.durationSec - tr.startAtSec)})`
+                  {trackPlaySec(tr) !== undefined
+                    ? ` (${formatSongTime(trackPlaySec(tr) ?? 0)})`
                     : ''}
                   {region ? ` · ${t('slotQueue.regionUnknown')}` : ''}
                 </span>

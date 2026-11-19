@@ -1,7 +1,7 @@
 import { musicAt, nextTrackChange, type ScheduledTrack } from '../../domain/music-schedule';
 import type { EngineEvent, EngineState } from '../../domain/session-engine';
 import type { Segment } from '../../domain/segments';
-import type { MusicCue, TrackRef } from '../../domain/workout';
+import { trackPlaySec, type MusicCue, type TrackRef } from '../../domain/workout';
 import type { MusicProvider, TrackInfo } from './types';
 
 export const FADE_OUT_MS = 1500;
@@ -224,8 +224,8 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
    */
   const chainOf = (track: TrackRef, posSec: number): { cand: TrackRef; index: number }[] => {
     const { alternates, ...main } = track;
-    const plannedSec =
-      main.durationSec !== undefined ? main.durationSec - main.startAtSec : undefined;
+    // The planned song is what the main recording plays: from its start to its (trimmed) end.
+    const plannedSec = trackPlaySec(main);
     return [main, ...(alternates ?? [])]
       .map((cand, index) => ({ cand, index }))
       .filter(
