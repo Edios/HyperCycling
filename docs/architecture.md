@@ -55,7 +55,7 @@ Persisted shapes are zod schemas (workouts and the export bundle carry a `schema
 
 ## Testing
 
-Vitest: `client` (jsdom) and `node` projects; coverage of `src/domain` must stay at 90 % or more. Playwright: project `local` runs against the Fastify server with a throwaway database, project `pages` runs against the static build served by `vite preview`. CI (`ci.yml`) runs `npm run check` and the whole e2e suite; `pages.yml` builds and deploys the web build to https://hypercycling.app/ on every push to `main`. Unit tests sit next to the code (`*.test.ts`); `i18n/hardcoded-strings.test.ts` fails on UI text outside the dictionaries.
+Vitest: `client` (jsdom) and `node` projects; coverage of `src/domain` must stay at 90 % or more. Playwright: project `local` runs against the Fastify server (one server and one throwaway database per worker, started by `tests/e2e/fixtures.ts`), project `pages` runs against the static build served by `vite preview`. CI (`ci.yml`) runs `npm run check` and the whole e2e suite; `pages.yml` builds and deploys the web build to https://hypercycling.app/ on every push to `main`. Unit tests sit next to the code (`*.test.ts`); `i18n/hardcoded-strings.test.ts` fails on UI text outside the dictionaries.
 
 ## Resuming the project without AI agents
 

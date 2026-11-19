@@ -19,7 +19,7 @@ npm run check      # typecheck + eslint + vitest (with coverage)
 npm run test:e2e   # Playwright; builds both variants, starts its own servers
 ```
 
-First time: `npx playwright install chromium`. The e2e `local` project uses a throwaway database in the system temp folder, never `data/`.
+First time: `npx playwright install chromium`. The e2e `local` project starts one server per Playwright worker, each with its own throwaway database in the system temp folder (never `data/`), so specs running in parallel cannot overwrite each other's settings or plans. Import `test` from `./fixtures` in every spec, not from `@playwright/test`; that is what gives it its worker's server.
 
 ## Rules
 

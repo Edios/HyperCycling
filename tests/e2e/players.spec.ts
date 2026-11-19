@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 async function add(page: Page, name: string, ftp: string): Promise<void> {
   const form = page.getByTestId('add-player-form');
