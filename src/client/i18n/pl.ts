@@ -1127,7 +1127,7 @@ export const pl: Messages = {
     },
     free: {
       title: 'Freestyle',
-      body: 'Wybierasz jeden z ponad sto gotowych treningów i jedziesz od razu.',
+      body: 'Wybierasz jeden z ponad stu gotowych treningów i jedziesz od razu.',
     },
     experience: {
       title: 'Experience',
