@@ -3,8 +3,22 @@
   text-align: center;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 9vh;
+  /* --cue-fs comes from the layout's free area: width-based on a portrait phone so a cue wraps
+     into at most two lines that fit the reserved height. */
+  font-size: var(--cue-fs, 9vh);
+  line-height: 1.05;
   letter-spacing: 0.02em;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  /* A cue never grows past two lines (the screen reader still gets the whole text). */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  /* Room for the glow and descenders that the clipping would otherwise cut. */
+  padding: 0.08em 0;
   color: var(--c);
   text-shadow: 0 0 3vh color-mix(in srgb, var(--c) 60%, transparent);
   pointer-events: none;

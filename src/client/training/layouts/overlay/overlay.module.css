@@ -374,11 +374,14 @@
     position: relative;
     inset: auto;
     flex: none;
-    height: calc(9 * var(--u));
+    /* Two lines of the cue, sized by the width so it wraps instead of spilling over the controls. */
+    --cue-fs: min(8.5vw, 6.5vh);
+    height: calc(var(--cue-fs) * 2.4);
   }
 
   .root[data-players='true'] .free {
-    height: calc(4 * var(--u));
+    /* The riders panel needs the room: a smaller cue, still two lines. */
+    --cue-fs: min(4.4vw, 3.4vh);
   }
 
   .root[data-players='true'] {
