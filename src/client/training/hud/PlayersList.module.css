@@ -75,7 +75,7 @@
   .list {
     flex: 1 1 auto;
     min-height: 19vw;
-    max-height: 30vh;
+    max-height: calc(30 * var(--vh));
   }
 
   .row {

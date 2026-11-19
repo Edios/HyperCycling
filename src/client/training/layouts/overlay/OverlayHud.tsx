@@ -77,15 +77,17 @@ export function OverlayHud({
       section={column}
     />
   );
-  const measures = hideRpmTile ? null : (
-    <MeasuresGroup
-      {...(view.segment.rpm !== undefined ? { rpm: view.segment.rpm } : {})}
-      isTarget={rpmIsTarget}
-      section={column}
-      line={column}
-      bare={tunnel}
-    />
-  );
+  // No cadence to show (the block has no target): the group is not drawn, no bare placeholder.
+  const measures =
+    hideRpmTile || view.segment.rpm === undefined ? null : (
+      <MeasuresGroup
+        {...(view.segment.rpm !== undefined ? { rpm: view.segment.rpm } : {})}
+        isTarget={rpmIsTarget}
+        section={column}
+        line={column}
+        bare={tunnel}
+      />
+    );
   return (
     <div
       className={styles.root}

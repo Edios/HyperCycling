@@ -2,10 +2,10 @@
   text-align: center;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 18vh;
+  font-size: calc(18 * var(--vh));
   line-height: 1;
   color: var(--c);
-  text-shadow: 0 0 3vh var(--c);
+  text-shadow: 0 0 calc(3 * var(--vh)) var(--c);
   pointer-events: none;
 }
 

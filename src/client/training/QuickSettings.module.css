@@ -1,9 +1,9 @@
 .panel {
   position: fixed;
-  right: 2.5vh;
+  right: calc(2.5 * var(--vh));
   /* Bottom corner: the tiles, NEXT strip and controls above stay visible. */
-  bottom: 2.5vh;
-  max-height: 56vh;
+  bottom: calc(2.5 * var(--vh));
+  max-height: calc(56 * var(--vh));
   overflow-y: auto;
   z-index: 15;
   width: min(22rem, 90vw);
@@ -83,9 +83,9 @@
   .panel {
     left: 3vw;
     right: 3vw;
-    bottom: 2vh;
+    bottom: calc(2 * var(--vh));
     width: auto;
-    max-height: 52vh;
+    max-height: calc(52 * var(--vh));
     padding: 4vw;
   }
 }
