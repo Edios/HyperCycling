@@ -1110,6 +1110,59 @@ export const en = {
     ride: 'Ride',
     rideWithPlayers: 'Ride with players',
   },
+  // "How it works" page (its own block, so other changes to this file do not collide with it).
+  guide: {
+    menu: 'How it works',
+    eyebrow: 'How it works',
+    title: 'You pedal. The app does the guiding.',
+    lead: 'HyperCycling is an indoor-bike workout in your browser, with a plan, on-screen cues and your own music.',
+    whyTitle: 'Why it exists',
+    why: 'A ride with an instructor is better: someone says what comes next and the music carries the pace. At home there is usually just a bike and silence.',
+    goalTitle: 'The goal',
+    goal: 'A well-built workout a minute after you open the page. No account, no subscription, no install.',
+    modesTitle: 'Three ways to ride',
+    plan: {
+      title: 'Plan',
+      body: 'Answer three questions and get a week of workouts that grows with you.',
+    },
+    free: {
+      title: 'Freestyle',
+      body: 'Pick one of about a hundred ready workouts and ride right away.',
+    },
+    experience: {
+      title: 'Experience',
+      body: 'A class-style ride with music, chapters and a light that grows with the effort.',
+    },
+    moreTitle: 'And inside',
+    coach: {
+      title: 'Coach',
+      body: 'Cues on the screen before each change: add resistance, stand up, sit down. The instructor leads, Coach assists.',
+    },
+    editor: {
+      title: 'Editor',
+      body: 'Build your own workout from blocks, or import a .zwo, .erg or .mrc file.',
+    },
+    music: {
+      title: 'Music',
+      body: 'Tracks from YouTube or Spotify, matched to the blocks. No music is bundled: you pick your own.',
+    },
+    bike: {
+      title: 'Bikes and sensors',
+      body: 'A knob, a bike with a power meter or a smart trainer: all of them work. Effort is 1–10, watts only if your bike knows them. No sensors needed; enter your max heart rate to see zones.',
+    },
+    local: {
+      title: 'Data stays with you',
+      body: 'Everything stays in your browser. No account, no analytics; your heart rate and FTP never leave it.',
+    },
+    open: {
+      title: 'Open source (MIT)',
+      body: 'The code is open under the MIT licence. Look inside, suggest an idea or fix a bug.',
+      link: 'See the code on GitHub',
+    },
+    ctaTitle: 'Ready?',
+    ctaBody: 'Choose how you want to ride.',
+    ctaButton: 'Choose a ride',
+  },
   coach: {
     attack: 'ATTACK!',
     standUp: 'Stand up!',

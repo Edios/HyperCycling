@@ -2,6 +2,7 @@ import { createHashRouter, Outlet, RouterProvider, type RouteObject } from 'reac
 import { Intro } from './brand/Intro';
 import { EditorScreen } from './editor/EditorScreen';
 import { ExperiencePicker } from './experience/ExperiencePicker';
+import { HowItWorks } from './guide/HowItWorks';
 import { Home } from './home/Home';
 import { NoticePage } from './screens/NoticePage';
 import { DevHome } from './screens/DevHome';
@@ -97,6 +98,7 @@ function routes(): RouteObject[] {
         },
         { path: '/editor/:workoutId', element: <EditorScreen /> },
         { path: '/settings', element: <SettingsScreen /> },
+        { path: '/how-it-works', element: <HowItWorks /> },
         // Developer shortcut (see DEV_ROUTE): rides any built-in workout with demo players.
         ...(DEV_ROUTE ? [{ path: '/dev', element: <DevHome /> }] : []),
         {

@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router-dom';
 import { LogoMark, ModeIcon, Wordmark, type Mode } from '../brand';
+import { GuideIcon } from '../guide/GuideIcons';
 import { useT } from '../i18n';
 import styles from './AppBar.module.css';
 import { Icon } from './Icon';
@@ -41,6 +42,9 @@ export function AppBar() {
       <Link to="/settings" className={styles.ico}>
         <Icon name="settings" /> <span className={styles.lbl}>{t('nav.settings')}</span>
       </Link>
+      <NavLink to="/how-it-works" className={styles.ico} data-testid="nav-how-it-works">
+        <GuideIcon name="help" /> <span className={styles.lbl}>{t('guide.menu')}</span>
+      </NavLink>
     </header>
   );
 }
