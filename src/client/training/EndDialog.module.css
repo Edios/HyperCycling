@@ -9,33 +9,33 @@
 }
 
 .dialog {
-  min-width: 44vh;
-  padding: 4vh 5vh;
+  min-width: calc(44 * var(--vh));
+  padding: calc(4 * var(--vh)) calc(5 * var(--vh));
   background: var(--s1);
   color: var(--fg);
   border: 1px solid var(--line);
-  border-radius: 2vh;
+  border-radius: calc(2 * var(--vh));
   font-family: var(--font-display);
   text-align: center;
   animation: panel-in var(--motion-panel) var(--motion-ease-out);
 }
 
 .dialog h2 {
-  margin: 0 0 1vh;
-  font-size: 5vh;
+  margin: 0 0 calc(1 * var(--vh));
+  font-size: calc(5 * var(--vh));
   font-weight: 800;
 }
 
 .dialog p {
-  margin: 0 0 3vh;
+  margin: 0 0 calc(3 * var(--vh));
   font-family: var(--font-body);
-  font-size: 2.4vh;
+  font-size: calc(2.4 * var(--vh));
   color: var(--mut);
 }
 
 .actions {
   display: flex;
-  gap: 2vh;
+  gap: calc(2 * var(--vh));
   justify-content: center;
   flex-direction: column;
 }
@@ -46,12 +46,12 @@
 }
 
 .actions button {
-  min-width: 36vh;
-  padding: 1.4vh 3vh;
+  min-width: calc(36 * var(--vh));
+  padding: calc(1.4 * var(--vh)) calc(3 * var(--vh));
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 3vh;
-  border-radius: 1.4vh;
+  font-size: calc(3 * var(--vh));
+  border-radius: calc(1.4 * var(--vh));
   border: 1px solid var(--line);
   background: var(--s2);
   color: var(--fg);

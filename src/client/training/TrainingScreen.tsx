@@ -580,6 +580,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       data-background={world ? 'hyperride' : youtube !== null ? 'youtube' : 'basic'}
       data-material={overlay ? 'glass' : 'solid'}
       data-cursor-hidden={hideControls}
+      data-chip={runtime.config.music && nowPlaying !== null ? 'true' : undefined}
       className={`${styles.root} ${hideControls ? styles.noCursor : ''}`}
       style={rootStyle}
     >

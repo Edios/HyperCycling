@@ -3,8 +3,9 @@ const PATHS = {
   edit: 'M4 20l4-1 11-11-3-3L5 16z',
   players:
     'M9 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.5-4 3-6 6.5-6s6 2 6.5 6M17.5 11.5a2.5 2.5 0 1 0 0-5M17 14c2.5 0 4 1.5 4.5 5',
+  // A gear: toothed outline plus the hub (the old sun read as "brightness", not "settings").
   settings:
-    'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2',
+    'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
   prev: 'M6 5v14M18 5L9 12l9 7z',
   next: 'M18 5v14M6 5l9 7-9 7z',
   play: 'M7 4.5v15l12-7.5z',
@@ -41,7 +42,8 @@ export function Icon({
   label,
 }: {
   name: IconName;
-  size?: number;
+  /** Pixels, or a CSS length such as `1em` to follow the font size of the parent. */
+  size?: number | string;
   /** Accessible name; omit for decorative icons (they are then aria-hidden). */
   label?: string;
 }) {

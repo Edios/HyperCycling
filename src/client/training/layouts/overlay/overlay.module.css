@@ -106,7 +106,9 @@
     left: var(--mx);
     top: calc(36.5 * var(--u));
     width: calc(41.7 * var(--u));
-    max-height: calc(100vh - calc(36.5 * var(--u)) - var(--fb) - calc(11 * var(--u)));
+    max-height: calc(
+      calc(100 * var(--vh)) - calc(36.5 * var(--u)) - var(--fb) - calc(11 * var(--u))
+    );
   }
 
   /* ===== Column ===== */
@@ -125,8 +127,9 @@
   .root[data-layout='column'] .col {
     right: var(--mx);
     top: var(--mx);
-    bottom: var(--fb);
-    width: calc(50 * var(--u));
+    /* Fitted to its content, up to the band of the controls: no dead area below the sections. */
+    max-height: calc(100% - var(--mx) - var(--fb));
+    width: var(--colw);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -142,12 +145,12 @@
     left: var(--mx);
     top: var(--mx);
     width: calc(41.7 * var(--u));
-    max-height: calc(100vh - var(--mx) - var(--fb) - calc(11 * var(--u)));
+    max-height: calc(calc(100 * var(--vh)) - var(--mx) - var(--fb) - calc(11 * var(--u)));
   }
 
   .root[data-layout='column'] .free {
     left: 30vw;
-    right: calc(var(--mx) + calc(53 * var(--u)));
+    right: calc(var(--mx) + var(--colw) + calc(3 * var(--u)));
   }
 
   /* ===== Cockpit ===== */
@@ -316,7 +319,7 @@
   .root[data-layout='column'] .col {
     overflow-y: auto;
     gap: calc(0.8 * var(--u));
-    width: calc(50 * var(--u));
+    width: var(--colw);
   }
 
   .root[data-layout='column'] .col > [data-g='W'] {
@@ -341,7 +344,7 @@
     --lbl: 3.9vw;
     --cap: 3.3vw;
     --rail: 100%;
-    --tl: 11vw;
+    --tl: 9vw;
     --num-k: 0.412;
     --rname: 5.2vw;
     --rwatts: 8vw;
@@ -375,13 +378,13 @@
     inset: auto;
     flex: none;
     /* Two lines of the cue, sized by the width so it wraps instead of spilling over the controls. */
-    --cue-fs: min(8.5vw, 6.5vh);
+    --cue-fs: min(8.5vw, calc(6.5 * var(--vh)));
     height: calc(var(--cue-fs) * 2.2);
   }
 
   .root[data-players='true'] .free {
     /* The riders panel needs the room: a smaller cue, still two lines. */
-    --cue-fs: min(4.4vw, 3.4vh);
+    --cue-fs: min(4.4vw, calc(3.4 * var(--vh)));
   }
 
   .root[data-players='true'] {
@@ -414,6 +417,11 @@
     left: auto;
     right: auto;
     bottom: auto;
+  }
+
+  /* A music strip at the top (NowPlaying) takes the first 48px. */
+  :global([data-chip='true']) .root.root {
+    padding-top: 48px;
   }
 
   /* One panel for the column on a phone: its sections keep the same order. */
