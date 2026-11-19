@@ -2,67 +2,113 @@
 
 # HyperCycling
 
-**Indoor cycling that rides with your music: effort-guided workouts, plans and an immersive visual mode, right in your browser.**
+**Indoor cycling in your browser: a plan, on-screen cues and your own music. You pedal, the app does the guiding.**
 
 [![CI](https://github.com/Edios/HyperCycling/actions/workflows/ci.yml/badge.svg)](https://github.com/Edios/HyperCycling/actions/workflows/ci.yml)
 [![Pages](https://github.com/Edios/HyperCycling/actions/workflows/pages.yml/badge.svg)](https://github.com/Edios/HyperCycling/actions/workflows/pages.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-### [Open the app](https://hypercycling.app/) &nbsp;|&nbsp; [User guide](docs/user-guide.md)
+### [Open the app](https://hypercycling.app/) &nbsp;|&nbsp; [Polski](README.pl.md) &nbsp;|&nbsp; [User guide](docs/user-guide.md)
 
-<img src="docs/images/intro.gif" alt="HyperCycling intro" width="720">
+<img src="docs/images/readme/home.jpg" alt="HyperCycling start page with three ways to ride: Plan, Freestyle and Experience" width="720">
 
 </div>
 
-No account, no install, no power meter. Pick a workout, press play, and ride.
+HyperCycling is a web app that turns a spin bike or a smart trainer into a guided workout: it shows what to ride, when the next change comes and what to do at it, with music of your choice in the background. No account, no subscription, no install, and no sensors required.
 
-## Why HyperCycling
+## Three ways to ride
 
-- **No watts needed.** Ride by a simple 1-10 effort scale. Add your FTP only if you want target watts.
-- **Your music leads.** Blocks, beeps and on-screen cues are timed to your Spotify or YouTube tracks.
-- **Plans that build.** A plan wizard sets length, difficulty and sessions per week; a 20-minute FTP test guide keeps targets honest.
-- **Plenty to ride.** About 100 ready workouts, plus an editor and import of `.zwo`, `.erg` and `.mrc` files.
-- **Immersive World mode.** A visual 3D ride to keep the minutes moving.
-- **Experience: Neon Grid 45.** A class-style ride for your own music: 11 songs, a 5-step resistance knob, 30/30 intervals, hills, sprints, and a grid that brightens with every chapter.
-- **Heart-rate zones.** Set your max heart rate and see your zones next to the effort scale.
-- **Song finder.** Look up a song's BPM by artist and title (Deezer, GetSongBPM) or enter it by hand.
+- **Plan.** Answer a few questions (length, difficulty, sessions per week) and get a week of workouts that grows with you.
+- **Freestyle.** Pick one of 116 ready workouts, filter or search them, and ride right away.
+- **Experience.** A class-style ride with music, chapters and a scene that lights up with the effort. Three Neon Grid rides are included (30 and 45 minutes, plus a lighter 45).
 
-## A quick tour
+|                                                                                   |                                                                                                     |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| ![Freestyle library](docs/images/readme/freestyle.jpg)<br>Freestyle: 116 workouts | ![Training screen](docs/images/readme/training.jpg)<br>Training screen: effort, cadence, next block |
+| ![Experience ride](docs/images/readme/experience.jpg)<br>Experience: Neon Grid 45 | ![Experience on a phone](docs/images/readme/experience-phone.jpg)<br>The same ride on a phone       |
 
-|                                                                                                            |                                                                                                    |
-| ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| ![Training screen](docs/images/training-basic.png)<br>Training HUD: current block, effort and what is next | ![Freestyle library](docs/images/freestyle.png)<br>Freestyle: search and filter about 100 workouts |
-| ![Plan gallery](docs/images/plan-gallery.png)<br>Pick a plan, then tune it in the wizard                   | ![Plan view](docs/images/plan.png)<br>Next session and a week-by-week list                         |
-| ![Editor](docs/images/editor.png)<br>Build your own workouts or import them                                | ![Settings](docs/images/settings.png)<br>Zones, FTP and players in Settings                        |
+## Who it is for
 
-## Run it in 30 seconds
+- **Home riders** with a spin bike and a phone, tablet or laptop in front of it, who want to start in a minute.
+- **Instructors** who lead a live group and want a screen with blocks, cues and music that follows the plan.
+- **Small studios and gyms** that share one screen between a few riders (up to 10 riders, each with a target).
 
-- **Browser:** open https://hypercycling.app/ and ride.
-- **Locally** (Node 24+): `npm ci`, then `npm start`, then open http://127.0.0.1:5175 (use `127.0.0.1`, not `localhost`, for Spotify). **YouTube music does not play from an IP address** such as `127.0.0.1` (YouTube refuses to embed there): for YouTube locally open http://localhost:5175 instead, or use Spotify. On https://hypercycling.app/ both work.
+## Features
 
-## Your data stays yours
+- **Effort 1-10, not watts.** Ride by a simple scale; add your FTP only if you want target watts. Watts appear only for bikes that measure them.
+- **Bikes.** Choose a manual knob, a spin bike with a power meter or a smart trainer; the app adapts its cues. It does not connect to sensors: you describe the bike once.
+- **Coach cues.** On-screen commands before each change: add resistance, stand up, sit down.
+- **Editor.** Build a workout from blocks, or import `.zwo`, `.erg` and `.mrc` files (see [Importing workouts](docs/importing-workouts.md)).
+- **Music.** Pin tracks from YouTube or Spotify to blocks; music failures never pause the workout. No music is bundled. See [Spotify setup](docs/spotify-setup.md).
+- **Song finder.** Look up a song's tempo by artist and title (Deezer, GetSongBPM) or type it in.
+- **Heart-rate zones.** Enter your max heart rate to see a bpm band next to each effort. A heart-rate monitor is not read.
+- **Lite mode.** A plain screen with the same workout and music, for a weak device.
+- **Local data, no backend.** Everything stays in your browser (IndexedDB) or, in the local build, in a file on your computer. No account, no analytics. See [Privacy](docs/privacy.md).
+- **PL and EN.** The interface is available in Polish and English, with a light and a dark theme.
 
-Local-first: everything lives in your browser (IndexedDB) or in a file on your computer. No account, no analytics, and your heart rate and FTP are never sent anywhere. See [Privacy](docs/privacy.md).
+## Run it
 
-## Personal use
+- **In the browser:** https://hypercycling.app/ (best on 1920x1080, works on a phone).
+- **Locally**, Node 24 or newer:
 
-HyperCycling is built for **personal use**. Music plays through Spotify or YouTube under their terms. Playing it for a group (a studio, a class) needs your own venue licence, and any Spotify key or licence is the user's responsibility.
+```powershell
+npm ci
+npm start
+```
 
-## Roadmap
+`npm start` builds the app when needed and opens http://127.0.0.1:5175. Use `127.0.0.1` for Spotify and `localhost` for YouTube (YouTube does not embed on an IP address); on the hosted site both work. Details are in [Spotify setup](docs/spotify-setup.md).
 
-Done: heart-rate zones, stepped-effort classes, Experience Neon Grid 45, song finder with BPM lookup, mobile readability.
+## Development
 
-Next:
+```powershell
+npm ci
+npm run dev          # Fastify API on 5175 + Vite on http://127.0.0.1:5173 with hot reload
+npm run check        # typecheck + eslint + vitest with coverage
+npx playwright install chromium   # first time only
+npm run test:e2e     # Playwright; builds both variants and starts its own servers
+```
 
-- More Experiences (shorter and lighter Neon Grid variants, more scenes)
-- Clearer cues before each change (10-second heads-up, quiet last minute)
-- Riding together: target watts per person
-- Later: World v2, LED and room integration
+Other scripts: `npm run build:pages` (the static build served at hypercycling.app), `npm run docs:screenshots` (regenerates `docs/images/`), `npm run format:check`. The full list is in `package.json`.
+
+## Repository layout
+
+```
+src/domain/    pure TypeScript: schemas, effort scale, session engine, parsers
+src/client/    React UI: screens, HUD, editor, i18n, three.js scenes, music, setup
+src/content/   built-in workouts, plans and Experiences (original content, JSON)
+src/storage/   one repositories contract, three back ends: http, IndexedDB, SQLite
+src/server/    Fastify API and static hosting (local build only)
+src/shared/    Content Security Policy used by both builds
+scripts/       local launcher, screenshots, brand assets, music check
+tests/e2e/     Playwright specs
+docs/          user guide, privacy, architecture, setup notes, screenshots
+.github/       CI, Pages deploy, weekly Experience music check
+```
+
+More in [Architecture](docs/architecture.md).
+
+## Contributing
+
+Issues and pull requests are welcome.
+
+- Branch from up-to-date `main`; one pull request per feature or fix. Never commit to `main` directly.
+- Commits, pull requests, branch names, code and docs are in English; commit messages are conventional (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
+- Run `npm run check` and `npm run test:e2e` before you push. The `check` job in CI must be green before merge.
+- UI text goes through the dictionaries `src/client/i18n/en.ts` and `pl.ts`, which need the same keys.
+
+The full list of rules is in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Music and licensing notes
+
+- The code is MIT, see [LICENSE](LICENSE). The name and logo "HyperCycling" are not covered by it; please do not use them for a derived product.
+- HyperCycling does not distribute music. Tracks are played by YouTube or Spotify under their own terms, in an embedded player or through your own Spotify account. For use with a group (a studio, a class) check the licensing that applies to you.
+- YouTube music plays through an embedded YouTube player that the app keeps off-screen. Please check that this fits YouTube's terms for how you use it. If a video cannot be embedded, the app falls back to the Basic background and the workout goes on.
+- Tempo lookups send the artist and title you typed to Deezer or GetSongBPM, only when you use them. See [Privacy](docs/privacy.md).
+
+## Status
+
+HyperCycling is in active development and the web app is live. Next: more Experiences, clearer cues before each change, and riding together with a target per person.
 
 ## Docs
 
 [User guide](docs/user-guide.md) | [Importing workouts](docs/importing-workouts.md) | [Spotify setup](docs/spotify-setup.md) | [Privacy](docs/privacy.md) | [Architecture](docs/architecture.md) | [Contributing](CONTRIBUTING.md)
-
-## Licence
-
-MIT, see [LICENSE](LICENSE). The licence covers the code. The name and logo "HyperCycling" are not licensed under MIT: please do not use them for a derived product.
