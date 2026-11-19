@@ -1,7 +1,12 @@
+/*
+ * One button size drives everything: the button is a circle (aspect-ratio 1, never squeezed by
+ * the flex row), at least a thumb wide, and the icon is a fixed share of it (font-size, icons
+ * are 1em), so every icon has the same scale and stroke on every screen.
+ */
 .bar {
   display: flex;
   align-items: center;
-  gap: calc(1.6 * var(--u));
+  gap: max(8px, calc(1.6 * var(--u)));
   transition: opacity var(--motion-panel) var(--motion-ease-out);
 }
 
@@ -11,15 +16,28 @@
 }
 
 .bar button {
-  width: calc(6.8 * var(--u));
-  height: calc(6.8 * var(--u));
+  flex: none;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: var(--btn);
+  height: var(--btn);
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  aspect-ratio: 1;
   border-radius: 50%;
   border: 1px solid var(--line);
   background: var(--s2);
   color: var(--mut);
-  font-size: calc(2.6 * var(--u));
+  font-size: calc(var(--btn) * 0.46);
   line-height: 1;
   cursor: pointer;
+}
+
+.bar button svg {
+  display: block;
+  vertical-align: baseline;
 }
 
 .bar button:hover,
@@ -34,33 +52,29 @@
 }
 
 .bar .main {
-  width: calc(8 * var(--u));
-  height: calc(8 * var(--u));
-  font-size: calc(3.2 * var(--u));
+  width: calc(var(--btn) * 1.18);
+  height: calc(var(--btn) * 1.18);
+  font-size: calc(var(--btn) * 0.54);
 }
 
-/* Phone portrait: an even 4-column grid (4 + 4, or 4 + 3), never a lone button on a second row. */
+/*
+ * Phone portrait: the buttons wrap into centred rows (4 + 3, or 4 + 4 with the riders button);
+ * a short last row is centred instead of leaving empty grid cells.
+ */
 @media (max-width: 760px) and (orientation: portrait) {
   .bar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    justify-items: center;
-    gap: 2vw;
-    width: 86vw;
-  }
-
-  .bar button {
-    width: 12vw;
-    height: 12vw;
-    min-width: 44px;
-    min-height: 44px;
-    font-size: 5vw;
+    --gap: 2.4vw;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--gap);
+    /* Room for exactly four buttons per row. */
+    width: calc(4 * var(--btn) + 3 * var(--gap) + 1px);
   }
 
   .bar .main {
-    width: 12vw;
-    height: 12vw;
-    font-size: 6vw;
+    width: var(--btn);
+    height: var(--btn);
+    font-size: calc(var(--btn) * 0.5);
     border-color: var(--acc);
     color: var(--fg);
   }

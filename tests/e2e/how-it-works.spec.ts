@@ -24,7 +24,7 @@ test('menu shows How it works and the page opens without console errors', async 
   await expect(page).toHaveURL(/#\/how-it-works/);
   await expect(page.getByTestId('how-it-works')).toBeVisible();
   await expect(page.getByRole('heading', { level: 1 })).toContainText('You pedal');
-  for (const name of ['Plan', 'Freestyle', 'Experience', 'Editor', 'Open source (MIT)']) {
+  for (const name of ['Plan', 'Freestyle', 'Experience', 'Editor', 'Open source (AGPL-3.0)']) {
     await expect(page.getByRole('heading', { level: 3, name })).toBeVisible();
   }
   await expect(page.getByRole('link', { name: 'See the code on GitHub' })).toHaveAttribute(

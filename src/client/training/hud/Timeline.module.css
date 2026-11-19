@@ -124,6 +124,22 @@
   .meta {
     font-size: 3.3vw;
     margin-bottom: 1.4vw;
+    /* The title gets its own line and wraps whole; the facts follow under it. */
+    flex-wrap: wrap;
+    row-gap: 0.6vw;
+  }
+
+  .title {
+    flex: 1 1 100%;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    font-size: 3.6vw;
+  }
+
+  .facts {
+    margin-left: auto;
   }
 
   .track {

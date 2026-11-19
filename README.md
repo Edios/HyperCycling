@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/Edios/HyperCycling/actions/workflows/ci.yml/badge.svg)](https://github.com/Edios/HyperCycling/actions/workflows/ci.yml)
 [![Pages](https://github.com/Edios/HyperCycling/actions/workflows/pages.yml/badge.svg)](https://github.com/Edios/HyperCycling/actions/workflows/pages.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
 ### [Open the app](https://hypercycling.app/) &nbsp;|&nbsp; [Polski](README.pl.md) &nbsp;|&nbsp; [User guide](docs/user-guide.md)
 
@@ -100,7 +100,7 @@ The full list of rules is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Music and licensing notes
 
-- The code is MIT, see [LICENSE](LICENSE). The name and logo "HyperCycling" are not covered by it; please do not use them for a derived product.
+- The code is licensed under the [GNU AGPL-3.0](LICENSE) (`AGPL-3.0-only`). You may use, study, modify and share it. If you run a modified version for others over a network (for example as a web service), you must offer those users the source code of your version under the same licence. Third-party licences are listed in [docs/licensing.md](docs/licensing.md). The name and logo "HyperCycling" are not covered by the licence; please do not use them for a derived product.
 - HyperCycling does not distribute music. Tracks are played by YouTube or Spotify under their own terms, in an embedded player or through your own Spotify account. For use with a group (a studio, a class) check the licensing that applies to you.
 - YouTube music plays through an embedded YouTube player that the app keeps off-screen. Please check that this fits YouTube's terms for how you use it. If a video cannot be embedded, the app falls back to the Basic background and the workout goes on.
 - Tempo lookups send the artist and title you typed to Deezer or GetSongBPM, only when you use them. See [Privacy](docs/privacy.md).

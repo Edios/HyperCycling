@@ -27,13 +27,15 @@ export function Classic({
   controls,
   coach,
 }: BasicLayoutProps & { withPlayers: boolean }) {
+  // No cadence to show (the block has no target): the tile is not drawn, no bare placeholder.
+  const showMeasures = !hideRpmTile && view.segment.rpm !== undefined;
   return (
     <div
       className={styles.root}
       data-testid={withPlayers ? 'layout-players' : 'layout-solo'}
       data-material="solid"
       data-players={withPlayers}
-      data-measures={!hideRpmTile}
+      data-measures={showMeasures}
     >
       <div className={styles.tiles}>
         {withPlayers && (
@@ -54,7 +56,7 @@ export function Classic({
           fit
           className={styles.time}
         />
-        {!hideRpmTile && (
+        {showMeasures && (
           <MeasuresGroup
             {...(view.segment.rpm !== undefined ? { rpm: view.segment.rpm } : {})}
             isTarget={rpmIsTarget}

@@ -6,11 +6,24 @@
   background: color-mix(in srgb, var(--zone) 7%, var(--bg));
   color: var(--fg);
   /*
-   * HUD unit: 1vh on a 16:9 screen or wider, and scaled by the width on narrower ones (4:3), so
+   * The visible height: a phone browser's address bar covers part of the 100vh the page is
+   * sized by, so the HUD measures its height in dvh (the part you can see) where supported.
+   */
+  --vh: 1vh;
+  /*
+   * HUD unit: 1vh (visible) on a 16:9 screen or wider, and scaled by the width on narrower ones (4:3), so
    * panels sized in this unit never outgrow the screen. Phone portrait sizes by width instead.
    */
-  --u: min(1vh, 0.5625vw);
+  --u: min(var(--vh), 0.5625vw);
+  /* Control button size (ControlsBar) and the room the layouts keep for the bar. */
+  --btn: max(44px, calc(6.8 * var(--u)));
   font-family: var(--font-body);
+}
+
+@supports (height: 1dvh) {
+  .root {
+    --vh: 1dvh;
+  }
 }
 
 .noCursor,
@@ -46,7 +59,7 @@
 .promptSlot {
   position: fixed;
   left: 50%;
-  top: 63vh;
+  top: calc(63 * var(--vh));
   transform: translateX(-50%);
 }
 
@@ -54,15 +67,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.4vh;
-  padding: 3vh 5vh;
+  gap: calc(1.4 * var(--vh));
+  padding: calc(3 * var(--vh)) calc(5 * var(--vh));
   background: var(--glass);
   border: 1px solid var(--line);
-  border-radius: 2vh;
+  border-radius: calc(2 * var(--vh));
   backdrop-filter: blur(8px);
   pointer-events: auto;
   color: var(--mut);
-  font-size: 2.2vh;
+  font-size: calc(2.2 * var(--vh));
 }
 
 /* Light Basic: the card sits on the dark scrim, so its text needs the full-strength colour. */
@@ -71,16 +84,16 @@
 }
 
 .startButton {
-  padding: 1.6vh 7vh;
+  padding: calc(1.6 * var(--vh)) calc(7 * var(--vh));
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 6vh;
+  font-size: calc(6 * var(--vh));
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--on-acc);
   background: var(--act);
   border: 0;
-  border-radius: 2vh;
+  border-radius: calc(2 * var(--vh));
   cursor: pointer;
 }
 
@@ -91,16 +104,16 @@
 
 .paused {
   position: fixed;
-  top: 2.2vh;
+  top: calc(2.2 * var(--vh));
   left: 50%;
   transform: translateX(-50%);
-  padding: 0.8vh 3vh;
+  padding: calc(0.8 * var(--vh)) calc(3 * var(--vh));
   border-radius: 99px;
   background: var(--glass);
   border: 1px solid var(--line);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 3vh;
+  font-size: calc(3 * var(--vh));
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--mut);
@@ -114,47 +127,48 @@
 
 .pausedHint {
   display: block;
-  margin-top: 0.3vh;
+  margin-top: calc(0.3 * var(--vh));
   font-weight: 600;
-  font-size: 1.8vh;
+  font-size: calc(1.8 * var(--vh));
   letter-spacing: 0.04em;
   text-transform: none;
 }
 
 @media (max-width: 760px) and (orientation: portrait) {
   .root {
-    --u: 1vh;
+    --u: var(--vh);
+    --btn: max(44px, 12vw);
   }
 
   .promptSlot {
-    top: 56vh;
+    top: calc(56 * var(--vh));
     width: 92vw;
   }
 
   .prompt {
-    gap: 1.5vh;
-    padding: 3vh 5vw;
+    gap: calc(1.5 * var(--vh));
+    padding: calc(3 * var(--vh)) 5vw;
     border-radius: 4vw;
     font-size: 4vw;
     text-align: center;
   }
 
   .startButton {
-    padding: 1.4vh 10vw;
+    padding: calc(1.4 * var(--vh)) 10vw;
     font-size: 12vw;
     border-radius: 3vw;
   }
 
   .paused {
-    top: 1.5vh;
-    padding: 0.8vh 5vw;
+    top: calc(1.5 * var(--vh));
+    padding: calc(0.8 * var(--vh)) 5vw;
     font-size: 5.5vw;
   }
 }
 
 /*
  * Start prompt, every layout: it sits in the free centre band, between the HUD panels above and
- * the controls bar (bottom band, from about 73vh down). On Classic tiles it covers the middle of
+ * the controls bar (bottom band, from about calc(73 * var(--vh)) down). On Classic tiles it covers the middle of
  * the tiles until the ride starts. Stacked above the controls so a clash can never hide Start.
  */
 .promptOverlay {
@@ -171,19 +185,19 @@
 }
 
 @media (max-width: 760px) and (orientation: portrait) {
-  /* The controls wrap into two rows (about 68vh-81vh); the prompt gets slimmer to fit above. */
+  /* The controls wrap into two rows (about calc(68 * var(--vh))-81vh); the prompt gets slimmer to fit above. */
   .promptOverlay {
     top: 0;
     width: auto;
   }
 
   .promptOverlay .prompt {
-    gap: 1vh;
-    padding: 1.6vh 5vw;
+    gap: calc(1 * var(--vh));
+    padding: calc(1.6 * var(--vh)) 5vw;
   }
 
   .promptOverlay .startButton {
-    padding: 0.9vh 9vw;
+    padding: calc(0.9 * var(--vh)) 9vw;
     font-size: 9vw;
   }
 }

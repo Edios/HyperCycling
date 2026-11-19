@@ -1,6 +1,7 @@
 /*
  * Group S, bottom left above the floor: the smallest group (18 / 15 px at 720p). It never
- * reaches the controls bar in the middle (it stops short of it) and is hidden on a phone.
+ * reaches the controls bar in the middle (it stops short of it). On a phone in portrait it is a
+ * one-line strip at the top (the layouts keep room for it, see --chip-room).
  */
 .root.root {
   position: fixed;
@@ -59,6 +60,36 @@
 
 @media (max-width: 760px) and (orientation: portrait) {
   .root.root {
-    display: none;
+    /* Under the 8px zone bar, full width of the stack, one line: title, then the artist. */
+    top: 12px;
+    bottom: auto;
+    left: 3vw;
+    right: 3vw;
+    max-width: none;
+    box-sizing: border-box;
+    padding: 6px 12px;
+    border-radius: 12px;
+    gap: 10px;
+  }
+
+  .icon {
+    font-size: 16px;
+  }
+
+  .text {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 14px;
+    flex: 0 1 auto;
+  }
+
+  .meta {
+    font-size: 12px;
+    margin-top: 0;
+    flex: 0 100 auto;
   }
 }

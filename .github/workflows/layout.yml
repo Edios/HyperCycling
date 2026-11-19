@@ -1,0 +1,57 @@
+name: Layout QA
+
+# Layout and visual checks on phone-like windows (Playwright project "layout", see
+# docs/superpowers/qa/ui-test-strategy.md). A report, not a gate: the job never fails the pull
+# request (continue-on-error), it uploads test-results/layout as an artifact with findings.md.
+on:
+  pull_request:
+    paths:
+      - 'src/client/**'
+      - 'tests/layout/**'
+      - 'playwright.layout.config.ts'
+      - 'scripts/layout-report.ts'
+  schedule:
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+    inputs:
+      depth:
+        description: 'smoke (4 windows), standard, or full'
+        default: standard
+        type: choice
+        options: [smoke, standard, full]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: layout-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  layout:
+    timeout-minutes: 40
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      # Pull requests run the fast subset; the nightly run and manual runs go deeper.
+      LAYOUT_DEPTH: ${{ github.event_name == 'pull_request' && 'smoke' || inputs.depth || 'standard' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:layout
+      - run: npm run layout:report -- --out test-results/layout/findings.md --shots test-results/layout/report-shots
+        if: always()
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: layout-findings
+          path: |
+            test-results/layout/findings.md
+            test-results/layout/findings.jsonl
+            test-results/layout/report-shots
+            test-results/layout/shots

@@ -7,14 +7,14 @@
      must wrap into two lines that fit the reserved height. Elsewhere the font also follows the
      width, so a long cue wraps inside the free centre instead of spilling into it. Nothing is
      clipped: the whole text always shows (and the glow is not cut off). */
-  font-size: var(--cue-fs, min(9vh, 5.2vw));
+  font-size: var(--cue-fs, min(calc(9 * var(--vh)), 5.2vw));
   line-height: 1.05;
   letter-spacing: 0.02em;
   max-width: 100%;
   overflow-wrap: break-word;
   text-wrap: balance;
   color: var(--c);
-  text-shadow: 0 0 3vh color-mix(in srgb, var(--c) 60%, transparent);
+  text-shadow: 0 0 calc(3 * var(--vh)) color-mix(in srgb, var(--c) 60%, transparent);
   pointer-events: none;
 }
 
@@ -36,6 +36,6 @@
   }
   100% {
     opacity: 0;
-    transform: translateY(-2vh);
+    transform: translateY(calc(-2 * var(--vh)));
   }
 }
