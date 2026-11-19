@@ -18,7 +18,7 @@ test('heart-rate zones: HRmax from age, zone column and toggle in Settings', asy
 
   await page.goto('./#/settings');
   const zones = page.getByTestId('zones-table');
-  await expect(zones.getByTestId('zone-hr').nth(5)).toHaveText('Z3 · 70–80 %');
+  await expect(zones.getByTestId('zone-hr').nth(5)).toHaveText('Z3 · 70–80%');
 
   const toggle = page.getByRole('switch', { name: 'Show heart-rate zones' });
   await toggle.click();

@@ -191,7 +191,7 @@ for (const size of [
     await page.clock.runFor(3200);
     await page.clock.runFor(41_000); // just past the first step of the opening ramp
     await expect(page.getByTestId('step-line').first()).toHaveText('Step 2/3');
-    await expect(page.getByTestId('resistance-command').first()).toHaveText('Add resistance');
+    await expect(page.getByTestId('resistance-command').first()).toHaveText('Turn up');
     await expect(page.getByTestId('effort-name').first()).not.toContainText('FTP');
     expect(await geometryProblems(page)).toEqual([]);
     await page.screenshot({ path: `test-results/knob-hud-${size.width}.png` });

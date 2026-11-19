@@ -60,7 +60,7 @@ export const en = {
     standing: 'Standing',
     position: 'Position',
     step: 'Step {n}/{total}',
-    resistanceAdd: 'Add resistance',
+    resistanceAdd: 'Turn up',
     resistanceEase: 'Ease off',
     resistanceHold: 'Hold',
     blockOf: 'block {n} of {total}',

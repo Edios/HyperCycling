@@ -15,7 +15,7 @@ test('start page: short intro and three mode tiles with their own colours', asyn
   await seedSettings(page, info, null);
   await page.goto('./#/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('How do you want to ride');
-  await expect(page.getByTestId('home-hero')).toContainText('HyperCycling guides your spin-bike');
+  await expect(page.getByTestId('home-hero')).toContainText('HyperCycling guides your indoor ride');
   await expect(page.locator('[data-tile="experience"]')).toContainText('Experience the immersion');
   const colours = await page
     .locator('[data-tile]')
