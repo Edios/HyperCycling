@@ -6,8 +6,6 @@ import { assertSafeE2eDbPath } from './src/server/e2e-db-guard';
 // The local project runs against its own server and a throwaway database, never the real data.
 // Workers and globalTeardown inherit the env var, so the path is the same everywhere.
 const E2E_PORT = 5185;
-// Tests never make sound (music providers, beeps): a sudden noise startles whoever sits nearby.
-const MUTED = { launchOptions: { args: ['--mute-audio'] } };
 process.env.E2E_DB_PATH ??= path.join(tmpdir(), `spinning-tutor-e2e-${Date.now()}.db`);
 // Refuse an explicit E2E_DB_PATH that points into the real data/ directory.
 assertSafeE2eDbPath(process.env.E2E_DB_PATH);
@@ -22,7 +20,7 @@ export default defineConfig({
     {
       name: 'local',
       testIgnore: /(setup|training-basic|experience-ride)\.spec\.ts/,
-      use: { ...devices['Desktop Chrome'], ...MUTED, baseURL: `http://127.0.0.1:${E2E_PORT}` },
+      use: { ...devices['Desktop Chrome'], baseURL: `http://127.0.0.1:${E2E_PORT}` },
     },
     {
       // Files that start a training session autosave it to the shared local database, which would
@@ -30,7 +28,7 @@ export default defineConfig({
       name: 'local-training',
       testMatch: /(training-basic|experience-ride)\.spec\.ts/,
       dependencies: ['local'],
-      use: { ...devices['Desktop Chrome'], ...MUTED, baseURL: `http://127.0.0.1:${E2E_PORT}` },
+      use: { ...devices['Desktop Chrome'], baseURL: `http://127.0.0.1:${E2E_PORT}` },
     },
     {
       // These tests keep a stored session around on purpose; running them after the other
@@ -38,11 +36,11 @@ export default defineConfig({
       name: 'local-resume',
       testMatch: /setup\.spec\.ts/,
       dependencies: ['local-training'],
-      use: { ...devices['Desktop Chrome'], ...MUTED, baseURL: `http://127.0.0.1:${E2E_PORT}` },
+      use: { ...devices['Desktop Chrome'], baseURL: `http://127.0.0.1:${E2E_PORT}` },
     },
     {
       name: 'pages',
-      use: { ...devices['Desktop Chrome'], ...MUTED, baseURL: 'http://127.0.0.1:5176/' },
+      use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:5176/' },
     },
   ],
   webServer: [

@@ -6,6 +6,9 @@ import { expect, test } from './fixtures';
  * they play, nothing overlaps or leaves the screen, the lane sits on the timeline's time scale and
  * is never covered by the chart. Screenshots go to test-results for the PR.
  */
+// Never a sound from a test browser (the shared config gets the same flag in the e2e fix).
+test.use({ launchOptions: { args: ['--mute-audio'] } });
+
 const SIZES = [
   { name: 'phone-portrait', width: 390, height: 844 },
   { name: 'phone-landscape', width: 844, height: 390 },

@@ -278,6 +278,28 @@ describe('music track', () => {
     expect(screen.queryByTestId('music-pill')).not.toBeInTheDocument();
   });
 
+  it('trims the end of a pinned track: the pill gets that length, a bad end is refused', async () => {
+    repo.store.set('user-1', userWorkout());
+    renderAt('/editor/user-1');
+    await screen.findByTestId('editor-screen');
+    fireEvent.click(block(1));
+    fireEvent.change(screen.getByTestId('track-url'), {
+      target: { value: 'https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC' },
+    });
+    fireEvent.change(screen.getByTestId('track-start'), { target: { value: '0:30' } });
+    fireEvent.change(screen.getByTestId('track-end'), { target: { value: '0:20' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('The end must come after the start');
+    expect(screen.queryByTestId('music-pill')).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByTestId('track-end'), { target: { value: '2:00' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin track' }));
+    // 0:30 to 2:00 = 1:30 of music, not the whole block
+    expect(screen.getByTestId('music-pill')).toHaveTextContent('from 0:30 · 1:30');
+    expect(screen.getByTestId('track-length')).toHaveTextContent('plays 1:30');
+    expect(screen.getByTestId('track-end')).toHaveValue('2:00');
+  });
+
   it('clicking the pin placeholder focuses the track field', async () => {
     repo.store.set('user-1', userWorkout());
     renderAt('/editor/user-1');
