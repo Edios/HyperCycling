@@ -19,6 +19,7 @@ const ROUTES = [
   '#/freestyle',
   '#/players',
   '#/settings',
+  '#/how-it-works',
   '#/setup/demo-mixed',
   '#/editor/demo-mixed',
   '#/summary',

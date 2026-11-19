@@ -1136,6 +1136,59 @@ export const pl: Messages = {
     ride: 'Jedź',
     rideWithPlayers: 'Jedź z graczami',
   },
+  // Podstrona „Jak to działa” (osobny blok, żeby inne zmiany w tym pliku się z nią nie zderzały).
+  guide: {
+    menu: 'Jak to działa',
+    eyebrow: 'Jak to działa',
+    title: 'Ty pedałujesz. Resztę prowadzi aplikacja.',
+    lead: 'HyperCycling to trening na rowerze stacjonarnym w przeglądarce: z planem, komendami na ekranie i Twoją muzyką.',
+    whyTitle: 'Po co to powstało',
+    why: 'Na zajęciach z instruktorem jedzie się lepiej: ktoś mówi, co dalej, a muzyka niesie tempo. W domu zwykle jest sam rower i cisza.',
+    goalTitle: 'Cel',
+    goal: 'Dobrze ułożony trening w minutę od wejścia na stronę. Bez konta, bez abonamentu, bez instalacji.',
+    modesTitle: 'Trzy sposoby jazdy',
+    plan: {
+      title: 'Plan',
+      body: 'Odpowiadasz na kilka pytań i dostajesz tydzień treningów, który rośnie razem z Tobą.',
+    },
+    free: {
+      title: 'Freestyle',
+      body: 'Wybierasz jeden z ponad stu gotowych treningów i jedziesz od razu.',
+    },
+    experience: {
+      title: 'Experience',
+      body: 'Jazda w stylu zajęć: muzyka, rozdziały i światło, które rośnie razem z wysiłkiem.',
+    },
+    moreTitle: 'A w środku',
+    coach: {
+      title: 'Coach',
+      body: 'Komendy na ekranie przed każdą zmianą: dodaj opór, wstań, usiądź. Instruktor prowadzi, Coach pomaga.',
+    },
+    editor: {
+      title: 'Edytor',
+      body: 'Ułóż własny trening z bloków albo zaimportuj plik .zwo, .erg lub .mrc.',
+    },
+    music: {
+      title: 'Muzyka',
+      body: 'Utwory z YouTube lub Spotify, dopasowane do bloków. Muzyki nie dołączamy: wybierasz własną.',
+    },
+    bike: {
+      title: 'Rowery i czujniki',
+      body: 'Pokrętło, rower z miernikiem mocy albo trenażer: każdy się nada. Wysiłek to skala 1–10, waty tylko gdy Twój rower je zna. Czujniki nie są potrzebne; wpisz tętno maksymalne, a zobaczysz strefy.',
+    },
+    local: {
+      title: 'Dane zostają u Ciebie',
+      body: 'Wszystko zostaje w przeglądarce. Bez konta, bez analityki; tętno i FTP nigdzie stąd nie wychodzą.',
+    },
+    open: {
+      title: 'Otwarty projekt (MIT)',
+      body: 'Kod jest otwarty, na licencji MIT. Zajrzyj do środka, podsuń pomysł albo popraw błąd.',
+      link: 'Zobacz kod na GitHubie',
+    },
+    ctaTitle: 'Gotowy?',
+    ctaBody: 'Wybierz, jak chcesz jechać.',
+    ctaButton: 'Wybierz jazdę',
+  },
   coach: {
     attack: 'ATAK!',
     standUp: 'Wstań!',
