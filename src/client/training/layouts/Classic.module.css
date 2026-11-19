@@ -160,8 +160,8 @@
     flex: none;
     /* Two lines of the cue, sized by the width so it wraps instead of spilling over the controls. */
     --cue-fs: min(8.5vw, 6.5vh);
-    height: calc(var(--cue-fs) * 2.4);
-    margin-bottom: 2vh;
+    height: calc(var(--cue-fs) * 2.2);
+    margin-bottom: 1vh;
   }
 
   .controls {
