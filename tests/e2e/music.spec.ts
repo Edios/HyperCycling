@@ -115,7 +115,7 @@ async function rideIt(page: Page, name: string): Promise<void> {
   await page.getByTestId('workout-ride').click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
   const music = page.getByRole('switch', { name: 'Music' });
-  if (!(await music.isChecked())) await music.check({ force: true });
+  if (!(await music.isChecked())) await music.check();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
 }
@@ -133,7 +133,7 @@ async function rideWithRider(page: Page, name: string, world: boolean): Promise<
   await form.getByLabel('FTP (W)').fill('250');
   await form.getByRole('button', { name: 'Add rider' }).click();
   const music = page.getByRole('switch', { name: 'Music' });
-  if (!(await music.isChecked())) await music.check({ force: true });
+  if (!(await music.isChecked())) await music.check();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
   await page.keyboard.press('Space');

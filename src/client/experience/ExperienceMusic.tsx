@@ -84,7 +84,7 @@ export function ExperienceMusic({
   if (!connected) {
     return (
       <section className={styles.panel} data-testid="exp-music-offline">
-        <h2 className={styles.title}>{t('experience.music.title')}</h2>
+        <h4 className={styles.title}>{t('experience.music.title')}</h4>
         <p className={styles.note}>{t('experience.music.offline')}</p>
         <Link to="/settings" className={styles.link} data-testid="exp-music-connect">
           {t('experience.music.connect')}
@@ -167,7 +167,7 @@ export function ExperienceMusic({
 
   return (
     <section className={styles.panel} data-testid="exp-music">
-      <h2 className={styles.title}>{t('experience.music.title')}</h2>
+      <h4 className={styles.title}>{t('experience.music.title')}</h4>
       {duplicates.map(([a, b]) => (
         <p key={`${a}-${b}`} className={styles.warn} data-testid="exp-music-duplicate">
           {t('experience.music.duplicate', { a: a + 1, b: b + 1 })}

@@ -104,10 +104,10 @@ export function ExperienceMusicCheck({
 
   return (
     <section className={styles.panel} data-testid="exp-check">
-      <h2 className={styles.title}>
+      <h4 className={styles.title}>
         {t('experience.check.title')}{' '}
         <span className={styles.optional}>{t('setup.checkOptional')}</span>
-      </h2>
+      </h4>
       <p className={styles.note}>{t('experience.check.intro')}</p>
       {ip && (
         <p role="note" className={styles.warn} data-testid="exp-check-ip">

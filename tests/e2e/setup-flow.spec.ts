@@ -168,3 +168,116 @@ test('a manual-knob bike is never asked for watts when adding a rider', async ({
   await expect(chip).not.toContainText(' W');
   await expect(page.getByText('Bike: Manual knob')).toBeVisible();
 });
+
+/**
+ * Presses Tab through the whole page and returns every focused control that sits under the sticky
+ * Start bar (WCAG 2.4.11 Focus Not Obscured).
+ */
+async function obscuredByBar(page: Page): Promise<string[]> {
+  const bad: string[] = [];
+  for (let i = 0; i < 80; i += 1) {
+    await page.keyboard.press('Tab');
+    const hit = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement | null;
+      const bar = document.querySelector('[data-testid="start-bar"]');
+      if (!el || !bar || el === document.body || bar.contains(el)) return null;
+      const a = el.getBoundingClientRect();
+      const b = bar.getBoundingClientRect();
+      const overlap = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+      const label =
+        el.getAttribute('aria-label') ?? el.textContent?.trim().slice(0, 30) ?? el.tagName;
+      return overlap > 1
+        ? `${el.tagName} "${label}" under the bar by ${Math.round(overlap)}px`
+        : null;
+    });
+    if (hit) bad.push(hit);
+  }
+  return bad;
+}
+
+for (const vp of [
+  { name: 'phone', width: 390, height: 844, mobile: true },
+  { name: 'laptop', width: 1280, height: 800, mobile: false },
+  { name: 'phone landscape', width: 844, height: 390, mobile: true },
+]) {
+  test.describe(`focus and the Start bar, ${vp.name}`, () => {
+    test.use({
+      viewport: { width: vp.width, height: vp.height },
+      hasTouch: vp.mobile,
+      isMobile: vp.mobile,
+    });
+
+    for (const [name, route] of [
+      ['Freestyle', '#/setup/demo-mixed'],
+      ['Experience', '#/setup/class-neon-grid-45?exp=neon-grid-45'],
+    ] as const) {
+      test(`${name}: no focused control ends up under the bar`, async ({ page }) => {
+        test.setTimeout(90_000);
+        await page.goto(`./${route}`);
+        await expect(page.getByTestId('advanced-toggle')).toHaveAttribute('aria-expanded', 'true');
+        expect(await obscuredByBar(page)).toEqual([]);
+      });
+    }
+  });
+}
+
+test.describe('on-screen keyboard (short viewport)', () => {
+  test.use({ viewport: { width: 390, height: 400 }, hasTouch: true, isMobile: true });
+
+  test('the bar steps aside while a name is typed, and comes back', async ({ page }) => {
+    await closedAccordion(page);
+    await page.goto('./#/setup/demo-mixed');
+    const bar = page.getByTestId('start-bar');
+    await expect(bar).toBeVisible();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
+    const name = page.getByLabel('Name');
+    await expect(name).toBeFocused();
+    await expect(bar).toBeHidden();
+    await name.fill('Kasia');
+    await expect(name).toBeInViewport();
+    await page.getByRole('heading', { level: 1 }).click();
+    await expect(bar).toBeVisible();
+  });
+});
+
+test.describe('Polish labels', () => {
+  test.use({ locale: 'pl-PL', viewport: { width: 390, height: 844 } });
+
+  test('the bar chips are never cut off', async ({ page }) => {
+    await closedAccordion(page);
+    await page.goto('./#/setup/demo-mixed');
+    const bar = page.getByTestId('start-bar');
+    await expect(bar).toBeVisible();
+    await expect(bar.getByTestId('bar-music')).toContainText('Muzyka');
+    for (const width of [390, 360, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      const cut = await bar
+        .locator('button > span')
+        .evaluateAll((spans) =>
+          spans.filter((s) => s.scrollWidth > s.clientWidth).map((s) => s.textContent),
+        );
+      expect(cut, `${width}px`).toEqual([]);
+    }
+  });
+});
+
+test.describe('"Fix it" leads to the field', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('a missing YouTube link: focus lands in the link field, clear of the bar', async ({
+    page,
+  }, info) => {
+    await closedAccordion(page);
+    await seedSettings(page, info, null, {
+      lastSession: { background: 'youtube', hud: 'immersive', playerIds: [], music: false },
+    });
+    await page.goto('./#/setup/demo-mixed');
+    const bar = page.getByTestId('start-bar');
+    await bar.getByRole('button', { name: 'Fix it' }).click();
+    const link = page.getByLabel('YouTube link');
+    await expect(link).toBeFocused();
+    await expect(link).toBeInViewport();
+    const [field, barBox] = [await link.boundingBox(), await bar.boundingBox()];
+    expect((field?.y ?? 0) + (field?.height ?? 0)).toBeLessThanOrEqual(barBox?.y ?? 0);
+  });
+});

@@ -233,13 +233,21 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
     saveAdvancedOpen(open);
   };
 
-  /** Opens the accordion and brings it into view (the "More" shortcut and the Start notice). */
-  const showAdvanced = (): void => {
+  /**
+   * Opens the accordion and brings it into view (the "More" shortcut and the Start notice); with a
+   * target id it goes to that part instead and moves focus to its first control.
+   */
+  const showAdvanced = (targetId?: string): void => {
     setAdvanced(true);
     const calm = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    window.requestAnimationFrame(() =>
-      advancedRef.current?.scrollIntoView({ block: 'start', behavior: calm ? 'auto' : 'smooth' }),
-    );
+    window.requestAnimationFrame(() => {
+      const target = targetId ? document.getElementById(targetId) : null;
+      (target ?? advancedRef.current)?.scrollIntoView({
+        block: 'start',
+        behavior: calm ? 'auto' : 'smooth',
+      });
+      target?.querySelector<HTMLElement>('input, button, select')?.focus({ preventScroll: true });
+    });
   };
 
   const togglePlayer = (id: string): void => {
@@ -428,7 +436,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
       )}
 
       {!experience && background === 'youtube' && (
-        <div data-testid="youtube-section">
+        <div id="setup-youtube" data-testid="youtube-section">
           <Field
             label={t('setup.youtubeUrl')}
             {...(youtubeTrimmed !== '' && youtubeInvalid
@@ -624,7 +632,8 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
         variant={experience ? 'status' : 'shortcuts'}
         status={musicStatus}
         music={{
-          label: t(musicOn ? 'setup.musicOn' : 'setup.musicOff'),
+          label: t('setup.music'),
+          icon: musicOn ? 'volume' : 'mute',
           pressed: musicOn,
           disabled: !hasCues,
           onClick: () => setMusic(!musicOn),
@@ -632,13 +641,15 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
         }}
         layout={{
           label: layoutLabel,
+          icon: 'layout',
           ariaLabel: t('setup.layoutChip', { layout: layoutLabel }),
           onClick: () => setLayoutOpen(true),
           testId: 'bar-layout',
         }}
         more={{
           label: t('setup.more'),
-          onClick: showAdvanced,
+          icon: 'settings',
+          onClick: () => showAdvanced(),
           testId: 'bar-more',
         }}
         {...(youtubeInvalid
@@ -646,10 +657,18 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
               notice: {
                 text: t('setup.youtubeNeeded'),
                 action: t('setup.fix'),
-                onAction: showAdvanced,
+                onAction: () => showAdvanced('setup-youtube'),
               },
             }
-          : {})}
+          : unplayable.length > 0
+            ? {
+                notice: {
+                  text: t('setup.musicBlocked'),
+                  action: t('setup.fix'),
+                  onAction: () => showAdvanced('setup-music'),
+                },
+              }
+            : {})}
         disabled={youtubeInvalid || unplayable.length > 0}
         onStart={start}
       />
