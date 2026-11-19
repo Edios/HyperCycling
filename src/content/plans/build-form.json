@@ -1,15 +1,15 @@
 {
   "id": "build-form",
   "name": "Build Form",
-  "description": "Eight weeks to raise your FTP: sweet spot growing into threshold, with VO2 and micro-burst spice.",
+  "description": "Eight weeks aimed at raising your FTP: sweet spot growing into threshold, with VO2 and micro-burst spice.",
   "localized": {
     "en": {
       "name": "Build Form",
-      "description": "Eight weeks to raise your FTP: sweet spot growing into threshold, with VO2 and micro-burst spice."
+      "description": "Eight weeks aimed at raising your FTP: sweet spot growing into threshold, with VO2 and micro-burst spice."
     },
     "pl": {
       "name": "Budowa formy",
-      "description": "Osiem tygodni na podniesienie FTP: sweet spot przechodzący w próg oraz interwały VO2 i mikro-zrywy."
+      "description": "Osiem tygodni pracy nad wyższym FTP: sweet spot przechodzący w próg oraz interwały VO2 i mikro-zrywy."
     }
   },
   "level": "intermediate",

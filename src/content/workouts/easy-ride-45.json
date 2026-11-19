@@ -1,14 +1,14 @@
 {
   "id": "easy-ride-45",
-  "name": "Easy Zone 2 - 45",
-  "description": "A steady Zone 2 ride with four short minutes of faster pedalling.",
+  "name": "Easy Zone 2, 45 min",
+  "description": "A steady Zone 2 ride with four short minutes of faster pedaling.",
   "localized": {
     "en": {
-      "name": "Easy Zone 2 - 45",
-      "description": "A steady Zone 2 ride with four short minutes of faster pedalling."
+      "name": "Easy Zone 2, 45 min",
+      "description": "A steady Zone 2 ride with four short minutes of faster pedaling."
     },
     "pl": {
-      "name": "Spokojna dwójka 45",
+      "name": "Spokojna strefa 2, 45 min",
       "description": "Spokojna jazda w strefie 2 z czterema minutowymi odcinkami szybszej kadencji."
     }
   },

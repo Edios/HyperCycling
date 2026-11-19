@@ -82,7 +82,7 @@ test('Ride opens setup; Start rides it; reload mid-session offers Resume at the 
   const setup = page.getByTestId('setup-screen');
   await expect(setup).toBeVisible();
   await expect(setup.getByRole('heading', { level: 1 })).toBeVisible();
-  await expect(page.getByTestId('setup-badge')).toContainText('Progres · week 1');
+  await expect(page.getByTestId('setup-badge')).toContainText('Progress · week 1');
   await expect(page.getByRole('radio', { name: 'Classic' })).toBeChecked();
   await expect(page.getByRole('button', { name: /^World/ })).toBeEnabled();
   await expect(page.getByRole('button', { name: /YouTube/ })).toBeEnabled();
@@ -103,7 +103,7 @@ test('Ride opens setup; Start rides it; reload mid-session offers Resume at the 
   await page.reload();
   const prompt = page.getByTestId('resume-prompt');
   await expect(prompt).toBeVisible();
-  await expect(prompt).toContainText('Finish the session?');
+  await expect(prompt).toContainText('Resume your interrupted workout?');
   await expect(page.getByTestId('resume-progress')).toContainText('Block 2 of');
   await prompt.getByRole('button', { name: 'Resume' }).click();
 
@@ -161,7 +161,7 @@ test('plan ride to the summary counts toward the plan; the Plan tab shows it don
   await expect(page.getByTestId('summary-screen')).toBeVisible();
   await expect(page.getByTestId('summary-status')).toHaveText('Completed');
   await expect(page.getByRole('switch', { name: 'Count toward plan' })).toBeChecked();
-  await expect(page.getByTestId('count-detail')).toContainText('week 1 · Progres');
+  await expect(page.getByTestId('count-detail')).toContainText('week 1 · Progress');
 
   await page.getByRole('button', { name: 'Back to plan' }).click();
   await expect(page.getByTestId('week-1-progres')).toHaveAttribute('data-status', 'done');

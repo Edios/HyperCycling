@@ -1,11 +1,11 @@
 {
   "id": "criss-cross-threshold",
   "name": "Criss-Cross Threshold",
-  "description": "Power drifts up across your threshold and back down in long ramps. Smooth pedalling matters more than hitting numbers.",
+  "description": "Power drifts up across your threshold and back down in long ramps. Smooth pedaling matters more than hitting numbers.",
   "localized": {
     "en": {
       "name": "Criss-Cross Threshold",
-      "description": "Power drifts up across your threshold and back down in long ramps. Smooth pedalling matters more than hitting numbers."
+      "description": "Power drifts up across your threshold and back down in long ramps. Smooth pedaling matters more than hitting numbers."
     },
     "pl": {
       "name": "Criss-cross na progu",

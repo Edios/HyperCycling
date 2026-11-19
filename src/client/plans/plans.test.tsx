@@ -195,7 +195,7 @@ describe('PlanDetail', () => {
   it('the double-progres layout shows two Progres previews', async () => {
     renderDetail();
     await screen.findByTestId('preview-progres');
-    fireEvent.click(screen.getByRole('radio', { name: '2 × Progres' }));
+    fireEvent.click(screen.getByRole('radio', { name: '2 × Progress' }));
     expect(screen.getByTestId('preview-freestyle')).toHaveTextContent('Progres');
   });
 

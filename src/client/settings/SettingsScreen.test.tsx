@@ -236,19 +236,19 @@ describe('FTP test guide', () => {
     const radios = within(guide).getAllByRole('radio');
     expect(radios[0]).toHaveAccessibleName('20-minute test');
     expect(radios[0]).toBeChecked();
-    expect(within(guide).getByTestId('ftp-recommended')).toHaveTextContent("don't know your FTP");
+    expect(within(guide).getByTestId('ftp-recommended')).toHaveTextContent("don’t know your FTP");
     expect(within(guide).getByTestId('ftp-recommended')).toHaveTextContent('8 out of 10');
-    expect(within(guide).getByText('FTP = 95 % of the 20-minute average power')).toBeVisible();
+    expect(within(guide).getByText('FTP = 95% of the 20-minute average power')).toBeVisible();
     expect(within(guide).getByTestId('ftp-test-start')).toHaveAttribute(
       'href',
       '/setup/ftp-test-20',
     );
     fireEvent.click(within(guide).getByRole('radio', { name: 'Ramp test' }));
     expect(within(guide).queryByTestId('ftp-recommended')).not.toBeInTheDocument();
-    expect(within(guide).getByText('FTP = 75 % of best 1-minute power')).toBeVisible();
+    expect(within(guide).getByText('FTP = 75% of best 1-minute power')).toBeVisible();
     expect(within(guide).getByTestId('ftp-test-start')).toHaveAttribute('href', '/setup/ramp-test');
-    fireEvent.click(within(guide).getByRole('radio', { name: '2 x 8-minute test' }));
-    expect(within(guide).getByText('FTP = 90 % of the average of the two efforts')).toBeVisible();
+    fireEvent.click(within(guide).getByRole('radio', { name: '2 × 8-minute test' }));
+    expect(within(guide).getByText('FTP = 90% of the average of the two efforts')).toBeVisible();
     expect(within(guide).getAllByRole('listitem')).toHaveLength(3);
   });
 
@@ -267,7 +267,7 @@ describe('FTP test guide', () => {
 
   it('averages the two 8-minute efforts', async () => {
     const guide = await openGuide();
-    fireEvent.click(within(guide).getByRole('radio', { name: '2 x 8-minute test' }));
+    fireEvent.click(within(guide).getByRole('radio', { name: '2 × 8-minute test' }));
     fireEvent.change(within(guide).getByLabelText('Effort 1 average power (W)'), {
       target: { value: '270' },
     });
@@ -294,7 +294,7 @@ describe('Training', () => {
     const tr = await section('training');
     fireEvent.click(within(tr).getByRole('switch', { name: 'Sounds' }));
     await waitFor(() => expect(db.settings?.sounds).toBe(false));
-    fireEvent.click(within(tr).getByRole('switch', { name: 'Coach messages' }));
+    fireEvent.click(within(tr).getByRole('switch', { name: 'Coach cues' }));
     await waitFor(() => expect(db.settings?.coach).toBe(false));
     fireEvent.click(within(tr).getByRole('radio', { name: 'Low' }));
     await waitFor(() => expect(db.settings?.hyperrideQuality).toBe('low'));
@@ -368,7 +368,7 @@ describe('Zones', () => {
     renderScreen();
     const zones = await section('zones');
     const cells = within(zones).getAllByTestId('zone-hr');
-    expect(cells[5]).toHaveTextContent('Z3 · 70–80 %');
+    expect(cells[5]).toHaveTextContent('Z3 · 70–80%');
     fireEvent.click(await within(zones).findByRole('switch', { name: 'Show heart-rate zones' }));
     await waitFor(() => expect(db.settings?.showHrZones).toBe(true));
   });
@@ -486,7 +486,7 @@ describe('Data', () => {
     renderScreen();
     await pick(file(validBundle, 'mine.json'));
     const dialog = await screen.findByRole('dialog', { name: 'Replace all data?' });
-    expect(dialog).toHaveTextContent('"mine.json"');
+    expect(dialog).toHaveTextContent('“mine.json”');
     const cancel = within(dialog).getByRole('button', { name: 'Cancel' });
     await waitFor(() => expect(cancel).toHaveFocus());
     fireEvent.click(cancel);

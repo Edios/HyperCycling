@@ -96,7 +96,7 @@ describe('PlanTab', () => {
     expect(build).toHaveAttribute('href', '/plans/wizard');
     expect(screen.getByRole('link', { name: /Pick a plan/ })).toHaveAttribute('href', '/plans');
     expect(screen.getByRole('link', { name: /Just ride/ })).toHaveAttribute('href', '/freestyle');
-    expect(screen.getByTestId('welcome-experience')).toHaveTextContent(/soon/i);
+    expect(screen.getByTestId('welcome-experience')).toHaveAttribute('href', '/experiences');
     expect(screen.queryByRole('button', { name: 'Ride' })).not.toBeInTheDocument();
   });
 

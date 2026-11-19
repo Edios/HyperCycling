@@ -419,12 +419,6 @@
   opacity: 0.85;
 }
 
-.pathSoon {
-  border-style: dashed;
-  background: transparent;
-  opacity: 0.7;
-}
-
 a.path:focus-visible {
   outline: 2px solid var(--act);
   outline-offset: 2px;

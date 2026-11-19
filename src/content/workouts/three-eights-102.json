@@ -1,15 +1,15 @@
 {
   "id": "three-eights-102",
-  "name": "Three Eights (102 %)",
-  "description": "Three eight-minute blocks at 102 % of FTP, the shorter version.",
+  "name": "Three Eights (102%)",
+  "description": "Three eight-minute blocks at 102% of FTP, the shorter version.",
   "localized": {
     "en": {
-      "name": "Three Eights (102 %)",
-      "description": "Three eight-minute blocks at 102 % of FTP, the shorter version."
+      "name": "Three Eights (102%)",
+      "description": "Three eight-minute blocks at 102% of FTP, the shorter version."
     },
     "pl": {
-      "name": "Trzy ósemki (102 %)",
-      "description": "Trzy ośmiominutowe odcinki przy 102 % FTP, krótsza wersja."
+      "name": "Trzy ósemki (102%)",
+      "description": "Trzy ośmiominutowe odcinki przy 102% FTP, krótsza wersja."
     }
   },
   "category": "progres",

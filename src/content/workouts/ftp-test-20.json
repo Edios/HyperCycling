@@ -1,15 +1,15 @@
 {
   "id": "ftp-test-20",
   "name": "20-Minute FTP Test",
-  "description": "The classic test: a hard five-minute opener, a long rest, then twenty minutes at the best steady pace you can hold. Your FTP is about 95 % of that average.",
+  "description": "The classic test: a hard five-minute opener, a long rest, then twenty minutes at the best steady pace you can hold. Your FTP is about 95% of that average.",
   "localized": {
     "en": {
       "name": "20-Minute FTP Test",
-      "description": "The classic test: a hard five-minute opener, a long rest, then twenty minutes at the best steady pace you can hold. Your FTP is about 95 % of that average."
+      "description": "The classic test: a hard five-minute opener, a long rest, then twenty minutes at the best steady pace you can hold. Your FTP is about 95% of that average."
     },
     "pl": {
       "name": "Test FTP 20 minut",
-      "description": "Klasyczny test: mocne pięć minut na otwarcie, długa przerwa, potem dwadzieścia minut najlepszym równym tempem, jakie utrzymasz. Twoje FTP to około 95 % tej średniej."
+      "description": "Klasyczny test: mocne pięć minut na otwarcie, długa przerwa, potem dwadzieścia minut najlepszym równym tempem, jakie utrzymasz. Twoje FTP to około 95% tej średniej."
     }
   },
   "category": "freestyle",

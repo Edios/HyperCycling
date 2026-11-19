@@ -20,7 +20,7 @@ test('editor: new workout, palette blocks, keyboard resize, save, then ride it',
   const name = `E2E Ride ${Date.now()}`;
 
   await page.goto('./#/freestyle');
-  await page.getByRole('button', { name: /New workout/ }).click();
+  await page.getByRole('button', { name: /Create workout/ }).click();
   await expect(page.getByTestId('editor-screen')).toBeVisible();
   const blocks = page.getByTestId('editor-block');
   await expect(blocks).toHaveCount(3);

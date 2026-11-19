@@ -114,7 +114,7 @@ describe('FreestyleTab', () => {
 
   it('New workout opens the editor draft', async () => {
     renderTab();
-    fireEvent.click(await screen.findByRole('button', { name: /New workout/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /Create workout/ }));
     await waitFor(() => expect(screen.getByTestId('at')).toHaveTextContent('/editor/new'));
   });
 

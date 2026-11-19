@@ -223,7 +223,7 @@ describe('inspector', () => {
   it('sets position, command text and an exact %FTP', async () => {
     await openUser();
     fireEvent.click(screen.getByLabelText('Standing'));
-    const cue = screen.getByLabelText('On-screen command');
+    const cue = screen.getByLabelText('On-screen cue');
     fireEvent.change(cue, { target: { value: 'Stand up!' } });
     fireEvent.blur(cue);
     const ftp = screen.getByLabelText('Exact % FTP');
@@ -231,7 +231,7 @@ describe('inspector', () => {
     fireEvent.blur(ftp);
     expect(screen.getByTestId('effort-caption')).toHaveTextContent('~88% FTP');
     expect(screen.getByLabelText('Standing')).toBeChecked();
-    expect(screen.getByLabelText('On-screen command')).toHaveValue('Stand up!');
+    expect(screen.getByLabelText('On-screen cue')).toHaveValue('Stand up!');
     fireEvent.change(ftp, { target: { value: '500' } });
     expect(screen.getByRole('alert')).toHaveTextContent('% FTP must be from 20 to 200');
   });
@@ -519,7 +519,7 @@ describe('header', () => {
     renderAt('/editor/user-1');
     await screen.findByTestId('editor-screen');
     fireEvent.change(screen.getByLabelText('Workout name'), { target: { value: 'Renamed' } });
-    fireEvent.click(screen.getByLabelText('Progres'));
+    fireEvent.click(screen.getByLabelText('Progress'));
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(repo.put).toHaveBeenCalled());
     expect(repo.put.mock.calls[0]?.[0]).toMatchObject({ name: 'Renamed', category: 'progres' });

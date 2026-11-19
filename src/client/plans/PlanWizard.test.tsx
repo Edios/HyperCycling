@@ -184,7 +184,7 @@ describe('PlanWizard heart-rate step', () => {
       screen.getByRole('heading', { level: 1, name: /heart-rate monitor/ }),
     ).toBeInTheDocument();
     next();
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     await screen.findByTestId('where');
     expect(db.puts.players).toHaveLength(0);
   });
@@ -195,11 +195,11 @@ describe('PlanWizard heart-rate step', () => {
     await toFtpStep();
     next();
     fireEvent.change(screen.getByLabelText('Age'), { target: { value: '36' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Suggest from age' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Estimate from age' }));
     expect(screen.getByLabelText('Max heart rate')).toHaveValue(183);
     expect(screen.getByTestId('hr-preview')).toHaveTextContent('Z3');
     next();
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     await screen.findByTestId('where');
     expect(db.puts.players.at(-1)).toMatchObject({ isMe: true, hrMax: 183 });
   });
@@ -224,7 +224,7 @@ describe('PlanWizard recommendation', () => {
     expect(screen.getByTestId('wizard-reason')).not.toHaveTextContent(/[{}]/);
     expect(screen.getByTestId('plan-calendar')).toBeInTheDocument();
     expect(screen.getAllByTestId('calendar-test').length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: 'Start' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start plan' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Customize' })).toBeInTheDocument();
   });
 
@@ -233,7 +233,7 @@ describe('PlanWizard recommendation', () => {
     await toFtpStep();
     next(); // heart-rate step (skipped)
     next();
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     expect((await screen.findByTestId('where')).textContent).toBe('/plan');
     expect(db.puts.progress).toHaveLength(1);
     expect(db.puts.progress[0]?.planId).toBe('build-form');
@@ -249,7 +249,7 @@ describe('PlanWizard recommendation', () => {
     next();
     // A known FTP drops the first test from the calendar.
     expect(screen.getByTestId('wizard-reason')).toHaveTextContent(/230|know/i);
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     await screen.findByTestId('where');
     expect(db.puts.players).toHaveLength(1);
     expect(db.puts.players[0]).toMatchObject({ ftp: 230, isMe: true });
@@ -271,7 +271,7 @@ describe('PlanWizard recommendation', () => {
     next(); // heart-rate step (skipped)
     next();
     expect(screen.queryAllByTestId('calendar-test')).toHaveLength(0);
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     await screen.findByTestId('where');
     expect(db.puts.settings.some((s) => s.equipment.showsWatts === false)).toBe(true);
   });
@@ -284,7 +284,7 @@ describe('PlanWizard recommendation', () => {
     await toFtpStep();
     next(); // heart-rate step (skipped)
     next();
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Switch plan?')).toBeInTheDocument();
     expect(db.puts.progress).toHaveLength(0);
@@ -299,7 +299,7 @@ describe('PlanWizard recommendation', () => {
     await toFtpStep();
     next(); // heart-rate step (skipped)
     next();
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('button', { name: 'Start over' })).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Continue' }));
@@ -319,7 +319,7 @@ describe('PlanWizard recommendation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
     expect(await screen.findByTestId('customize')).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: '60 min' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Progres + Freestyle' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Progress + Freestyle' })).toBeChecked();
   });
 
   it('Customize hands over the typed FTP, which prefills the plan screen', async () => {
@@ -352,7 +352,7 @@ describe('PlanWizard recommendation', () => {
     await toFtpStep();
     next(); // heart-rate step (skipped)
     next();
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('button', { name: 'Continue' })).toBeInTheDocument();
     expect(db.puts.progress).toHaveLength(0);
@@ -365,7 +365,7 @@ describe('PlanWizard recommendation', () => {
     await toFtpStep();
     next(); // heart-rate step (skipped)
     next();
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start plan' }));
     await screen.findByTestId('where');
     expect(db.puts.progress).toHaveLength(1);
   });

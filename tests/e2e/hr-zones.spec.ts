@@ -18,7 +18,7 @@ test('heart-rate zones: HRmax from age, zone column and toggle in Settings', asy
 
   await page.goto('./#/settings');
   const zones = page.getByTestId('zones-table');
-  await expect(zones.getByTestId('zone-hr').nth(5)).toHaveText('Z3 · 70–80 %');
+  await expect(zones.getByTestId('zone-hr').nth(5)).toHaveText('Z3 · 70–80%');
 
   const toggle = page.getByRole('switch', { name: 'Show heart-rate zones' });
   await toggle.click();
@@ -39,7 +39,7 @@ test('plan wizard: the heart-rate step previews zones from the age', async ({ pa
   await page.getByRole('button', { name: 'Next', exact: true }).click();
 
   await page.getByLabel('Age', { exact: true }).fill('36');
-  await page.getByRole('button', { name: 'Suggest from age' }).click();
+  await page.getByRole('button', { name: 'Estimate from age' }).click();
   await expect(page.getByLabel('Max heart rate')).toHaveValue('183');
   await expect(page.getByTestId('hr-preview')).toContainText('128–146 bpm');
 });

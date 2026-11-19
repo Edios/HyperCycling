@@ -1,15 +1,15 @@
 {
   "id": "sweet-spot-3x8-90",
-  "name": "Sweet Spot 3 x 8 (90 %)",
-  "description": "Three eight-minute sweet spot blocks at 90 % of FTP.",
+  "name": "Sweet Spot 3 x 8 (90%)",
+  "description": "Three eight-minute sweet spot blocks at 90% of FTP.",
   "localized": {
     "en": {
-      "name": "Sweet Spot 3 x 8 (90 %)",
-      "description": "Three eight-minute sweet spot blocks at 90 % of FTP."
+      "name": "Sweet Spot 3 x 8 (90%)",
+      "description": "Three eight-minute sweet spot blocks at 90% of FTP."
     },
     "pl": {
-      "name": "Sweet spot 3 × 8 (90 %)",
-      "description": "Trzy ośmiominutowe odcinki sweet spot przy 90 % FTP."
+      "name": "Sweet spot 3 × 8 (90%)",
+      "description": "Trzy ośmiominutowe odcinki sweet spot przy 90% FTP."
     }
   },
   "category": "progres",

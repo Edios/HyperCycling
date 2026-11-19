@@ -120,7 +120,7 @@ describe('BPM matching hint', () => {
 
   it('tells which tempo to look for before a track is pinned (90 RPM -> 180 BPM)', async () => {
     await openEditor();
-    expect(screen.getByTestId('bpm-target')).toHaveTextContent('90 RPM');
+    expect(screen.getByTestId('bpm-target')).toHaveTextContent('90 rpm');
     expect(screen.getByTestId('bpm-target')).toHaveTextContent('180 BPM');
     expect(screen.queryByTestId('track-bpm')).not.toBeInTheDocument();
   });

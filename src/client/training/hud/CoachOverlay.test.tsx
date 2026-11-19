@@ -43,7 +43,7 @@ describe('CoachOverlay resistance cues', () => {
       />,
     );
     expect(screen.getByTestId('coach-live')).toHaveTextContent(
-      'Za 5 s: dodaj opór → wysiłek 6, 90 obr/min',
+      'Za 5 s: dodaj opór → wysiłek 6, 90 obr./min',
     );
   });
 });
