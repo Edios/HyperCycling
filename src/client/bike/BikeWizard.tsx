@@ -1,13 +1,5 @@
 import { useState } from 'react';
-import {
-  BIKE_KINDS,
-  bikeKindOf,
-  bikePreset,
-  hasKnob,
-  isValidKnobSteps,
-  normalizeKnobSteps,
-  type BikeKind,
-} from '../../domain/bike';
+import { BIKE_KINDS, bikeKindOf, bikePreset, type BikeKind } from '../../domain/bike';
 import { isValidFtp } from '../../domain/ftp-test';
 import { resolveResistanceMode } from '../../domain/settings';
 import { updateSettings, useSettings } from '../data/useSettings';
@@ -17,8 +9,6 @@ import { Button } from '../ui/Button';
 import { Field } from '../ui/Field';
 import { Modal } from '../ui/Modal';
 import styles from './Bike.module.css';
-import { KnobStepsFields } from './KnobStepsFields';
-import { parseSteps } from './steps';
 
 const KIND_KEYS: Record<BikeKind, { label: MessageKey; hint: MessageKey }> = {
   knob: { label: 'bike.kindKnob', hint: 'bike.kindKnobHint' },
@@ -26,9 +16,9 @@ const KIND_KEYS: Record<BikeKind, { label: MessageKey; hint: MessageKey }> = {
   smart: { label: 'bike.kindSmart', hint: 'bike.kindSmartHint' },
 };
 
-type StepId = 'kind' | 'ftp' | 'steps';
+type StepId = 'kind' | 'ftp';
 
-/** "Your bike": up to three short, skippable screens (bike type, FTP, knob steps S1..S5). */
+/** "Your bike": one or two short, skippable screens (bike type; FTP only for bikes that measure power). */
 export function BikeWizard({ onClose }: { onClose: () => void }) {
   const t = useT();
   const { settings } = useSettings();
@@ -37,14 +27,12 @@ export function BikeWizard({ onClose }: { onClose: () => void }) {
     bikeKindOf(resolveResistanceMode(settings), settings.equipment),
   );
   const [ftp, setFtp] = useState<string | undefined>();
-  const [steps, setSteps] = useState<string[]>(() =>
-    normalizeKnobSteps(settings.knobSteps).map(String),
-  );
   const [index, setIndex] = useState(0);
-  const [error, setError] = useState<'ftp' | 'steps' | 'save' | undefined>();
+  const [error, setError] = useState<'ftp' | 'save' | undefined>();
   const [busy, setBusy] = useState(false);
 
-  const order: StepId[] = hasKnob(kind) ? ['kind', 'ftp', 'steps'] : ['kind', 'ftp'];
+  // A manual knob has no watts, so it is never asked for FTP (effort is a relative 1-10 scale).
+  const order: StepId[] = bikePreset(kind).showsWatts ? ['kind', 'ftp'] : ['kind'];
   const pos = Math.min(index, order.length - 1);
   const current = order[pos] ?? 'kind';
   const last = pos === order.length - 1;
@@ -63,9 +51,9 @@ export function BikeWizard({ onClose }: { onClose: () => void }) {
         resistanceMode: preset.resistanceMode,
         equipment: { ...settings.equipment, showsWatts: preset.showsWatts },
         bikeSetupDone: true,
-        ...(hasKnob(kind) ? { knobSteps: parseSteps(steps) } : {}),
       });
-      if (me && ftpValue !== undefined && ftpValue.trim() !== '') await saveFtp(Number(ftpValue));
+      if (bikePreset(kind).showsWatts && me && ftpValue !== undefined && ftpValue.trim() !== '')
+        await saveFtp(Number(ftpValue));
       onClose();
     } catch {
       setError('save');
@@ -89,10 +77,6 @@ export function BikeWizard({ onClose }: { onClose: () => void }) {
       !isValidFtp(Number(ftp))
     ) {
       setError('ftp');
-      return;
-    }
-    if (current === 'steps' && !isValidKnobSteps(parseSteps(steps))) {
-      setError('steps');
       return;
     }
     advance(ftp);
@@ -149,14 +133,6 @@ export function BikeWizard({ onClose }: { onClose: () => void }) {
               <p className={styles.note}>{t('bike.ftpNoMe')}</p>
             )}
             <p className={styles.note}>{t('bike.ftpUnknownNote')}</p>
-          </section>
-        )}
-
-        {current === 'steps' && (
-          <section className={styles.body}>
-            <h3>{t('bike.stepsTitle')}</h3>
-            <p className={styles.note}>{t('bike.stepsHint')}</p>
-            <KnobStepsFields values={steps} onChange={setSteps} invalid={error === 'steps'} />
           </section>
         )}
 

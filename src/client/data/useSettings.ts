@@ -20,10 +20,17 @@ const useSettingsStore = create<SettingsStore>(() => ({
   loadFailed: false,
 }));
 
+/** Fields older versions stored; dropped on load, so the next save removes them for good. */
+function withoutRemovedFields(stored: Partial<Settings>): Partial<Settings> {
+  const copy: Partial<Settings> & { knobSteps?: unknown } = { ...stored };
+  delete copy.knobSteps;
+  return copy;
+}
+
 function mergeSettings(stored: Partial<Settings>): Settings {
   const merged: Settings = {
     ...DEFAULT_SETTINGS,
-    ...stored,
+    ...withoutRemovedFields(stored),
     equipment: { ...DEFAULT_SETTINGS.equipment, ...stored.equipment },
     // A world id this build does not know (e.g. written by a newer version) shows the default.
     hyperrideWorld: parseWorldSetting(stored.hyperrideWorld),

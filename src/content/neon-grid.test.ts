@@ -17,7 +17,7 @@ import { totalDurationSec } from '../domain/workout';
 const exp = builtinExperiences.find((e) => e.id === 'neon-grid-45');
 const workout = getWorkout('class-neon-grid-45');
 
-/** The five resistance steps of the scenario (S1..S5) as effort levels. */
+/** The five effort levels the scenario is built on. */
 const STEP_EFFORTS = [3, 4, 6, 7, 9];
 
 describe('Neon Grid 45 scenario', () => {
@@ -25,7 +25,6 @@ describe('Neon Grid 45 scenario', () => {
     expect(exp).toBeDefined();
     expect(workout).toBeDefined();
     expect(experienceProblems(exp!, workout!)).toEqual([]);
-    expect(exp!.stepCount).toBe(5);
   });
 
   it('is 45 minutes in 11 songs with the warm-up and cool-down of the design', () => {
@@ -71,7 +70,7 @@ describe('Neon Grid 45 scenario', () => {
     }
   });
 
-  it('uses exactly the five resistance steps and only small, announced changes', () => {
+  it('uses exactly the five effort levels and only small, announced changes', () => {
     const segs = flattenWorkout(workout!);
     for (const s of segs) expect(STEP_EFFORTS, s.blockId).toContain(s.effortStart);
     const rank = (e: number): number => STEP_EFFORTS.indexOf(e);
@@ -85,7 +84,7 @@ describe('Neon Grid 45 scenario', () => {
     }
   });
 
-  it('keeps a resistance step for at least 20 s', () => {
+  it('keeps an effort level for at least 20 s', () => {
     const segs = flattenWorkout(workout!);
     let run = 0;
     let effort = -1;

@@ -14,6 +14,8 @@ export interface FocusRestProps {
   active: boolean;
   /** Reduced motion or Effects off: the swap is instant. */
   reducedMotion: boolean;
+  /** Show '~N% FTP' beside the effort name; off for bikes without watts. */
+  showFtp?: boolean;
 }
 
 function pctOf(view: TrainingView): number {
@@ -25,9 +27,12 @@ function pctOf(view: TrainingView): number {
  * Focus on the plain background, at rest (variant E-b): a dark field with a thin frame in the
  * effort colour, the ring and its number in the zone colour, and the time. No panels, no motion.
  */
-export function FocusRest({ view, active, reducedMotion }: FocusRestProps) {
+export function FocusRest({ view, active, reducedMotion, showFtp = true }: FocusRestProps) {
   const t = useT();
-  const label = `${t(`effort.${view.labelKey}`)} · ${t('training.ftpApprox', { pct: Math.round(view.ftpPct) })}`;
+  const name = t(`effort.${view.labelKey}`);
+  const label = showFtp
+    ? `${name} · ${t('training.ftpApprox', { pct: Math.round(view.ftpPct) })}`
+    : name;
   return (
     <div
       className={`${styles.root} ${active ? styles.on : ''}`}

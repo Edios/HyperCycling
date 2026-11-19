@@ -1,8 +1,8 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { DashLine, EffortRing } from '../../brand';
-import { useKnobHint } from '../../bike/useKnobHint';
-import { useT } from '../../i18n';
+import { useT, type MessageKey } from '../../i18n';
 import { positionOf, type Segment } from '../../../domain/segments';
+import type { ResistanceCommand } from '../../../domain/coach';
 import type { Position } from '../../../domain/workout';
 import type { EffortLabelKey } from '../../../domain/effort';
 import { translateContentText } from '../content-text';
@@ -10,6 +10,12 @@ import { formatClock } from '../format';
 import hud from './hud.module.css';
 import { PositionBadge } from './PositionBadge';
 import styles from './EffortGroup.module.css';
+
+const COMMAND_KEYS: Record<ResistanceCommand, MessageKey> = {
+  add: 'training.resistanceAdd',
+  ease: 'training.resistanceEase',
+  hold: 'training.resistanceHold',
+};
 
 /** The word 'Effort' goes inside the ring only from this ring size (px); below, a caption. */
 export const RING_WORD_MIN_PX = 230;
@@ -34,6 +40,10 @@ export interface EffortGroupProps {
   section?: boolean;
   /** Ring motion on an effort change (off for reduced motion / Effects off). */
   motion?: boolean;
+  /** Knob bikes: what to do with the knob now (relative, never a position). */
+  resistanceCommand?: ResistanceCommand;
+  /** Show the '~N% FTP' part of the name; off for bikes that do not measure watts. */
+  showFtp?: boolean;
   /** Optional heart-rate target chip under the effort name. */
   hr?: ReactNode;
   className?: string;
@@ -51,6 +61,8 @@ export function EffortGroup({
   glass = false,
   section = false,
   motion = false,
+  resistanceCommand,
+  showFtp = true,
   hr,
   className,
 }: EffortGroupProps) {
@@ -68,7 +80,6 @@ export function EffortGroup({
     return () => ro.disconnect();
   }, []);
   const label = t(`effort.${labelKey}`);
-  const knobHint = useKnobHint()(effort);
   const nextDesc = next
     ? [
         next.rpm !== undefined ? `${next.rpm} ${t('training.rpm')}` : '',
@@ -112,17 +123,21 @@ export function EffortGroup({
         )}
         <div
           data-testid="effort-name"
-          title={t('training.ftpHint')}
+          title={showFtp ? t('training.ftpHint') : undefined}
           className={`${hud.lbl} ${styles.name}${wordInside ? ` ${styles.nameLow}` : ''}`}
         >
-          {label} · {t('training.ftpApprox', { pct: Math.round(ftpPct) })}
+          {showFtp ? `${label} · ${t('training.ftpApprox', { pct: Math.round(ftpPct) })}` : label}
         </div>
         {hr && <div className={styles.hr}>{hr}</div>}
         <div className={styles.posRow}>
           <PositionBadge position={position} />
-          {knobHint && (
-            <div className={`${hud.lbl} ${styles.step}`} data-testid="knob-line">
-              {t('training.knob', { step: knobHint.step, pos: knobHint.position })}
+          {resistanceCommand && (
+            <div
+              className={`${hud.lbl} ${styles.step}`}
+              data-testid="resistance-command"
+              data-command={resistanceCommand}
+            >
+              {t(COMMAND_KEYS[resistanceCommand])}
             </div>
           )}
           {step && step.count > 1 && (

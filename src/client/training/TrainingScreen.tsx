@@ -39,7 +39,8 @@ import { FOCUS_INPUT_HOLD_MS, focusVisible } from './focus-visibility';
 import { FocusBadge, FocusRest } from './layouts/FocusRest';
 import { FOCUS_IN_MS, FOCUS_OUT_MS, fadeStyle } from './hud/motion';
 import { monotonicNowMs, useLastInput } from './useLastInput';
-import type { SessionConfig } from '../../domain/settings';
+import { bikeKindOf, hasKnob } from '../../domain/bike';
+import { resolveResistanceMode, type SessionConfig } from '../../domain/settings';
 import {
   Navigate,
   UNSAFE_DataRouterContext,
@@ -540,6 +541,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     segments: runtime.segments,
     players: runtime.players,
     showsWatts: settings.equipment.showsWatts,
+    knobCommand: hasKnob(bikeKindOf(resolveResistanceMode(settings), settings.equipment)),
     rpmIsTarget: !settings.equipment.showsCadence,
     hideRpmTile: settings.equipment.hideRpmTile,
     reducedMotion,
@@ -615,7 +617,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       ) : (
         <>
           <div className={styles.zoneBackdrop} aria-hidden="true" />
-          {focusOn && <FocusRest view={view} active={!hudShown} reducedMotion={reducedMotion} />}
+          {focusOn && (
+            <FocusRest
+              view={view}
+              active={!hudShown}
+              reducedMotion={reducedMotion}
+              showFtp={settings.equipment.showsWatts}
+            />
+          )}
           {hudLayer}
         </>
       )}

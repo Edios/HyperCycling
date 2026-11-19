@@ -31,6 +31,7 @@ export function OverlayHud({
   segments,
   players,
   showsWatts,
+  knobCommand = false,
   rpmIsTarget,
   hideRpmTile,
   reducedMotion,
@@ -53,6 +54,10 @@ export function OverlayHud({
       {...(view.next ? { next: view.next } : {})}
       position={view.position}
       step={{ index: view.stepIndex, count: view.stepCount }}
+      showFtp={showsWatts}
+      {...(knobCommand && view.resistanceCommand
+        ? { resistanceCommand: view.resistanceCommand }
+        : {})}
       nextPlacement={column || tunnel ? 'aside' : 'below'}
       glass={glass}
       section={column}

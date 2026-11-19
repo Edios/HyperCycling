@@ -29,7 +29,6 @@
   "lengthMin": 45,
   "level": "hard",
   "bike": "manual-stepped",
-  "stepCount": 5,
   "tags": ["electronic", "intervals", "hills", "sprints"],
   "schemaVersion": 1,
   "updatedAt": "2026-11-07T00:00:00.000Z"

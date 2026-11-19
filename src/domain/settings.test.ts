@@ -15,6 +15,22 @@ describe('DEFAULT_SETTINGS', () => {
 });
 
 describe('settingsSchema', () => {
+  it('loads settings saved with the removed knobSteps field and drops it, keeping the rest', () => {
+    for (const knobSteps of [[2, 4, 6, 8, 10], [1, 2], 'junk', null]) {
+      const r = settingsSchema.safeParse({
+        ...DEFAULT_SETTINGS,
+        resistanceMode: 'knob',
+        bikeSetupDone: true,
+        knobSteps,
+      });
+      expect(r.success).toBe(true);
+      if (!r.success) return;
+      expect('knobSteps' in r.data).toBe(false);
+      expect(r.data.resistanceMode).toBe('knob');
+      expect(r.data.bikeSetupDone).toBe(true);
+      expect(r.data.equipment).toEqual(DEFAULT_SETTINGS.equipment);
+    }
+  });
   it('rejects effectsIntensity out of range', () => {
     expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, effectsIntensity: 1.5 }).success).toBe(
       false,

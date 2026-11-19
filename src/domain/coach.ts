@@ -65,8 +65,27 @@ export function cueForTransition(
 
 /** Seconds before a step boundary at which the resistance cue is shown. */
 export const PRE_CUE_SEC = 5;
-/** A step change smaller than this (in %FTP) and on the same effort level is not worth a cue. */
+/** A change smaller than this (in %FTP) and on the same effort level is not worth a command. */
 const MIN_CUE_JUMP_PCT = 3;
+
+/** What the rider does with the knob at a change of effort; there is no knob position any more. */
+export type ResistanceCommand = 'add' | 'ease' | 'hold';
+
+/**
+ * The one rule for the direction of a resistance change, shared by the coach cue and the HUD so
+ * they cannot disagree. %FTP decides, so a power-meter bike follows its watt target even inside
+ * one effort level. Cadence plays no part: a block at the same effort and a higher cadence is
+ * "same resistance, faster legs" (pick-ups and sprints), never "ease off".
+ */
+export function resistanceChange(
+  fromEffort: number,
+  fromFtpPct: number,
+  toEffort: number,
+  toFtpPct: number,
+): ResistanceCommand {
+  if (toEffort === fromEffort && Math.abs(toFtpPct - fromFtpPct) < MIN_CUE_JUMP_PCT) return 'hold';
+  return toFtpPct >= fromFtpPct ? 'add' : 'ease';
+}
 
 /**
  * Pre-cue for the next step of a stepped ramp. Returns null outside the lead window, on the
@@ -85,10 +104,9 @@ export function stepPreCue(
   const cur = steps[index];
   const next = steps[index + 1];
   if (!cur || !next) return null;
-  if (next.effort === cur.effort && Math.abs(next.ftpPct - cur.ftpPct) < MIN_CUE_JUMP_PCT) {
-    return null;
-  }
-  const kind = next.ftpPct >= cur.ftpPct ? 'addResistance' : 'reduceResistance';
+  const change = resistanceChange(cur.effort, cur.ftpPct, next.effort, next.ftpPct);
+  if (change === 'hold') return null;
+  const kind = change === 'add' ? 'addResistance' : 'reduceResistance';
   return {
     key: `${seg.index}:${index + 1}`,
     cue: {
@@ -98,6 +116,37 @@ export function stepPreCue(
       inSec: PRE_CUE_SEC,
     },
   };
+}
+
+/** How long the HUD keeps asking for a change before it settles on 'hold'. */
+export const RESISTANCE_COMMAND_SEC = 15;
+
+/**
+ * Relative knob command for this moment of a block, or null in the first block (nothing to compare
+ * with). The reference is the previous block, inside a stepped ramp the previous step; the
+ * direction comes from {@link resistanceChange}, the same rule as the coach's resistance cue.
+ */
+export function resistanceCommand(
+  prev: Segment | undefined,
+  seg: Segment,
+  segElapsedSec: number,
+): ResistanceCommand | null {
+  const steps = seg.steps;
+  const index = stepAt(seg, segElapsedSec).index;
+  const step = steps?.[index];
+  const before = steps?.[index - 1];
+  if (!before && !prev) return null;
+  if (segElapsedSec - (step?.offsetSec ?? 0) >= RESISTANCE_COMMAND_SEC) return 'hold';
+  const toEffort = step?.effort ?? seg.effortStart;
+  const toFtpPct = step?.ftpPct ?? seg.ftpPctStart;
+  if (before) return resistanceChange(before.effort, before.ftpPct, toEffort, toFtpPct);
+  const last = prev?.steps?.[prev.steps.length - 1];
+  return resistanceChange(
+    last?.effort ?? prev?.effortEnd ?? toEffort,
+    last?.ftpPct ?? prev?.ftpPctEnd ?? toFtpPct,
+    toEffort,
+    toFtpPct,
+  );
 }
 
 /** Lead of the announcement before a command (M2: announce, command, closing). */

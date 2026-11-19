@@ -8,6 +8,8 @@ export interface BasicLayoutProps {
   segments: readonly Segment[];
   players: readonly Player[];
   showsWatts: boolean;
+  /** Bike with a manual knob: the effort panel adds the relative resistance command. */
+  knobCommand?: boolean;
   /** Bike does not measure cadence: the cadence row shows the plan's target. */
   rpmIsTarget: boolean;
   hideRpmTile: boolean;

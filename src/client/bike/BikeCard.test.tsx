@@ -78,25 +78,45 @@ describe('BikeCard', () => {
     expect(db.players[0]?.ftp).toBe(210);
   });
 
-  it('wizard: knob bike gets a third screen; bad steps are refused, good ones saved; FTP can be skipped', async () => {
+  it('wizard: manual knob is one screen, never asks for FTP and saves no watts', async () => {
     await loadSettings();
     render(<BikeCard onSkipRide={() => undefined} />);
     fireEvent.click(screen.getByTestId('bike-open'));
     fireEvent.click(screen.getByTestId('bike-kind-knob'));
+    expect(screen.getByText('Step 1 of 1')).toBeInTheDocument();
+    expect(screen.queryByTestId('knob-steps')).toBeNull();
     fireEvent.click(screen.getByTestId('bike-next'));
-    fireEvent.click(await screen.findByTestId('bike-ftp-unknown'));
-    expect(screen.getByText('Step 3 of 3')).toBeInTheDocument();
-    const inputs = screen.getByTestId('knob-steps').querySelectorAll('input');
-    fireEvent.change(inputs[2]!, { target: { value: '1' } });
-    fireEvent.click(screen.getByTestId('bike-next'));
-    expect(screen.getByRole('alert')).toHaveTextContent(/five whole numbers/);
-    expect(db.settings).toBeUndefined();
-    fireEvent.change(inputs[2]!, { target: { value: '6' } });
-    fireEvent.click(screen.getByTestId('bike-next'));
-    await waitFor(() => expect(db.settings?.knobSteps).toEqual([1, 3, 6, 7, 9]));
+    await waitFor(() => expect(db.settings?.bikeSetupDone).toBe(true));
+    expect(screen.queryByTestId('bike-ftp')).toBeNull();
     expect(db.settings?.resistanceMode).toBe('knob');
     expect(db.settings?.equipment.showsWatts).toBe(false);
     expect(db.players[0]?.ftp).toBe(150);
+  });
+
+  it('wizard: knob + power meter still asks for FTP', async () => {
+    await loadSettings();
+    render(<BikeCard onSkipRide={() => undefined} />);
+    fireEvent.click(screen.getByTestId('bike-open'));
+    fireEvent.click(screen.getByTestId('bike-kind-knobPower'));
+    fireEvent.click(screen.getByTestId('bike-next'));
+    expect(await screen.findByTestId('bike-ftp')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 of 2')).toBeInTheDocument();
+  });
+
+  it('settings saved with the old knob steps still load; the next save drops only that field', async () => {
+    db.settings = {
+      ...DEFAULT_SETTINGS,
+      resistanceMode: 'knob',
+      coach: false,
+      knobSteps: [2, 4, 6, 8, 10],
+    } as Settings;
+    await loadSettings();
+    render(<BikeCard onSkipRide={() => undefined} />);
+    fireEvent.click(screen.getByTestId('bike-skip-ride'));
+    await waitFor(() => expect(db.settings?.bikeSetupDone).toBe(true));
+    expect(db.settings).not.toHaveProperty('knobSteps');
+    expect(db.settings?.resistanceMode).toBe('knob');
+    expect(db.settings?.coach).toBe(false);
   });
 
   it('wizard: Skip marks it done without changing the bike', async () => {
@@ -105,6 +125,5 @@ describe('BikeCard', () => {
     fireEvent.click(screen.getByTestId('bike-open'));
     fireEvent.click(screen.getByTestId('bike-skip'));
     await waitFor(() => expect(db.settings?.bikeSetupDone).toBe(true));
-    expect(db.settings?.knobSteps).toBeUndefined();
   });
 });

@@ -111,8 +111,6 @@ export interface Experience {
   lengthMin: 30 | 45 | 60;
   level: ExperienceLevel;
   bike: ExperienceBike;
-  /** How many resistance steps the scenario assumes. */
-  stepCount: number;
   tags: string[];
   schemaVersion: 1;
   updatedAt: string;
@@ -206,7 +204,6 @@ export const experienceSchema: z.ZodType<Experience> = z
     lengthMin: z.union([z.literal(30), z.literal(45), z.literal(60)]),
     level: z.enum(EXPERIENCE_LEVELS),
     bike: z.enum(EXPERIENCE_BIKES),
-    stepCount: z.number().int().min(2).max(12),
     tags: z.array(z.string()).max(12),
     schemaVersion: z.literal(1),
     updatedAt: z.iso.datetime({ offset: true }),
