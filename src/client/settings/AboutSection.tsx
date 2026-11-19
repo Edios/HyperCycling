@@ -26,6 +26,11 @@ export function AboutSection() {
         <p className={styles.note}>{t('settings.about.privacy')}</p>
         <h3 className={styles.aboutLegalTitle}>{t('settings.about.trademarkTitle')}</h3>
         <p className={styles.note}>{t('settings.about.trademark')}</p>
+        <p className={styles.note}>
+          <a href="https://github.com/Edios/HyperCycling" target="_blank" rel="noopener">
+            {t('settings.about.sourceLink')}
+          </a>
+        </p>
       </div>
     </div>
   );

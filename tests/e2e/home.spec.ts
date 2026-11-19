@@ -63,15 +63,15 @@ test('phone: tiles stacked, no horizontal scroll', async ({ page }, info) => {
   await shot(page, `home-phone-${info.project.name}`);
 });
 
-test('footer: project info, GitHub, privacy and about links; no horizontal scroll at 360 px', async ({
+test('footer: project info, source code, privacy and about links; no horizontal scroll at 360 px', async ({
   page,
 }, info) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await seedSettings(page, info, null);
   await page.goto('./#/');
   const footer = page.getByTestId('home-footer');
-  await expect(footer).toContainText('MIT');
-  await expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
+  await expect(footer).toContainText('AGPL-3.0');
+  await expect(footer.getByRole('link', { name: 'Source code' })).toHaveAttribute(
     'href',
     'https://github.com/Edios/HyperCycling',
   );

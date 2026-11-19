@@ -604,7 +604,8 @@ export const en = {
         'Your data stays in this browser: no accounts, no analytics, and your heart rate and FTP are never sent anywhere. Only when you use them, Spotify gets your playback commands, YouTube loads its player (also for "Check the music", which contacts youtube.com), and Deezer and GetSongBPM receive the artist and title you search for.',
       trademarkTitle: 'Licence and name',
       trademark:
-        'The code is MIT licensed. The name and logo HyperCycling are not covered by that licence.',
+        'The code is licensed under the GNU AGPL-3.0. If you share a modified version over a network, you must make its source code available to its users. The name and logo HyperCycling are not covered by that licence.',
+      sourceLink: 'Source code on GitHub',
     },
     general: {
       title: 'General',
@@ -1031,8 +1032,8 @@ export const en = {
     bpmCredit: 'Tempo data:',
     bpmSource: 'GetSongBPM',
     bpmSourceDeezer: 'Deezer',
-    footerInfo: 'HyperCycling is open source (MIT). Trains in your browser, data stays local.',
-    footerGithub: 'GitHub',
+    footerInfo: 'HyperCycling is open source (AGPL-3.0). Train in your browser, your data stays on your device.',
+    footerGithub: 'Source code',
     footerPrivacy: 'Privacy',
     footerAbout: 'About and licence',
   },
@@ -1199,8 +1200,8 @@ export const en = {
       body: 'Everything stays in your browser. No account, no analytics; your heart rate and FTP never leave it.',
     },
     open: {
-      title: 'Open source (MIT)',
-      body: 'The code is open under the MIT licence. Look inside, suggest an idea or fix a bug.',
+      title: 'Open source (AGPL-3.0)',
+      body: 'The code is open under the GNU AGPL-3.0. Look inside, suggest an idea or fix a bug.',
       link: 'See the code on GitHub',
     },
     ctaTitle: 'Ready?',

@@ -605,7 +605,9 @@ export const pl: Messages = {
       privacy:
         'Twoje dane zostają w tej przeglądarce: bez kont, bez analityki, a tętno i FTP nigdy nigdzie nie są wysyłane. Dopiero gdy z nich korzystasz: Spotify dostaje polecenia odtwarzania, YouTube ładuje swój odtwarzacz (także przy „Sprawdź muzykę”, które kontaktuje youtube.com), a Deezer i GetSongBPM dostają wpisany artystę i tytuł.',
       trademarkTitle: 'Licencja i nazwa',
-      trademark: 'Kod jest na licencji MIT. Nazwa i logo HyperCycling nie są objęte tą licencją.',
+      trademark:
+        'Kod jest na licencji GNU AGPL-3.0. Jeśli udostępniasz zmodyfikowaną wersję przez sieć, musisz udostępnić jej użytkownikom kod źródłowy. Nazwa i logo HyperCycling nie są objęte tą licencją.',
+      sourceLink: 'Kod źródłowy na GitHubie',
     },
     general: {
       title: 'Ogólne',
@@ -1031,8 +1033,8 @@ export const pl: Messages = {
     bpmCredit: 'Dane o tempie utworów:',
     bpmSource: 'GetSongBPM',
     bpmSourceDeezer: 'Deezer',
-    footerInfo: 'HyperCycling, otwarty projekt (MIT). Trening w przeglądarce, dane tylko lokalnie.',
-    footerGithub: 'GitHub',
+    footerInfo: 'HyperCycling to otwarty projekt (AGPL-3.0). Trening w przeglądarce, dane zostają na Twoim urządzeniu.',
+    footerGithub: 'Kod źródłowy',
     footerPrivacy: 'Prywatność',
     footerAbout: 'O aplikacji i licencja',
   },
@@ -1199,8 +1201,8 @@ export const pl: Messages = {
       body: 'Wszystko zostaje w przeglądarce. Bez konta, bez analityki; tętno i FTP nigdzie stąd nie wychodzą.',
     },
     open: {
-      title: 'Otwarty projekt (MIT)',
-      body: 'Kod jest otwarty, na licencji MIT. Zajrzyj do środka, podsuń pomysł albo popraw błąd.',
+      title: 'Otwarty projekt (AGPL-3.0)',
+      body: 'Kod jest otwarty, na licencji GNU AGPL-3.0. Zajrzyj do środka, podsuń pomysł albo popraw błąd.',
       link: 'Zobacz kod na GitHubie',
     },
     ctaTitle: 'Gotowy?',

@@ -38,6 +38,14 @@ First time: `npx playwright install chromium`. The e2e `local` project starts on
 
 One branch per feature or milestone (`feat/...`) from up-to-date `main`, one pull request into `main`, CI green before merge. Never commit to `main` directly. Commit messages are conventional (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 
+## Licence of contributions
+
+HyperCycling is licensed under the GNU AGPL-3.0-only (see [LICENSE](LICENSE) and [docs/licensing.md](docs/licensing.md)). By sending a pull request you agree that your contribution is released under the same licence.
+
+Sign off each commit (`git commit -s`) to confirm the [Developer Certificate of Origin](https://developercertificate.org/): you wrote the change or have the right to submit it under this licence.
+
+**Proposal, not yet decided by the project owner and not legal advice:** a closed commercial variant (for example a hosted Coach service) would need the right to offer contributions under other licences too. A light way to do that is the DCO above plus your consent that the owner may also distribute your contribution under other licences. This proposal is open for the owner to confirm or change, ideally after a lawyer has looked at it. Until then, nothing here grants that right.
+
 ## Docs and screenshots
 
 Docs are Markdown in `docs/`; the small page `public/docs/index.html` links to them and is shipped with the app at `/docs/`. Regenerate the screenshots in `docs/images/` (1280x720, demo riders, fixed clock) after a UI change:
