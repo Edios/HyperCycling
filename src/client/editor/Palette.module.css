@@ -55,7 +55,7 @@
   line-height: 1.5;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 500px) {
   .palette {
     flex-direction: row;
     flex-wrap: wrap;

@@ -600,6 +600,13 @@ describe('describeTrack', () => {
     expect(info).toEqual({ title: 'Song', artist: 'A, B' });
     expect(seen[0]).toMatchObject({ method: 'GET', path: '/v1/tracks/abc' });
   });
+  it('reads the length when Spotify gives it', async () => {
+    api(() =>
+      HttpResponse.json({ id: 'abc', name: 'Song', artists: [], duration_ms: 326_400 }),
+    );
+    const info = await setup().provider.describeTrack({ ...track, id: 'abc', title: '' });
+    expect(info).toEqual({ title: 'Song', durationSec: 326 });
+  });
   it('fails on an unexpected shape', async () => {
     api(() => HttpResponse.json({ nope: 1 }));
     await expect(setup().provider.describeTrack(track)).rejects.toMatchObject({ code: 'http' });

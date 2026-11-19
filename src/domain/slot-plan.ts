@@ -9,7 +9,7 @@
  * 3. Still short: a warning (with the tempo to look for); only rest/cooldown slots may stay silent.
  */
 import { rankTracks } from './bpm-match';
-import type { TrackRef } from './workout';
+import { trackPlaySec, type TrackRef } from './workout';
 
 /** A slot may be this much shorter than its queue before the plan counts as short. */
 export const SLOT_TOLERANCE_SEC = 10;
@@ -214,9 +214,9 @@ export function planSlots(
   });
 }
 
-/** Sum of known durations (minus start offsets) of a queue. Unknown duration counts as 0. */
+/** Sum of known play lengths (start offset to trimmed end) of a queue. Unknown counts as 0. */
 export function queueSec(tracks: readonly TrackRef[]): number {
-  return tracks.reduce((s, t) => s + Math.max(0, (t.durationSec ?? 0) - t.startAtSec), 0);
+  return tracks.reduce((s, t) => s + (trackPlaySec(t) ?? 0), 0);
 }
 
 /** "1:10" */

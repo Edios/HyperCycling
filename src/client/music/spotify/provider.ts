@@ -139,6 +139,7 @@ const MAX_PLAYLIST_PAGES = 6;
 const trackSchema = z.object({
   name: z.string(),
   artists: z.array(z.object({ name: z.string() })),
+  duration_ms: z.number().nonnegative().optional(),
 });
 
 const playerSchema = z.object({
@@ -475,7 +476,12 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
       const parsed = trackSchema.safeParse(body);
       if (!parsed.success) throw new SpotifyError('http');
       const artist = parsed.data.artists.map((a) => a.name).join(', ');
-      return { title: parsed.data.name, ...(artist ? { artist } : {}) };
+      const ms = parsed.data.duration_ms;
+      return {
+        title: parsed.data.name,
+        ...(artist ? { artist } : {}),
+        ...(ms !== undefined && ms > 0 ? { durationSec: Math.round(ms / 1000) } : {}),
+      };
     },
 
     async disconnect() {

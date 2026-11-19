@@ -412,6 +412,67 @@ describe('cues', () => {
     const s = run(fresh(), { type: 'clearCue', blockId: 'a', rep: 2 });
     expect(s.workout.musicCues.map((c) => c.blockId)).toEqual(['mid']);
   });
+  it('keeps the queued tracks when the cue track is replaced', () => {
+    const next = { ...track, id: 'next', durationSec: 200 };
+    const s = run(
+      fresh(),
+      { type: 'setCue', blockId: 'a', rep: 3, track },
+      { type: 'setCueQueue', blockId: 'a', rep: 3, queue: [next] },
+      { type: 'setCue', blockId: 'a', rep: 3, track: { ...track, title: 'Renamed' } },
+    );
+    const cue = s.workout.musicCues.find((c) => c.blockId === 'a' && c.rep === 3);
+    expect(cue?.track.title).toBe('Renamed');
+    expect(cue?.queue).toEqual([next]);
+  });
+  it('drops the queue when it is set empty', () => {
+    const s = run(
+      fresh(),
+      { type: 'setCue', blockId: 'a', rep: 3, track },
+      { type: 'setCueQueue', blockId: 'a', rep: 3, queue: [{ ...track, id: 'q' }] },
+      { type: 'setCueQueue', blockId: 'a', rep: 3, queue: [] },
+    );
+    expect(s.workout.musicCues.find((c) => c.rep === 3)).not.toHaveProperty('queue');
+  });
+  it('trims the cue track and a queued track; null end plays to the end', () => {
+    const long = { ...track, durationSec: 300 };
+    let s = run(
+      fresh(),
+      { type: 'setCue', blockId: 'a', rep: 3, track: long },
+      { type: 'setCueQueue', blockId: 'a', rep: 3, queue: [{ ...long, id: 'q' }] },
+      { type: 'trimCueTrack', blockId: 'a', rep: 3, index: 0, startAtSec: 30.4, endAtSec: 120 },
+      { type: 'trimCueTrack', blockId: 'a', rep: 3, index: 1, startAtSec: 0, endAtSec: 90 },
+    );
+    let cue = s.workout.musicCues.find((c) => c.rep === 3);
+    expect(cue?.track).toMatchObject({ startAtSec: 30, endAtSec: 120 });
+    expect(cue?.queue?.[0]).toMatchObject({ startAtSec: 0, endAtSec: 90 });
+    s = run(s, { type: 'trimCueTrack', blockId: 'a', rep: 3, index: 0, startAtSec: 30, endAtSec: null });
+    cue = s.workout.musicCues.find((c) => c.rep === 3);
+    expect(cue?.track).not.toHaveProperty('endAtSec');
+    // an end at the recording's end is the same as no trim
+    s = run(s, { type: 'trimCueTrack', blockId: 'a', rep: 3, index: 0, startAtSec: 0, endAtSec: 300 });
+    expect(s.workout.musicCues.find((c) => c.rep === 3)?.track).not.toHaveProperty('endAtSec');
+  });
+  it('refuses a trim that leaves almost nothing, and a missing track', () => {
+    const s0 = run(fresh(), { type: 'setCue', blockId: 'a', rep: 3, track });
+    const s = run(s0, {
+      type: 'trimCueTrack',
+      blockId: 'a',
+      rep: 3,
+      index: 0,
+      startAtSec: 60,
+      endAtSec: 62,
+    });
+    expect(s.errors).toEqual(['editor.error.invalid']);
+    const missing = run(s0, {
+      type: 'trimCueTrack',
+      blockId: 'a',
+      rep: 3,
+      index: 2,
+      startAtSec: 0,
+      endAtSec: null,
+    });
+    expect(missing.errors).toHaveLength(1);
+  });
 });
 
 describe('select / markSaved / meta', () => {

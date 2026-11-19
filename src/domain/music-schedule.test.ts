@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { musicAt, nextTrackChange } from './music-schedule';
+import { cueRuns, musicAt, nextTrackChange } from './music-schedule';
 import type { Segment } from './segments';
 import type { MusicCue, TrackRef } from './workout';
 
@@ -222,5 +222,96 @@ describe('slot queue (cue.queue)', () => {
     expect(
       musicAt({ segments, cues: [short], fallback: [tr('F', 1000)], tSec: 210 })?.track.id,
     ).toBe('F');
+  });
+});
+
+describe('trimmed tracks (endAtSec)', () => {
+  const trim = (id: string, startAtSec: number, endAtSec: number, durationSec?: number): TrackRef => ({
+    ...tr(id, durationSec, startAtSec),
+    endAtSec,
+  });
+
+  it('stops a cue track at its trimmed end and hands over to the fallback', () => {
+    const cues = [cue('a', trim('A', 10, 40, 300))];
+    const fallback = [tr('F1', 1000)];
+    expect(musicAt({ segments, cues, fallback, tSec: 29 })).toMatchObject({ offsetSec: 39 });
+    const after = musicAt({ segments, cues, fallback, tSec: 30 });
+    expect(after).toMatchObject({ source: 'fallback', offsetSec: 0 });
+    expect(after?.track.id).toBe('F1');
+    expect(nextTrackChange({ segments, cues, fallback: [], tSec: 0 })).toEqual({
+      atSec: 30,
+      track: null,
+    });
+  });
+
+  it('plays the queue right after a trimmed track', () => {
+    const cues: MusicCue[] = [{ ...cue('b', trim('B', 0, 60, 200)), queue: [tr('Q', 100)] }];
+    const r = musicAt({ segments, cues, fallback: [], tSec: 170 });
+    expect(r?.track.id).toBe('Q');
+    expect(r?.offsetSec).toBe(10);
+  });
+
+  it('gives a track of unknown length a known one once its end is set', () => {
+    const cues = [cue('a', trim('A', 0, 50))];
+    expect(musicAt({ segments, cues, fallback: [], tSec: 49 })?.track.id).toBe('A');
+    expect(musicAt({ segments, cues, fallback: [], tSec: 50 })).toBeNull();
+  });
+
+  it('ignores an end at or before the start and an end past the recording (older or odd data)', () => {
+    const bad = [cue('a', trim('A', 30, 30, 80))];
+    // plays to the recording's end: 80 - 30 = 50 s
+    expect(musicAt({ segments, cues: bad, fallback: [], tSec: 49 })?.track.id).toBe('A');
+    expect(musicAt({ segments, cues: bad, fallback: [], tSec: 50 })).toBeNull();
+    const past = [cue('a', trim('A', 0, 500, 80))];
+    expect(musicAt({ segments, cues: past, fallback: [], tSec: 80 })).toBeNull();
+  });
+
+  it('keeps hints without an end playing exactly as before', () => {
+    const cues = [cue('b', tr('B', 500, 20))];
+    expect(musicAt({ segments, cues, fallback: [], tSec: 150 })).toMatchObject({ offsetSec: 70 });
+  });
+});
+
+describe('cueRuns', () => {
+  it('places each track at its real length and leaves a gap before the next cue', () => {
+    const runs = cueRuns(segments, [cue('a', tr('A', 60)), cue('b', tr('B', 90, 30))]);
+    expect(runs.map((r) => [r.startSec, r.limitSec, r.endSec])).toEqual([
+      [0, 100, 60],
+      [100, 600, 160],
+    ]);
+    expect(runs[1]?.items[0]).toMatchObject({ startSec: 100, endSec: 160, clipped: false });
+  });
+
+  it('clips a track longer than its slot at the next cue and at the end of the workout', () => {
+    const runs = cueRuns(segments, [cue('a', tr('A', 400)), cue('c', tr('C', 900))]);
+    expect(runs[0]?.items[0]).toMatchObject({ endSec: 300, fullEndSec: 400, clipped: true });
+    expect(runs[1]?.items[0]).toMatchObject({ endSec: 600, fullEndSec: 1200, clipped: true });
+  });
+
+  it('chains the queue and stops at the limit', () => {
+    const runs = cueRuns(segments, [
+      { ...cue('b', tr('B', 80)), queue: [tr('Q1', 70), tr('Q2', 400)] },
+    ]);
+    const items = runs[0]?.items ?? [];
+    expect(items.map((i) => [i.index, i.startSec, i.endSec, i.clipped])).toEqual([
+      [0, 100, 180, false],
+      [1, 180, 250, false],
+      [2, 250, 600, true],
+    ]);
+  });
+
+  it('marks an unknown length as open: playback holds the slot, the editor shows an estimate', () => {
+    const cues = [cue('a', tr('A')), cue('b', tr('B'))];
+    const play = cueRuns(segments, cues);
+    expect(play[0]?.items[0]).toMatchObject({ open: true, endSec: 100, fullEndSec: Infinity });
+    expect(play[0]?.endSec).toBe(100);
+    const shown = cueRuns(segments, cues, { estimateSec: 210 });
+    expect(shown[1]?.items[0]).toMatchObject({ open: true, fullEndSec: 310, clipped: false });
+    expect(shown[0]?.items[0]).toMatchObject({ fullEndSec: 210, clipped: true });
+  });
+
+  it('uses the trimmed end for the run length', () => {
+    const runs = cueRuns(segments, [cue('b', { ...tr('B', 300, 20), endAtSec: 80 })]);
+    expect(runs[0]?.endSec).toBe(160);
   });
 });
