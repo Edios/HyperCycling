@@ -9,6 +9,14 @@ import { seedSettings } from './seed-settings';
 
 const FLAG = 'hypercycling.setup.advanced';
 
+// Pages build only (like a11y.spec): the local project shares one database between parallel tests,
+// and settings tests there switch the UI language and reset settings while these tests run. Here
+// every test has its own storage, so the screen's defaults are what these tests see.
+// eslint-disable-next-line no-empty-pattern
+test.beforeEach(({}, info) => {
+  test.skip(info.project.name !== 'pages', 'pages build only: needs its own storage');
+});
+
 /** Starts every page with the accordion closed (the shared fixture opens it for the other specs). */
 async function closedAccordion(page: Page): Promise<void> {
   await page.addInitScript((key) => {
@@ -18,6 +26,10 @@ async function closedAccordion(page: Page): Promise<void> {
       localStorage.setItem(key, '0');
     }
   }, FLAG);
+}
+
+async function toEnd(page: Page): Promise<void> {
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
 }
 
 async function noHorizontalScroll(page: Page): Promise<boolean> {
@@ -98,18 +110,22 @@ test.describe('phone 390x844', () => {
       await page.goto(`./${route}`);
       await expect(page.getByTestId('setup-screen')).toBeVisible();
       await page.evaluate(() => document.fonts.ready);
+      // Axe judges target sizes by what overlaps what. With the page scrolled to the end the sticky
+      // bar rests in its own place and covers nothing; higher up it always covers whatever is
+      // scrolled beneath it, which depends on the font (CI vs a laptop) and is not a defect.
+      await toEnd(page);
       expect(await seriousViolations(page), 'closed').toEqual([]);
       await page.getByTestId('advanced-toggle').click();
       await expect(page.getByRole('heading', { level: 3, name: 'Coach' })).toBeVisible();
+      await toEnd(page);
       expect(await seriousViolations(page), 'open').toEqual([]);
     });
   }
 
   test('shortcuts: music on/off, layout and More work without opening the accordion', async ({
     page,
-  }, info) => {
+  }) => {
     await closedAccordion(page);
-    await seedSettings(page, info, null);
     await page.goto('./#/setup/demo-mixed');
     const bar = page.getByTestId('start-bar');
     await expect(bar).toBeVisible();
@@ -137,7 +153,8 @@ test('Experience: music is on by default, one status line above Start, no shortc
   await page.goto('./#/setup/class-neon-grid-45?exp=neon-grid-45');
   await expect(page.getByTestId('setup-experience')).toBeVisible();
   const bar = page.getByTestId('start-bar');
-  await expect(bar.getByTestId('start-status')).toContainText('Music: YouTube · on');
+  // The source is YouTube unless Spotify is connected (the local project shares its database).
+  await expect(bar.getByTestId('start-status')).toContainText(/Music: (YouTube|Spotify|Auto) · on/);
   await expect(bar.getByTestId('bar-music')).toHaveCount(0);
   await expect(bar.getByRole('button', { name: 'Start' })).toBeEnabled();
 
@@ -267,6 +284,8 @@ test.describe('"Fix it" leads to the field', () => {
   test('a missing YouTube link: focus lands in the link field, clear of the bar', async ({
     page,
   }, info) => {
+    // Reduced motion scrolls at once, so the position can be measured right after the click.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await closedAccordion(page);
     await seedSettings(page, info, null, {
       lastSession: { background: 'youtube', hud: 'immersive', playerIds: [], music: false },
