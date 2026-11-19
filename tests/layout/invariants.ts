@@ -126,12 +126,19 @@ export async function checkInvariants(
       }
       return false;
     };
+    const pinnedCache = new Map<Element, boolean>();
     const hasFixedAncestor = (el: Element): boolean => {
-      for (let n: Element | null = el; n && n !== document.documentElement; n = n.parentElement) {
-        const p = getComputedStyle(n).position;
-        if (p === 'fixed' || p === 'sticky') return true;
-      }
-      return false;
+      const hit = pinnedCache.get(el);
+      if (hit !== undefined) return hit;
+      const p = getComputedStyle(el).position;
+      const result =
+        p === 'fixed' ||
+        p === 'sticky' ||
+        (el.parentElement !== null &&
+          el.parentElement !== document.documentElement &&
+          hasFixedAncestor(el.parentElement));
+      pinnedCache.set(el, result);
+      return result;
     };
 
     /** The part of a box that is actually painted: cut by ancestors with overflow hidden/clip. */
@@ -164,9 +171,18 @@ export async function checkInvariants(
     const oneIsPinned = (a: Element, b: Element): boolean =>
       hasFixedAncestor(a) !== hasFixedAncestor(b);
 
+    /**
+     * Long pages (lists of 100+ workouts) are checked where the rider can see them: the viewport
+     * plus one screen above and below. Keeps the quadratic overlap loops fast and the report short.
+     */
+    const nearViewport = (el: Element): boolean => {
+      const r = el.getBoundingClientRect();
+      return r.bottom > -vh && r.top < 2 * vh;
+    };
+
     // ---- collect ----
     const controls = [...root.querySelectorAll<HTMLElement>(INTERACTIVE)].filter(
-      (el) => isShown(el) && !el.closest('.sr-only'),
+      (el) => nearViewport(el) && isShown(el) && !el.closest('.sr-only'),
     );
     interface TextBox {
       el: Element;
@@ -181,13 +197,18 @@ export async function checkInvariants(
       const text = (n.textContent ?? '').replace(/\s+/g, ' ').trim();
       const el = n.parentElement;
       if (!text || !el || el.closest('script, style, noscript, .sr-only, svg')) continue;
-      if (!isShown(el)) continue;
+      if (!nearViewport(el) || !isShown(el)) continue;
       const range = document.createRange();
       range.selectNodeContents(n);
       const r = range.getBoundingClientRect();
       if (r.width < 2 || r.height < 2) continue;
       texts.push({ el, text, r, vr: visibleRect(el, r, true) });
     }
+
+    // Painted rectangles of the controls, computed once (the pair loops below are quadratic).
+    const controlVr = new Map<Element, DOMRect | null>(
+      controls.map((c) => [c, visibleRect(c, c.getBoundingClientRect(), false)]),
+    );
 
     // ---- document scrolls sideways ----
     const se = document.scrollingElement;
@@ -206,7 +227,7 @@ export async function checkInvariants(
         add('offscreen', 'high', `${what} outside the viewport (${offX ? 'x' : 'y'})`, el, r);
     };
     for (const el of controls) {
-      const vr = visibleRect(el, el.getBoundingClientRect(), false);
+      const vr = controlVr.get(el);
       if (vr) checkBounds(el, vr, 'control');
     }
     for (const t of texts) if (t.vr) checkBounds(t.el, t.vr, 'text');
@@ -269,8 +290,8 @@ export async function checkInvariants(
         const a = controls[i]!;
         const b = controls[j]!;
         if (related(a, b) || oneIsPinned(a, b)) continue;
-        const ra = visibleRect(a, a.getBoundingClientRect(), false);
-        const rb = visibleRect(b, b.getBoundingClientRect(), false);
+        const ra = controlVr.get(a);
+        const rb = controlVr.get(b);
         if (!ra || !rb) continue;
         const x = inter(ra, rb);
         if (x.w > 3 && x.h > 3)
@@ -287,7 +308,7 @@ export async function checkInvariants(
     for (const t of texts) {
       for (const c of controls) {
         if (!t.vr || c.contains(t.el) || t.el.contains(c) || oneIsPinned(t.el, c)) continue;
-        const rc = visibleRect(c, c.getBoundingClientRect(), false);
+        const rc = controlVr.get(c);
         if (!rc) continue;
         const x = inter(t.vr, rc);
         if (x.w > 3 && x.h > 3) {

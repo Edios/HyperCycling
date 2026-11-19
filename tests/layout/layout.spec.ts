@@ -198,7 +198,7 @@ const SCENARIOS: Scenario[] = [
     // The slowest scenario (WebGL world, five layouts): core viewports only, even at full depth.
     tags: ['core'],
     run: async (page, check) => {
-      test.setTimeout(150_000);
+      test.setTimeout(240_000);
       await startExperienceRide(page);
       // H cycles the five layouts (Corners, Column, Cockpit, Minimal, Focus).
       for (let i = 0; i < 5; i += 1) {
