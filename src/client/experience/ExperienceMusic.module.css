@@ -11,6 +11,18 @@
   font-size: 1.125rem;
 }
 
+.optional {
+  margin-left: 0.25rem;
+  padding: 0.0625rem 0.5rem;
+  border: 1px solid var(--line2);
+  border-radius: 0.75rem;
+  color: var(--mut);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  vertical-align: 0.1em;
+}
+
 .note,
 .cap {
   margin: 0;

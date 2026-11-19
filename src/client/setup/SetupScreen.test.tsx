@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_PLAN_SETTINGS, type PlanProgress, type PlanSettings } from '../../domain/plan';
@@ -84,6 +84,8 @@ function progress(settings: PlanSettings): PlanProgress {
 }
 
 beforeEach(() => {
+  // These tests work with the advanced settings, which start closed.
+  localStorage.setItem('hypercycling.setup.advanced', '1');
   db.settings = undefined;
   db.players = [mirek, ania];
   db.progress = [];
@@ -219,7 +221,7 @@ describe('SetupScreen', () => {
       lastSession: { background: 'basic', hud: 'solo', playerIds: [], music: true },
     };
     renderSetup(`/setup/${withCues.id}`);
-    expect(await screen.findByRole('switch', { name: 'Music' })).toBeChecked();
+    expect(await screen.findByRole('switch', { name: 'Music in this ride' })).toBeChecked();
   });
 
   it('prefills players and toggles from the last session', async () => {
@@ -299,11 +301,13 @@ describe('SetupScreen', () => {
 
   it('music is disabled when the workout has no cues, enabled when it has', async () => {
     renderSetup(`/setup/${scalable.id}`);
-    expect(await screen.findByRole('switch', { name: 'Music' })).toBeDisabled();
+    expect(await screen.findByRole('switch', { name: 'Music in this ride' })).toBeDisabled();
     if (!withCues) return;
     renderSetup(`/setup/${withCues.id}`);
-    await waitFor(() => expect(screen.getAllByRole('switch', { name: 'Music' })).toHaveLength(2));
-    const second = screen.getAllByRole('switch', { name: 'Music' })[1]!;
+    await waitFor(() =>
+      expect(screen.getAllByRole('switch', { name: 'Music in this ride' })).toHaveLength(2),
+    );
+    const second = screen.getAllByRole('switch', { name: 'Music in this ride' })[1]!;
     expect(second).toBeEnabled();
     fireEvent.click(second);
     fireEvent.click(screen.getAllByRole('button', { name: 'Start' })[1]!);
@@ -313,7 +317,7 @@ describe('SetupScreen', () => {
 
   it('adding a player validates name and FTP, saves it and selects it', async () => {
     renderSetup(`/setup/${scalable.id}`);
-    fireEvent.click(await screen.findByRole('button', { name: '+ Add' }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Add$/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Add rider' }));
     expect(screen.getByText('Enter a name of 1 to 24 characters.')).toBeInTheDocument();
     expect(screen.getByText('FTP must be a whole number from 50 to 600.')).toBeInTheDocument();
@@ -335,7 +339,7 @@ describe('SetupScreen', () => {
 
   it('a double submit saves the rider once', async () => {
     renderSetup(`/setup/${scalable.id}`);
-    fireEvent.click(await screen.findByRole('button', { name: '+ Add' }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Add$/ }));
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Kasia' } });
     fireEvent.change(screen.getByLabelText('FTP (W)'), { target: { value: '220' } });
     const form = screen.getByTestId('add-player-form');
@@ -349,7 +353,7 @@ describe('SetupScreen', () => {
   it('after a failed save the form can be submitted again', async () => {
     db.failPut = true;
     renderSetup(`/setup/${scalable.id}`);
-    fireEvent.click(await screen.findByRole('button', { name: '+ Add' }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Add$/ }));
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Kasia' } });
     fireEvent.change(screen.getByLabelText('FTP (W)'), { target: { value: '220' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add rider' }));
@@ -363,7 +367,7 @@ describe('SetupScreen', () => {
   it('a failed save shows an error and does not add or select the rider', async () => {
     db.failPut = true;
     renderSetup(`/setup/${scalable.id}`);
-    fireEvent.click(await screen.findByRole('button', { name: '+ Add' }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Add$/ }));
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Kasia' } });
     fireEvent.change(screen.getByLabelText('FTP (W)'), { target: { value: '220' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add rider' }));
@@ -403,5 +407,112 @@ describe('SetupScreen edit link (H3)', () => {
     renderSetup(`/setup/${scalable.id}`);
     await screen.findByRole('heading', { level: 1 });
     expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument();
+  });
+});
+
+describe('SetupScreen redesign: who rides, advanced settings, sticky Start', () => {
+  const knobSettings = (): Settings => ({
+    ...DEFAULT_SETTINGS,
+    equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
+  });
+
+  it('asks only who rides; the rest waits in a closed, remembered accordion', async () => {
+    localStorage.removeItem('hypercycling.setup.advanced');
+    renderSetup(`/setup/${scalable.id}`);
+    expect(await screen.findByRole('heading', { level: 2, name: 'Who is riding?' })).toBeVisible();
+    const toggle = screen.getByTestId('advanced-toggle');
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('switch', { name: 'Beeps' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup', { name: 'Screen layout' })).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    for (const group of ['Music', 'Screen', 'Coach', 'Equipment']) {
+      expect(screen.getByRole('heading', { level: 3, name: group })).toBeInTheDocument();
+    }
+    expect(screen.getByRole('switch', { name: 'Beeps' })).toBeInTheDocument();
+    expect(localStorage.getItem('hypercycling.setup.advanced')).toBe('1');
+  });
+
+  it('opens by itself when it was left open', async () => {
+    renderSetup(`/setup/${scalable.id}`);
+    expect(await screen.findByTestId('advanced-toggle')).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('the sticky bar has Music, layout and More shortcuts next to Start', async () => {
+    localStorage.removeItem('hypercycling.setup.advanced');
+    if (!withCues) return;
+    renderSetup(`/setup/${withCues.id}`);
+    const bar = await screen.findByTestId('start-bar');
+    const music = within(bar).getByTestId('bar-music');
+    expect(music).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(music);
+    expect(music).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(within(bar).getByTestId('bar-layout'));
+    const dialog = screen.getByRole('dialog', { name: 'Screen layout' });
+    fireEvent.click(within(dialog).getByRole('radio', { name: 'Focus' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(within(bar).getByTestId('bar-layout')).toHaveTextContent('Focus');
+
+    fireEvent.click(within(bar).getByTestId('bar-more'));
+    expect(screen.getByTestId('advanced-toggle')).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.click(within(bar).getByRole('button', { name: 'Start' }));
+    await screen.findByTestId('where');
+    const config = useSessionStore.getState().runtime!.config;
+    expect(config.music).toBe(true);
+  });
+
+  it('Start stays disabled without a YouTube link and the bar says where to fix it', async () => {
+    localStorage.removeItem('hypercycling.setup.advanced');
+    db.settings = {
+      ...DEFAULT_SETTINGS,
+      lastSession: { background: 'youtube', hud: 'immersive', playerIds: [], music: false },
+    };
+    renderSetup(`/setup/${scalable.id}`);
+    const bar = await screen.findByTestId('start-bar');
+    expect(within(bar).getByRole('button', { name: 'Start' })).toBeDisabled();
+    fireEvent.click(within(bar).getByRole('button', { name: 'Fix it' }));
+    expect(screen.getByTestId('advanced-toggle')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByLabelText('YouTube link')).toBeInTheDocument();
+  });
+
+  it('an Experience starts with music on and only a status line above Start', async () => {
+    localStorage.removeItem('hypercycling.setup.advanced');
+    renderSetup('/setup/class-neon-grid-45?exp=neon-grid-45');
+    const bar = await screen.findByTestId('start-bar');
+    expect(within(bar).getByTestId('start-status')).toHaveTextContent('Music: YouTube · on');
+    expect(within(bar).queryByTestId('bar-music')).not.toBeInTheDocument();
+    expect(screen.getByTestId('advanced-toggle')).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(within(bar).getByRole('button', { name: 'Start' }));
+    await screen.findByTestId('where');
+    expect(useSessionStore.getState().runtime!.config.music).toBe(true);
+  });
+
+  it('a manual knob never shows or asks for watts', async () => {
+    db.settings = knobSettings();
+    renderSetup(`/setup/${scalable.id}`);
+    const chip = await screen.findByRole('button', { name: /Mirek/ });
+    expect(chip).toHaveTextContent('Mirek');
+    expect(chip).not.toHaveTextContent('270');
+    expect(chip).not.toHaveTextContent(/\bW\b/);
+
+    fireEvent.click(screen.getByRole('button', { name: /^Add$/ }));
+    expect(screen.queryByLabelText('FTP (W)')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Kasia' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add rider' }));
+    expect(await screen.findByRole('button', { name: /Kasia/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(db.puts[0]).toMatchObject({ name: 'Kasia', ftp: 200 });
+  });
+
+  it('a bike with a power meter keeps the watts and the FTP field', async () => {
+    renderSetup(`/setup/${scalable.id}`);
+    expect(await screen.findByRole('button', { name: /Mirek/ })).toHaveTextContent('270 W');
+    fireEvent.click(screen.getByRole('button', { name: /^Add$/ }));
+    expect(screen.getByLabelText('FTP (W)')).toBeInTheDocument();
   });
 });

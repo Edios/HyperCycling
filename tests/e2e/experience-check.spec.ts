@@ -69,6 +69,8 @@ test('a slot where no upload plays blocks Start and points to Spotify', async ({
   await expect(blocked).toContainText('1, 8');
   await expect(page.getByTestId('exp-check-slot').first()).toHaveAttribute('data-health', 'red');
   await expect(page.getByRole('button', { name: 'Start' })).toBeDisabled();
+  // The bar says why Start is off, even when the accordion with the result is closed.
+  await expect(page.getByTestId('start-notice')).toContainText('will not play');
   // Only a backup plays for the others: nothing else is red.
   await expect(page.locator('[data-testid="exp-check-slot"][data-health="red"]')).toHaveCount(2);
 });
