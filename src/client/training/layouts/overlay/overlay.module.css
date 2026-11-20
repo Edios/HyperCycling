@@ -325,6 +325,13 @@
   .root[data-layout='column'] .col > [data-g='W'] {
     width: auto;
   }
+
+  /* Live sensor rows join the column: the ring and the clock give up height for them. */
+  .root[data-layout='column'][data-live='true'] {
+    --ring: calc(15 * var(--u));
+    --nring: calc(6 * var(--u));
+    --time-fs: calc(9 * var(--u));
+  }
 }
 
 /* ---------------- phone portrait: every overlay layout collapses into one stack ---------------- */
@@ -394,6 +401,23 @@
 
   .root > [data-g='M'] {
     order: 5;
+  }
+
+  /* Live sensor rows add a panel: the ring and the clock give up a little height for it. */
+  .root[data-live='true'] {
+    --ring: 31vw;
+    --nring: 11.5vw;
+    --time-fs: 12.5vw;
+  }
+
+  /* ...and the coach cue keeps two lines at a slightly smaller size. */
+  .root[data-live='true'] .free {
+    --cue-fs: min(6.8vw, calc(5.2 * var(--vh)));
+  }
+
+  /* One rider whose target the live power row already shows: the riders panel would repeat it. */
+  .root[data-rider-in-power='true'] > [data-g='R'] {
+    display: none;
   }
 
   /* The spacer: whatever the layout, the controls and the timeline sit at the bottom. */

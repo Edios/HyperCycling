@@ -74,6 +74,8 @@ export function createLiveMetrics(
   let trainerAt: number | null = null;
   let hrAt: number | null = null;
   let cadence: number | null = null;
+  // Kept apart from trainerAt: a trainer may keep sending power after it stopped sending cadence.
+  let cadenceAt: number | null = null;
   let bpm: number | null = null;
   let contact: SensorContact | null = null;
   const unsubscribe: Record<DeviceKind, (() => void) | null> = { trainer: null, hr: null };
@@ -92,7 +94,10 @@ export function createLiveMetrics(
       hr,
       // Standing cranks show 0 W rather than a decaying average (report 5.1).
       powerW: power === null ? null : cadence === 0 ? 0 : Math.round(power),
-      cadenceRpm: trainerLive && cadence !== null ? Math.round(cadence) : null,
+      cadenceRpm:
+        trainerLive && cadence !== null && cadenceAt !== null && t - cadenceAt <= STALE_MS
+          ? Math.round(cadence)
+          : null,
       hrBpm: hr === 'live' && contact !== 'none' ? bpm : null,
       hrContact: hr === 'live' ? contact : null,
     };
@@ -115,12 +120,17 @@ export function createLiveMetrics(
       smoother.reset();
       trainerAt = null;
       cadence = null;
+      cadenceAt = null;
       unsubscribe.trainer =
         trainer?.onData((reading) => {
           trainerAt = reading.atMs;
-          const { powerW, cadenceRpm } = reading.data;
+          // This notification's own fields: a merged value may be old (split packets).
+          const { powerW, cadenceRpm } = reading.packet;
           if (powerW !== undefined) smoother.push(powerW, reading.atMs);
-          if (cadenceRpm !== undefined) cadence = cadenceRpm;
+          if (cadenceRpm !== undefined) {
+            cadence = cadenceRpm;
+            cadenceAt = reading.atMs;
+          }
           publish();
         }) ?? null;
     }

@@ -98,6 +98,8 @@ export function OverlayHud({
       data-players={showPlayers}
       data-material={glass ? 'glass' : 'solid'}
       data-measures={measures !== null}
+      data-live={live !== undefined}
+      data-rider-in-power={!!live?.power && players.length <= 1}
     >
       <div className={styles.edge} data-testid="overlay-edge" aria-hidden="true" />
       {showPlayers && (

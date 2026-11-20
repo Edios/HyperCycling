@@ -74,6 +74,21 @@ describe('createLiveMetrics', () => {
     expect(live.getSnapshot()).toMatchObject({ powerW: 0, cadenceRpm: 0 });
   });
 
+  it('cadence goes missing when the trainer stops sending it, even while power still comes', async () => {
+    const { bluetooth, store, live } = setup();
+    await store.connect('trainer');
+    bluetooth.pump(Date.now());
+    expect(live.getSnapshot().cadenceRpm).toBe(90);
+    // Power only (flags 0x0041: More Data + Instantaneous Power), 150 W, for 4 s.
+    const gatt = bluetooth.devices.trainer.gatt;
+    for (let i = 0; i < 4; i++) {
+      await vi.advanceTimersByTimeAsync(1000);
+      gatt.emit(0x2ad2, Uint8Array.of(0x41, 0x00, 0x96, 0x00));
+    }
+    expect(live.getSnapshot()).toMatchObject({ trainer: 'live', cadenceRpm: null });
+    expect(live.getSnapshot().powerW).not.toBeNull();
+  });
+
   it('reports reconnecting and lost links', async () => {
     const { bluetooth, store, live } = setup();
     await store.connect('trainer');

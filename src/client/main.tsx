@@ -27,9 +27,18 @@ async function bootstrap(container: HTMLElement): Promise<void> {
   );
 }
 
-// Bluetooth test hook for Playwright; the branch and its chunk are removed from other builds.
-if (import.meta.env.VITE_E2E === '1') {
-  void import('./devices/e2e-hook').then((m) => m.installBleTestHook());
+async function start(container: HTMLElement): Promise<void> {
+  // Bluetooth test hook for Playwright, installed before the first render so a fake device is
+  // in place before any screen reads navigator.bluetooth. The branch and its chunk are removed
+  // from other builds.
+  if (import.meta.env.VITE_E2E === '1') {
+    try {
+      (await import('./devices/e2e-hook')).installBleTestHook();
+    } catch (err) {
+      console.warn('Bluetooth test hook failed', err);
+    }
+  }
+  await bootstrap(container);
 }
 
-void bootstrap(root);
+void start(root);

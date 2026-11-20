@@ -76,6 +76,7 @@ export function MeasuresGroup({
             ? t('training.live.target', { value: `${target} ${t('training.watts')}` })
             : undefined
         }
+        short={target !== null ? String(target) : undefined}
         fit={fit}
       />,
     );
@@ -104,6 +105,7 @@ export function MeasuresGroup({
                 .join(' · ') || undefined
         }
         icon={judgement === 'low' ? 'up' : judgement === 'high' ? 'down' : undefined}
+        short={target !== null ? String(target) : undefined}
         fit={fit}
       />,
     );
@@ -156,7 +158,7 @@ export function MeasuresGroup({
     >
       {rows}
       {live && live.signal !== 'live' && (
-        <div className={`${hud.cap} ${styles.signal}`} data-testid="live-signal">
+        <div className={`${hud.cap} ${styles.signal}`} data-testid="live-signal" role="status">
           <Icon name="bluetooth" size="1.1em" />
           <span>{t(`training.live.${live.signal}`)}</span>
         </div>
@@ -173,6 +175,7 @@ function Row({
   note,
   icon,
   zone,
+  short,
   fit,
 }: {
   testId: string;
@@ -182,6 +185,8 @@ function Row({
   note?: string;
   icon?: 'up' | 'down';
   zone?: HrZone | null;
+  /** Compact target ("/138") shown beside the number where the note line does not fit. */
+  short?: string;
   fit: boolean;
 }) {
   const t = useT();
@@ -204,7 +209,7 @@ function Row({
           )}
         </div>
         {note && (
-          <div className={hud.cap}>
+          <div className={`${hud.cap} ${styles.note}`}>
             {icon && <Icon name={icon} size="1em" />} {note}
           </div>
         )}
@@ -214,6 +219,12 @@ function Row({
           {value}
         </span>
         <span className={hud.unit}>{unit}</span>
+        {(short || icon) && (
+          <span className={`${hud.cap} ${styles.short}`} aria-hidden="true">
+            {short && `/${short}`}
+            {icon && <Icon name={icon} size="1em" />}
+          </span>
+        )}
       </div>
     </div>
   );

@@ -159,6 +159,18 @@
     max-height: calc(22 * var(--u));
   }
 
+  /* Live sensor rows add a tile: the ring and the clock give up a little height for it. */
+  .root[data-live='true'] {
+    --ring: 31vw;
+    --nring: 11.5vw;
+    --time-fs: 12.5vw;
+  }
+
+  /* One rider whose target the live power row already shows: the riders tile would repeat it. */
+  .root[data-rider-in-power='true'] .riders {
+    display: none;
+  }
+
   .measures {
     order: 4;
     flex: 1 1 auto;
