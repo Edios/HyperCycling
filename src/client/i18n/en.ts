@@ -107,6 +107,7 @@ export const en = {
     quickRideOnly: 'Changes here apply to this ride only.',
     quickYoutubeNone: 'Add a YouTube link in the setup screen to use this background.',
     erg: {
+      autoPaused: 'No signal from the trainer: paused. The ride goes on when the signal is back.',
       power: 'Power',
       effortShort: '{label} (E{effort})',
       target: 'target {watts} W',

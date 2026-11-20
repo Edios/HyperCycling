@@ -104,6 +104,18 @@ test('trainer mode: watts in the ring, ERG holds the target, ±5 %, ERG off, no 
   await expect(page.getByTestId('live-signal')).toHaveText('No signal', { timeout: 6000 });
   await expect(page.getByTestId('trainer-power')).toHaveText('—');
   await expect(page.getByTestId('live-hr')).toHaveText('—');
+
+  // About 10 s of silence: auto-pause with a message; the ride goes on when data comes back.
+  const screen = page.getByTestId('training-screen');
+  await expect(screen).toHaveAttribute('data-status', 'paused', { timeout: 15_000 });
+  await expect(
+    page.getByText('No signal from the trainer: paused.', { exact: false }),
+  ).toBeVisible();
+  await page.evaluate(() => {
+    const fake = window.__fakeHub!;
+    window.__pump = setInterval(() => fake.pump(Date.now()), 500);
+  });
+  await expect(screen).not.toHaveAttribute('data-status', 'paused', { timeout: 10_000 });
 });
 
 const VIEWPORTS = [

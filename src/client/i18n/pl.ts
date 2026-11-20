@@ -111,6 +111,7 @@ export const pl: Messages = {
     quickRideOnly: 'Zmiany tutaj dotyczą tylko tej jazdy.',
     quickYoutubeNone: 'Dodaj link YouTube na ekranie przygotowania, aby użyć tego tła.',
     erg: {
+      autoPaused: 'Brak sygnału z trenażera: pauza. Jazda ruszy, gdy sygnał wróci.',
       power: 'Moc',
       effortShort: '{label} (E{effort})',
       target: 'cel {watts} W',

@@ -127,6 +127,9 @@ function isTouch(): boolean {
   return typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
 }
 
+/** Plus the 3 s until the link reads "stale": about 10 s of silence before the auto-pause. */
+const AUTO_PAUSE_AFTER_STALE_MS = 7000;
+
 function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const t = useT();
   const [lang] = useLang();
@@ -296,6 +299,32 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       onRetry: () => erg.retry(),
     };
   }, [trainerMode, erg, ergSnap, riderFtp, liveSnapshot.powerW, targetW, effortTable]);
+
+  // Auto-pause (owner decision): the trainer stays silent for ~10 s during a ride → pause with a
+  // clear message; resume by itself when the signal is back. (The link reads "stale" after 3 s.)
+  const autoPausedRef = useRef(false);
+  const [autoPauseNotice, setAutoPauseNotice] = useState(false);
+  const signalBad = trainerMode && liveSnapshot.trainer !== 'live';
+  const engineStatus = state.status;
+  useEffect(() => {
+    if (!signalBad) {
+      if (autoPausedRef.current) {
+        autoPausedRef.current = false;
+        const session = useSessionStore.getState();
+        if (session.state.status === 'paused') session.resume();
+      }
+      return;
+    }
+    if (engineStatus !== 'running') return;
+    const id = setTimeout(() => {
+      const session = useSessionStore.getState();
+      if (session.state.status !== 'running') return;
+      session.pause();
+      autoPausedRef.current = true;
+      setAutoPauseNotice(true);
+    }, AUTO_PAUSE_AFTER_STALE_MS);
+    return () => clearTimeout(id);
+  }, [signalBad, engineStatus]);
 
   // Pre-cue for the next step of a stepped ramp ("In 5 s: add resistance"), once per step.
   const lastStepCue = useRef<string | undefined>(undefined);
@@ -692,6 +721,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         </>
       )}
       <ToastStack>
+        {autoPauseNotice && signalBad && (
+          <Toast message={t('training.erg.autoPaused')} onClose={() => setAutoPauseNotice(false)} />
+        )}
         {wantsWorld && worldFailed && !unavailableDismissed && (
           <Toast message={t('world.unavailable')} onClose={() => setUnavailableDismissed(true)} />
         )}
