@@ -40,6 +40,7 @@ export function OverlayHud({
   controls,
   coach,
   live,
+  trainer,
   withPlayers = false,
 }: OverlayHudProps) {
   const showPlayers =
@@ -56,6 +57,7 @@ export function OverlayHud({
       position={view.position}
       step={{ index: view.stepIndex, count: view.stepCount }}
       showFtp={showsWatts}
+      {...(trainer ? { trainer } : {})}
       {...(knobCommand && view.resistanceCommand
         ? { resistanceCommand: view.resistanceCommand }
         : {})}

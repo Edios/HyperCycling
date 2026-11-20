@@ -7,6 +7,7 @@ import {
   GUARD_IDLE,
   guardFactor,
   isSprint,
+  powerLevel,
   rampValue,
   sanePowerRange,
   shouldWrite,
@@ -132,5 +133,17 @@ describe('cadence guard', () => {
     s = stepGuard({ phase: 'recovering', sinceMs: 0 }, 40, 1000);
     expect(s).toEqual({ phase: 'active' });
     expect(stepGuard(s, null, 2000)).toBe(s);
+  });
+});
+
+describe('powerLevel', () => {
+  it('maps watts to the nearest effort level of the table; nothing without power or FTP', () => {
+    expect(powerLevel(null, 200)).toBe(0);
+    expect(powerLevel(0, 200)).toBe(0);
+    expect(powerLevel(100, 0)).toBe(0);
+    expect(powerLevel(90, 200)).toBe(1); // 45 %
+    expect(powerLevel(156, 200)).toBe(5); // 78 %
+    expect(powerLevel(200, 200)).toBe(8); // 100 %
+    expect(powerLevel(400, 200)).toBe(10);
   });
 });

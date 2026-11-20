@@ -1,0 +1,52 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  font-family: var(--font-body);
+  font-size: var(--cap, clamp(12px, calc(2.2 * var(--u)), 32px));
+}
+
+.chip,
+.small {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  min-height: max(28px, 2.1em);
+  padding: 0 0.8em;
+  border-radius: 999px;
+  border: 1px solid #3a4456;
+  background: transparent;
+  color: var(--sub, #a4aec0);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* The trainer-mode accent: the chip's outline while ERG holds the trainer. */
+.on {
+  border-color: var(--act);
+  color: var(--act);
+}
+
+.small {
+  padding: 0 0.6em;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip:disabled {
+  cursor: default;
+}
+
+.chip:focus-visible,
+.small:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+}
+
+.bias {
+  color: var(--sub, #a4aec0);
+  font-variant-numeric: tabular-nums;
+}

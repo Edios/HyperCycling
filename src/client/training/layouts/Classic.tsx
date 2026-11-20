@@ -27,6 +27,7 @@ export function Classic({
   controls,
   coach,
   live,
+  trainer,
 }: BasicLayoutProps & { withPlayers: boolean }) {
   // Nothing to show (no cadence target, no sensors): the tile is not drawn, no bare placeholder.
   const showMeasures = hasMeasures(view.segment.rpm, !hideRpmTile, live);
@@ -78,6 +79,7 @@ export function Classic({
           step={{ index: view.stepIndex, count: view.stepCount }}
           motion={!reducedMotion}
           showFtp={showsWatts}
+          {...(trainer ? { trainer } : {})}
           {...(knobCommand && view.resistanceCommand
             ? { resistanceCommand: view.resistanceCommand }
             : {})}

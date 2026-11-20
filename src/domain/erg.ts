@@ -7,6 +7,7 @@
  * D4 cadence guard optional, off by default; D3 the owner's FTP.
  */
 
+import { DEFAULT_EFFORT_TABLE, ftpPctToEffort, type EffortTable } from './effort';
 import type { Segment } from './segments';
 
 export interface PowerRange {
@@ -187,4 +188,17 @@ export function guardFactor(state: GuardState, nowMs: number): number {
     return GUARD_FACTOR + (1 - GUARD_FACTOR) * k;
   }
   return 1;
+}
+
+/**
+ * Ring level (0..10) for a power: the effort level whose %FTP is nearest, 0 for no power.
+ * Trainer mode fills the ring to this level in the usual zone colours (owner decision D13).
+ */
+export function powerLevel(
+  watts: number | null,
+  ftp: number,
+  table: EffortTable = DEFAULT_EFFORT_TABLE,
+): number {
+  if (watts === null || !(watts > 0) || !(ftp > 0)) return 0;
+  return ftpPctToEffort((watts / ftp) * 100, table);
 }

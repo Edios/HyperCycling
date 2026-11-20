@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Player } from '../../../domain/player';
 import type { Segment } from '../../../domain/segments';
+import type { TrainerHud } from '../hud/ErgControls';
 import type { LiveMeasures } from '../live-measures';
 import type { TrainingView } from '../view';
 
@@ -25,4 +26,6 @@ export interface BasicLayoutProps {
   coach: ReactNode;
   /** Live values from a connected trainer and strap; undefined without sensors. */
   live?: LiveMeasures;
+  /** Smart trainer mode: power in the effort ring and the ERG chip. */
+  trainer?: TrainerHud;
 }

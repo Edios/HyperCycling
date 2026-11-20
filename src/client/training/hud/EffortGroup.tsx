@@ -8,6 +8,7 @@ import type { EffortLabelKey } from '../../../domain/effort';
 import { translateContentText } from '../content-text';
 import { formatClock } from '../format';
 import hud from './hud.module.css';
+import { ErgControls, type TrainerHud } from './ErgControls';
 import { PositionBadge } from './PositionBadge';
 import styles from './EffortGroup.module.css';
 
@@ -46,6 +47,11 @@ export interface EffortGroupProps {
   showFtp?: boolean;
   /** Optional heart-rate target chip under the effort name. */
   hr?: ReactNode;
+  /**
+   * Smart trainer mode: the ring shows the live power (watts in the middle, segments filled to
+   * its zone, the block's target outlined) and the ERG chip sits under the name.
+   */
+  trainer?: TrainerHud;
   className?: string;
 }
 
@@ -64,6 +70,7 @@ export function EffortGroup({
   resistanceCommand,
   showFtp = true,
   hr,
+  trainer,
   className,
 }: EffortGroupProps) {
   const t = useT();
@@ -80,6 +87,17 @@ export function EffortGroup({
     return () => ro.disconnect();
   }, []);
   const label = t(`effort.${labelKey}`);
+  const word = trainer ? t('training.erg.power') : t('training.effort');
+  const name = trainer
+    ? [
+        t('training.erg.effortShort', { label, effort: Math.round(effort) }),
+        trainer.targetW !== null ? t('training.erg.target', { watts: trainer.targetW }) : '',
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : showFtp
+      ? `${label} · ${t('training.ftpApprox', { pct: Math.round(ftpPct) })}`
+      : label;
   const nextDesc = next
     ? [
         next.rpm !== undefined ? `${next.rpm} ${t('training.rpm')}` : '',
@@ -99,35 +117,48 @@ export function EffortGroup({
     .filter(Boolean)
     .join(' ');
   return (
-    <div className={classes} data-g="W" data-testid="effort-group" style={rootStyle}>
+    <div
+      className={classes}
+      data-g="W"
+      data-testid="effort-group"
+      data-trainer={trainer ? 'true' : undefined}
+      style={rootStyle}
+    >
       <div className={styles.main} data-testid="effort-value" data-variant="overlay">
         <div className={styles.ringBox} ref={ringBoxRef} data-testid="effort-ring-box">
           <EffortRing
-            effort={effort}
+            effort={trainer ? trainer.level : effort}
             size="var(--ring, calc(33 * var(--u)))"
             outline={outline}
             numColor="var(--zt)"
-            numberTestId="effort-value-number"
+            numberTestId={trainer ? 'trainer-power' : 'effort-value-number'}
             motion={motion}
+            {...(trainer
+              ? {
+                  text: trainer.watts === null ? '—' : String(trainer.watts),
+                  ...(trainer.targetLevel > 0 ? { marker: trainer.targetLevel } : {}),
+                }
+              : {})}
           />
           {wordInside && (
             <span className={`${hud.lbl} ${styles.inRing}`} data-testid="effort-ring-word">
-              {t('training.effort')}
+              {word}
             </span>
           )}
         </div>
         {!wordInside && (
           <div className={`${hud.lbl} ${styles.caption}`} data-testid="effort-caption">
-            {t('training.effort')}
+            {word}
           </div>
         )}
         <div
           data-testid="effort-name"
-          title={showFtp ? t('training.ftpHint') : undefined}
+          title={showFtp && !trainer ? t('training.ftpHint') : undefined}
           className={`${hud.lbl} ${styles.name}${wordInside ? ` ${styles.nameLow}` : ''}`}
         >
-          {showFtp ? `${label} · ${t('training.ftpApprox', { pct: Math.round(ftpPct) })}` : label}
+          {name}
         </div>
+        {trainer && <ErgControls hud={trainer} />}
         {hr && <div className={styles.hr}>{hr}</div>}
         <div className={styles.posRow}>
           <PositionBadge position={position} />

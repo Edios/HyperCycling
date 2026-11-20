@@ -39,6 +39,8 @@ const PATHS = {
   trainer:
     'M8.5 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8.5 12l5-6h4.5M13.5 6l3 6H8.5M5 20h14M12.5 16l1.5 4M5.5 16L4 20',
   bluetooth: 'M7 7.5l10 9-5 4.5V3l5 4.5-10 9',
+  // Lightning bolt: smart trainer mode (ERG).
+  bolt: 'M13 3L5 13.5h6L10 21l8-10.5h-6z',
 } as const;
 
 export type IconName = keyof typeof PATHS;
