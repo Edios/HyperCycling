@@ -1,7 +1,7 @@
 import { DashLine } from '../../../brand';
 import { EffortGroup } from '../../hud/EffortGroup';
 import { HrTarget } from '../../hud/HrTarget';
-import { MeasuresGroup } from '../../hud/MeasuresGroup';
+import { hasMeasures, MeasuresGroup } from '../../hud/MeasuresGroup';
 import { PlayersList } from '../../hud/PlayersList';
 import { TimeGroup } from '../../hud/TimeGroup';
 import { Timeline } from '../../hud/Timeline';
@@ -39,6 +39,7 @@ export function OverlayHud({
   workoutName,
   controls,
   coach,
+  live,
   withPlayers = false,
 }: OverlayHudProps) {
   const showPlayers =
@@ -77,17 +78,18 @@ export function OverlayHud({
       section={column}
     />
   );
-  // No cadence to show (the block has no target): the group is not drawn, no bare placeholder.
-  const measures =
-    hideRpmTile || view.segment.rpm === undefined ? null : (
-      <MeasuresGroup
-        {...(view.segment.rpm !== undefined ? { rpm: view.segment.rpm } : {})}
-        isTarget={rpmIsTarget}
-        section={column}
-        line={column}
-        bare={tunnel}
-      />
-    );
+  // Nothing to show (no cadence target, no sensors): the group is not drawn, no bare placeholder.
+  const measures = !hasMeasures(view.segment.rpm, !hideRpmTile, live) ? null : (
+    <MeasuresGroup
+      {...(view.segment.rpm !== undefined ? { rpm: view.segment.rpm } : {})}
+      isTarget={rpmIsTarget}
+      cadence={!hideRpmTile}
+      {...(live ? { live } : {})}
+      section={column}
+      line={column}
+      bare={tunnel}
+    />
+  );
   return (
     <div
       className={styles.root}
@@ -96,6 +98,8 @@ export function OverlayHud({
       data-players={showPlayers}
       data-material={glass ? 'glass' : 'solid'}
       data-measures={measures !== null}
+      data-live={live !== undefined}
+      data-rider-in-power={!!live?.power && players.length <= 1}
     >
       <div className={styles.edge} data-testid="overlay-edge" aria-hidden="true" />
       {showPlayers && (

@@ -47,3 +47,162 @@
     font-size: var(--mval, 8.7vw);
   }
 }
+
+/* ---- live sensor rows ---- */
+
+/*
+ * Several rows share the tile: each row puts its label (and target) on the left and the number on
+ * the right, so three rows fit the height one big number used to take.
+ */
+.measures[data-rows='2'] {
+  --mval-k: 0.62;
+}
+
+.measures[data-rows='3'] {
+  --mval-k: 0.5;
+}
+
+.measures[data-rows='2'],
+.measures[data-rows='3'] {
+  gap: calc(0.9 * var(--u));
+}
+
+.measures[data-rows='2'] .row,
+.measures[data-rows='3'] .row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(1.2 * var(--u));
+}
+
+.measures[data-rows='2'] .vv,
+.measures[data-rows='3'] .vv {
+  flex: none;
+}
+
+.measures[data-rows='2'] .value,
+.measures[data-rows='3'] .value {
+  font-size: calc(var(--mval, calc(7.5 * var(--u))) * var(--mval-k));
+}
+
+.fit.measures[data-rows='2'] .value,
+.fit.measures[data-rows='3'] .value {
+  font-size: min(
+    calc(var(--mval, calc(7.5 * var(--u))) * var(--mval-k)),
+    calc(var(--fit, 1000) * 1cqw)
+  );
+}
+
+/* A missing value ("—") is dimmed: no signal is not the same as zero. */
+.missing .value {
+  opacity: 0.45;
+}
+
+.zone {
+  margin-left: 0.5em;
+  padding: 0 0.45em;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.85em;
+}
+
+.signal {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+/* The short target beside the number is only for the compact forms below. */
+.short {
+  display: none;
+  margin-left: 0.35em;
+  white-space: nowrap;
+}
+
+/*
+ * Compact forms (phone portrait with several rows, and a short landscape screen such as a phone
+ * with the browser bar showing): no separate "target ..." line, the target sits beside the number
+ * ("180 W /138") and the signal line is one short caption.
+ */
+@media (max-width: 760px) and (orientation: portrait) {
+  /* Phone portrait: the rows sit side by side (label over number), as tall as one cadence row. */
+  .measures[data-rows='2'],
+  .measures[data-rows='3'] {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    column-gap: 3vw;
+    row-gap: 1vw;
+  }
+
+  .measures[data-rows='2'] {
+    --cols: 2;
+    --mval-k: 0.85;
+  }
+
+  .measures[data-rows='3'] {
+    --cols: 3;
+    --mval-k: 0.7;
+  }
+
+  .measures[data-rows='2'] .row,
+  .measures[data-rows='3'] .row {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 1vw;
+  }
+
+  .measures[data-rows='2'] .value,
+  .measures[data-rows='3'] .value {
+    font-size: calc(var(--mval, 8.7vw) * var(--mval-k));
+  }
+
+  .measures[data-rows='2'] .note,
+  .measures[data-rows='3'] .note {
+    display: none;
+  }
+
+  .measures[data-rows='2'] .short,
+  .measures[data-rows='3'] .short {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .measures[data-rows='3'] .vv {
+    flex-wrap: wrap;
+  }
+
+  .signal {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 420px) {
+  .measures[data-rows='2'] .note,
+  .measures[data-rows='3'] .note {
+    display: none;
+  }
+
+  .measures[data-rows='2'] .short,
+  .measures[data-rows='3'] .short {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .measures[data-rows='2'],
+  .measures[data-rows='3'] {
+    gap: calc(0.5 * var(--u));
+  }
+
+  .measures[data-rows='2'] {
+    --mval-k: 0.52;
+  }
+
+  .measures[data-rows='3'] {
+    --mval-k: 0.42;
+  }
+
+  .signal {
+    line-height: 1.1;
+  }
+}

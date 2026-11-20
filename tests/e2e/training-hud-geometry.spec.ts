@@ -103,7 +103,12 @@ async function buildWorkoutWithTrack(page: Page, name: string): Promise<void> {
   await expect(page).toHaveURL(/#\/editor\/(?!new)/);
 }
 
-async function ride(page: Page, name: string, world: boolean): Promise<void> {
+async function ride(
+  page: Page,
+  name: string,
+  world: boolean,
+  beforeStart?: (page: Page) => Promise<void>,
+): Promise<void> {
   await page.goto('./#/freestyle');
   await page.getByRole('button', { name: 'Mine', exact: true }).click();
   await page.getByTestId('workout-card').filter({ hasText: name }).click();
@@ -112,6 +117,7 @@ async function ride(page: Page, name: string, world: boolean): Promise<void> {
   if (world) await page.getByRole('button', { name: /^World/ }).click();
   const music = page.getByRole('switch', { name: 'Music' });
   if (!(await music.isChecked())) await music.check();
+  if (beforeStart) await beforeStart(page);
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
   await expect(async () => {
@@ -244,9 +250,11 @@ async function problems(page: Page): Promise<string[]> {
         out.push(`column card has ${Math.round(gap)}px of dead space at the bottom`);
     }
 
-    // 6. Cadence shows a number or is not drawn: no bare placeholder.
+    // 6. Cadence shows a number or is not drawn: no bare placeholder. A live sensor that went
+    //    quiet shows a dash on purpose (missing, never 0), together with the signal line.
     const rpm = document.querySelector('[data-testid="rpm-value-number"]');
-    if (rpm && !/^\d+$/.test(rpm.textContent?.trim() ?? ''))
+    const quiet = rpm?.closest('[data-signal]:not([data-signal="live"])');
+    if (rpm && !quiet && !/^\d+$/.test(rpm.textContent?.trim() ?? ''))
       out.push(`cadence shows "${rpm.textContent}" instead of a number`);
 
     // 7. The workout title is whole (it may wrap, it must not be cut with an ellipsis).
@@ -261,12 +269,85 @@ const shot = async (page: Page, name: string): Promise<void> => {
   if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
 };
 
-async function setup(page: Page, world: boolean): Promise<void> {
+async function setup(
+  page: Page,
+  world: boolean,
+  beforeStart?: (page: Page) => Promise<void>,
+): Promise<void> {
   await mockSpotify(page);
   await connectSpotify(page);
   const name = `E2E HUD ${Date.now()}`;
   await buildWorkoutWithTrack(page, name);
-  await ride(page, name, world);
+  await ride(page, name, world, beforeStart);
+}
+
+// ---- live sensors (fake trainer and strap from the e2e build hook) ----
+
+declare global {
+  interface Window {
+    __sensorPump?: ReturnType<typeof setInterval>;
+  }
+}
+
+/**
+ * Fake navigator.bluetooth from the e2e build hook, switched on through localStorage before every
+ * page load, so it survives the Spotify sign-in redirect (a full reload).
+ */
+async function installSensors(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'hypercycling.e2e.fakeBluetooth',
+      JSON.stringify({
+        trainer: { noiseW: 0, freeRidePowerW: 180, powerTimeConstantMs: 300 },
+        hrBpm: 148,
+      }),
+    );
+  });
+}
+
+async function sensorsOn(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    clearInterval(window.__sensorPump);
+    const fake = window.__hcBle!.fake!;
+    window.__sensorPump = setInterval(() => fake.pump(Date.now()), 500);
+  });
+}
+
+/** Setup screen: connect both sensors and add a rider with an FTP (power target, riders tile). */
+async function connectSensorsAndRider(page: Page): Promise<void> {
+  await sensorsOn(page);
+  const setupScreen = page.getByTestId('setup-screen');
+  await setupScreen.getByRole('button', { name: 'Connect trainer' }).click();
+  await setupScreen.getByRole('button', { name: 'Connect strap' }).click();
+  await expect(setupScreen.getByText('148 bpm')).toBeVisible();
+  await setupScreen.getByRole('button', { name: 'Add', exact: true }).click();
+  const form = page.getByTestId('add-player-form');
+  await form.getByLabel('Name').fill('Mirek');
+  await form.getByLabel('FTP (W)').fill('250');
+  await form.getByRole('button', { name: 'Add rider' }).click();
+}
+
+// "-bar" sizes: the browser's address bar is showing (~110 px less height).
+const SENSOR_VIEWPORTS = [
+  { width: 390, height: 844, name: 'phone-portrait' },
+  { width: 390, height: 734, name: 'phone-portrait-bar' },
+  { width: 844, height: 390, name: 'phone-landscape' },
+  { width: 844, height: 280, name: 'phone-landscape-bar' },
+  { width: 1280, height: 800, name: 'laptop' },
+];
+
+/** Problems with the live rows, then with the same rows after the sensors went quiet. */
+async function sensorProblems(page: Page, label: string): Promise<string[]> {
+  const bad: string[] = [];
+  await expect(page.getByTestId('rpm-value')).toHaveAttribute('data-signal', 'live');
+  for (const p of await problems(page)) bad.push(`${label} live: ${p}`);
+  await page.evaluate(() => clearInterval(window.__sensorPump));
+  await expect(page.getByTestId('live-signal')).toBeVisible({ timeout: 6000 });
+  await shot(page, `${label.replace(' ', '-')}-nosignal`);
+  for (const p of await problems(page)) bad.push(`${label} no signal: ${p}`);
+  await sensorsOn(page);
+  await expect(page.getByTestId('rpm-value')).toHaveAttribute('data-signal', 'live');
+  return bad;
 }
 
 test('overlay layouts (World): music chip, round buttons, no clipping at phone and wide sizes', async ({
@@ -310,6 +391,55 @@ test('plain tiles (Basic): music chip, round buttons, no dead gap in portrait', 
     await page.waitForTimeout(400);
     await shot(page, `${size.name}-tiles`);
     for (const p of await problems(page)) bad.push(`${size.name} tiles: ${p}`);
+  }
+  expect(bad).toEqual([]);
+});
+
+test('live sensors on plain tiles (Basic): power, cadence and HR rows fit, also without signal', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+  test.setTimeout(240_000);
+  await installSensors(page);
+  await setup(page, false, connectSensorsAndRider);
+
+  const bad: string[] = [];
+  for (const size of SENSOR_VIEWPORTS) {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await page.waitForTimeout(400);
+    await shot(page, `${size.name}-tiles-sensors`);
+    bad.push(...(await sensorProblems(page, `${size.name} tiles`)));
+  }
+  expect(bad).toEqual([]);
+});
+
+test('live sensors on overlay layouts (World): rows fit in every layout, also without signal', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+  test.setTimeout(360_000);
+  await page.goto('about:blank');
+  const webgl = await page.evaluate(() => {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') ?? c.getContext('webgl'));
+  });
+  test.skip(!webgl, 'WebGL is not available in this headless browser');
+  await installSensors(page);
+  await setup(page, true, connectSensorsAndRider);
+
+  const bad: string[] = [];
+  for (const size of SENSOR_VIEWPORTS) {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    // H cycles the layouts (Corners, Column, Cockpit, Minimal, Focus).
+    for (let i = 0; i < 5; i += 1) {
+      await page.waitForTimeout(350);
+      const id = await page.locator('[data-testid^="layout-"]').first().getAttribute('data-testid');
+      await shot(page, `${size.name}-${id}-sensors`);
+      // Focus fades the HUD out between inputs; its corner HUD is Immersive, checked first.
+      if ((await page.getByTestId('focus-layer').count()) === 0)
+        bad.push(...(await sensorProblems(page, `${size.name} ${id}`)));
+      await page.keyboard.press('KeyH');
+    }
   }
   expect(bad).toEqual([]);
 });

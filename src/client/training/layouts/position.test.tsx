@@ -103,3 +103,25 @@ describe('every layout shows exactly one position badge', () => {
     expect(screen.queryByTestId('step-line')).toBeNull();
   });
 });
+
+describe('every layout shows live sensor rows', () => {
+  const live = {
+    signal: 'live' as const,
+    power: { watts: 210, target: 200 },
+    cadence: { rpm: 88, target: null, judgement: null },
+    hr: { bpm: 150, zone: 3 as const, noContact: false },
+  };
+  for (const [name, Layout] of Object.entries(LAYOUTS)) {
+    it(`${name}: power, cadence and heart rate even without a cadence target`, () => {
+      render(<Layout {...props(1, 10, false)} live={live} />);
+      expect(screen.getByTestId('live-power')).toHaveTextContent('210');
+      expect(screen.getByTestId('rpm-value-number')).toHaveTextContent('88');
+      expect(screen.getByTestId('live-hr')).toHaveTextContent('150');
+    });
+    it(`${name}: a hidden rpm tile drops only the cadence row`, () => {
+      render(<Layout {...props(1, 10, true)} live={live} />);
+      expect(screen.getByTestId('live-power')).toBeInTheDocument();
+      expect(screen.queryByTestId('rpm-value-number')).not.toBeInTheDocument();
+    });
+  }
+});

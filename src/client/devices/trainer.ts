@@ -34,6 +34,8 @@ import {
 export interface TrainerReading {
   /** Last known value of every field, merged across split notifications. */
   data: IndoorBikeData;
+  /** Only the fields of the notification that produced this reading. */
+  packet: IndoorBikeData;
   /** Time of the latest notification (from `now`). */
   atMs: number;
 }
@@ -111,7 +113,11 @@ export function createFtmsTrainer(options: FtmsTrainerOptions): FtmsTrainer {
       log?.add('trainer', 'error', `IBD ${toHex(value)} ${error.message}`);
       return;
     }
-    latest = { data: mergeIndoorBikeData(latest?.data ?? {}, parsed), atMs: now() };
+    latest = {
+      data: mergeIndoorBikeData(latest?.data ?? {}, parsed),
+      packet: parsed,
+      atMs: now(),
+    };
     for (const listener of dataListeners) listener(latest);
   }
 

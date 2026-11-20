@@ -1,6 +1,6 @@
 import { EffortGroup } from '../hud/EffortGroup';
 import { HrTarget } from '../hud/HrTarget';
-import { MeasuresGroup } from '../hud/MeasuresGroup';
+import { hasMeasures, MeasuresGroup } from '../hud/MeasuresGroup';
 import { PlayersList } from '../hud/PlayersList';
 import { TimeGroup } from '../hud/TimeGroup';
 import { Timeline } from '../hud/Timeline';
@@ -26,9 +26,10 @@ export function Classic({
   workoutName,
   controls,
   coach,
+  live,
 }: BasicLayoutProps & { withPlayers: boolean }) {
-  // No cadence to show (the block has no target): the tile is not drawn, no bare placeholder.
-  const showMeasures = !hideRpmTile && view.segment.rpm !== undefined;
+  // Nothing to show (no cadence target, no sensors): the tile is not drawn, no bare placeholder.
+  const showMeasures = hasMeasures(view.segment.rpm, !hideRpmTile, live);
   return (
     <div
       className={styles.root}
@@ -36,6 +37,8 @@ export function Classic({
       data-material="solid"
       data-players={withPlayers}
       data-measures={showMeasures}
+      data-rider-in-power={!!live?.power && players.length <= 1}
+      data-live={live !== undefined}
     >
       <div className={styles.tiles}>
         {withPlayers && (
@@ -60,6 +63,8 @@ export function Classic({
           <MeasuresGroup
             {...(view.segment.rpm !== undefined ? { rpm: view.segment.rpm } : {})}
             isTarget={rpmIsTarget}
+            cadence={!hideRpmTile}
+            {...(live ? { live } : {})}
             fit
             className={styles.measures}
           />

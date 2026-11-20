@@ -5,7 +5,7 @@
  */
 
 import { FakeHrSensor } from '../../domain/ble/fake-hr';
-import { FakeTrainer } from '../../domain/ble/fake-trainer';
+import { FakeTrainer, type FakeTrainerOptions } from '../../domain/ble/fake-trainer';
 import { requestControl, setTargetPower, startOrResume, stopOrPause } from '../../domain/ble/ftms';
 import { createDeviceStore } from './device-store';
 import { FakeBluetooth, type FakeBluetoothOptions } from './fake-bluetooth';
@@ -26,7 +26,16 @@ export interface BleTestHook {
   installFake(options?: FakeBluetoothOptions): FakeBluetooth;
   /** Removes `navigator.bluetooth` (an unsupported browser). */
   removeBluetooth(): void;
+  /** The fake installed last (also by the localStorage switch below). */
+  fake?: FakeBluetooth;
 }
+
+/**
+ * Set this localStorage key (JSON: `{ trainer?: FakeTrainerOptions, hrBpm?: number }`) before the
+ * page loads and the fake is installed before the app renders, also after a full reload (e.g. the
+ * Spotify sign-in redirect).
+ */
+export const FAKE_BLUETOOTH_KEY = 'hypercycling.e2e.fakeBluetooth';
 
 declare global {
   interface Window {
@@ -35,7 +44,7 @@ declare global {
 }
 
 export function installBleTestHook(): void {
-  window.__hcBle = {
+  const hook: BleTestHook = {
     FakeTrainer,
     FakeHrSensor,
     createDeviceStore,
@@ -44,10 +53,26 @@ export function installBleTestHook(): void {
     installFake(options) {
       const fake = new FakeBluetooth(options);
       Object.defineProperty(navigator, 'bluetooth', { value: fake, configurable: true });
+      hook.fake = fake;
       return fake;
     },
     removeBluetooth() {
       Object.defineProperty(navigator, 'bluetooth', { value: undefined, configurable: true });
     },
   };
+  window.__hcBle = hook;
+  let stored: string | null = null;
+  try {
+    stored = localStorage.getItem(FAKE_BLUETOOTH_KEY);
+  } catch {
+    // storage blocked: no automatic fake
+  }
+  if (stored) {
+    const config = JSON.parse(stored) as { trainer?: FakeTrainerOptions; hrBpm?: number };
+    const bpm = config.hrBpm ?? 120;
+    hook.installFake({
+      trainer: new FakeTrainer(config.trainer),
+      hr: new FakeHrSensor({ bpm: () => bpm }),
+    });
+  }
 }

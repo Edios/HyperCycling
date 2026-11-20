@@ -1,13 +1,22 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import type { HrZone } from '../../../domain/hr-zones';
 import { useT } from '../../i18n';
+import { Icon } from '../../ui/Icon';
+import type { LiveMeasures } from '../live-measures';
 import { fitStyle } from './fit';
 import hud from './hud.module.css';
+import hrStyles from './HrTarget.module.css';
 import styles from './MeasuresGroup.module.css';
 
 export interface MeasuresGroupProps {
+  /** The block's target cadence from the plan. */
   rpm?: number;
   /** True when the bike does not measure cadence: the number is the plan's target. */
   isTarget: boolean;
+  /** Draw the cadence row (false when the rider hid the rpm tile). */
+  cadence?: boolean;
+  /** Values from connected sensors; undefined keeps the plain cadence group. */
+  live?: LiveMeasures;
   /** Fit the value to the width of a Classic tile. */
   fit?: boolean;
   /** A section of a column instead of a panel of its own. */
@@ -19,14 +28,31 @@ export interface MeasuresGroupProps {
   className?: string;
 }
 
+/** Whether the group has anything to draw (a layout leaves it out otherwise). */
+export function hasMeasures(
+  rpm: number | undefined,
+  cadence: boolean,
+  live: LiveMeasures | undefined,
+): boolean {
+  if (!live) return cadence && rpm !== undefined;
+  return (
+    (cadence && (rpm !== undefined || live.cadence !== undefined)) || !!live.power || !!live.hr
+  );
+}
+
+const dash = '—';
+
 /**
- * Group M: cadence. Power and heart rate join it as rows when the app reads those sensors
- * (order: power, cadence, HR); a row without data does not exist, and with no rows the group is
- * not drawn at all.
+ * Group M: power, cadence and heart rate, in that order. Without sensors it is the cadence target
+ * of the block, as before. With sensors each row shows the live value (power as a 3 s average) and
+ * the block's target under it; a missing value is "—" and dimmed, never 0. A line at the bottom
+ * says when a sensor is silent or reconnecting.
  */
 export function MeasuresGroup({
   rpm,
   isTarget,
+  cadence = true,
+  live,
   fit = false,
   section = false,
   line = false,
@@ -34,10 +60,85 @@ export function MeasuresGroup({
   className,
 }: MeasuresGroupProps) {
   const t = useT();
-  const value = rpm === undefined ? '—' : String(Math.round(rpm));
-  const notes: string[] = [];
-  if (isTarget && rpm !== undefined) notes.push(t('training.targetFromPlan'));
-  const valueStyle: CSSProperties | undefined = fit ? fitStyle(value.length) : undefined;
+  const rows: ReactNode[] = [];
+
+  if (live?.power) {
+    const { watts, target } = live.power;
+    rows.push(
+      <Row
+        key="power"
+        testId="live-power"
+        label={t('training.live.power')}
+        value={watts === null ? dash : String(watts)}
+        unit={t('training.watts')}
+        note={
+          !bare && target !== null
+            ? t('training.live.target', { value: `${target} ${t('training.watts')}` })
+            : undefined
+        }
+        short={target !== null ? String(target) : undefined}
+        fit={fit}
+      />,
+    );
+  }
+
+  if (cadence && live?.cadence) {
+    const { rpm: actual, target, judgement } = live.cadence;
+    const hint =
+      judgement === 'low'
+        ? t('training.live.faster')
+        : judgement === 'high'
+          ? t('training.live.slower')
+          : null;
+    rows.push(
+      <Row
+        key="cadence"
+        testId="rpm-value-number"
+        label={t('training.cadence')}
+        value={actual === null ? dash : String(actual)}
+        unit={t('training.rpm')}
+        note={
+          bare
+            ? undefined
+            : [target !== null ? t('training.live.target', { value: target }) : null, hint]
+                .filter(Boolean)
+                .join(' · ') || undefined
+        }
+        icon={judgement === 'low' ? 'up' : judgement === 'high' ? 'down' : undefined}
+        short={target !== null ? String(target) : undefined}
+        fit={fit}
+      />,
+    );
+  } else if (cadence) {
+    rows.push(
+      <Row
+        key="cadence"
+        testId="rpm-value-number"
+        label={t('training.cadence')}
+        value={rpm === undefined ? dash : String(Math.round(rpm))}
+        unit={t('training.rpm')}
+        note={!bare && isTarget && rpm !== undefined ? t('training.targetFromPlan') : undefined}
+        fit={fit}
+      />,
+    );
+  }
+
+  if (live?.hr) {
+    const { bpm, zone, noContact } = live.hr;
+    rows.push(
+      <Row
+        key="hr"
+        testId="live-hr"
+        label={t('training.live.heartRate')}
+        value={bpm === null ? dash : String(bpm)}
+        unit={t('training.live.bpm')}
+        note={!bare && noContact ? t('training.live.noContact') : undefined}
+        zone={zone}
+        fit={fit}
+      />,
+    );
+  }
+
   const classes = [
     section ? hud.sec : hud.panel,
     styles.measures,
@@ -48,22 +149,82 @@ export function MeasuresGroup({
     .filter(Boolean)
     .join(' ');
   return (
-    <div className={classes} data-g="M" data-testid="rpm-value">
-      <div className={styles.row}>
-        <div className={styles.head}>
-          <div className={hud.lbl}>{t('training.cadence')}</div>
-          {!bare && notes.length > 0 && <div className={hud.cap}>{notes.join(' · ')}</div>}
+    <div
+      className={classes}
+      data-g="M"
+      data-testid="rpm-value"
+      data-rows={rows.length}
+      {...(live ? { 'data-signal': live.signal } : {})}
+    >
+      {rows}
+      {live && live.signal !== 'live' && (
+        <div className={`${hud.cap} ${styles.signal}`} data-testid="live-signal" role="status">
+          <Icon name="bluetooth" size="1.1em" />
+          <span>{t(`training.live.${live.signal}`)}</span>
         </div>
-        <div className={styles.vv}>
-          <span
-            data-testid="rpm-value-number"
-            className={`${hud.big} ${styles.value}`}
-            style={valueStyle}
-          >
-            {value}
+      )}
+    </div>
+  );
+}
+
+function Row({
+  testId,
+  label,
+  value,
+  unit,
+  note,
+  icon,
+  zone,
+  short,
+  fit,
+}: {
+  testId: string;
+  label: string;
+  value: string;
+  unit: string;
+  note?: string;
+  icon?: 'up' | 'down';
+  zone?: HrZone | null;
+  /** Compact target ("/138") shown beside the number where the note line does not fit. */
+  short?: string;
+  fit: boolean;
+}) {
+  const t = useT();
+  const zoneLabel = zone != null ? t('training.live.zone', { zone }) : '';
+  const valueStyle: CSSProperties | undefined = fit ? fitStyle(value.length) : undefined;
+  const missing = value === dash;
+  return (
+    <div className={`${styles.row} ${missing ? styles.missing : ''}`}>
+      <div className={styles.head}>
+        <div className={hud.lbl}>
+          {label}
+          {zone != null && (
+            <span
+              className={`${styles.zone} ${hrStyles[`z${zone}` as `z${HrZone}`]}`}
+              data-testid="live-hr-zone"
+              data-zone={zone}
+            >
+              {zoneLabel}
+            </span>
+          )}
+        </div>
+        {note && (
+          <div className={`${hud.cap} ${styles.note}`}>
+            {icon && <Icon name={icon} size="1em" />} {note}
+          </div>
+        )}
+      </div>
+      <div className={styles.vv}>
+        <span data-testid={testId} className={`${hud.big} ${styles.value}`} style={valueStyle}>
+          {value}
+        </span>
+        <span className={hud.unit}>{unit}</span>
+        {(short || icon) && (
+          <span className={`${hud.cap} ${styles.short}`} aria-hidden="true">
+            {short && `/${short}`}
+            {icon && <Icon name={icon} size="1em" />}
           </span>
-          <span className={hud.unit}>{t('training.rpm')}</span>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -51,3 +51,15 @@ export function hrTargetFor(
   const zone = zoneForEffort(intensityAt(segment, elapsedInSegSec).effort);
   return hrMax === undefined ? { zone } : { zone, bpm: bpmRange(zone, hrMax) };
 }
+
+/**
+ * Zone of a measured heart rate as % of HRmax; null below zone 1 (under 50 %) or without HRmax.
+ * Above 100 % counts as zone 5.
+ */
+export function zoneForBpm(bpm: number, hrMax: number | undefined): HrZone | null {
+  if (hrMax === undefined || !(hrMax > 0) || !Number.isFinite(bpm)) return null;
+  const pct = (bpm / hrMax) * 100;
+  if (pct < (HR_ZONES[0]?.minPct ?? 50)) return null;
+  const found = HR_ZONES.find((z) => pct < z.maxPct);
+  return found ? found.zone : 5;
+}
