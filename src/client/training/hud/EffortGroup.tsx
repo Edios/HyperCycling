@@ -158,10 +158,10 @@ export function EffortGroup({
         >
           {name}
         </div>
-        {trainer && <ErgControls hud={trainer} />}
         {hr && <div className={styles.hr}>{hr}</div>}
         <div className={styles.posRow}>
           <PositionBadge position={position} />
+          {trainer && <ErgControls hud={trainer} />}
           {resistanceCommand && (
             <div
               className={`${hud.lbl} ${styles.step}`}
@@ -171,7 +171,8 @@ export function EffortGroup({
               {t(COMMAND_KEYS[resistanceCommand])}
             </div>
           )}
-          {step && step.count > 1 && (
+          {/* ERG rides a stepped ramp smoothly: no step line in trainer mode. */}
+          {!trainer && step && step.count > 1 && (
             <div className={`${hud.lbl} ${styles.step}`} data-testid="step-line">
               {t('training.step', { n: step.index + 1, total: step.count })}
             </div>

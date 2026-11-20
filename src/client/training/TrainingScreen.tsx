@@ -599,7 +599,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     segments: runtime.segments,
     players: runtime.players,
     showsWatts: settings.equipment.showsWatts,
-    knobCommand: hasKnob(bikeKindOf(resolveResistanceMode(settings), settings.equipment)),
+    // With a smart trainer in control there is no knob to turn: no relative knob commands.
+    knobCommand:
+      !trainerHud && hasKnob(bikeKindOf(resolveResistanceMode(settings), settings.equipment)),
     rpmIsTarget: !settings.equipment.showsCadence,
     hideRpmTile: settings.equipment.hideRpmTile,
     reducedMotion,

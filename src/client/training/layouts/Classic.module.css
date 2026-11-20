@@ -209,3 +209,10 @@
     padding: 3vw 4vw;
   }
 }
+
+/* Short landscape screens (a phone with the browser bar): with live sensors the ring gives way. */
+@media (orientation: landscape) and (max-height: 420px) {
+  .root[data-live='true'] {
+    --ring: min(calc(29 * var(--u)), 20vw);
+  }
+}

@@ -38,7 +38,7 @@ export function Classic({
       data-material="solid"
       data-players={withPlayers}
       data-measures={showMeasures}
-      data-rider-in-power={!!live?.power && players.length <= 1}
+      data-rider-in-power={(!!live?.power || !!trainer) && players.length <= 1}
       data-live={live !== undefined}
     >
       <div className={styles.tiles}>

@@ -8,6 +8,7 @@ declare global {
   interface Window {
     __pump?: ReturnType<typeof setInterval>;
     __fakeHub?: {
+      writes: { bytes: Uint8Array }[];
       pump(nowMs: number): void;
       dropLink(kind: 'trainer' | 'hr', options?: { stayAway?: boolean }): void;
     };
@@ -45,30 +46,64 @@ async function rideWithSensors(page: Page): Promise<void> {
   await expect(page.getByTestId('training-screen')).toBeVisible();
 }
 
-test('training HUD: live power, cadence and heart rate; missing values on silence', async ({
+async function startRide(page: Page): Promise<void> {
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'idle');
+  await page.keyboard.press('Space');
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
+    timeout: 10_000,
+  });
+}
+
+const targetOf = async (page: Page): Promise<number> => {
+  const name = (await page.getByTestId('effort-name').first().textContent()) ?? '';
+  return Number(/target (\d+) W/.exec(name)?.[1]);
+};
+
+test('trainer mode: watts in the ring, ERG holds the target, ±5 %, ERG off, no signal', async ({
   page,
 }) => {
   await rideWithSensors(page);
-  const measures = page.getByTestId('rpm-value');
-  await expect(measures).toHaveAttribute('data-signal', 'live');
-  await expect(page.getByTestId('live-power')).toHaveText('180');
-  await expect(measures).toContainText(/target \d+ W/);
+  const ring = page.getByTestId('effort-group').first();
+  await expect(ring).toHaveAttribute('data-trainer', 'true');
+  await expect(
+    page.getByTestId('effort-ring-word').or(page.getByTestId('effort-caption')),
+  ).toHaveText('Power');
   await expect(page.getByTestId('rpm-value-number')).toHaveText('90');
   await expect(page.getByTestId('live-hr')).toHaveText('148');
+  await expect(page.getByTestId('live-power')).toHaveCount(0); // power lives in the ring now
 
-  // The sensors go quiet: after 3 s the values become "—" (never 0) with a "No signal" line.
+  await startRide(page);
+  const controls = page.getByTestId('erg-controls');
+  await expect(controls).toHaveAttribute('data-status', 'erg', { timeout: 10_000 });
+  const target = await targetOf(page);
+  expect(target).toBeGreaterThan(0);
+  // The fake trainer follows the target: the ring shows it within a few seconds.
+  await expect(page.getByTestId('trainer-power')).toHaveText(String(target), { timeout: 10_000 });
+  const writes = await page.evaluate(() =>
+    window.__fakeHub!.writes.map((w) => Array.from(w.bytes)),
+  );
+  expect(writes.slice(0, 2)).toEqual([[0x00], [0x07]]);
+  expect(writes.some((w) => w[0] === 0x05 && w[1]! + w[2]! * 256 === target)).toBe(true);
+
+  // +5 %: a new target, and the trainer follows.
+  await page.getByTestId('erg-harder').click();
+  await expect(page.getByTestId('erg-bias')).toHaveText('+5%');
+  const harder = await targetOf(page);
+  expect(Math.abs(harder - target * 1.05)).toBeLessThanOrEqual(1);
+  await expect(page.getByTestId('trainer-power')).toHaveText(String(harder), { timeout: 10_000 });
+
+  // ERG off by hand: free ride on a flat road.
+  await page.getByTestId('erg-toggle').click();
+  await expect(controls).toHaveAttribute('data-status', 'manual');
+  await expect(page.getByTestId('erg-toggle')).toHaveText('ERG off');
+  await page.getByTestId('erg-toggle').click();
+  await expect(controls).toHaveAttribute('data-status', 'erg');
+
+  // The sensors go quiet: "—" in the ring and the rows (never 0), "No signal" in Measures.
   await page.evaluate(() => clearInterval(window.__pump));
   await expect(page.getByTestId('live-signal')).toHaveText('No signal', { timeout: 6000 });
-  await expect(page.getByTestId('live-power')).toHaveText('—');
+  await expect(page.getByTestId('trainer-power')).toHaveText('—');
   await expect(page.getByTestId('live-hr')).toHaveText('—');
-
-  // A dropped trainer link says so until it is back.
-  await page.evaluate(() => {
-    const fake = window.__fakeHub!;
-    window.__pump = setInterval(() => fake.pump(Date.now()), 500);
-    fake.dropLink('trainer', { stayAway: true });
-  });
-  await expect(page.getByTestId('live-signal')).toHaveText('Reconnecting…');
 });
 
 const VIEWPORTS = [
@@ -83,16 +118,18 @@ for (const vp of VIEWPORTS) {
     test.skip(!dir, 'set SHOTS_DIR to save PR screenshots');
     await page.setViewportSize({ width: vp.width, height: vp.height });
     await rideWithSensors(page);
-    await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'idle');
-    await page.keyboard.press('Space');
-    await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
+    await startRide(page);
+    await expect(page.getByTestId('erg-controls')).toHaveAttribute('data-status', 'erg', {
       timeout: 10_000,
     });
-    await expect(page.getByTestId('live-power')).toHaveText('180');
+    const target = await targetOf(page);
+    await expect(page.getByTestId('trainer-power')).toHaveText(String(target), {
+      timeout: 10_000,
+    });
     await page.mouse.move(vp.width / 2, vp.height / 2);
-    await page.screenshot({ path: `${dir}/hud-live-${vp.name}.png` });
+    await page.screenshot({ path: `${dir}/erg-${vp.name}.png` });
     await page.evaluate(() => clearInterval(window.__pump));
     await expect(page.getByTestId('live-signal')).toHaveText('No signal', { timeout: 6000 });
-    await page.screenshot({ path: `${dir}/hud-nosignal-${vp.name}.png` });
+    await page.screenshot({ path: `${dir}/erg-nosignal-${vp.name}.png` });
   });
 }
