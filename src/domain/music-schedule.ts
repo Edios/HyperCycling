@@ -14,6 +14,34 @@ export interface MusicScheduleInput {
   cues: MusicCue[];
   fallback: TrackRef[];
   tSec: number;
+  /**
+   * Tracks that really ended earlier than planned: key of the playback -> the song position
+   * (seconds, in the planned track's terms) where it ended. That track is shortened there, the
+   * rest of its run moves up, and the free time is filled like any other gap (fallback). Used by
+   * the music director when a recording reports its end before the schedule expected it.
+   */
+  ended?: ReadonlyMap<string, number>;
+}
+
+/** Stable key of item `index` of the run of `cue` (0 = the cue's own track). */
+export function cueItemKey(cue: Pick<MusicCue, 'blockId' | 'rep'>, index: number): string {
+  return index === 0 ? `cue:${cue.blockId}:${cue.rep}` : `cue:${cue.blockId}:${cue.rep}:${index}`;
+}
+
+/**
+ * Seconds a track plays from its start offset: its planned length, cut where it really ended
+ * (`ended`, a song position) when that is earlier. `undefined` = unknown length.
+ */
+function playLength(
+  track: TrackRef,
+  key: string,
+  ended: ReadonlyMap<string, number> | undefined,
+): number | undefined {
+  const planned = trackPlaySec(track);
+  const endPos = ended?.get(key);
+  if (endPos === undefined) return planned;
+  const real = Math.max(0, endPos - track.startAtSec);
+  return planned === undefined ? real : Math.min(planned, real);
 }
 
 interface Piece {
@@ -47,12 +75,23 @@ function resolveCues(segments: Segment[], cues: MusicCue[]): ResolvedCue[] {
 }
 
 /** Sequential fallback tracks from `anchor` (each from 0) until `limit`. */
-function fallbackPieces(fallback: TrackRef[], anchor: number, limit: number): Piece[] {
+function fallbackPieces(
+  fallback: TrackRef[],
+  anchor: number,
+  limit: number,
+  ended?: ReadonlyMap<string, number>,
+): Piece[] {
   const out: Piece[] = [];
   let time = anchor;
   for (let i = 0; i < fallback.length && time < limit; i++) {
     const track = fallback[i] as TrackRef;
-    const dur = track.durationSec;
+    const key = `fb:${i}:${anchor}`;
+    // A fallback track plays from its very start (offset 0), so its length is the whole track.
+    const endPos = ended?.get(key);
+    const dur =
+      endPos === undefined
+        ? track.durationSec
+        : Math.min(track.durationSec ?? Infinity, Math.max(0, endPos));
     const end = dur === undefined ? Infinity : time + dur;
     if (end > time) {
       out.push({
@@ -61,7 +100,7 @@ function fallbackPieces(fallback: TrackRef[], anchor: number, limit: number): Pi
         track,
         offsetAtStart: 0,
         source: 'fallback',
-        key: `fb:${i}:${anchor}`,
+        key,
       });
     }
     if (dur === undefined) break;
@@ -75,6 +114,8 @@ export interface RunItem {
   track: TrackRef;
   /** 0 = the cue's own track, 1.. = its queue. */
   index: number;
+  /** Stable key of this playback (see {@link cueItemKey}). */
+  key: string;
   startSec: number;
   /** Exclusive; clipped to the run's limit (next cue or end of workout). */
   endSec: number;
@@ -103,6 +144,8 @@ export interface CueRunOptions {
    * its slot to the limit. The run still ends at the limit; only `fullEndSec` uses the estimate.
    */
   estimateSec?: number;
+  /** Tracks that ended early (see {@link MusicScheduleInput.ended}). */
+  ended?: ReadonlyMap<string, number>;
 }
 
 /**
@@ -125,13 +168,15 @@ export function cueRuns(
     let open = false;
     for (let i = 0; i < run.length && time < limit; i++) {
       const track = run[i] as TrackRef;
-      const len = trackPlaySec(track);
+      const key = cueItemKey(rc.cue, i);
+      const len = playLength(track, key, options.ended);
       if (len === undefined) {
         open = true;
         const guess = options.estimateSec;
         items.push({
           track,
           index: i,
+          key,
           startSec: time,
           endSec: limit,
           fullEndSec: guess === undefined ? Infinity : time + guess,
@@ -145,6 +190,7 @@ export function cueRuns(
         items.push({
           track,
           index: i,
+          key,
           startSec: time,
           endSec: Math.min(end, limit),
           fullEndSec: end,
@@ -166,25 +212,26 @@ export function cueRuns(
 
 function buildPieces(input: Omit<MusicScheduleInput, 'tSec'>): Piece[] {
   const total = totalSec(input.segments);
-  const runs = cueRuns(input.segments, input.cues);
+  const ended = input.ended;
+  const runs = cueRuns(input.segments, input.cues, ended ? { ended } : {});
   const pieces: Piece[] = [];
   const firstCueStart = runs[0]?.startSec ?? total;
-  pieces.push(...fallbackPieces(input.fallback, 0, firstCueStart));
+  pieces.push(...fallbackPieces(input.fallback, 0, firstCueStart, ended));
 
   for (const run of runs) {
-    const { blockId, rep } = run.cue;
     for (const item of run.items) {
+      if (item.endSec <= item.startSec) continue; // ended before it began: nothing to play
       pieces.push({
         startSec: item.startSec,
         endSec: item.endSec,
         track: item.track,
         offsetAtStart: item.track.startAtSec,
         source: 'cue',
-        key: item.index === 0 ? `cue:${blockId}:${rep}` : `cue:${blockId}:${rep}:${item.index}`,
+        key: item.key,
       });
     }
     if (run.endSec < run.limitSec) {
-      pieces.push(...fallbackPieces(input.fallback, run.endSec, run.limitSec));
+      pieces.push(...fallbackPieces(input.fallback, run.endSec, run.limitSec, ended));
     }
   }
   return pieces;

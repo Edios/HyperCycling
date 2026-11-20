@@ -15,6 +15,12 @@ export const PLAY_TIMEOUT_MS = 10_000;
 /** Pause and resume are quick; a fade gets its own length plus this slack. */
 export const CONTROL_TIMEOUT_MS = 5_000;
 export const FADE_SLACK_MS = 2_000;
+/**
+ * A track that ends (or cannot go on) this close to its planned end is left alone: the schedule
+ * changes track in a moment anyway, and moving the rest of the queue up would only start the
+ * fallback for a second or two.
+ */
+export const EARLY_END_MIN_SEC = 2;
 
 export interface MusicDirectorOptions {
   segments: Segment[];
@@ -160,6 +166,12 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
   let playCounter = 0;
   let boundaryTimer: ReturnType<typeof setTimeout> | undefined;
   const retryTimers = new Set<ReturnType<typeof setTimeout>>();
+  /**
+   * Playbacks that are over before the schedule planned it (the recording ended, none reaches the
+   * position, or the whole chain gave up): key -> song position where it stopped. The schedule then
+   * moves the rest of the queue up and fills the time like any other gap.
+   */
+  const ended = new Map<string, number>();
 
   const silenceFromSec = (() => {
     const quiet = options.silenceLastSec ?? 0;
@@ -176,8 +188,30 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
           cues: options.cues,
           fallback: options.fallback,
           tSec: state.workoutElapsedSec,
+          ended,
         })
       : null;
+
+  /**
+   * The playback `key` is over at song position `posSec`, sooner than planned. Returns true when
+   * that changed the schedule (the loop should look again); false when the planned end is so close
+   * that the schedule moves on by itself.
+   */
+  function endEarly(key: string, posSec: number): boolean {
+    const state = options.getState();
+    const next = nextTrackChange({
+      segments: options.segments,
+      cues: options.cues,
+      fallback: options.fallback,
+      tSec: state.workoutElapsedSec,
+      ended,
+    });
+    const left = next ? next.atSec - state.workoutElapsedSec : 0;
+    if (left <= EARLY_END_MIN_SEC) return false;
+    const before = ended.get(key);
+    ended.set(key, before === undefined ? posSec : Math.min(before, posSec));
+    return true;
+  }
 
   /** Provider calls whose failure matters little (fade, pause): log and carry on. */
   async function quietly(
@@ -198,7 +232,13 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     const record = failures.get(key) ?? { count: 0, retryReady: false };
     record.count += 1;
     failures.set(key, record);
-    if (record.count !== 1) return; // one warning and one retry per scheduled track
+    if (record.count !== 1) {
+      // One warning and one retry per scheduled track. After the retry the track is given up:
+      // the rest of its queue (or the fallback) takes over now instead of silence until its end.
+      const fresh = desiredNow(options.getState());
+      if (fresh?.key === key && endEarly(key, fresh.offsetSec)) void reconcile();
+      return;
+    }
     try {
       options.onWarning(track, err);
     } catch (warnErr) {
@@ -302,7 +342,9 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     if (record && !(record.count === 1 && record.retryReady)) return false; // waiting or given up
     if (disposed) return false;
     const chain = chainOf(desired.track, desired.offsetSec - desired.track.startAtSec);
-    if (chain.length === 0) return false; // no recording reaches this position: silence, no retry
+    // No recording reaches this position: the song is over here. The next song of the queue (or
+    // the fallback) plays instead of silence.
+    if (chain.length === 0) return endEarly(desired.key, desired.offsetSec);
     const skip = failedCandidates.get(desired.key) ?? new Set<number>();
     failedCandidates.set(desired.key, skip);
     let lastError: unknown;
@@ -335,6 +377,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       };
       current = playing;
       provider.setFailureHandler?.((err) => onPlaybackFailure(playing, err));
+      provider.setEndHandler?.(() => onPlaybackEnded(playing));
       emit({ track: cand, index, total: chain.length, outcome: 'played' });
       announce(cand);
       if (!cand.title) void resolveTitle(playing);
@@ -357,6 +400,21 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     current = null;
     announce(null);
     void quietly('pause', () => playing.provider.pause());
+    void reconcile();
+  }
+
+  /**
+   * The recording that was playing reached its end. When the schedule still expected it to play
+   * (a shorter upload than planned), the song is marked over at this point, so the next song of
+   * the queue or the fallback starts at once. Near the planned end it is simply left to the
+   * schedule.
+   */
+  function onPlaybackEnded(playing: Playing): void {
+    if (disposed || current !== playing) return;
+    const fresh = desiredNow(options.getState());
+    if (fresh?.key !== playing.key || !endEarly(playing.key, fresh.offsetSec)) return;
+    current = null;
+    announce(null);
     void reconcile();
   }
 
@@ -461,6 +519,7 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       cues: options.cues,
       fallback: options.fallback,
       tSec: state.workoutElapsedSec,
+      ended,
     });
     if (!next) return;
     const ms = Math.max(0, (next.atSec - state.workoutElapsedSec) * 1000);

@@ -166,6 +166,9 @@ const WATCHDOG_STRIKES = 2;
 /** Near the end of the track "not playing" just means it ended. */
 const END_GRACE_MS = 4000;
 
+/** What one look at the player says about the track that was started. */
+type Verdict = 'playing' | 'ended' | 'broken';
+
 const defaultSleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 const clamp01 = (v: number): number => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1);
@@ -182,45 +185,73 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
   let volumeBeforeMute: number | undefined;
   const now = options.now ?? Date.now;
   let failureHandler: ((err: Error) => void) | undefined;
+  let endHandler: (() => void) | undefined;
   let lastTrackId: string | undefined;
-  let watch: { timer: ReturnType<typeof setInterval>; id: string; strikes: number } | undefined;
+  let watch:
+    | { timer: ReturnType<typeof setInterval>; id: string; strikes: number; leftMs: number }
+    | undefined;
 
   const stopWatch = (): void => {
     if (watch) clearInterval(watch.timer);
     watch = undefined;
   };
 
-  /** One look at the player: true when it plays `id` (or has just finished it). */
-  async function playsTrack(id: string): Promise<boolean> {
+  /**
+   * One look at the player: is `id` playing, did it just play to its end, or did it stop or get
+   * replaced in the middle? `lastLeftMs` is what was left of it at the previous look, so a track
+   * that Spotify replaced (autoplay) right after its end counts as ended, not broken.
+   */
+  async function lookAt(
+    id: string,
+    lastLeftMs: number,
+  ): Promise<{ verdict: Verdict; leftMs?: number }> {
     const parsed = nowPlayingSchema.safeParse(await client.request('GET', '/v1/me/player'));
-    if (!parsed.success) return true; // an odd answer proves nothing
+    if (!parsed.success) return { verdict: 'playing' }; // an odd answer proves nothing
     const p = parsed.data;
-    if (!p || !p.item) return false; // no active player / nothing loaded
-    if (p.item.id !== id) return false;
-    if (p.is_playing) return true;
-    const left = (p.item.duration_ms ?? Infinity) - (p.progress_ms ?? 0);
-    return left <= END_GRACE_MS; // stopped at the end: finished, not broken
+    const endedBefore = lastLeftMs <= END_GRACE_MS + (options.watchdogMs ?? 0);
+    if (!p || !p.item || p.item.id !== id) {
+      // No player, nothing loaded or another track: broken, unless ours was about to end.
+      return { verdict: endedBefore ? 'ended' : 'broken' };
+    }
+    const leftMs = (p.item.duration_ms ?? Infinity) - (p.progress_ms ?? 0);
+    if (p.is_playing) return { verdict: 'playing', leftMs };
+    return { verdict: leftMs <= END_GRACE_MS ? 'ended' : 'broken', leftMs }; // stopped at the end: finished
   }
 
   function startWatch(id: string): void {
     stopWatch();
     const every = options.watchdogMs ?? 0;
     if (!(every > 0)) return;
-    const mine = { id, strikes: 0, timer: undefined as unknown as ReturnType<typeof setInterval> };
+    const mine = {
+      id,
+      strikes: 0,
+      leftMs: Infinity,
+      timer: undefined as unknown as ReturnType<typeof setInterval>,
+    };
     mine.timer = setInterval(() => {
       void (async () => {
-        let ok = true;
+        let look: { verdict: Verdict; leftMs?: number };
         try {
-          ok = await playsTrack(id);
+          look = await lookAt(id, mine.leftMs);
         } catch {
           return; // a network or rate-limit hiccup is not a verdict
         }
         if (watch !== mine) return; // replaced or stopped while asking
-        mine.strikes = ok ? 0 : mine.strikes + 1;
+        if (look.leftMs !== undefined) mine.leftMs = look.leftMs;
+        if (look.verdict === 'ended') {
+          stopWatch();
+          const handler = endHandler;
+          endHandler = undefined;
+          failureHandler = undefined;
+          handler?.();
+          return;
+        }
+        mine.strikes = look.verdict === 'playing' ? 0 : mine.strikes + 1;
         if (mine.strikes < WATCHDOG_STRIKES) return;
         stopWatch();
         const handler = failureHandler;
         failureHandler = undefined;
+        endHandler = undefined;
         handler?.(new Error('Spotify stopped playing the track'));
       })();
     }, every);
@@ -278,6 +309,7 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
       if (track.provider !== 'spotify') {
         throw new SpotifyError('http', { message: 'Spotify: not a Spotify track' });
       }
+      endHandler = undefined; // belonged to the previous track
       const device = await resolveDeviceId();
       await client.request('PUT', '/v1/me/player/play', {
         query: { device_id: device },
@@ -292,6 +324,10 @@ export function createSpotifyProvider(options: SpotifyProviderOptions): SpotifyP
 
     setFailureHandler(handler) {
       failureHandler = handler;
+    },
+
+    setEndHandler(handler) {
+      endHandler = handler;
     },
 
     /**

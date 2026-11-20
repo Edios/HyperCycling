@@ -14,6 +14,7 @@ export interface YTMusicPlayer extends YTPlayer {
   setVolume(volume: number): void;
 }
 
+const STATE_ENDED = 0;
 const STATE_PLAYING = 1;
 const STATE_BUFFERING = 3;
 /** Planned steps of the fade-out; each one is a `setVolume` call. */
@@ -75,6 +76,7 @@ export function createYoutubeMusicProvider(
   /** False while the track should be silent (paused, faded out, timed out, disposed). */
   let wantPlaying = false;
   let failureHandler: ((err: Error) => void) | undefined;
+  let endHandler: (() => void) | undefined;
   let stallTimer: ReturnType<typeof setTimeout> | undefined;
 
   const clearStall = (): void => {
@@ -88,7 +90,17 @@ export function createYoutubeMusicProvider(
     player?.pauseVideo();
     const handler = failureHandler;
     failureHandler = undefined;
+    endHandler = undefined;
     handler?.(err);
+  };
+  /** The track played to its end: tell the director, once. */
+  const finish = (): void => {
+    clearStall();
+    wantPlaying = false;
+    const handler = endHandler;
+    endHandler = undefined;
+    failureHandler = undefined;
+    handler?.();
   };
 
   const settle = (err?: Error): void => {
@@ -163,6 +175,13 @@ export function createYoutubeMusicProvider(
               return;
             }
             clearStall();
+            if (e.data === STATE_ENDED) {
+              // Ended before it ever played (a start past the end of this upload): that is a
+              // failed start, so the next recording is tried at once instead of after the timeout.
+              if (pending) settle(new Error('YouTube track ended before it played'));
+              else if (wantPlaying) finish();
+              return;
+            }
             if (e.data !== STATE_PLAYING) return;
             if (pending) settle();
             // Playing although nobody waits for it (a track that timed out, or a pause that
@@ -200,6 +219,7 @@ export function createYoutubeMusicProvider(
     instance++;
     clearStall();
     failureHandler = undefined;
+    endHandler = undefined;
     wantPlaying = false;
     settle(new Error('YouTube music player was disposed'));
     const p = player;
@@ -226,6 +246,7 @@ export function createYoutubeMusicProvider(
       const token = ++playToken;
       clearStall();
       failureHandler = undefined;
+      endHandler = undefined;
       fadeGeneration++;
       const startSec = Math.max(0, Math.floor(offsetSec));
       const YT = api;
@@ -299,6 +320,10 @@ export function createYoutubeMusicProvider(
 
     setFailureHandler(handler) {
       failureHandler = handler;
+    },
+
+    setEndHandler(handler) {
+      endHandler = handler;
     },
 
     dispose() {
