@@ -91,7 +91,7 @@
   color: var(--mut);
 }
 
-.status:empty {
+.status > [role='status']:empty {
   display: none;
 }
 

@@ -133,6 +133,8 @@ function DeviceRow({
   }
 
   const title = connected && slot.name ? slot.name : t(TITLE[kind]);
+  const stateText =
+    slot.status === 'none' ? (compact ? '' : t('devices.status.none')) : t(statusKey(slot));
   const connect = () => void store.connect(kind);
 
   return (
@@ -149,13 +151,16 @@ function DeviceRow({
           {title}
           {connected && slot.name && <span className={styles.kind}>{t(TITLE[kind])}</span>}
         </span>
-        <span
-          className={`${styles.status} ${problem ? styles.problem : ''}`}
-          role="status"
-          aria-live="polite"
-        >
-          {slot.status === 'none' ? (compact ? '' : t('devices.status.none')) : t(statusKey(slot))}
-          {live.length > 0 && <b className={styles.live}>{live.join(' · ')}</b>}
+        <span className={`${styles.status} ${problem ? styles.problem : ''}`}>
+          {/* Only state changes are announced; live values update every second and stay quiet. */}
+          <span role="status" aria-live="polite" data-testid={`device-${kind}-state`}>
+            {stateText}
+          </span>
+          {live.length > 0 && (
+            <b className={styles.live} aria-live="off" data-testid={`device-${kind}-live`}>
+              {live.join(' · ')}
+            </b>
+          )}
         </span>
       </div>
       <div className={styles.actions}>

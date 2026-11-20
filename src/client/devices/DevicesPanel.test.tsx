@@ -34,6 +34,29 @@ function fakeStore(options: ConstructorParameters<typeof FakeBluetooth>[0] = {})
 beforeEach(() => setLang('en'));
 
 describe('DevicesPanel', () => {
+  it('announces state changes only; live values stay outside the live region', async () => {
+    const { bluetooth, store } = fakeStore({ trainer: new FakeTrainer({ noiseW: 0 }) });
+    mount(store);
+    await act(() => store.connect('trainer'));
+    await act(() => store.connect('hr'));
+    act(() => {
+      for (let t = 1000; t <= 30_000; t += 1000) bluetooth.pump(t);
+    });
+    for (const kind of ['trainer', 'hr'] as const) {
+      const row = screen.getByTestId(`device-${kind}`);
+      const region = within(row).getByRole('status');
+      expect(region).toHaveTextContent(/^Connected$/);
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      const live = within(row).getByTestId(`device-${kind}-live`);
+      expect(live).toHaveAttribute('aria-live', 'off');
+      expect(
+        live.closest('[role="status"], [aria-live="polite"], [aria-live="assertive"]'),
+      ).toBeNull();
+    }
+    expect(screen.getByTestId('device-trainer-live')).toHaveTextContent('100 W · 90 rpm');
+    expect(screen.getByTestId('device-hr-live')).toHaveTextContent('120 bpm');
+  });
+
   it('connects the trainer and shows its name, watts and cadence', async () => {
     const { bluetooth, store } = fakeStore({ trainer: new FakeTrainer({ noiseW: 0 }) });
     mount(store);
