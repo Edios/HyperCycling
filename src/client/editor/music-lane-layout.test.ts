@@ -40,12 +40,7 @@ describe('musicLaneLayout', () => {
   it('shows a track at its real length, not stretched over the block, and offers the free time', () => {
     const l = layout(workout([{ blockId: 'b', rep: 1, track: tr('B', 200) }]));
     expect(l.pills).toHaveLength(1);
-    expect(l.pills[0]).toMatchObject({
-      startSec: 300,
-      endSec: 500,
-      clipped: false,
-      estimated: false,
-    });
+    expect(l.pills[0]).toMatchObject({ startSec: 300, endSec: 500, clipped: false, estimated: false });
     expect(l.ghosts).toEqual([
       { key: 'next:b', kind: 'next', blockId: 'b', startSec: 500, endSec: 1200 },
     ]);

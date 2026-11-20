@@ -55,19 +55,14 @@ function dragTrim(d: Drag): { startAtSec: number; endAtSec: number | null } {
   const maxEnd = Math.min(dur ?? Infinity, tr.startAtSec + (pill.limitSec - pill.startSec));
   const end = Math.min(Math.max(shownEnd + d.deltaSec, tr.startAtSec + MIN_TRACK_PLAY_SEC), maxEnd);
   const rounded = Math.round(end);
-  return {
-    startAtSec: tr.startAtSec,
-    endAtSec: dur !== undefined && rounded >= dur ? null : rounded,
-  };
+  return { startAtSec: tr.startAtSec, endAtSec: dur !== undefined && rounded >= dur ? null : rounded };
 }
 
 function overrideOf(d: Drag | undefined): TrackOverride | undefined {
   if (!d || d.edge === 'start') return undefined;
   const trim = dragTrim(d);
   const track = trimTrack(d.pill.track, trim.startAtSec, trim.endAtSec);
-  return track
-    ? { blockId: d.pill.blockId, rep: d.pill.rep, index: d.pill.index, track }
-    : undefined;
+  return track ? { blockId: d.pill.blockId, rep: d.pill.rep, index: d.pill.index, track } : undefined;
 }
 
 function pillLabel(
@@ -143,13 +138,7 @@ export function MusicLane({
       const tr = pill.track;
       if (trim.startAtSec === tr.startAtSec && trim.endAtSec === (tr.endAtSec ?? null)) return;
       if (!trimTrack(tr, trim.startAtSec, trim.endAtSec)) return;
-      dispatch({
-        type: 'trimCueTrack',
-        blockId: pill.blockId,
-        rep: pill.rep,
-        index: pill.index,
-        ...trim,
-      });
+      dispatch({ type: 'trimCueTrack', blockId: pill.blockId, rep: pill.rep, index: pill.index, ...trim });
     }
     function onCancel(): void {
       detach();
@@ -269,3 +258,4 @@ export function MusicLane({
     </div>
   );
 }
+

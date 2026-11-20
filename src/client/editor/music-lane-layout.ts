@@ -215,7 +215,8 @@ export function musicLaneLayout(
   if (!readOnly && firstId && !selectedCue) {
     const seg = segments.find((s) => s.blockId === firstId && s.rep === 1);
     const s = seg?.startSec;
-    const busy = s === undefined || runs.some((r) => r.startSec <= s && s < r.endSec);
+    const busy =
+      s === undefined || runs.some((r) => r.startSec <= s && s < r.endSec);
     if (s !== undefined && !busy) {
       const end = Math.min(
         runs.find((r) => r.startSec > s)?.startSec ?? axis.totalSec,
@@ -223,13 +224,7 @@ export function musicLaneLayout(
       );
       // A "+ next" button in the same free stretch gives way to the pin from this block on.
       ghosts = ghosts.map((g) => (g.startSec < s && s < g.endSec ? { ...g, endSec: s } : g));
-      ghosts.push({
-        key: `pin:${firstId}`,
-        kind: 'pin',
-        blockId: firstId,
-        startSec: s,
-        endSec: end,
-      });
+      ghosts.push({ key: `pin:${firstId}`, kind: 'pin', blockId: firstId, startSec: s, endSec: end });
     }
   }
   ghosts = ghosts.filter(
