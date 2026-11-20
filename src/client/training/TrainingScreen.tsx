@@ -77,6 +77,10 @@ import { useIdleHide } from './useIdleHide';
 import { useReducedMotion } from './useReducedMotion';
 import { useSessionLoop } from './useSessionLoop';
 import { buildTrainingView } from './view';
+import { buildLiveMeasures } from './live-measures';
+import { useLiveSnapshot } from '../devices/useDevices';
+import { useMePlayer } from '../settings/useMePlayer';
+import { targetWatts } from '../../domain/effort';
 import styles from './TrainingScreen.module.css';
 
 const CONTROLS_HIDE_MS = 3000;
@@ -237,6 +241,24 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const view = useMemo(
     () => buildTrainingView(runtime.segments, state, settings.effortTable),
     [runtime.segments, state, settings.effortTable],
+  );
+
+  // Live trainer and strap values. They update from notifications, not from the render loop; the
+  // memo rebuilds only when a shown value or the block's target changes.
+  const liveSnapshot = useLiveSnapshot();
+  const { me } = useMePlayer();
+  // The trainer belongs to the first rider of the session, else to "me" (report 5.1).
+  const rider = runtime.players[0] ?? me;
+  const showsWatts = settings.equipment.showsWatts;
+  const targetW =
+    view && rider && Number.isFinite(rider.ftp) && rider.ftp > 0
+      ? targetWatts(rider.ftp, view.ftpPct)
+      : null;
+  const targetRpm = view?.segment.rpm;
+  const hrMax = rider?.hrMax ?? me?.hrMax;
+  const live = useMemo(
+    () => buildLiveMeasures(liveSnapshot, { showsWatts, targetW, targetRpm, hrMax }),
+    [liveSnapshot, showsWatts, targetW, targetRpm, hrMax],
   );
 
   // Pre-cue for the next step of a stepped ramp ("In 5 s: add resistance"), once per step.
@@ -549,6 +571,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     workoutName: localizedText(runtime.workout, lang).name,
     controls,
     coach,
+    ...(live ? { live } : {}),
   };
   const rootStyle: CSSProperties & Record<'--zone', string> = { '--zone': view.color };
   const hudLayer = tiled ? (

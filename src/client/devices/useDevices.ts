@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { sharedDeviceStore, type DeviceStore, type DevicesState } from './device-store';
 import type { HeartRateReading } from './heart-rate';
+import { liveMetricsFor, type LiveSnapshot } from './live-metrics';
 import { isAdapterAvailable } from './support';
 import type { TrainerReading } from './trainer';
 
@@ -69,4 +70,10 @@ export function useAdapterAvailable(store: DeviceStore, supported: boolean): boo
     };
   }, [store, supported]);
   return available;
+}
+
+/** Live trainer and strap values for the HUD (see live-metrics.ts). */
+export function useLiveSnapshot(): LiveSnapshot {
+  const live = liveMetricsFor(useDeviceStore());
+  return useSyncExternalStore(live.subscribe, live.getSnapshot, live.getSnapshot);
 }

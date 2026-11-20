@@ -47,3 +47,53 @@
     font-size: var(--mval, 8.7vw);
   }
 }
+
+/* ---- live sensor rows ---- */
+
+/* Several rows share the tile: smaller numbers, one under the other. */
+.measures[data-rows='2'] {
+  --mval-k: 0.72;
+}
+
+.measures[data-rows='3'] {
+  --mval-k: 0.56;
+}
+
+.measures[data-rows='2'] .value,
+.measures[data-rows='3'] .value {
+  font-size: calc(var(--mval, calc(7.5 * var(--u))) * var(--mval-k));
+}
+
+.fit.measures[data-rows='2'] .value,
+.fit.measures[data-rows='3'] .value {
+  font-size: min(
+    calc(var(--mval, calc(7.5 * var(--u))) * var(--mval-k)),
+    calc(var(--fit, 1000) * 1cqw)
+  );
+}
+
+/* A missing value ("—") is dimmed: no signal is not the same as zero. */
+.missing .value {
+  opacity: 0.45;
+}
+
+.zone {
+  margin-left: 0.5em;
+  padding: 0 0.45em;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.85em;
+}
+
+.signal {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .measures[data-rows='2'] .value,
+  .measures[data-rows='3'] .value {
+    font-size: calc(var(--mval, 8.7vw) * var(--mval-k));
+  }
+}

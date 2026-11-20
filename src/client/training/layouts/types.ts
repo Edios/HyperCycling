@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Player } from '../../../domain/player';
 import type { Segment } from '../../../domain/segments';
+import type { LiveMeasures } from '../live-measures';
 import type { TrainingView } from '../view';
 
 export interface BasicLayoutProps {
@@ -22,4 +23,6 @@ export interface BasicLayoutProps {
   controls: ReactNode;
   /** Coach cue, rendered in the free centre area. */
   coach: ReactNode;
+  /** Live values from a connected trainer and strap; undefined without sensors. */
+  live?: LiveMeasures;
 }
