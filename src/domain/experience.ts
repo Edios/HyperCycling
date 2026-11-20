@@ -64,6 +64,8 @@ export interface QueueItem extends SongSuggestion {
   /** Where playback starts (skips an intro), set by the author, seconds. */
   startOffsetSec?: number;
   version?: SongVersion;
+  /** Instrumental song whose ending may be played again to close a short gap (gap rule R3). */
+  loopable?: boolean;
 }
 
 /** What to look for in one song slot (`slot` = index in the workout's songs). */
@@ -80,13 +82,16 @@ export interface MusicHint extends SongSuggestion {
   /** Where playback of this (first) song starts, seconds. */
   startOffsetSec?: number;
   version?: SongVersion;
+  /** Instrumental song whose ending may be played again to close a short gap (gap rule R3). */
+  loopable?: boolean;
   /** The songs that follow this one in the slot, in order (the authored queue is this + these). */
   queue?: QueueItem[];
   /**
-   * The reserve, in order of preference. Never added on top of the queue: it only stands in
-   * for a song that is missing from the rider's catalogue or not playable in their region.
+   * The reserve, in order of preference. It stands in for a song that is missing from the rider's
+   * catalogue or not playable in their region, and, when it has YouTube uploads, it closes the
+   * silence at the end of a slot whose queue is too short (gap rule R2).
    */
-  alternatives?: SongSuggestion[];
+  alternatives?: QueueItem[];
 }
 
 export interface ExperienceText {
@@ -141,6 +146,7 @@ const queueItemSchema = suggestionSchema.extend({
   durationSec: z.number().int().min(10).max(1800).optional(),
   startOffsetSec: z.number().int().min(0).max(600).optional(),
   version: versionSchema.optional(),
+  loopable: z.boolean().optional(),
 });
 
 const musicHintSchema = suggestionSchema.extend({
@@ -151,8 +157,9 @@ const musicHintSchema = suggestionSchema.extend({
   version: versionSchema.optional(),
   noBeat: z.boolean().optional(),
   explicit: z.boolean().optional(),
+  loopable: z.boolean().optional(),
   queue: z.array(queueItemSchema).max(8).optional(),
-  alternatives: z.array(suggestionSchema).max(5).optional(),
+  alternatives: z.array(queueItemSchema).max(5).optional(),
 });
 
 const pinTrackSchema = z.object({

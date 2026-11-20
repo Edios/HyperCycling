@@ -3,7 +3,8 @@
  * the rider's own account. Pure logic: the search function is injected, so tests need no network.
  * Nothing leaves the app except the Spotify search the rider's own token makes.
  */
-import { slotQueue, type ChainOptions } from '../../domain/music-chain';
+import { slotQueue, songChain, type ChainOptions } from '../../domain/music-chain';
+import { fillSlotGap, type GapFill } from '../../domain/music-gaps';
 import { rankTracks } from '../../domain/bpm-match';
 import { pickPreferred, songKey, type PlanCandidate } from '../../domain/slot-plan';
 import {
@@ -414,7 +415,7 @@ export function withUserMusic(
   choices: Readonly<Record<string, TrackRef[]>>,
   opts: Omit<ChainOptions, 'spotify'> = { source: 'auto', spotifyUsable: true },
 ): Workout {
-  const mine = choiceCues(w, chainChoices(w, e, choices, opts));
+  const mine = choiceCues(w, fillGaps(w, e, chainChoices(w, e, choices, opts), opts).queues);
   if (mine.length === 0) return withExperiencePins(w, e);
   const key = (c: MusicCue): string => `${c.blockId}#${c.rep}`;
   const taken = new Set(mine.map(key));
@@ -442,4 +443,57 @@ export function chainChoices(
     if (queue.length > 0) out[slot.id] = queue;
   }
   return out;
+}
+
+/** What the gap rules did to each hinted slot (by slot id); for tests and diagnostics only. */
+export type GapReport = Record<string, Omit<GapFill, 'queue'>>;
+
+/**
+ * Closes the silence at the end of every hinted slot whose queue is shorter than the slot, with
+ * the rules of `fillSlotGap` (longer upload, a reserve song in the slot's tempo that the session
+ * does not play elsewhere, a loopable ending, then the workout's fallback track). Slots are filled
+ * in order, so a reserve song is used at most once per session. Only the ride uses this: the
+ * music check keeps judging the authored queue.
+ */
+export function fillGaps(
+  w: Workout,
+  e: Experience,
+  queues: Readonly<Record<string, TrackRef[]>>,
+  opts: Omit<ChainOptions, 'spotify'>,
+): { queues: Record<string, TrackRef[]>; report: GapReport } {
+  const out: Record<string, TrackRef[]> = { ...queues };
+  const report: GapReport = {};
+  const hints = [...(e.musicHints ?? [])].sort((a, b) => a.slot - b.slot);
+  const used = new Set<string>();
+  const loopable = new Set<string>();
+  for (const h of hints) {
+    for (const item of hintQueue(h)) {
+      used.add(songKey(item));
+      if (item.loopable) loopable.add(songKey(item));
+    }
+    for (const alt of h.alternatives ?? []) if (alt.loopable) loopable.add(songKey(alt));
+  }
+  const fallbackSec = w.fallbackPlaylist.reduce(
+    (sum, t) => sum + (t.durationSec === undefined ? Infinity : t.durationSec - t.startAtSec),
+    0,
+  );
+  for (const h of hints) {
+    const slot = w.songs?.[h.slot];
+    const queue = slot ? out[slot.id] : undefined;
+    if (!slot || !queue || queue.length === 0) continue;
+    const reserve = (h.alternatives ?? []).flatMap((alt) => {
+      const [first, ...rest] = songChain(alt, undefined, opts);
+      return first ? [rest.length > 0 ? { ...first, alternates: rest } : first] : [];
+    });
+    const { queue: filled, ...rest } = fillSlotGap(queue, songDurationSec(w, slot), reserve, {
+      used,
+      ...(h.bpm !== undefined ? { bpm: h.bpm } : {}),
+      loopable,
+      fallbackSec,
+    });
+    for (const key of rest.added) used.add(key);
+    out[slot.id] = filled;
+    report[slot.id] = rest;
+  }
+  return { queues: out, report };
 }
