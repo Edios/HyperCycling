@@ -50,13 +50,34 @@
 
 /* ---- live sensor rows ---- */
 
-/* Several rows share the tile: smaller numbers, one under the other. */
+/*
+ * Several rows share the tile: each row puts its label (and target) on the left and the number on
+ * the right, so three rows fit the height one big number used to take.
+ */
 .measures[data-rows='2'] {
-  --mval-k: 0.72;
+  --mval-k: 0.62;
 }
 
 .measures[data-rows='3'] {
-  --mval-k: 0.56;
+  --mval-k: 0.5;
+}
+
+.measures[data-rows='2'],
+.measures[data-rows='3'] {
+  gap: calc(0.9 * var(--u));
+}
+
+.measures[data-rows='2'] .row,
+.measures[data-rows='3'] .row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(1.2 * var(--u));
+}
+
+.measures[data-rows='2'] .vv,
+.measures[data-rows='3'] .vv {
+  flex: none;
 }
 
 .measures[data-rows='2'] .value,
@@ -92,8 +113,38 @@
 }
 
 @media (max-width: 760px) and (orientation: portrait) {
+  /* Phone portrait: the rows sit side by side (label over number), as tall as one cadence row. */
+  .measures[data-rows='2'],
+  .measures[data-rows='3'] {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    column-gap: 3vw;
+    row-gap: 1.5vw;
+  }
+
+  .measures[data-rows='2'] {
+    --cols: 2;
+    --mval-k: 0.9;
+  }
+
+  .measures[data-rows='3'] {
+    --cols: 3;
+    --mval-k: 0.8;
+  }
+
+  .measures[data-rows='2'] .row,
+  .measures[data-rows='3'] .row {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
   .measures[data-rows='2'] .value,
   .measures[data-rows='3'] .value {
     font-size: calc(var(--mval, 8.7vw) * var(--mval-k));
+  }
+
+  .signal {
+    grid-column: 1 / -1;
   }
 }
