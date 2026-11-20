@@ -128,6 +128,31 @@ describe('createControlPointClient', () => {
     await expect(after).resolves.toMatchObject({ result: 'success' });
   });
 
+  it('accepts a response without the 0x80 header for the pending command', async () => {
+    auto.silent = true;
+    const one = client.send(setTargetPower(200));
+    await vi.advanceTimersByTimeAsync(0);
+    client.handleIndication(Uint8Array.of(0x02));
+    await expect(one).resolves.toMatchObject({ requestOpcode: 0x05, result: 'notSupported' });
+    const two = client.send(startOrResume());
+    await vi.advanceTimersByTimeAsync(0);
+    client.handleIndication(Uint8Array.of(0x07, 0x01));
+    await expect(two).resolves.toMatchObject({ requestOpcode: 0x07, result: 'success' });
+    expect(unexpected.filter((u) => u.includes('without the 0x80 header'))).toHaveLength(2);
+  });
+
+  it('ignores bare bytes that are not a known result or belong to no command', async () => {
+    client.handleIndication(Uint8Array.of(0x02));
+    auto.silent = true;
+    const pendingCmd = client.send(requestControl()).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(0);
+    client.handleIndication(Uint8Array.of(0x09));
+    client.handleIndication(Uint8Array.of(0x05, 0x01));
+    client.handleIndication(Uint8Array.of(0x01, 0x02, 0x03));
+    await vi.advanceTimersByTimeAsync(6000);
+    expect(await pendingCmd).toBeInstanceOf(ControlPointTimeoutError);
+  });
+
   it('rejects an empty command', async () => {
     await expect(client.send(new Uint8Array(0))).rejects.toBeInstanceOf(RangeError);
   });
