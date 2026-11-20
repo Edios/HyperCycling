@@ -1548,9 +1548,42 @@ export const en = {
     cancel: 'Cancel',
   },
   devices: {
+    title: 'Bluetooth devices',
+    intro: 'Connect a smart trainer and a heart rate strap. Their data stays on this device.',
+    trainer: 'Smart trainer',
+    hr: 'Heart rate strap',
+    connectTrainer: 'Connect trainer',
+    connectHr: 'Connect strap',
+    disconnect: 'Disconnect',
+    reconnect: 'Reconnect',
+    chooseOther: 'Choose another',
+    status: {
+      none: 'Not connected',
+      connecting: 'Connecting…',
+      connected: 'Connected',
+      reconnecting: 'Signal lost, reconnecting…',
+      lost: 'Connection lost. Check that the device is on and nearby.',
+      failed: 'Could not connect. Turn the device on and try again.',
+      user: 'Disconnected',
+    },
+    live: {
+      power: '{watts} W',
+      cadence: '{rpm} rpm',
+      bpm: '{bpm} bpm',
+      noContact: 'No skin contact',
+    },
+    adapterOff: 'Bluetooth may be off on this device. Turn it on if connecting fails.',
+    help: {
+      title: 'Device not on the list?',
+      wake: 'Turn it on and pedal for a moment so it wakes up.',
+      otherApps:
+        'Close other apps that may hold it (Tacx, Zwift Companion, a Garmin watch or bike computer).',
+      ftms: 'The trainer needs Bluetooth FTMS. Most trainers from the last few years have it.',
+      keepOpen: 'While you ride, keep this tab open and the screen on.',
+    },
     unsupported: {
       insecureContext:
-        'Bluetooth needs a secure page. Open HyperCycling at https://hypercycling.app.',
+        'Bluetooth needs a secure page. Open HyperCycling at https://hypercycling.app, or at localhost on the computer that runs it.',
       ios: 'iPhone and iPad browsers cannot use Bluetooth. Open HyperCycling in the free Bluefy browser, or use a computer or an Android phone with Chrome.',
       firefox: 'Firefox cannot connect to Bluetooth devices. Open HyperCycling in Chrome or Edge.',
       safari: 'Safari cannot connect to Bluetooth devices. Open HyperCycling in Chrome or Edge.',

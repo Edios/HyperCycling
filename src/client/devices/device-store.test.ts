@@ -287,7 +287,9 @@ describe('device store with the fake Bluetooth', () => {
 
   it('asks the chooser for FTMS trainers and HR straps with the services used later', () => {
     expect(REQUEST_OPTIONS.trainer.filters).toEqual([{ services: [0x1826] }]);
-    expect(REQUEST_OPTIONS.trainer.optionalServices).toEqual([0x1818, 0x1816, 0x180a, 0x180f]);
+    expect(REQUEST_OPTIONS.trainer.optionalServices).toEqual([
+      0x1818, 0x1816, 0x180d, 0x180a, 0x180f,
+    ]);
     expect(REQUEST_OPTIONS.hr.filters).toEqual([{ services: [0x180d] }]);
   });
 });

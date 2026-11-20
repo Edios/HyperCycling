@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { bikeKindOf } from '../../domain/bike';
 import { BikeWizard } from '../bike/BikeWizard';
+import { DevicesPanel } from '../devices/DevicesPanel';
 import { Button } from '../ui/Button';
 import { resolveResistanceMode, type ResistanceMode } from '../../domain/settings';
 import { useSettings } from '../data/useSettings';
@@ -22,6 +24,16 @@ export function EquipmentSection() {
   return (
     <div className={styles.stack}>
       <p className={styles.lead}>{t('settings.equipment.intro')}</p>
+      <section aria-labelledby="equipment-devices" data-testid="equipment-devices">
+        <h3 id="equipment-devices" className={styles.subTitle}>
+          {t('devices.title')}
+        </h3>
+        <DevicesPanel
+          variant="full"
+          showTrainer={bikeKindOf(resolveResistanceMode(settings), eq) !== 'knob'}
+          showWatts={eq.showsWatts}
+        />
+      </section>
       <div className={styles.toggles}>
         <Toggle
           label={t('settings.equipment.showsWatts')}
