@@ -1,0 +1,46 @@
+/* Range bar (D22): a thin track, the target band, a marker for the live value. */
+.bar {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  height: max(6px, calc(0.9 * var(--u, 4px)));
+  margin-top: calc(0.6 * var(--u, 4px));
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--act) 55%, transparent);
+}
+
+/* Full-width carrier: translateX(%) of its own width = a position on the bar. */
+.track {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.9s linear;
+  pointer-events: none;
+}
+
+.marker {
+  position: absolute;
+  left: -2px;
+  top: -40%;
+  bottom: -40%;
+  width: 4px;
+  border-radius: 2px;
+  background: #f4f6fa;
+}
+
+.markerIn {
+  background: var(--act);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    transition: none;
+  }
+}

@@ -1,5 +1,9 @@
 import { zoneForBpm, type HrZone } from '../../domain/hr-zones';
-import { judgeCadence, type CadenceJudgement } from '../../domain/live-metrics';
+import {
+  CADENCE_TOLERANCE_RPM,
+  judgeCadence,
+  type CadenceJudgement,
+} from '../../domain/live-metrics';
 import type { LinkState, LiveSnapshot } from '../devices/live-metrics';
 
 /** What the Measures group shows from connected sensors; undefined = no sensors (HUD as before). */
@@ -9,9 +13,21 @@ export interface LiveMeasures {
   /** Present only for a bike that shows watts and a trainer that is (or was) connected. */
   power?: { watts: number | null; target: number | null };
   /** Present when a trainer is (or was) connected. */
-  cadence?: { rpm: number | null; target: number | null; judgement: CadenceJudgement | null };
+  cadence?: {
+    rpm: number | null;
+    target: number | null;
+    judgement: CadenceJudgement | null;
+    /** Target range for the range bar (D22). */
+    band?: { low: number; high: number };
+  };
   /** Present when a strap is (or was) connected. */
-  hr?: { bpm: number | null; zone: HrZone | null; noContact: boolean };
+  hr?: {
+    bpm: number | null;
+    zone: HrZone | null;
+    noContact: boolean;
+    /** The block's HR zone in bpm, for the range bar (D22). */
+    band?: { low: number; high: number };
+  };
 }
 
 export interface LiveContext {
@@ -23,6 +39,8 @@ export interface LiveContext {
   hrMax: number | undefined;
   /** Trainer mode shows the power in the effort ring: no separate power row. */
   powerInRing?: boolean;
+  /** The block's HR zone in bpm (from HRmax), if known. */
+  hrBand?: { low: number; high: number };
 }
 
 const SEVERITY: Record<LinkState, number> = { off: 0, live: 1, stale: 2, reconnecting: 3, lost: 4 };
@@ -43,6 +61,9 @@ export function buildLiveMeasures(live: LiveSnapshot, ctx: LiveContext): LiveMea
       target,
       judgement:
         live.cadenceRpm !== null && target !== null ? judgeCadence(live.cadenceRpm, target) : null,
+      ...(target !== null
+        ? { band: { low: target - CADENCE_TOLERANCE_RPM, high: target + CADENCE_TOLERANCE_RPM } }
+        : {}),
     };
   }
   if (live.hr !== 'off') {
@@ -50,6 +71,7 @@ export function buildLiveMeasures(live: LiveSnapshot, ctx: LiveContext): LiveMea
       bpm: live.hrBpm,
       zone: live.hrBpm === null ? null : zoneForBpm(live.hrBpm, ctx.hrMax),
       noContact: live.hrContact === 'none',
+      ...(ctx.hrBand ? { band: ctx.hrBand } : {}),
     };
   }
   return out;

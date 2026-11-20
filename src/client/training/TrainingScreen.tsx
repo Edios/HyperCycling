@@ -86,6 +86,7 @@ import { useLiveSnapshot } from '../devices/useDevices';
 import { useMePlayer } from '../settings/useMePlayer';
 import { ergTargetWatts, isSprint, powerLevel } from '../../domain/erg';
 import { useErg } from './useErg';
+import { hrTargetFor } from '../../domain/hr-zones';
 import styles from './TrainingScreen.module.css';
 
 const CONTROLS_HIDE_MS = 3000;
@@ -272,6 +273,16 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       : null;
   const targetRpm = view?.segment.rpm;
   const hrMax = rider?.hrMax ?? me?.hrMax;
+  // The block's HR zone in bpm for the range bar (D22); primitives keep the memo stable.
+  const hrZoneBpm = view
+    ? hrTargetFor(view.segment, view.durationSec - view.remainingSec, hrMax)?.bpm
+    : undefined;
+  const hrLow = hrZoneBpm?.min;
+  const hrHigh = hrZoneBpm?.max;
+  const hrBand = useMemo(
+    () => (hrLow !== undefined && hrHigh !== undefined ? { low: hrLow, high: hrHigh } : undefined),
+    [hrLow, hrHigh],
+  );
   const live = useMemo(
     () =>
       buildLiveMeasures(liveSnapshot, {
@@ -280,8 +291,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         targetRpm,
         hrMax,
         powerInRing: trainerMode,
+        ...(hrBand ? { hrBand } : {}),
       }),
-    [liveSnapshot, showsWatts, targetW, targetRpm, hrMax, trainerMode],
+    [liveSnapshot, showsWatts, targetW, targetRpm, hrMax, trainerMode, hrBand],
   );
   const effortTable = settings.effortTable;
   const trainerHud = useMemo(() => {
