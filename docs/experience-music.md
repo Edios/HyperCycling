@@ -82,7 +82,7 @@ Gdy kolejka slotu jest krótsza niż slot, w czasie jazdy (`fillGaps` w `src/cli
 1. **R1 dłuższe wgranie** tego samego utworu (o co najmniej połowę luki dłuższe, a kolejka może przekroczyć slot najwyżej o 45 s; dużo dłuższe wgranie to zwykle inna wersja albo mix);
 2. **R2 utwór z rezerwy** (`alternatives` z wgraniami YouTube) w tempie slotu (±10 %, także pół/podwójne), którego sesja nie gra nigdzie indziej, wystarczająco długi; tylko dla luk ≥ 20 s (kilka sekund innej piosenki brzmi gorzej niż spokojne tło);
 3. **R3 pętla końcówki** ostatniego utworu oznaczonego `loopable` (luka ≤ 45 s);
-4. **R4 utwór zapasowy treningu** (`fallbackPlaylist`): długi, spokojny utwór (Neon Grid: Brian Eno, „1/1”, z „Discreet Music” jako drugim wgraniem, oba z oficjalnego kanału Topic), który harmonogram gra w każdej dziurze poza celową ciszą końcową;
+4. **R4 utwór zapasowy** (`musicFallback` scenariusza, wchodzi jako `fallbackPlaylist` jazdy, chyba że trening ma własny; wbudowane treningi nie zawierają ID utworów): długi, spokojny utwór (Neon Grid: Brian Eno, „1/1”, z „Discreet Music” jako drugim wgraniem, oba z oficjalnego kanału Topic), który harmonogram gra w każdej dziurze poza celową ciszą końcową;
 5. **R5**: gdy nic nie pasuje, raport podaje długość ciszy (tylko testy i diagnostyka, bez nowego UI).
 
 Kontrakt (`src/content/neon-grid-music-gaps.test.ts`): `musicAt` próbkowany co sekundę po Neon Grid 30, 45 i Lekkim 45 nie zwraca `null` poza ciszą końcową, także gdy każdy utwór kończy się na najkrótszym swoim wgraniu. Panel „Sprawdź muzykę” nadal ocenia autorską kolejkę.

@@ -415,6 +415,7 @@ export function withUserMusic(
   choices: Readonly<Record<string, TrackRef[]>>,
   opts: Omit<ChainOptions, 'spotify'> = { source: 'auto', spotifyUsable: true },
 ): Workout {
+  w = withExperienceFallback(w, e);
   const mine = choiceCues(w, fillGaps(w, e, chainChoices(w, e, choices, opts), opts).queues);
   if (mine.length === 0) return withExperiencePins(w, e);
   const key = (c: MusicCue): string => `${c.blockId}#${c.rep}`;
@@ -496,4 +497,12 @@ export function fillGaps(
     report[slot.id] = rest;
   }
   return { queues: out, report };
+}
+
+/** The workout with the experience's fallback track, unless the workout has its own. */
+export function withExperienceFallback(w: Workout, e: Experience): Workout {
+  const fallback = e.musicFallback ?? [];
+  return fallback.length > 0 && w.fallbackPlaylist.length === 0
+    ? { ...w, fallbackPlaylist: fallback }
+    : w;
 }

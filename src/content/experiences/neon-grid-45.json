@@ -14,6 +14,26 @@
   },
   "workoutRef": { "kind": "builtin", "id": "class-neon-grid-45" },
   "musicPins": [],
+  "musicFallback": [
+    {
+      "provider": "youtube",
+      "id": "LKZ3fGR2SDY",
+      "title": "1/1 (Remastered 2004)",
+      "artist": "Brian Eno",
+      "durationSec": 1042,
+      "startAtSec": 0,
+      "alternates": [
+        {
+          "provider": "youtube",
+          "id": "tLZtnadL1s0",
+          "title": "Discreet Music (Remastered 2004)",
+          "artist": "Brian Eno",
+          "durationSec": 1895,
+          "startAtSec": 0
+        }
+      ]
+    }
+  ],
   "worldTheme": {
     "theme": "neon-grid",
     "chapters": [

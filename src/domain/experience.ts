@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { LANGS, type Lang } from './lang';
 import { BPM_MAX, BPM_MIN } from './bpm-match';
-import { songDurationSec, type MusicCue, type Workout } from './workout';
+import {
+  MAX_ALTERNATES,
+  songDurationSec,
+  type MusicCue,
+  type TrackRef,
+  type Workout,
+} from './workout';
 
 /**
  * Experience: a ready-made ride = a workout (class-style scenario) + music pins + a world theme +
@@ -108,6 +114,11 @@ export interface Experience {
   workoutRef: { kind: 'builtin' | 'user'; id: string };
   /** Pins of the experience; they override the workout's own music cues. May be empty. */
   musicPins: MusicCue[];
+  /**
+   * A long, calm track the ride plays wherever the songs leave silence (gap rule R4), unless the
+   * workout has a fallback of its own. Kept here so built-in workouts stay free of track ids.
+   */
+  musicFallback?: TrackRef[];
   /** Song suggestions per slot; the rider turns them into pins with their own Spotify. Optional. */
   musicHints?: MusicHint[];
   worldTheme: WorldTheme;
@@ -198,6 +209,14 @@ export const experienceSchema: z.ZodType<Experience> = z
         }),
       )
       .default([]),
+    musicFallback: z
+      .array(
+        pinTrackSchema.extend({
+          alternates: z.array(pinTrackSchema).max(MAX_ALTERNATES).optional(),
+        }),
+      )
+      .max(4)
+      .optional(),
     musicHints: z.array(musicHintSchema).max(32).optional(),
     worldTheme: z.object({
       // an unknown theme (newer file, older app) falls back to the abstract look
