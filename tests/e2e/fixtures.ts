@@ -32,6 +32,9 @@ async function waitForHealth(url: string, isAlive: () => boolean): Promise<void>
   throw new Error(`The e2e server did not become healthy at ${url} within 60 s.`);
 }
 
+/** Same key as EDITOR_TOUR_KEY in the app. */
+const EDITOR_TOUR_KEY = 'tour.editor.v1';
+
 /**
  * The local project gives every worker its own server on its own port with its own throwaway
  * SQLite database. Settings, players and plan progress live in that database, so workers running
@@ -39,7 +42,7 @@ async function waitForHealth(url: string, isAlive: () => boolean): Promise<void>
  * IndexedDB, which is already separate for every test, and needs nothing.)
  */
 export const test = base.extend<
-  { cleanActiveSession: void; advancedOpen: void },
+  { cleanActiveSession: void; advancedOpen: void; editorTourSeen: boolean; seedEditorTour: void },
   { localServer: string | null }
 >({
   localServer: [
@@ -50,7 +53,9 @@ export const test = base.extend<
         await use(null);
         return;
       }
-      const dir = mkdtempSync(path.join(tmpdir(), `spinning-tutor-e2e-w${workerInfo.workerIndex}-`));
+      const dir = mkdtempSync(
+        path.join(tmpdir(), `spinning-tutor-e2e-w${workerInfo.workerIndex}-`),
+      );
       const dbPath = assertSafeE2eDbPath(path.join(dir, 'e2e.db'));
       const port = await freePort();
       const url = `http://127.0.0.1:${port}`;
@@ -108,6 +113,29 @@ export const test = base.extend<
           // storage blocked: the accordion just starts closed
         }
       });
+      await use();
+    },
+    { auto: true },
+  ],
+  /**
+   * The editor tutorial opens by itself on the first visit, which would sit on top of every editor
+   * test. It is marked as seen up front; a test of the first visit opts out with
+   * `test.use({ editorTourSeen: false })`.
+   */
+  editorTourSeen: [true, { option: true }],
+  seedEditorTour: [
+    async ({ context, editorTourSeen }, use) => {
+      if (editorTourSeen) {
+        await context.addInitScript((key) => {
+          try {
+            if (!localStorage.getItem(key)) {
+              localStorage.setItem(key, JSON.stringify({ outcome: 'skipped' }));
+            }
+          } catch {
+            // Storage unavailable: nothing to seed.
+          }
+        }, EDITOR_TOUR_KEY);
+      }
       await use();
     },
     { auto: true },

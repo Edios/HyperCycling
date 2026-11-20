@@ -1300,6 +1300,48 @@ export const en = {
       drumAndBass: 'drum and bass',
     },
   },
+  tour: {
+    common: {
+      label: 'Tutorial',
+      step: 'Step {n} of {total}',
+      skip: 'Skip',
+      back: 'Back',
+      next: 'Next',
+      done: 'Done',
+    },
+    editor: {
+      steps: {
+        timeline: {
+          title: 'Your workout',
+          body: 'Each bar is one block. Height is effort, width is time. Click a bar to select it.',
+        },
+        add: {
+          title: 'Add a block',
+          body: 'Warm-up, steady, intervals, ramp or cool-down. Click to add at the end, or drag onto the timeline.',
+        },
+        effort: {
+          title: 'Set the effort',
+          body: 'Drag the top edge of the selected block up or down. From the keyboard: the ↑ and ↓ keys.',
+        },
+        time: {
+          title: 'Set the time',
+          body: 'Drag the right edge of the block. Time changes in 15 s steps, with Shift in 5 s. From the keyboard: + and −.',
+        },
+        details: {
+          title: 'Name, category, tags',
+          body: 'The description, category (Progres or Free ride) and tags are tucked away here. Open them when you need them.',
+        },
+        music: {
+          title: 'Music (optional)',
+          body: 'Pin a song to a block or to the cool-down. Skip it if you ride to your own playlist.',
+        },
+        save: {
+          title: 'Save',
+          body: 'Press Save or Ctrl+S, then ride it from Freestyle → Mine. The ? button brings this tutorial back.',
+        },
+      },
+    },
+  },
   editor: {
     bpm: {
       target: 'For {rpm} rpm look for about {bpm} BPM (or {half} BPM half time).',
@@ -1371,6 +1413,12 @@ export const en = {
       track: 'Track',
     },
     nameLabel: 'Workout name',
+    help: 'Editor tutorial',
+    more: 'More actions',
+    details: 'Workout details',
+    detailsSummary: '{category}, tags: {n}',
+    musicSection: 'Music (optional)',
+    addFirst: 'Add your first block',
     category: 'Category',
     categoryProgres: 'Progress',
     categoryFreestyle: 'Freestyle',

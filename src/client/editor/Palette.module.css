@@ -72,3 +72,35 @@
     margin: 0;
   }
 }
+
+/* Phones in portrait: the five block buttons stay under the thumb, one row fixed to the bottom. */
+@media (max-width: 760px) {
+  .palette {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 30;
+    flex-wrap: nowrap;
+    gap: 0.375rem;
+    padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    border-bottom: 0;
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .title,
+  .hint {
+    display: none;
+  }
+
+  .item {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 3.5rem;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.125rem;
+    padding: 0.25rem;
+    font-size: 0.75rem;
+    text-align: center;
+  }
+}

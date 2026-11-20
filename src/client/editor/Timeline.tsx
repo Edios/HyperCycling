@@ -12,6 +12,7 @@ import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dn
 import { effortRow, type EffortLevel, type EffortTable } from '../../domain/effort';
 import type { RepeatBlock, Workout } from '../../domain/workout';
 import { useT } from '../i18n';
+import { Button } from '../ui/Button';
 import { slopePolygons } from '../ui/ProfileChart';
 import chart from '../ui/ProfileChart.module.css';
 import type { EditorAction } from './editor-state';
@@ -228,7 +229,23 @@ export function Timeline({ workout, selectedId, readOnly, table, dispatch }: Tim
       aria-label={t('editor.timeline')}
       onClick={() => dispatch({ type: 'select', id: undefined })}
     >
-      {workout.blocks.length === 0 && <p className={styles.empty}>{t('editor.emptyTimeline')}</p>}
+      {workout.blocks.length === 0 && (
+        <div className={styles.empty}>
+          <p>{t('editor.emptyTimeline')}</p>
+          {!readOnly && (
+            <Button
+              variant="primary"
+              data-testid="timeline-add-first"
+              onClick={(e) => {
+                e.stopPropagation();
+                dispatch({ type: 'addBlock', kind: 'steady' });
+              }}
+            >
+              {t('editor.addFirst')}
+            </Button>
+          )}
+        </div>
+      )}
       <div ref={lane} className={styles.lane}>
         <SortableContext
           items={workout.blocks.map((b) => b.id)}

@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { Link, useBlocker, useNavigate } from 'react-router-dom';
 import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { totalDurationSec, type Workout } from '../../domain/workout';
@@ -9,6 +17,7 @@ import { useLang, useT, type MessageKey } from '../i18n';
 import { formatClock } from '../training/format';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
+import { Disclosure } from '../ui/Disclosure';
 import { Segmented } from '../ui/Segmented';
 import { Toast } from '../ui/Toast';
 import { ClassCard } from '../class/ClassCard';
@@ -20,13 +29,18 @@ import {
   type EditorState,
   type NewBlockKind,
 } from './editor-state';
+import { EDITOR_TOUR_KEY, EDITOR_TOUR_STEPS } from './editor-tour';
 import { Inspector, type TrackFocus } from './Inspector';
 import { MetaBar } from './MetaBar';
+import { MoreMenu, type MoreMenuItem } from './MoreMenu';
 import { findBlock, hardMinutes, saveIssue, shortcutToAction } from './model';
 import { MusicLane } from './MusicLane';
 import { Palette, PALETTE_PREFIX } from './Palette';
 import { SongSection } from './SongSection';
 import { Timeline, TIMELINE_DROP_ID } from './Timeline';
+import { CoachMarks } from '../tour/CoachMarks';
+import { shouldAutoStart } from '../tour/tour-state';
+import { useTour } from '../tour/useTour';
 import styles from './Editor.module.css';
 import { Icon } from '../ui/Icon';
 
@@ -38,6 +52,8 @@ export interface EditorProps {
   isNew: boolean;
   /** An imported draft starts with unsaved changes; an untouched blank draft does not. */
   startDirty?: boolean;
+  /** Opens the tutorial by itself on the first visit (the route does; plain test renders do not). */
+  tourAuto?: boolean;
 }
 
 function initState(initial: Workout, startDirty: boolean): EditorState {
@@ -46,7 +62,13 @@ function initState(initial: Workout, startDirty: boolean): EditorState {
   return startDirty ? { ...base, saved: { ...initial }, dirty: true } : base;
 }
 
-export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorProps) {
+export function Editor({
+  initial,
+  readOnly,
+  isNew,
+  startDirty = false,
+  tourAuto = false,
+}: EditorProps) {
   const t = useT();
   const [lang] = useLang();
   const navigate = useNavigate();
@@ -81,6 +103,25 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
   const changed = state.dirty || isNew;
   const canSave = !readOnly && changed && !issue && !saving;
   const [hasActive, setHasActive] = useState(false);
+
+  const tour = useTour(EDITOR_TOUR_KEY, EDITOR_TOUR_STEPS.length);
+  const startTour = tour.start;
+  const tourSteps = useMemo(
+    () =>
+      EDITOR_TOUR_STEPS.map((step) => ({
+        id: step.id,
+        targets: step.targets,
+        title: t(step.title),
+        body: t(step.body),
+      })),
+    [t],
+  );
+  // First visit: open the tutorial once the layout has settled. Built-in (read-only) workouts skip it.
+  useEffect(() => {
+    if (!tourAuto || readOnly || !shouldAutoStart(EDITOR_TOUR_KEY)) return undefined;
+    const timer = window.setTimeout(startTour, 600);
+    return () => window.clearTimeout(timer);
+  }, [tourAuto, readOnly, startTour]);
 
   // Leaving with unsaved changes: in-app navigation via the router blocker, reload/close via beforeunload.
   const blocker = useBlocker(() => dirtyRef.current);
@@ -218,12 +259,44 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
   const errorKey = state.errors[0];
   const onTrackFocused = useCallback(() => setFocusTrack(false), []);
 
+  const menuItems: MoreMenuItem[] = [
+    {
+      key: 'undo',
+      label: t('editor.undo'),
+      narrowOnly: true,
+      disabled: readOnly || state.past.length === 0,
+      onSelect: () => dispatch({ type: 'undo' }),
+    },
+    {
+      key: 'redo',
+      label: t('editor.redo'),
+      narrowOnly: true,
+      disabled: readOnly || state.future.length === 0,
+      onSelect: () => dispatch({ type: 'redo' }),
+    },
+    { key: 'settings', label: t('nav.settings'), to: '/settings', icon: <Icon name="settings" /> },
+    ...(!isNew && !readOnly
+      ? [
+          { key: 'duplicate', label: t('editor.duplicate'), onSelect: () => void duplicate() },
+          { key: 'delete', label: t('editor.delete'), onSelect: () => void askDelete() },
+        ]
+      : []),
+  ];
+  const detailsSummary = t('editor.detailsSummary', {
+    category: t(
+      workout.category === 'progres' ? 'editor.categoryProgres' : 'editor.categoryFreestyle',
+    ),
+    n: workout.tags.length,
+  });
+  const hasMusic = (workout.songs?.length ?? 0) > 0 || workout.cooldownTrack !== undefined;
+
   return (
     <DndContext sensors={sensors} onDragEnd={onDragEnd}>
       <div className={styles.screen} data-testid="editor-screen" data-readonly={readOnly}>
         <header className={styles.bar}>
           <Link to="/" className={styles.back} title={t('nav.mainMenu')}>
-            <span aria-hidden="true">⌂</span> <span className={styles.lbl}>{t('nav.mainMenu')}</span>
+            <span aria-hidden="true">⌂</span>{' '}
+            <span className={styles.lbl}>{t('nav.mainMenu')}</span>
           </Link>
           <Link to="/freestyle" className={styles.back}>
             {t('editor.back')}
@@ -242,17 +315,6 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
             }}
             onBlur={() => setNameDraft(shown.name)}
           />
-          <div className={styles.category}>
-            <Segmented
-              label={t('editor.category')}
-              value={workout.category}
-              options={[
-                { value: 'progres', label: t('editor.categoryProgres'), disabled: readOnly },
-                { value: 'freestyle', label: t('editor.categoryFreestyle'), disabled: readOnly },
-              ]}
-              onChange={(category) => dispatch({ type: 'updateMeta', patch: { category } })}
-            />
-          </div>
           <div className={styles.total} aria-label={t('editor.total')} data-testid="editor-total">
             {formatClock(totalDurationSec(workout))}
           </div>
@@ -262,7 +324,7 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
           <div className={styles.sp} />
           <button
             type="button"
-            className={styles.icoBtn}
+            className={`${styles.icoBtn} ${styles.wideOnly}`}
             aria-label={t('editor.undo')}
             title={`${t('editor.undo')} (Ctrl+Z)`}
             disabled={readOnly || state.past.length === 0}
@@ -272,7 +334,7 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
           </button>
           <button
             type="button"
-            className={styles.icoBtn}
+            className={`${styles.icoBtn} ${styles.wideOnly}`}
             aria-label={t('editor.redo')}
             title={`${t('editor.redo')} (Ctrl+Y)`}
             disabled={readOnly || state.future.length === 0}
@@ -280,32 +342,57 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
           >
             <Icon name="redo" />
           </button>
-          <Link to="/settings" className={styles.back} title={t('nav.settings')}>
-            <Icon name="settings" /> <span className={styles.lbl}>{t('nav.settings')}</span>
-          </Link>
-          {!isNew && !readOnly && (
-            <>
-              <Button onClick={() => void duplicate()}>{t('editor.duplicate')}</Button>
-              <Button onClick={() => void askDelete()}>{t('editor.delete')}</Button>
-            </>
-          )}
+          <button
+            type="button"
+            className={styles.icoBtn}
+            aria-label={t('editor.help')}
+            title={t('editor.help')}
+            data-testid="editor-help"
+            onClick={tour.start}
+          >
+            <span aria-hidden="true">?</span>
+          </button>
+          <MoreMenu items={menuItems} />
           {readOnly ? (
             <Button variant="primary" onClick={() => void duplicate()}>
               {t('editor.duplicateToEdit')}
             </Button>
           ) : (
-            <Button variant="primary" disabled={!canSave} onClick={() => void save()}>
-              {t('editor.save')}
-            </Button>
+            <span className={styles.saveWrap} data-tour="save">
+              <Button variant="primary" disabled={!canSave} onClick={() => void save()}>
+                {t('editor.save')}
+              </Button>
+            </span>
           )}
         </header>
 
-        <MetaBar
-          workout={workout}
-          description={shown.description}
-          readOnly={readOnly}
-          dispatch={dispatch}
-        />
+        <div className={styles.details}>
+          <Disclosure title={t('editor.details')} summary={detailsSummary} tourId="details">
+            <div className={styles.detailsBody}>
+              <div className={styles.category}>
+                <Segmented
+                  label={t('editor.category')}
+                  value={workout.category}
+                  options={[
+                    { value: 'progres', label: t('editor.categoryProgres'), disabled: readOnly },
+                    {
+                      value: 'freestyle',
+                      label: t('editor.categoryFreestyle'),
+                      disabled: readOnly,
+                    },
+                  ]}
+                  onChange={(category) => dispatch({ type: 'updateMeta', patch: { category } })}
+                />
+              </div>
+              <MetaBar
+                workout={workout}
+                description={shown.description}
+                readOnly={readOnly}
+                dispatch={dispatch}
+              />
+            </div>
+          </Disclosure>
+        </div>
         {readOnly && (
           <p className={styles.banner} role="status">
             {t('editor.readOnly')}
@@ -348,13 +435,15 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
               }}
               dispatch={dispatch}
             />
-            <Timeline
-              workout={workout}
-              selectedId={state.selectedId}
-              readOnly={readOnly}
-              table={table}
-              dispatch={dispatch}
-            />
+            <div className={styles.timeline} data-tour="timeline">
+              <Timeline
+                workout={workout}
+                selectedId={state.selectedId}
+                readOnly={readOnly}
+                table={table}
+                dispatch={dispatch}
+              />
+            </div>
             <div className={styles.timelineFoot}>
               <p className={styles.hint}>{t('editor.timelineHint')}</p>
               {(workout.songs?.length ?? 0) > 0 && (
@@ -364,13 +453,20 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
                 <Button onClick={deleteSelected}>{t('editor.deleteBlock')}</Button>
               )}
             </div>
-            <SongSection
-              workout={workout}
-              selectedId={state.selectedId}
-              readOnly={readOnly}
-              lang={lang}
-              dispatch={dispatch}
-            />
+            <Disclosure
+              title={t('editor.musicSection')}
+              defaultOpen={hasMusic}
+              tourId="music"
+              testId="music-disclosure"
+            >
+              <SongSection
+                workout={workout}
+                selectedId={state.selectedId}
+                readOnly={readOnly}
+                lang={lang}
+                dispatch={dispatch}
+              />
+            </Disclosure>
           </main>
           <Inspector
             workout={workout}
@@ -422,6 +518,7 @@ export function Editor({ initial, readOnly, isNew, startDirty = false }: EditorP
           </Modal>
         )}
         {toast && <Toast message={toast} onClose={() => setToast(undefined)} />}
+        <CoachMarks steps={tourSteps} tour={tour} />
       </div>
     </DndContext>
   );

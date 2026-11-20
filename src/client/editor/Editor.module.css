@@ -81,6 +81,31 @@
 
 .category {
   width: 16rem;
+  max-width: 100%;
+}
+
+.details {
+  padding: 0 1.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.detailsBody {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  padding: 0.25rem 0 0.75rem;
+}
+
+.saveWrap {
+  display: inline-flex;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .total {
@@ -225,6 +250,20 @@
 
   .actions {
     flex-wrap: wrap;
+  }
+
+  /* Undo and redo move into the "more" menu on a phone. */
+  .wideOnly {
+    display: none;
+  }
+
+  .details {
+    padding: 0 1rem;
+  }
+
+  /* Room for the block bar fixed to the bottom edge. */
+  .grid {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 

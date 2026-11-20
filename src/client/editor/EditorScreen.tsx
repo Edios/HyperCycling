@@ -71,6 +71,7 @@ export function EditorScreen() {
         readOnly={false}
         isNew
         startDirty={importedFrom(location.state) !== undefined}
+        tourAuto
       />
     );
   }
@@ -94,6 +95,7 @@ export function EditorScreen() {
       initial={current.workout}
       readOnly={current.readOnly}
       isNew={current.isNew}
+      tourAuto
     />
   );
 }

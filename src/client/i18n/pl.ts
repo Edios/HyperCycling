@@ -1306,6 +1306,48 @@ export const pl: Messages = {
       drumAndBass: 'drum and bass',
     },
   },
+  tour: {
+    common: {
+      label: 'Samouczek',
+      step: 'Krok {n} z {total}',
+      skip: 'Pomiń',
+      back: 'Wstecz',
+      next: 'Dalej',
+      done: 'Gotowe',
+    },
+    editor: {
+      steps: {
+        timeline: {
+          title: 'Twój trening',
+          body: 'Każdy słupek to jeden blok. Wysokość to wysiłek, szerokość to czas. Kliknij słupek, żeby go zaznaczyć.',
+        },
+        add: {
+          title: 'Dodaj blok',
+          body: 'Rozgrzewka, stały, interwały, rampa albo schłodzenie. Kliknij, żeby dodać na końcu, albo przeciągnij na oś czasu.',
+        },
+        effort: {
+          title: 'Ustaw wysiłek',
+          body: 'Przeciągnij górną krawędź zaznaczonego bloku w górę lub w dół. Z klawiatury: strzałki ↑ i ↓.',
+        },
+        time: {
+          title: 'Ustaw czas',
+          body: 'Przeciągnij prawą krawędź bloku. Czas zmienia się co 15 s, z klawiszem Shift co 5 s. Z klawiatury: + i −.',
+        },
+        details: {
+          title: 'Nazwa, kategoria, tagi',
+          body: 'Opis, kategoria (Progres lub Swobodny) i tagi są schowane tutaj. Otwórz je, gdy będziesz ich potrzebować.',
+        },
+        music: {
+          title: 'Muzyka (opcjonalnie)',
+          body: 'Przypnij utwór do bloku albo do schłodzenia. Pomiń, jeśli jedziesz przy własnej playliście.',
+        },
+        save: {
+          title: 'Zapisz',
+          body: 'Naciśnij Zapisz albo Ctrl+S, potem jedź z listy Freestyle → Moje. Przycisk ? przywróci ten samouczek.',
+        },
+      },
+    },
+  },
   editor: {
     bpm: {
       target: 'Dla {rpm} obr./min szukaj ok. {bpm} BPM (lub {half} BPM w połowie tempa).',
@@ -1378,6 +1420,12 @@ export const pl: Messages = {
       track: 'Utwór',
     },
     nameLabel: 'Nazwa treningu',
+    help: 'Samouczek edytora',
+    more: 'Więcej',
+    details: 'Szczegóły treningu',
+    detailsSummary: '{category}, tagi: {n}',
+    musicSection: 'Muzyka (opcjonalnie)',
+    addFirst: 'Dodaj pierwszy blok',
     category: 'Kategoria',
     categoryProgres: 'Progres',
     categoryFreestyle: 'Freestyle',
