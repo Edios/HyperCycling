@@ -1402,7 +1402,8 @@ export const en = {
     addNextShort: '+',
     trimStart: 'Drag to trim the start of the track',
     trimEnd: 'Drag to trim the end of the track',
-    trimHint: 'A track plays from "Start at" to its end or to "End". Drag the edges of the selected track to trim it.',
+    trimHint:
+      'A track plays from "Start at" to its end or to "End". Drag the edges of the selected track to trim it.',
     cardButton: 'Class card',
     cardClose: 'Close',
     suggest: {
@@ -1545,6 +1546,19 @@ export const en = {
     cleanBody: 'The file was read without problems.',
     open: 'Open in editor',
     cancel: 'Cancel',
+  },
+  devices: {
+    unsupported: {
+      insecureContext:
+        'Bluetooth needs a secure page. Open HyperCycling at https://hypercycling.app.',
+      ios: 'iPhone and iPad browsers cannot use Bluetooth. Open HyperCycling in the free Bluefy browser, or use a computer or an Android phone with Chrome.',
+      firefox: 'Firefox cannot connect to Bluetooth devices. Open HyperCycling in Chrome or Edge.',
+      safari: 'Safari cannot connect to Bluetooth devices. Open HyperCycling in Chrome or Edge.',
+      noApi:
+        'This browser cannot connect to Bluetooth devices. Use Chrome or Edge on a computer or Chrome on Android. On Linux, Chrome needs the experimental web platform features flag.',
+      noAdapter:
+        'No Bluetooth adapter found. Turn Bluetooth on or plug in a Bluetooth USB adapter.',
+    },
   },
   effort: {
     veryEasy: 'Very easy',
