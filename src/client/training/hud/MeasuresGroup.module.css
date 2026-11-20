@@ -6,6 +6,7 @@
 
 .row {
   display: flex;
+  flex-wrap: wrap;
   flex-direction: column;
   gap: calc(0.8 * var(--u));
   min-width: 0;

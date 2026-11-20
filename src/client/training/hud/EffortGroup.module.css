@@ -261,3 +261,9 @@
 .hr:empty {
   display: none;
 }
+
+/* Trainer mode: the power range bar under the name, as wide as the ring (D22). */
+.powerBar {
+  width: min(100%, var(--ring, calc(33 * var(--u))));
+  margin: calc(0.4 * var(--u)) auto 0;
+}

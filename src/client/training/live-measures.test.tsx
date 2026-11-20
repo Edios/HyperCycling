@@ -32,7 +32,7 @@ describe('buildLiveMeasures', () => {
     ).toEqual({
       signal: 'live',
       power: { watts: 210, target: 200 },
-      cadence: { rpm: 82, target: 90, judgement: 'low' },
+      cadence: { rpm: 82, target: 90, judgement: 'low', band: { low: 85, high: 95 } },
       hr: { bpm: 160, zone: 4, noContact: false },
     });
   });
@@ -127,5 +127,32 @@ describe('MeasuresGroup with live sensors', () => {
     const cadenceOnly = buildLiveMeasures(live({ trainer: 'live' }), { ...ctx, showsWatts: false });
     expect(hasMeasures(undefined, false, cadenceOnly)).toBe(false);
     expect(hasMeasures(undefined, true, cadenceOnly)).toBe(true);
+  });
+});
+
+describe('range bars (D22)', () => {
+  it('cadence and HR rows draw a bar for their target range; no marker without a value', () => {
+    const m = buildLiveMeasures(
+      live({ trainer: 'live', hr: 'live', cadenceRpm: 92, hrBpm: 150, hrContact: 'ok' }),
+      { ...ctx, hrBand: { low: 133, high: 152 } },
+    )!;
+    render(<MeasuresGroup rpm={90} isTarget={false} live={m} />);
+    expect(screen.getByTestId('cadence-bar')).toHaveAttribute('data-in', 'true');
+    expect(screen.getByTestId('cadence-bar')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByTestId('hr-bar')).toHaveAttribute('data-in', 'true');
+  });
+
+  it('a value outside the band, and no band without a target', () => {
+    const m = buildLiveMeasures(live({ trainer: 'live', cadenceRpm: 70 }), {
+      ...ctx,
+      showsWatts: false,
+    })!;
+    const { unmount } = render(<MeasuresGroup rpm={90} isTarget={false} live={m} />);
+    expect(screen.getByTestId('cadence-bar')).toHaveAttribute('data-in', 'false');
+    expect(screen.queryByTestId('hr-bar')).not.toBeInTheDocument();
+    unmount();
+    const none = buildLiveMeasures(live({ trainer: 'live' }), { ...ctx, targetRpm: undefined })!;
+    render(<MeasuresGroup isTarget={false} live={none} />);
+    expect(screen.queryByTestId('cadence-bar')).not.toBeInTheDocument();
   });
 });
