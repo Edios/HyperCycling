@@ -112,7 +112,9 @@ for (const size of SIZES) {
     expect(Math.abs((await box(pill)).height - l.height)).toBeLessThanOrEqual(1);
     expect((await box(timeline)).y).toBeGreaterThanOrEqual(l.y + l.height - 0.5);
 
-    // Song / cool-down add buttons: one aligned row, labels not cut.
+    // Song / cool-down add buttons: one aligned row, labels not cut. They live in the music
+    // section, which starts closed for a workout without song slots.
+    await page.getByRole('button', { name: /Music \(optional\)/ }).click();
     const adds = page.locator('[data-testid="song-add"], [data-testid="cooldown-add"]');
     for (let i = 0; i < (await adds.count()); i++) {
       const el = adds.nth(i);
