@@ -163,8 +163,8 @@
   gap: 0.375rem;
 }
 
-/* Phone portrait: the button drops under the text so names and values keep their width. */
-@media (max-width: 30rem) {
+/* Very narrow screens: the button drops under the text so names and values keep their width. */
+@media (max-width: 22rem) {
   .row {
     grid-template-columns: auto minmax(0, 1fr);
   }

@@ -378,3 +378,27 @@ describe('review #108 follow-ups', () => {
     expect(states).toEqual(['reconnecting', 'connected']);
   });
 });
+
+describe('repeated reconnects (pitfall: duplicated subscriptions)', () => {
+  beforeEach(() => vi.useFakeTimers({ now: 1_000_000 }));
+  afterEach(() => vi.useRealTimers());
+
+  it('after three drops there is still one handler per notification and one write per command', async () => {
+    const { store, bluetooth } = setup();
+    await store.connect('trainer');
+    for (let i = 0; i < 3; i++) {
+      bluetooth.dropLink('trainer');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(store.getState().trainer.status).toBe('connected');
+    }
+    let readings = 0;
+    store.trainer()!.onData(() => (readings += 1));
+    bluetooth.pump(Date.now());
+    expect(readings).toBe(1);
+    const writesBefore = bluetooth.writes.length;
+    const answer = store.trainer()!.command(requestControl());
+    await vi.advanceTimersByTimeAsync(0);
+    expect((await answer).result).toBe('success');
+    expect(bluetooth.writes.length - writesBefore).toBe(1);
+  });
+});

@@ -61,7 +61,6 @@ export function createControlPointClient({
   /** One attempt: resolves with the response, or null on timeout. */
   function attempt(command: Uint8Array, opcode: number): Promise<ControlPointResponse | null> {
     return new Promise((resolve, reject) => {
-      let timer: ReturnType<typeof setTimeout> | undefined;
       const done = (value: ControlPointResponse | null) => {
         clearTimeout(timer);
         if (pending === slot) pending = null;
@@ -70,7 +69,7 @@ export function createControlPointClient({
       // Registered before the write: the response may arrive before the write promise settles.
       const slot: Pending = { opcode, resolve: done };
       pending = slot;
-      timer = setTimeout(() => done(null), timeoutMs);
+      const timer = setTimeout(() => done(null), timeoutMs);
       write(command).catch((error: unknown) => {
         if (pending !== slot) return; // already answered, timed out or aborted
         // The GATT queue gave up on a hung write: same as no response.

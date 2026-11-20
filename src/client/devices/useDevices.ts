@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { sharedDeviceStore, type DeviceStore, type DevicesState } from './device-store';
 import type { HeartRateReading } from './heart-rate';
 import { isAdapterAvailable } from './support';
@@ -15,14 +22,20 @@ export function useDevicesState(store: DeviceStore): DevicesState {
   return useSyncExternalStore(store.subscribe, store.getState, store.getState);
 }
 
+const noop = () => () => {};
+
 /** Latest trainer reading; follows the trainer object when a new one is chosen. */
 export function useTrainerReading(store: DeviceStore, state: DevicesState): TrainerReading | null {
   const trainer = state.trainer.status === 'none' ? null : store.trainer();
-  const [reading, setReading] = useState<TrainerReading | null>(() => trainer?.latest() ?? null);
-  useEffect(() => {
-    setReading(trainer?.latest() ?? null);
-    return trainer?.onData(setReading);
-  }, [trainer]);
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const off = trainer?.onData(onChange);
+      return () => void off?.();
+    },
+    [trainer],
+  );
+  const latest = useCallback(() => trainer?.latest() ?? null, [trainer]);
+  const reading = useSyncExternalStore(trainer ? subscribe : noop, latest, latest);
   return state.trainer.status === 'connected' ? reading : null;
 }
 
@@ -31,11 +44,15 @@ export function useHeartRateReading(
   state: DevicesState,
 ): HeartRateReading | null {
   const strap = state.hr.status === 'none' ? null : store.hr();
-  const [reading, setReading] = useState<HeartRateReading | null>(() => strap?.latest() ?? null);
-  useEffect(() => {
-    setReading(strap?.latest() ?? null);
-    return strap?.onReading(setReading);
-  }, [strap]);
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const off = strap?.onReading(onChange);
+      return () => void off?.();
+    },
+    [strap],
+  );
+  const latest = useCallback(() => strap?.latest() ?? null, [strap]);
+  const reading = useSyncExternalStore(strap ? subscribe : noop, latest, latest);
   return state.hr.status === 'connected' ? reading : null;
 }
 
