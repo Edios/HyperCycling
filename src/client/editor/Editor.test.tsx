@@ -43,6 +43,12 @@ import { builtinWorkouts } from '../data/builtin';
 import { setLang } from '../i18n';
 import { EditorScreen } from './EditorScreen';
 
+/** Rarely used actions (Duplicate, Delete, Settings) live in the "more" menu of the bar. */
+function pickMenu(name: string): void {
+  fireEvent.click(screen.getByTestId('editor-more'));
+  fireEvent.click(screen.getByRole('menuitem', { name }));
+}
+
 function renderAt(path: string, state?: unknown) {
   const router = createMemoryRouter(
     [
@@ -489,7 +495,7 @@ describe('user workout actions', () => {
     repo.store.set('user-1', userWorkout());
     const router = renderAt('/editor/user-1');
     await screen.findByTestId('editor-screen');
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+    pickMenu('Duplicate');
     await waitFor(() => expect(repo.put).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(router.state.location.pathname).not.toBe('/editor/user-1'));
     expect(repo.store.has('user-1')).toBe(true);
@@ -499,7 +505,7 @@ describe('user workout actions', () => {
     repo.store.set('user-1', userWorkout());
     const router = renderAt('/editor/user-1');
     await screen.findByTestId('editor-screen');
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    pickMenu('Delete');
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('Delete “My ride”?');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
@@ -572,6 +578,7 @@ describe('review round 1', () => {
     repo.store.set('user-1', userWorkout());
     renderAt('/editor/user-1');
     await screen.findByTestId('editor-screen');
+    fireEvent.click(screen.getByRole('button', { name: /Workout details/ }));
     const desc = screen.getByLabelText('Description');
     fireEvent.change(desc, { target: { value: 'Hard stuff' } });
     fireEvent.blur(desc);
@@ -675,7 +682,7 @@ describe('review round 1', () => {
     await screen.findByTestId('editor-screen');
     fireEvent.click(block(0));
     press('+', { code: 'Equal' });
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+    pickMenu('Duplicate');
     await waitFor(() => expect(repo.put).toHaveBeenCalledTimes(2));
     expect((repo.put.mock.calls[0]?.[0] as Workout).id).toBe('user-1');
     expect((repo.put.mock.calls[0]?.[0] as Workout).blocks[0]).toMatchObject({ durationSec: 315 });
@@ -696,7 +703,7 @@ describe('review round 1', () => {
     repo.active = { workoutId: 'user-1' };
     renderAt('/editor/user-1');
     await screen.findByTestId('editor-screen');
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    pickMenu('Delete');
     expect(await screen.findByTestId('delete-active-warning')).toBeInTheDocument();
   });
 });

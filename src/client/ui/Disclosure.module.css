@@ -1,0 +1,46 @@
+.root {
+  min-width: 0;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.25rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+.chev {
+  width: 1rem;
+  color: var(--mut);
+}
+
+.title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.summary {
+  color: var(--mut);
+  font-size: 0.9375rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.body[hidden] {
+  display: none;
+}

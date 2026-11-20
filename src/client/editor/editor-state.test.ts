@@ -445,11 +445,25 @@ describe('cues', () => {
     let cue = s.workout.musicCues.find((c) => c.rep === 3);
     expect(cue?.track).toMatchObject({ startAtSec: 30, endAtSec: 120 });
     expect(cue?.queue?.[0]).toMatchObject({ startAtSec: 0, endAtSec: 90 });
-    s = run(s, { type: 'trimCueTrack', blockId: 'a', rep: 3, index: 0, startAtSec: 30, endAtSec: null });
+    s = run(s, {
+      type: 'trimCueTrack',
+      blockId: 'a',
+      rep: 3,
+      index: 0,
+      startAtSec: 30,
+      endAtSec: null,
+    });
     cue = s.workout.musicCues.find((c) => c.rep === 3);
     expect(cue?.track).not.toHaveProperty('endAtSec');
     // an end at the recording's end is the same as no trim
-    s = run(s, { type: 'trimCueTrack', blockId: 'a', rep: 3, index: 0, startAtSec: 0, endAtSec: 300 });
+    s = run(s, {
+      type: 'trimCueTrack',
+      blockId: 'a',
+      rep: 3,
+      index: 0,
+      startAtSec: 0,
+      endAtSec: 300,
+    });
     expect(s.workout.musicCues.find((c) => c.rep === 3)?.track).not.toHaveProperty('endAtSec');
   });
   it('refuses a trim that leaves almost nothing, and a missing track', () => {

@@ -61,7 +61,7 @@ export function Palette({
 }) {
   const t = useT();
   return (
-    <nav className={styles.palette} aria-label={t('editor.addBlock')}>
+    <nav className={styles.palette} aria-label={t('editor.addBlock')} data-tour="palette">
       <h2 className={styles.title}>{t('editor.addBlock')}</h2>
       {ITEMS.map((i) => (
         <PaletteItem

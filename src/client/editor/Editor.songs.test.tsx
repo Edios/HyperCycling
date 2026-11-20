@@ -80,6 +80,8 @@ async function openEditor() {
   );
   render(<RouterProvider router={router} />);
   await screen.findByTestId('editor-screen');
+  // The music section starts closed for a workout without music.
+  fireEvent.click(screen.getByRole('button', { name: /Music \(optional\)/ }));
   return router;
 }
 
