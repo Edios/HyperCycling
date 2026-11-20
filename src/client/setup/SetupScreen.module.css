@@ -409,3 +409,11 @@
 .ridersRow {
   margin-top: 0.75rem;
 }
+
+.devices {
+  margin-top: 0.75rem;
+}
+
+.devices:empty {
+  display: none;
+}

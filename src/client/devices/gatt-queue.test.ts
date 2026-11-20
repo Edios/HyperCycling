@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGattQueue, GattQueueClearedError } from './gatt-queue';
+import { createGattQueue, GattQueueClearedError, GattTimeoutError } from './gatt-queue';
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
@@ -46,5 +46,16 @@ describe('createGattQueue', () => {
     release();
     await expect(running).resolves.toBe('done');
     await expect(queue.run(async () => 'after')).resolves.toBe('after');
+  });
+});
+
+describe('operation timeout', () => {
+  it('gives up on a hung operation and runs the next one', async () => {
+    const queue = createGattQueue({ opTimeoutMs: 20 });
+    const hung = queue.run(() => new Promise<never>(() => undefined));
+    const next = queue.run(async () => 'next');
+    await expect(hung).rejects.toBeInstanceOf(GattTimeoutError);
+    await expect(hung).rejects.toThrow('GATT operation timed out after 20 ms');
+    await expect(next).resolves.toBe('next');
   });
 });

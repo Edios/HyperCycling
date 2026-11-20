@@ -92,6 +92,8 @@ describe('FakeTrainer: control point', () => {
     expect(result(setTargetPower(1600))).toBe('invalidParameter');
     expect(result(Uint8Array.of(0x05, 0xf6, 0xff))).toBe('invalidParameter'); // -10 W
     expect(result(Uint8Array.of(0x08, 0x03))).toBe('invalidParameter');
+    // Old FTMS 1.0 uint8 resistance target: rejected, as by a Tacx Flux.
+    expect(result(Uint8Array.of(0x04, 0x32))).toBe('invalidParameter');
     expect(trainer.targetPowerW).toBeNull();
   });
 

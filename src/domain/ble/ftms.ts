@@ -284,14 +284,20 @@ export function setTargetPower(watts: number): Uint8Array {
     .toBytes();
 }
 
+/** Practical resistance range sent by apps (the FTMS level is unitless, read as percent). */
+export const RESISTANCE_LEVEL_MIN = -100;
+export const RESISTANCE_LEVEL_MAX = 100;
+
 /**
- * Resistance level in the device's unit (FTMS 1.0: uint8 with 0.1 resolution, so 5 → 50).
- * TODO(spec): parameter type and resolution.
+ * Target resistance level with 0.1 resolution as sint16 (5 → 50 → `04 32 00`). FTMS 1.0 printed
+ * uint8, but the erratum to section 4.1 changed it to sint16, and Tacx Flux trainers answer the
+ * 1-byte form with "Invalid Parameter" (auuki-pitfalls.md 1.1). Clamped to -100..100.
+ * TODO(spec): confirm against the FTMS PDF with errata.
  */
 export function setTargetResistance(level: number): Uint8Array {
   return new ByteWriter()
     .uint8(CONTROL_OPCODE.setTargetResistance)
-    .uint8(clampInt(level * 10, 0, UINT8_MAX))
+    .sint16(clampInt(level * 10, RESISTANCE_LEVEL_MIN * 10, RESISTANCE_LEVEL_MAX * 10))
     .toBytes();
 }
 
@@ -390,7 +396,11 @@ export function parseMachineStatus(data: BleBytes): MachineStatus {
     case STATUS_OPCODE.targetResistanceChanged:
       return {
         kind: 'targetResistanceChanged',
-        level: r.uint8('New Target Resistance Level') / 10,
+        // sint16 after the erratum; a 1-byte parameter is the older uint8 form.
+        level:
+          (r.remaining >= 2
+            ? r.sint16('New Target Resistance Level')
+            : r.uint8('New Target Resistance Level')) / 10,
       };
     case STATUS_OPCODE.targetPowerChanged:
       return { kind: 'targetPowerChanged', watts: r.sint16('New Target Power') };

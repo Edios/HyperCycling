@@ -1555,9 +1555,43 @@ export const pl: Messages = {
     cancel: 'Anuluj',
   },
   devices: {
+    title: 'Urządzenia Bluetooth',
+    intro: 'Połącz trenażer i pas tętna. Ich dane zostają na tym urządzeniu.',
+    trainer: 'Trenażer',
+    hr: 'Pas tętna',
+    connectTrainer: 'Połącz trenażer',
+    connectHr: 'Połącz pas',
+    disconnect: 'Rozłącz',
+    reconnect: 'Połącz ponownie',
+    chooseOther: 'Wybierz inne',
+    status: {
+      none: 'Niepołączony',
+      connecting: 'Łączę…',
+      connected: 'Połączony',
+      reconnecting: 'Brak sygnału, łączę ponownie…',
+      lost: 'Utracono połączenie. Sprawdź, czy urządzenie jest włączone i blisko.',
+      failed: 'Nie udało się połączyć. Włącz urządzenie i spróbuj ponownie.',
+      user: 'Rozłączony',
+    },
+    live: {
+      power: '{watts} W',
+      cadence: '{rpm} obr./min',
+      bpm: '{bpm} ud./min',
+      noContact: 'Brak kontaktu ze skórą',
+    },
+    adapterOff:
+      'Bluetooth może być wyłączony na tym urządzeniu. Włącz go, jeśli łączenie się nie uda.',
+    help: {
+      title: 'Nie widzisz urządzenia na liście?',
+      wake: 'Włącz je i pokręć chwilę korbą, żeby się obudziło.',
+      otherApps:
+        'Zamknij inne aplikacje, które mogą je trzymać (Tacx, Zwift Companion, zegarek lub licznik Garmin).',
+      ftms: 'Trenażer musi obsługiwać Bluetooth FTMS. Ma go większość trenażerów z ostatnich lat.',
+      keepOpen: 'Podczas jazdy trzymaj tę kartę otwartą i ekran włączony.',
+    },
     unsupported: {
       insecureContext:
-        'Bluetooth wymaga bezpiecznej strony. Otwórz HyperCycling pod adresem https://hypercycling.app.',
+        'Bluetooth wymaga bezpiecznej strony. Otwórz HyperCycling pod adresem https://hypercycling.app albo przez localhost na komputerze, na którym działa.',
       ios: 'Przeglądarki na iPhonie i iPadzie nie obsługują Bluetooth. Otwórz HyperCycling w darmowej przeglądarce Bluefy albo użyj komputera lub telefonu z Androidem i Chrome.',
       firefox:
         'Firefox nie łączy się z urządzeniami Bluetooth. Otwórz HyperCycling w Chrome albo Edge.',

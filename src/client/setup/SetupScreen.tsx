@@ -60,6 +60,7 @@ import {
 } from './model';
 import type { LayoutKind } from '../training/overlay-layouts';
 import { BikeCard } from '../bike/BikeCard';
+import { DevicesPanel } from '../devices/DevicesPanel';
 import { BikeWizard } from '../bike/BikeWizard';
 import { AdvancedPanel, Group, readAdvancedOpen, saveAdvancedOpen } from './AdvancedPanel';
 import { StartBar } from './StartBar';
@@ -653,6 +654,13 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
                 </button>
               </p>
             )}
+            <div className={styles.devices}>
+              <DevicesPanel
+                variant="compact"
+                showTrainer={bikeKind !== 'knob'}
+                showWatts={showsWatts}
+              />
+            </div>
           </section>
 
           <BikeCard onSkipRide={start} />

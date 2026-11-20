@@ -33,6 +33,12 @@ const PATHS = {
   help: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.4 9.6a2.7 2.7 0 1 1 3.9 2.4c-.8.5-1.3 1-1.3 1.9M12 17.1v.1',
   layout:
     'M6 3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3zM3 11h18M12 11v10',
+  // Heart outline (heart rate strap).
+  heart: 'M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20z',
+  // Smart trainer: rear wheel on a stand with the frame stub and the floor.
+  trainer:
+    'M8.5 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8.5 12l5-6h4.5M13.5 6l3 6H8.5M5 20h14M12.5 16l1.5 4M5.5 16L4 20',
+  bluetooth: 'M7 7.5l10 9-5 4.5V3l5 4.5-10 9',
 } as const;
 
 export type IconName = keyof typeof PATHS;

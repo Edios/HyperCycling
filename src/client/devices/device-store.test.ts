@@ -287,7 +287,9 @@ describe('device store with the fake Bluetooth', () => {
 
   it('asks the chooser for FTMS trainers and HR straps with the services used later', () => {
     expect(REQUEST_OPTIONS.trainer.filters).toEqual([{ services: [0x1826] }]);
-    expect(REQUEST_OPTIONS.trainer.optionalServices).toEqual([0x1818, 0x1816, 0x180a, 0x180f]);
+    expect(REQUEST_OPTIONS.trainer.optionalServices).toEqual([
+      0x1818, 0x1816, 0x180d, 0x180a, 0x180f,
+    ]);
     expect(REQUEST_OPTIONS.hr.filters).toEqual([{ services: [0x180d] }]);
   });
 });
@@ -329,5 +331,74 @@ describe('sharedDeviceStore', () => {
     const { sharedDeviceStore } = await import('./device-store');
     expect(sharedDeviceStore()).toBe(sharedDeviceStore());
     expect(sharedDeviceStore().getState().supported).toBe(false);
+  });
+});
+
+describe('review #108 follow-ups', () => {
+  beforeEach(() => vi.useFakeTimers({ now: 1_000_000 }));
+  afterEach(() => vi.useRealTimers());
+
+  it('a hung Control Point write counts as a missing response and is retried', async () => {
+    const { store, bluetooth } = setup();
+    await store.connect('trainer');
+    bluetooth.hangWrites = 1;
+    const answer = store.trainer()!.command(requestControl());
+    await vi.advanceTimersByTimeAsync(3000);
+    // The retry waits behind the hung write until the queue gives up on it (5 s).
+    expect(bluetooth.writes).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(2001);
+    expect((await answer).result).toBe('success');
+    expect(bluetooth.writes).toHaveLength(2);
+  });
+
+  it('the fake rejects parallel GATT operations like Chrome', async () => {
+    const { bluetooth } = setup();
+    const gatt = await bluetooth.devices.trainer.gatt.connect();
+    const service = await gatt.getPrimaryService(0x1826);
+    const feature = await service.getCharacteristic(CHARACTERISTIC.fitnessMachineFeature);
+    const range = await service.getCharacteristic(CHARACTERISTIC.supportedPowerRange);
+    const results = await Promise.allSettled([feature.readValue(), range.readValue()]);
+    expect(results[0].status).toBe('fulfilled');
+    expect(results[1]).toMatchObject({
+      status: 'rejected',
+      reason: { message: 'GATT operation already in progress.' },
+    });
+  });
+
+  it('replacing a device disposes the old connection', async () => {
+    const { store, bluetooth } = setup();
+    await store.connect('trainer');
+    const first = store.trainer()!;
+    await store.connect('trainer');
+    expect(first.connection.status()).toEqual({ state: 'disconnected', reason: 'user' });
+    const states: string[] = [];
+    store.subscribe(() => states.push(store.getState().trainer.status));
+    bluetooth.dropLink('trainer');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(states).toEqual(['reconnecting', 'connected']);
+  });
+});
+
+describe('repeated reconnects (pitfall: duplicated subscriptions)', () => {
+  beforeEach(() => vi.useFakeTimers({ now: 1_000_000 }));
+  afterEach(() => vi.useRealTimers());
+
+  it('after three drops there is still one handler per notification and one write per command', async () => {
+    const { store, bluetooth } = setup();
+    await store.connect('trainer');
+    for (let i = 0; i < 3; i++) {
+      bluetooth.dropLink('trainer');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(store.getState().trainer.status).toBe('connected');
+    }
+    let readings = 0;
+    store.trainer()!.onData(() => (readings += 1));
+    bluetooth.pump(Date.now());
+    expect(readings).toBe(1);
+    const writesBefore = bluetooth.writes.length;
+    const answer = store.trainer()!.command(requestControl());
+    await vi.advanceTimersByTimeAsync(0);
+    expect((await answer).result).toBe('success');
+    expect(bluetooth.writes.length - writesBefore).toBe(1);
   });
 });

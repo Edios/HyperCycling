@@ -124,6 +124,16 @@ describe('parseIndoorBikeData: errors', () => {
 });
 
 describe('mergeIndoorBikeData', () => {
+  it('a resistance field appearing mid-session does not shift power (pitfall 1.4)', () => {
+    // Before a resistance target: cadence + power. After: the trainer adds Resistance Level.
+    const before = parseIndoorBikeData(b(0x45, 0x00, 0xb4, 0x00, 0xc8, 0x00));
+    const after = parseIndoorBikeData(b(0x65, 0x00, 0xb4, 0x00, 0xc8, 0x00, 0xc8, 0x00));
+    const merged = mergeIndoorBikeData(before, after);
+    expect(merged.powerW).toBe(200);
+    expect(merged.resistanceLevel).toBe(200);
+    expect(merged.cadenceRpm).toBe(90);
+  });
+
   it('joins two split notifications into a complete reading', () => {
     // First: More Data + cadence + power. Second: speed + elapsed time.
     const first = parseIndoorBikeData(b(0x45, 0x00, 0xb4, 0x00, 0xc8, 0x00));
@@ -231,10 +241,12 @@ describe('Control Point encoders', () => {
     expect(hex(setTargetPower(Number.NaN))).toBe('05 00 00');
   });
 
-  it('encodes target resistance in 0.1 steps and clamps to uint8', () => {
-    expect(hex(setTargetResistance(5))).toBe('04 32');
-    expect(hex(setTargetResistance(-1))).toBe('04 00');
-    expect(hex(setTargetResistance(30))).toBe('04 FF');
+  it('encodes target resistance as sint16 in 0.1 steps, clamped to -100..100 (erratum, Tacx Flux)', () => {
+    expect(hex(setTargetResistance(5))).toBe('04 32 00');
+    expect(hex(setTargetResistance(42.5))).toBe('04 A9 01');
+    expect(hex(setTargetResistance(-1))).toBe('04 F6 FF');
+    expect(hex(setTargetResistance(150))).toBe('04 E8 03');
+    expect(hex(setTargetResistance(-150))).toBe('04 18 FC');
   });
 
   it('encodes indoor bike simulation parameters', () => {
@@ -304,6 +316,10 @@ describe('parseMachineStatus', () => {
     expect(parseMachineStatus(b(0x07, 0x32))).toEqual({
       kind: 'targetResistanceChanged',
       level: 5,
+    });
+    expect(parseMachineStatus(b(0x07, 0xf6, 0xff))).toEqual({
+      kind: 'targetResistanceChanged',
+      level: -1,
     });
     expect(parseMachineStatus(b(0x08, 0xc8, 0x00))).toEqual({
       kind: 'targetPowerChanged',

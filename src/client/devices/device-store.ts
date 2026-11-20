@@ -11,7 +11,7 @@ import type { ConnectionStatus, DeviceConnection, DisconnectReason } from './con
 import { createHeartRateStrap, type HeartRateStrap } from './heart-rate';
 import { detectBluetoothSupport, type BluetoothSupport, type UnsupportedReason } from './support';
 import { createFtmsTrainer, type FtmsTrainer } from './trainer';
-import type { BleRequestOptions } from './web-bluetooth';
+import type { BleRequestOptions, BluetoothLike } from './web-bluetooth';
 
 export type DeviceKind = 'trainer' | 'hr';
 
@@ -44,6 +44,8 @@ export interface DeviceStore {
   trainer(): FtmsTrainer | null;
   hr(): HeartRateStrap | null;
   readonly log: BleLog;
+  /** The Web Bluetooth object in use, or null in an unsupported browser. */
+  readonly bluetooth: BluetoothLike | null;
 }
 
 export interface DeviceStoreOptions {
@@ -60,9 +62,12 @@ export interface DeviceStoreOptions {
 export const REQUEST_OPTIONS: Record<DeviceKind, BleRequestOptions> = {
   trainer: {
     filters: [{ services: [SERVICE.fitnessMachine] }],
+    // Listed now because the browser grants only these at pairing time. Heart Rate: some
+    // trainers (e.g. hubs that relay a strap) expose it as a separate service.
     optionalServices: [
       SERVICE.cyclingPower,
       SERVICE.cyclingSpeedCadence,
+      SERVICE.heartRate,
       SERVICE.deviceInformation,
       SERVICE.battery,
     ],
@@ -110,12 +115,13 @@ export function createDeviceStore(options: DeviceStoreOptions = {}): DeviceStore
   function forget(kind: DeviceKind): void {
     unsubscribe[kind]?.();
     unsubscribe[kind] = null;
-    connectionOf(kind)?.disconnect();
+    connectionOf(kind)?.dispose();
     devices[kind] = null;
   }
 
   return {
     log,
+    bluetooth: support.supported ? support.bluetooth : null,
     getState: () => state,
     subscribe(listener) {
       listeners.add(listener);

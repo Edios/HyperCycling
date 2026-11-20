@@ -1,11 +1,13 @@
 /**
  * Fitness Machine Control Point client: one command in flight, each waits for its 0x80 response
- * indication (matched by request op code) before the next is written. A missing response is
- * retried once after `timeoutMs`, then the command fails with ControlPointTimeoutError.
+ * indication (matched by request op code) before the next is written. `timeoutMs` counts from the
+ * start of the write, so a write that hangs counts like a missing response: it is retried once,
+ * then the command fails with ControlPointTimeoutError.
  * Status notifications may arrive before the response; they do not go through here.
  */
 
 import type { BleBytes } from '../../domain/ble/bytes';
+import { GattTimeoutError } from './gatt-queue';
 import { parseControlPointResponse, type ControlPointResponse } from '../../domain/ble/ftms';
 
 export class ControlPointTimeoutError extends Error {
@@ -59,7 +61,6 @@ export function createControlPointClient({
   /** One attempt: resolves with the response, or null on timeout. */
   function attempt(command: Uint8Array, opcode: number): Promise<ControlPointResponse | null> {
     return new Promise((resolve, reject) => {
-      let timer: ReturnType<typeof setTimeout> | undefined;
       const done = (value: ControlPointResponse | null) => {
         clearTimeout(timer);
         if (pending === slot) pending = null;
@@ -68,15 +69,15 @@ export function createControlPointClient({
       // Registered before the write: the response may arrive before the write promise settles.
       const slot: Pending = { opcode, resolve: done };
       pending = slot;
-      write(command).then(
-        () => {
-          if (pending === slot) timer = setTimeout(() => done(null), timeoutMs);
-        },
-        (error: unknown) => {
-          if (pending === slot) pending = null;
-          reject(error);
-        },
-      );
+      const timer = setTimeout(() => done(null), timeoutMs);
+      write(command).catch((error: unknown) => {
+        if (pending !== slot) return; // already answered, timed out or aborted
+        // The GATT queue gave up on a hung write: same as no response.
+        if (error instanceof GattTimeoutError) return done(null);
+        clearTimeout(timer);
+        pending = null;
+        reject(error);
+      });
     });
   }
 

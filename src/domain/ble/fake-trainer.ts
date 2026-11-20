@@ -39,7 +39,8 @@ const STATUS = {
 const PARAM_LENGTH: Record<number, number> = {
   [OP.requestControl]: 0,
   [OP.reset]: 0,
-  [OP.setTargetResistance]: 1,
+  // sint16 ×0.1 (FTMS erratum); like a Tacx Flux, the 1-byte uint8 form is an invalid parameter.
+  [OP.setTargetResistance]: 2,
   [OP.setTargetPower]: 2,
   [OP.startOrResume]: 0,
   [OP.stopOrPause]: 1,
