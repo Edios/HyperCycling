@@ -415,6 +415,13 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
     if (fresh?.key !== playing.key || !endEarly(playing.key, fresh.offsetSec)) return;
     current = null;
     announce(null);
+    // Spotify may have moved on to a track of its own (autoplay): keep that one silent, unless
+    // the next song plays on the same provider and replaces it anyway (a pause sent next to that
+    // play could land after it).
+    const next = desiredNow(options.getState());
+    if (next?.track.provider !== playing.provider.kind) {
+      void quietly('pause', () => playing.provider.pause());
+    }
     void reconcile();
   }
 

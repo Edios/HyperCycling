@@ -1075,3 +1075,97 @@ describe('music director: failure memory and recordings of other lengths', () =>
     expect(warnings).toEqual([]);
   });
 });
+
+describe('music director: a recording that ends before the planned end (ENDED)', () => {
+  const yt = (id: string, durationSec: number, extra: Partial<TrackRef> = {}): TrackRef => ({
+    provider: 'youtube',
+    id,
+    title: `Title ${id}`,
+    startAtSec: 0,
+    durationSec,
+    ...extra,
+  });
+  // b runs 100-300: A is planned 150 s, B (100 s) follows in the queue.
+  const queued = (): MusicCue => ({
+    blockId: 'b',
+    rep: 1,
+    track: yt('A', 150),
+    queue: [yt('B', 100)],
+  });
+  const plays = () => youtube.log.filter((l) => l.startsWith('play:'));
+  const now = (t: number) => engine.set({ workoutElapsedSec: t });
+
+  it('starts the next song of the queue at once, from its beginning', async () => {
+    const playing: (string | null)[] = [];
+    make({ cues: [queued()], onPlaying: (t) => playing.push(t?.id ?? null) }).start();
+    await runAt(110);
+    now(150); // the upload was 50 s long, not 150
+    youtube.end();
+    await settle();
+    expect(plays()).toEqual(['play:A@10', 'play:B@0']);
+    expect(playing).toEqual(['A', null, 'B']);
+    // The schedule moved up: B stays on through its planned start (250 s) without a restart.
+    now(260);
+    await advance(2000);
+    expect(plays()).toEqual(['play:A@10', 'play:B@0']);
+  });
+
+  it('plays the fallback after the last song of the queue ended early', async () => {
+    make({
+      cues: [{ blockId: 'b', rep: 1, track: yt('A', 200) }],
+      fallback: [yt('F', 1000)],
+    }).start();
+    await runAt(120);
+    now(160);
+    youtube.end();
+    await settle();
+    expect(plays()).toEqual(['play:A@20', 'play:F@0']);
+  });
+
+  it('stays quiet when nothing comes after (no queue, no fallback), and warns about nothing', async () => {
+    make({ cues: [{ blockId: 'b', rep: 1, track: yt('A', 200) }] }).start();
+    await runAt(120);
+    now(160);
+    youtube.end();
+    await advance(5000);
+    expect(plays()).toEqual(['play:A@20']);
+    expect(warnings).toEqual([]);
+  });
+
+  it('leaves an end that comes right before the planned one to the schedule', async () => {
+    make({ cues: [queued()], fallback: [yt('F', 1000)] }).start();
+    await runAt(240);
+    now(249); // 1 s before B is due anyway
+    youtube.end();
+    await settle();
+    expect(plays()).toEqual(['play:A@140']);
+    now(250);
+    await advance(1000);
+    expect(plays()).toEqual(['play:A@140', 'play:B@0']);
+  });
+
+  it('an end reported while the workout is paused changes nothing; the song resumes', async () => {
+    make({ cues: [queued()] }).start();
+    await runAt(110);
+    engine.set({ status: 'paused' });
+    await settle();
+    youtube.end();
+    await settle();
+    engine.set({ status: 'running' });
+    await settle();
+    expect(youtube.log.filter((l) => l !== 'fadeOut:1500')).toEqual([
+      'play:A@10',
+      'pause',
+      'resume',
+    ]);
+  });
+
+  it('after the retry fails too, the next song of the queue plays instead of silence', async () => {
+    youtube.failPlaysWhen((t) => t.id === 'A');
+    make({ cues: [queued()] }).start();
+    await runAt(150);
+    await advance(3000); // the one retry
+    expect(plays()).toEqual(['play:A@50', 'play:A@50', 'play:B@0']);
+    expect(warnings.map((w) => w.id)).toEqual(['A']);
+  });
+});

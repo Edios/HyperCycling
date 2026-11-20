@@ -601,9 +601,7 @@ describe('describeTrack', () => {
     expect(seen[0]).toMatchObject({ method: 'GET', path: '/v1/tracks/abc' });
   });
   it('reads the length when Spotify gives it', async () => {
-    api(() =>
-      HttpResponse.json({ id: 'abc', name: 'Song', artists: [], duration_ms: 326_400 }),
-    );
+    api(() => HttpResponse.json({ id: 'abc', name: 'Song', artists: [], duration_ms: 326_400 }));
     const info = await setup().provider.describeTrack({ ...track, id: 'abc', title: '' });
     expect(info).toEqual({ title: 'Song', durationSec: 326 });
   });
@@ -772,6 +770,44 @@ describe('watchdog (a track that stops playing)', () => {
     await provider.connect();
     await provider.play(track, 0);
     await vi.waitFor(() => expect(failures).toHaveLength(1));
+  });
+
+  it('tells the end handler (not the failure handler) when the track stopped at its end', async () => {
+    const { provider, failures } = watched(() =>
+      playing({ is_playing: false, progress_ms: 199_000 }),
+    );
+    const ended: number[] = [];
+    await provider.connect();
+    await provider.play(track, 0);
+    provider.setEndHandler?.(() => ended.push(1));
+    await vi.waitFor(() => expect(ended).toEqual([1]));
+    await new Promise((r) => setTimeout(r, 60));
+    expect(ended).toHaveLength(1);
+    expect(failures).toEqual([]);
+  });
+
+  it('counts another track right after the end of ours (autoplay) as an end, not a failure', async () => {
+    let reply: unknown = playing({ progress_ms: 198_000 });
+    const { provider, failures } = watched(() => reply);
+    const ended: number[] = [];
+    await provider.connect();
+    await provider.play(track, 0);
+    provider.setEndHandler?.(() => ended.push(1));
+    await new Promise((r) => setTimeout(r, 40));
+    reply = playing({ item: { id: 'radio', duration_ms: 180_000 } });
+    await vi.waitFor(() => expect(ended).toEqual([1]));
+    expect(failures).toEqual([]);
+  });
+
+  it('a new play drops the end handler of the previous track', async () => {
+    const { provider } = watched(() => playing({ is_playing: false, progress_ms: 199_000 }));
+    const ended: number[] = [];
+    await provider.connect();
+    await provider.play(track, 0);
+    provider.setEndHandler?.(() => ended.push(1));
+    await provider.play(track, 0);
+    await new Promise((r) => setTimeout(r, 60));
+    expect(ended).toEqual([]);
   });
 
   it('stays quiet while the track plays, near its end, and after pause', async () => {

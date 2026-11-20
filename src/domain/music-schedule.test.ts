@@ -226,7 +226,12 @@ describe('slot queue (cue.queue)', () => {
 });
 
 describe('trimmed tracks (endAtSec)', () => {
-  const trim = (id: string, startAtSec: number, endAtSec: number, durationSec?: number): TrackRef => ({
+  const trim = (
+    id: string,
+    startAtSec: number,
+    endAtSec: number,
+    durationSec?: number,
+  ): TrackRef => ({
     ...tr(id, durationSec, startAtSec),
     endAtSec,
   });
@@ -313,5 +318,64 @@ describe('cueRuns', () => {
   it('uses the trimmed end for the run length', () => {
     const runs = cueRuns(segments, [cue('b', { ...tr('B', 300, 20), endAtSec: 80 })]);
     expect(runs[0]?.endSec).toBe(160);
+  });
+});
+
+describe('a track that ended early (ended)', () => {
+  // b starts at 100 with B (100 s) and Q (150 s) queued; the fallback F is 1000 s long.
+  const runCue: MusicCue = { ...cue('b', tr('B', 100)), queue: [tr('Q', 150)] };
+  const fallback = [tr('F', 1000)];
+  const at = (tSec: number, ended?: ReadonlyMap<string, number>) =>
+    musicAt({ segments, cues: [runCue], fallback, tSec, ...(ended ? { ended } : {}) });
+
+  it('moves the rest of the queue up to where the track really ended', () => {
+    const ended = new Map([['cue:b:1', 60]]);
+    expect(at(170)?.track.id).toBe('B');
+    expect(at(150, ended)).toMatchObject({ key: 'cue:b:1', offsetSec: 50 });
+    expect(at(170, ended)).toMatchObject({ key: 'cue:b:1:1', offsetSec: 10 });
+    expect(at(299, ended)).toMatchObject({ key: 'cue:b:1:1', offsetSec: 139 });
+    expect(at(310, ended)?.source).toBe('fallback');
+  });
+
+  it('fills the time after the last song of the queue with the fallback', () => {
+    const ended = new Map([['cue:b:1:1', 50]]);
+    // B 100-200, Q 200-250 (ended at 50 s), fallback from 250 on.
+    expect(at(240, ended)?.track.id).toBe('Q');
+    expect(at(260, ended)).toMatchObject({ source: 'fallback', offsetSec: 10, key: 'fb:0:250' });
+  });
+
+  it('counts the end in the planned track terms (start offset included)', () => {
+    const c: MusicCue = cue('b', tr('B', 300, 20)); // plays 280 s from second 20
+    const ended = new Map([['cue:b:1', 120]]); // ended at song second 120 = 100 s of play
+    const r = (t: number) =>
+      musicAt({ segments, cues: [c], fallback, tSec: t, ended })?.source ?? null;
+    expect(r(199)).toBe('cue');
+    expect(r(200)).toBe('fallback');
+  });
+
+  it('shortens a fallback track that ended early, and the next fallback follows', () => {
+    const fb = [tr('F1', 400), tr('F2', 400)];
+    const ended = new Map([['fb:0:0', 30]]);
+    const r = musicAt({ segments, cues: [], fallback: fb, tSec: 40, ended });
+    expect(r).toMatchObject({ key: 'fb:1:0', offsetSec: 10 });
+  });
+
+  it('a track that ended before it began plays nothing; the next change follows its successor', () => {
+    const ended = new Map([['cue:b:1', 0]]);
+    expect(at(100, ended)?.track.id).toBe('Q');
+    expect(nextTrackChange({ segments, cues: [runCue], fallback, tSec: 100, ended })?.atSec).toBe(
+      250,
+    );
+  });
+
+  it('gives an unknown-length track its real length once it ended', () => {
+    const c: MusicCue = cue('b', tr('B'));
+    const ended = new Map([['cue:b:1', 40]]);
+    expect(musicAt({ segments, cues: [c], fallback, tSec: 150, ended })?.source).toBe('fallback');
+    expect(cueRuns(segments, [c], { ended })[0]?.items[0]).toMatchObject({
+      open: false,
+      key: 'cue:b:1',
+      endSec: 140,
+    });
   });
 });

@@ -37,12 +37,12 @@ Pola wpisu:
 - `version`: `album` | `extended` | `radio`, preferowana wersja (aplikacja wybiera ją z wyników wyszukiwania).
 - `startOffsetSec`: ręczne przesunięcie początku (pominięcie intra), ustawia autor.
 - `queue`: lista kolejnych utworów slotu (`artist`, `title`, `bpm`, `durationSec`, `startOffsetSec`, `version`); kolejka slotu to utwór wpisu + `queue`, w tej kolejności.
-- `alternatives`: rezerwa w ustalonej kolejności. NIE jest dokładana do kolejki: zastępuje tylko utwór niedostępny w regionie lub nieznaleziony (zamiennik o najbliższym BPM, oznaczony w UI).
+- `alternatives`: rezerwa w ustalonej kolejności (do 5; te same pola co `queue`, także `youtube`). Zastępuje utwór niedostępny w regionie lub nieznaleziony (zamiennik o najbliższym BPM, oznaczony w UI), a rezerwa z wgraniami YouTube zamyka też ciszę na końcu za krótkiego slotu (reguła R2, niżej).
 - `durationSec`: oczekiwana długość; utwór krótszy od slotu o ponad 20 s dostaje ostrzeżenie
   („dołóż drugi utwór z takim samym BPM").
 - `noBeat`: `true` dla utworu bez rytmu (cooldown), tempo nie jest sprawdzane.
 - `explicit`: `true`, jeśli wersja z wulgaryzmami jest w porządku (domyślnie preferowana jest wersja clean).
-- `alternatives`: do 5 zamienników w kolejności preferencji (`artist`, `title`, opcjonalnie `bpm`).
+- `loopable`: `true` dla utworu instrumentalnego, którego końcówkę można powtórzyć, by domknąć krótką lukę (reguła R3).
 
 Wartości w pliku to propozycje oznaczone ★ w `neon-grid-45-music.md` (alternatywy a/b/c); Neon Grid 30
 i Lekki 45 używają tych samych utworów w odpowiednich slotach. **Zmiana wyboru = edycja tego jednego
@@ -67,13 +67,25 @@ zatwierdzi listy.
 
 ### Experience: muzyka autorowana
 
-Scenariusz ustala kolejkę utworów slotu; planer **nie** dobiera w Experience niczego dodatkowo.
+Scenariusz ustala kolejkę utworów slotu; planer nie zmienia jej w interfejsie. Jedyny wyjątek to cisza na końcu za krótkiego slotu: w czasie jazdy domykają ją reguły luk (niżej).
 „Dopasuj ze Spotify" pokazuje wynik dopasowania (znaleziono / wybrana dłuższa wersja / zamiennik
 z rezerwy / brak) do zatwierdzenia jednym kliknięciem; ręczna zmiana jest w sekcji „Zaawansowane".
 Ten sam scenariusz i ten sam katalog dają tę samą kolejkę. Walidator dla autora
 (`validateHintQueues`, sprawdzany w `src/content/neon-grid.test.ts`): suma czasów kolejki >= czas slotu
 minus 10 s oraz brak powtórzeń utworu między slotami. W zwykłych treningach (edytor) planer jest
 tylko pomocnikiem: licznik brakującego czasu, bez cichych zmian.
+
+### Luki: cisza na końcu za krótkiego slotu
+
+Gdy kolejka slotu jest krótsza niż slot, w czasie jazdy (`fillGaps` w `src/client/experience/musicMatch.ts`, czyste reguły w [`src/domain/music-gaps.ts`](../src/domain/music-gaps.ts)) próbowane są po kolei:
+
+1. **R1 dłuższe wgranie** tego samego utworu (o co najmniej połowę luki dłuższe, a kolejka może przekroczyć slot najwyżej o 45 s; dużo dłuższe wgranie to zwykle inna wersja albo mix);
+2. **R2 utwór z rezerwy** (`alternatives` z wgraniami YouTube) w tempie slotu (±10 %, także pół/podwójne), którego sesja nie gra nigdzie indziej, wystarczająco długi; tylko dla luk ≥ 20 s (kilka sekund innej piosenki brzmi gorzej niż spokojne tło);
+3. **R3 pętla końcówki** ostatniego utworu oznaczonego `loopable` (luka ≤ 45 s);
+4. **R4 utwór zapasowy treningu** (`fallbackPlaylist`): długi, spokojny utwór (Neon Grid: Brian Eno, „1/1”, z „Discreet Music” jako drugim wgraniem, oba z oficjalnego kanału Topic), który harmonogram gra w każdej dziurze poza celową ciszą końcową;
+5. **R5**: gdy nic nie pasuje, raport podaje długość ciszy (tylko testy i diagnostyka, bez nowego UI).
+
+Kontrakt (`src/content/neon-grid-music-gaps.test.ts`): `musicAt` próbkowany co sekundę po Neon Grid 30, 45 i Lekkim 45 nie zwraca `null` poza ciszą końcową, także gdy każdy utwór kończy się na najkrótszym swoim wgraniu. Panel „Sprawdź muzykę” nadal ocenia autorską kolejkę.
 
 ## YouTube jako domyślne źródło (łańcuch wersji)
 
@@ -102,7 +114,9 @@ Ustawienie „Źródło muzyki” (Ustawienia → Muzyka oraz panel „Sprawdź 
 
 - start: błąd odtwarzacza (2, 5, 100, 101, 150), brak startu w 7 s (`PLAY_START_TIMEOUT_MS`) albo odrzucenie przez dostawcę → następne nagranie;
 - w trakcie: błąd odtwarzacza albo buforowanie dłuższe niż 8 s (`STALL_TIMEOUT_MS`) → następne nagranie (`setFailureHandler`);
-- wyczerpany łańcuch: jedno ostrzeżenie, jedna ponowna próba całego łańcucha po 3 s, potem cisza. Trening idzie dalej (zegar rządzi);
+- koniec nagrania przed planowanym końcem utworu (krótsze wgranie, YouTube `ENDED`, Spotify zatrzymany na końcu albo autoplay innego utworu; `setEndHandler`): utwór uznaje się za skończony w tym miejscu, a następny utwór kolejki slotu (albo utwór zapasowy) rusza od razu, bez czekania na planowaną granicę. Koniec na ≤ 2 s przed planem zostaje harmonogramowi;
+- żadne nagranie nie sięga bieżącej pozycji (np. po przeskoku): to samo, następny utwór albo zapas zamiast ciszy;
+- wyczerpany łańcuch: jedno ostrzeżenie, jedna ponowna próba całego łańcucha po 3 s, potem następny utwór kolejki albo zapas (zamiast ciszy do końca utworu). Trening idzie dalej (zegar rządzi);
 - każda próba trafia do logu muzyki (Ustawienia → Diagnostyka → „Muzyka: ostatnie próby”, także w raporcie): które nagranie zagrało, które nie i dlaczego.
 
 ### Sprawdź muzykę (przed jazdą)
