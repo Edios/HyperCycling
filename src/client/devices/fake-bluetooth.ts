@@ -51,42 +51,57 @@ class FakeCharacteristic extends EventTarget implements BleCharacteristic {
     }
   }
 
-  async readValue(): Promise<DataView> {
-    this.check();
-    if (!this.read) throw domError('NotSupportedError', 'read not permitted');
-    this.value = new DataView(this.read().slice().buffer);
-    return this.value;
+  readValue(): Promise<DataView> {
+    return this.server.exclusive(() => {
+      this.check();
+      if (!this.read) throw domError('NotSupportedError', 'read not permitted');
+      this.value = new DataView(this.read().slice().buffer);
+      return this.value;
+    });
   }
 
-  async writeValue(value: BufferSource): Promise<void> {
-    this.check();
-    if (!this.onWrite) throw domError('NotSupportedError', 'write not permitted');
-    if (this.uuid === CHARACTERISTIC.fitnessMachineControlPoint && !this.notifying) {
-      throw domError('NotSupportedError', 'GATT operation failed: indications are not enabled');
-    }
+  writeValue(value: BufferSource): Promise<void> {
     const bytes = ArrayBuffer.isView(value)
       ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength).slice()
       : new Uint8Array(value).slice();
-    this.server.bluetooth.writes.push({ device: this.server.kind, bytes });
-    this.onWrite(bytes);
+    const bluetooth = this.server.bluetooth;
+    if (bluetooth.hangWrites > 0 && this.onWrite) {
+      // A write lost on a half-dead link: it never settles and nothing reaches the trainer.
+      bluetooth.hangWrites -= 1;
+      bluetooth.writes.push({ device: this.server.kind, bytes });
+      return new Promise<never>(() => undefined);
+    }
+    return this.server.exclusive(() => {
+      this.check();
+      if (!this.onWrite) throw domError('NotSupportedError', 'write not permitted');
+      if (this.uuid === CHARACTERISTIC.fitnessMachineControlPoint && !this.notifying) {
+        throw domError('NotSupportedError', 'GATT operation failed: indications are not enabled');
+      }
+      bluetooth.writes.push({ device: this.server.kind, bytes });
+      this.onWrite(bytes);
+    });
   }
 
   writeValueWithResponse(value: BufferSource): Promise<void> {
     return this.writeValue(value);
   }
 
-  async startNotifications(): Promise<BleCharacteristic> {
-    this.check();
-    if (this.server.bluetooth.failNotifications.has(this.uuid)) {
-      throw domError('NotSupportedError', 'GATT Error: Not supported.');
-    }
-    this.notifying = true;
-    return this;
+  startNotifications(): Promise<BleCharacteristic> {
+    return this.server.exclusive(() => {
+      this.check();
+      if (this.server.bluetooth.failNotifications.has(this.uuid)) {
+        throw domError('NotSupportedError', 'GATT Error: Not supported.');
+      }
+      this.notifying = true;
+      return this;
+    });
   }
 
-  async stopNotifications(): Promise<BleCharacteristic> {
-    this.notifying = false;
-    return this;
+  stopNotifications(): Promise<BleCharacteristic> {
+    return this.server.exclusive(() => {
+      this.notifying = false;
+      return this;
+    });
   }
 
   /** Sends one notification/indication if enabled and the link is the current one. */
@@ -114,6 +129,7 @@ class FakeGattServer implements BleGattServer {
   failNext = 0;
   /** Connect attempts that never settle (simulates a hung platform connect). */
   hangNext = 0;
+  private busy = false;
   private services = new Map<number, FakeService>();
   chars = new Map<number, FakeCharacteristic>();
 
@@ -150,6 +166,22 @@ class FakeGattServer implements BleGattServer {
     // The trainer forgets who had control when the link goes.
     if (this.kind === 'trainer') this.bluetooth.trainer.disconnect();
     this.device.dispatchEvent(new Event('gattserverdisconnected'));
+  }
+
+  /**
+   * Runs one characteristic operation. Like Chrome, a second operation started while one is in
+   * progress fails with "GATT operation already in progress" (it takes two microtasks here).
+   */
+  async exclusive<T>(fn: () => T): Promise<T> {
+    if (this.busy) throw domError('NetworkError', 'GATT operation already in progress.');
+    this.busy = true;
+    try {
+      await Promise.resolve();
+      await Promise.resolve();
+      return fn();
+    } finally {
+      this.busy = false;
+    }
   }
 
   async getPrimaryService(uuid: BleUuid): Promise<BleService> {
@@ -216,6 +248,8 @@ export class FakeBluetooth implements BluetoothLike {
   /** What the next chooser returns: a device, or 'cancel' (user closed it). */
   chooser: FakeDeviceKind | 'cancel' | 'auto' = 'auto';
   available = true;
+  /** Control Point writes that should hang (never settle). */
+  hangWrites = 0;
   /** Characteristics whose startNotifications() fails. */
   readonly failNotifications = new Set<number>();
   private readonly responseDelayMs: number;

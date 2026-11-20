@@ -110,7 +110,7 @@ export function createDeviceStore(options: DeviceStoreOptions = {}): DeviceStore
   function forget(kind: DeviceKind): void {
     unsubscribe[kind]?.();
     unsubscribe[kind] = null;
-    connectionOf(kind)?.disconnect();
+    connectionOf(kind)?.dispose();
     devices[kind] = null;
   }
 

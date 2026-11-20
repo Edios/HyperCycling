@@ -1557,7 +1557,7 @@ export const pl: Messages = {
   devices: {
     unsupported: {
       insecureContext:
-        'Bluetooth wymaga bezpiecznej strony. Otwórz HyperCycling pod adresem https://hypercycling.app.',
+        'Bluetooth wymaga bezpiecznej strony. Otwórz HyperCycling pod adresem https://hypercycling.app albo przez localhost na komputerze, na którym działa.',
       ios: 'Przeglądarki na iPhonie i iPadzie nie obsługują Bluetooth. Otwórz HyperCycling w darmowej przeglądarce Bluefy albo użyj komputera lub telefonu z Androidem i Chrome.',
       firefox:
         'Firefox nie łączy się z urządzeniami Bluetooth. Otwórz HyperCycling w Chrome albo Edge.',

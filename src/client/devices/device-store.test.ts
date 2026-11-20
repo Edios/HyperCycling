@@ -331,3 +331,48 @@ describe('sharedDeviceStore', () => {
     expect(sharedDeviceStore().getState().supported).toBe(false);
   });
 });
+
+describe('review #108 follow-ups', () => {
+  beforeEach(() => vi.useFakeTimers({ now: 1_000_000 }));
+  afterEach(() => vi.useRealTimers());
+
+  it('a hung Control Point write counts as a missing response and is retried', async () => {
+    const { store, bluetooth } = setup();
+    await store.connect('trainer');
+    bluetooth.hangWrites = 1;
+    const answer = store.trainer()!.command(requestControl());
+    await vi.advanceTimersByTimeAsync(3000);
+    // The retry waits behind the hung write until the queue gives up on it (5 s).
+    expect(bluetooth.writes).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(2001);
+    expect((await answer).result).toBe('success');
+    expect(bluetooth.writes).toHaveLength(2);
+  });
+
+  it('the fake rejects parallel GATT operations like Chrome', async () => {
+    const { bluetooth } = setup();
+    const gatt = await bluetooth.devices.trainer.gatt.connect();
+    const service = await gatt.getPrimaryService(0x1826);
+    const feature = await service.getCharacteristic(CHARACTERISTIC.fitnessMachineFeature);
+    const range = await service.getCharacteristic(CHARACTERISTIC.supportedPowerRange);
+    const results = await Promise.allSettled([feature.readValue(), range.readValue()]);
+    expect(results[0].status).toBe('fulfilled');
+    expect(results[1]).toMatchObject({
+      status: 'rejected',
+      reason: { message: 'GATT operation already in progress.' },
+    });
+  });
+
+  it('replacing a device disposes the old connection', async () => {
+    const { store, bluetooth } = setup();
+    await store.connect('trainer');
+    const first = store.trainer()!;
+    await store.connect('trainer');
+    expect(first.connection.status()).toEqual({ state: 'disconnected', reason: 'user' });
+    const states: string[] = [];
+    store.subscribe(() => states.push(store.getState().trainer.status));
+    bluetooth.dropLink('trainer');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(states).toEqual(['reconnecting', 'connected']);
+  });
+});

@@ -32,6 +32,8 @@ export interface DeviceConnectionOptions {
   backoffMs?: readonly number[];
   /** A connect plus setup that takes longer than this counts as failed. */
   attemptTimeoutMs?: number;
+  /** A single GATT operation that takes longer than this is given up. */
+  opTimeoutMs?: number;
   /** Called after the link dropped, before reconnecting (abort pending commands here). */
   onLinkLost?(): void;
 }
@@ -47,6 +49,8 @@ export interface DeviceConnection {
   disconnect(): void;
   /** Starts a new reconnect cycle after giving up (e.g. a "Reconnect" button). */
   reconnect(): Promise<void>;
+  /** Closes the link and removes every listener from the device object (the device is forgotten). */
+  dispose(): void;
 }
 
 export const DEFAULT_BACKOFF_MS = [1000, 2000, 4000, 8000, 15000] as const;
@@ -75,9 +79,10 @@ export function createDeviceConnection({
   log,
   backoffMs = DEFAULT_BACKOFF_MS,
   attemptTimeoutMs = 10_000,
+  opTimeoutMs,
   onLinkLost,
 }: DeviceConnectionOptions): DeviceConnection {
-  const queue = createGattQueue();
+  const queue = createGattQueue({ opTimeoutMs });
   const listeners = new Set<(status: ConnectionStatus) => void>();
   let current: ConnectionStatus = { state: 'disconnected' };
   let teardown: (() => void) | null = null;
@@ -178,6 +183,15 @@ export function createDeviceConnection({
       dropSubscriptions();
       onLinkLost?.();
       set({ state: 'disconnected', reason: 'user' });
+      if (device.gatt?.connected) device.gatt.disconnect();
+    },
+    dispose() {
+      epoch += 1;
+      listeners.clear();
+      device.removeEventListener('gattserverdisconnected', onDisconnected);
+      dropSubscriptions();
+      onLinkLost?.();
+      current = { state: 'disconnected', reason: 'user' };
       if (device.gatt?.connected) device.gatt.disconnect();
     },
     async reconnect() {
