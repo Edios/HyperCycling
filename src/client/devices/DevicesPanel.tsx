@@ -46,6 +46,9 @@ export function DevicesPanel({ variant, showTrainer, showWatts }: DevicesPanelPr
   const full = variant === 'full';
 
   if (!state.supported) {
+    // The setup screen stays quiet in a browser without Bluetooth (nothing to connect there);
+    // Settings explains why and what to use instead.
+    if (!full) return null;
     return (
       <div className={`${styles.panel} ${full ? styles.full : ''}`} data-testid="devices">
         <p className={styles.unsupported} role="status" data-testid="devices-unsupported">

@@ -91,7 +91,11 @@ test('known FTP: no test in week 1 and the "me" player gets the FTP', async ({ p
   );
 
   await start(page);
-  await expect(page.getByTestId('next-session')).not.toContainText(/test/i);
+  // Only the next workout's title: the card also shows the last ride, which may be an FTP test
+  // ridden by an earlier spec on the same worker database.
+  const nextTitle = page.getByTestId('next-session').getByRole('heading', { level: 2 });
+  await expect(nextTitle).toBeVisible();
+  await expect(nextTitle).not.toContainText(/test/i);
 
   await page.goto('./#/players');
   await expect(page.getByTestId('players-screen')).toBeVisible();

@@ -182,7 +182,12 @@ describe('DevicesPanel', () => {
   });
 
   it('uses the shared store when none is provided (jsdom: unsupported)', () => {
-    render(<DevicesPanel variant="compact" showTrainer showWatts />);
+    render(<DevicesPanel variant="full" showTrainer showWatts />);
     expect(screen.getByTestId('devices-unsupported')).toBeInTheDocument();
+  });
+
+  it('renders nothing in the compact variant when Bluetooth is unsupported', () => {
+    const { container } = render(<DevicesPanel variant="compact" showTrainer showWatts />);
+    expect(container).toBeEmptyDOMElement();
   });
 });
