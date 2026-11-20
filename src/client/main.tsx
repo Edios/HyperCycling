@@ -27,4 +27,9 @@ async function bootstrap(container: HTMLElement): Promise<void> {
   );
 }
 
+// Bluetooth test hook for Playwright; the branch and its chunk are removed from other builds.
+if (import.meta.env.VITE_E2E === '1') {
+  void import('./devices/e2e-hook').then((m) => m.installBleTestHook());
+}
+
 void bootstrap(root);

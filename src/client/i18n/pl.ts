@@ -1409,7 +1409,8 @@ export const pl: Messages = {
     addNextShort: '+',
     trimStart: 'Przeciągnij, żeby przyciąć początek utworu',
     trimEnd: 'Przeciągnij, żeby przyciąć koniec utworu',
-    trimHint: 'Utwór gra od „start od” do końca albo do „Koniec”. Przeciągnij brzegi zaznaczonego utworu, żeby go przyciąć.',
+    trimHint:
+      'Utwór gra od „start od” do końca albo do „Koniec”. Przeciągnij brzegi zaznaczonego utworu, żeby go przyciąć.',
     cardButton: 'Karta zajęć',
     cardClose: 'Zamknij',
     suggest: {
@@ -1552,6 +1553,20 @@ export const pl: Messages = {
     cleanBody: 'Plik wczytano bez problemów.',
     open: 'Otwórz w edytorze',
     cancel: 'Anuluj',
+  },
+  devices: {
+    unsupported: {
+      insecureContext:
+        'Bluetooth wymaga bezpiecznej strony. Otwórz HyperCycling pod adresem https://hypercycling.app.',
+      ios: 'Przeglądarki na iPhonie i iPadzie nie obsługują Bluetooth. Otwórz HyperCycling w darmowej przeglądarce Bluefy albo użyj komputera lub telefonu z Androidem i Chrome.',
+      firefox:
+        'Firefox nie łączy się z urządzeniami Bluetooth. Otwórz HyperCycling w Chrome albo Edge.',
+      safari:
+        'Safari nie łączy się z urządzeniami Bluetooth. Otwórz HyperCycling w Chrome albo Edge.',
+      noApi:
+        'Ta przeglądarka nie łączy się z urządzeniami Bluetooth. Użyj Chrome albo Edge na komputerze lub Chrome na Androidzie. Na Linuksie Chrome wymaga włączenia flagi eksperymentalnych funkcji platformy.',
+      noAdapter: 'Nie znaleziono adaptera Bluetooth. Włącz Bluetooth albo podłącz adapter USB.',
+    },
   },
   effort: {
     veryEasy: 'Bardzo lekko',
