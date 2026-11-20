@@ -10,12 +10,59 @@
         {
           "artist": "Tycho",
           "title": "Awake",
-          "bpm": 88
+          "bpm": 88,
+          "durationSec": 283,
+          "youtube": [
+            {
+              "id": "VZBrZV3nHAA",
+              "label": "official",
+              "durationSec": 284
+            },
+            {
+              "id": "W8VdVY8diqs",
+              "label": "topic (auto-generated)",
+              "durationSec": 284
+            },
+            {
+              "id": "6XJBDX3Z0BY",
+              "label": "re-upload (andyEITS)",
+              "durationSec": 284
+            },
+            {
+              "id": "AsTvI76PskA",
+              "label": "re-upload (Essential Chill)",
+              "durationSec": 286
+            }
+          ],
+          "loopable": true
         },
         {
           "artist": "Alan Walker",
           "title": "Faded",
-          "bpm": 90
+          "bpm": 90,
+          "durationSec": 212,
+          "youtube": [
+            {
+              "id": "60ItHLz5WEA",
+              "label": "official",
+              "durationSec": 213
+            },
+            {
+              "id": "psn_rs_a5O0",
+              "label": "official (VEVO) audio",
+              "durationSec": 213
+            },
+            {
+              "id": "zbxl4aiJo3M",
+              "label": "topic (auto-generated)",
+              "durationSec": 213
+            },
+            {
+              "id": "qdpXxGPqW-Y",
+              "label": "re-upload, lyrics (7clouds)",
+              "durationSec": 213
+            }
+          ]
         }
       ],
       "youtube": [
@@ -128,7 +175,8 @@
         {
           "artist": "Tycho",
           "title": "Awake",
-          "bpm": 88
+          "bpm": 88,
+          "loopable": true
         },
         {
           "artist": "Kavinsky",
@@ -245,7 +293,8 @@
         {
           "artist": "Tycho",
           "title": "Awake",
-          "bpm": 88
+          "bpm": 88,
+          "loopable": true
         }
       ],
       "youtube": [
@@ -281,7 +330,25 @@
         {
           "artist": "Pendulum",
           "title": "Propane Nightmares",
-          "bpm": 174
+          "bpm": 174,
+          "durationSec": 314,
+          "youtube": [
+            {
+              "id": "CGbM3AQJ8K4",
+              "label": "topic (auto-generated)",
+              "durationSec": 314
+            },
+            {
+              "id": "_h1OgkfhcDc",
+              "label": "topic (auto-generated)",
+              "durationSec": 314
+            },
+            {
+              "id": "WPbeEtjo70g",
+              "label": "official video",
+              "durationSec": 320
+            }
+          ]
         },
         {
           "artist": "Wilkinson",
@@ -322,7 +389,8 @@
         {
           "artist": "Tycho",
           "title": "Awake",
-          "bpm": 88
+          "bpm": 88,
+          "loopable": true
         },
         {
           "artist": "The Weeknd",
@@ -503,7 +571,8 @@
           "label": "re-upload (The Silver Dubber)",
           "durationSec": 271
         }
-      ]
+      ],
+      "loopable": true
     }
   ],
   "neon-grid-45-light": [
@@ -517,12 +586,59 @@
         {
           "artist": "Tycho",
           "title": "Awake",
-          "bpm": 88
+          "bpm": 88,
+          "durationSec": 283,
+          "youtube": [
+            {
+              "id": "VZBrZV3nHAA",
+              "label": "official",
+              "durationSec": 284
+            },
+            {
+              "id": "W8VdVY8diqs",
+              "label": "topic (auto-generated)",
+              "durationSec": 284
+            },
+            {
+              "id": "6XJBDX3Z0BY",
+              "label": "re-upload (andyEITS)",
+              "durationSec": 284
+            },
+            {
+              "id": "AsTvI76PskA",
+              "label": "re-upload (Essential Chill)",
+              "durationSec": 286
+            }
+          ],
+          "loopable": true
         },
         {
           "artist": "Alan Walker",
           "title": "Faded",
-          "bpm": 90
+          "bpm": 90,
+          "durationSec": 212,
+          "youtube": [
+            {
+              "id": "60ItHLz5WEA",
+              "label": "official",
+              "durationSec": 213
+            },
+            {
+              "id": "psn_rs_a5O0",
+              "label": "official (VEVO) audio",
+              "durationSec": 213
+            },
+            {
+              "id": "zbxl4aiJo3M",
+              "label": "topic (auto-generated)",
+              "durationSec": 213
+            },
+            {
+              "id": "qdpXxGPqW-Y",
+              "label": "re-upload, lyrics (7clouds)",
+              "durationSec": 213
+            }
+          ]
         }
       ],
       "youtube": [
@@ -635,7 +751,8 @@
         {
           "artist": "Tycho",
           "title": "Awake",
-          "bpm": 88
+          "bpm": 88,
+          "loopable": true
         },
         {
           "artist": "Kavinsky",
@@ -752,7 +869,8 @@
         {
           "artist": "Tycho",
           "title": "Awake",
-          "bpm": 88
+          "bpm": 88,
+          "loopable": true
         }
       ],
       "youtube": [
@@ -788,7 +906,25 @@
         {
           "artist": "Pendulum",
           "title": "Propane Nightmares",
-          "bpm": 174
+          "bpm": 174,
+          "durationSec": 314,
+          "youtube": [
+            {
+              "id": "CGbM3AQJ8K4",
+              "label": "topic (auto-generated)",
+              "durationSec": 314
+            },
+            {
+              "id": "_h1OgkfhcDc",
+              "label": "topic (auto-generated)",
+              "durationSec": 314
+            },
+            {
+              "id": "WPbeEtjo70g",
+              "label": "official video",
+              "durationSec": 320
+            }
+          ]
         },
         {
           "artist": "Wilkinson",
@@ -858,7 +994,8 @@
           "label": "re-upload (Essential Chill)",
           "durationSec": 286
         }
-      ]
+      ],
+      "loopable": true
     },
     {
       "slot": 8,
@@ -870,7 +1007,8 @@
         {
           "artist": "Tycho",
           "title": "Awake",
-          "bpm": 88
+          "bpm": 88,
+          "loopable": true
         },
         {
           "artist": "Alan Walker",
@@ -984,7 +1122,8 @@
           "label": "re-upload (The Silver Dubber)",
           "durationSec": 271
         }
-      ]
+      ],
+      "loopable": true
     }
   ],
   "neon-grid-30": [
@@ -998,12 +1137,59 @@
         {
           "artist": "Tycho",
           "title": "Awake",
-          "bpm": 88
+          "bpm": 88,
+          "durationSec": 283,
+          "youtube": [
+            {
+              "id": "VZBrZV3nHAA",
+              "label": "official",
+              "durationSec": 284
+            },
+            {
+              "id": "W8VdVY8diqs",
+              "label": "topic (auto-generated)",
+              "durationSec": 284
+            },
+            {
+              "id": "6XJBDX3Z0BY",
+              "label": "re-upload (andyEITS)",
+              "durationSec": 284
+            },
+            {
+              "id": "AsTvI76PskA",
+              "label": "re-upload (Essential Chill)",
+              "durationSec": 286
+            }
+          ],
+          "loopable": true
         },
         {
           "artist": "Alan Walker",
           "title": "Faded",
-          "bpm": 90
+          "bpm": 90,
+          "durationSec": 212,
+          "youtube": [
+            {
+              "id": "60ItHLz5WEA",
+              "label": "official",
+              "durationSec": 213
+            },
+            {
+              "id": "psn_rs_a5O0",
+              "label": "official (VEVO) audio",
+              "durationSec": 213
+            },
+            {
+              "id": "zbxl4aiJo3M",
+              "label": "topic (auto-generated)",
+              "durationSec": 213
+            },
+            {
+              "id": "qdpXxGPqW-Y",
+              "label": "re-upload, lyrics (7clouds)",
+              "durationSec": 213
+            }
+          ]
         }
       ],
       "youtube": [
@@ -1080,7 +1266,8 @@
         {
           "artist": "Tycho",
           "title": "Awake",
-          "bpm": 88
+          "bpm": 88,
+          "loopable": true
         },
         {
           "artist": "Kavinsky",
@@ -1217,7 +1404,8 @@
           "label": "re-upload (Essential Chill)",
           "durationSec": 286
         }
-      ]
+      ],
+      "loopable": true
     },
     {
       "slot": 5,
@@ -1302,7 +1490,8 @@
           "label": "re-upload (The Silver Dubber)",
           "durationSec": 271
         }
-      ]
+      ],
+      "loopable": true
     }
   ]
 }

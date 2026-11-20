@@ -343,6 +343,42 @@ describe('YouTube music provider', () => {
     expect(failed).toEqual(['YouTube track stalled while buffering']);
   });
 
+  it('tells the end handler once when the track plays to its end, not the failure handler', async () => {
+    await provider.connect();
+    const ended: number[] = [];
+    const failed: string[] = [];
+    await provider.play(track('abc'), 0);
+    provider.setEndHandler?.(() => ended.push(1));
+    provider.setFailureHandler?.((e) => failed.push(e.message));
+    players[0]?.state(0);
+    players[0]?.state(0);
+    expect(ended).toEqual([1]);
+    expect(failed).toEqual([]);
+  });
+
+  it('does not report an end after a pause or once a newer track started', async () => {
+    await provider.connect();
+    const ended: string[] = [];
+    await provider.play(track('abc'), 0);
+    provider.setEndHandler?.(() => ended.push('abc'));
+    await provider.pause();
+    players[0]?.state(0);
+    await provider.play(track('def'), 0); // drops the handler of the first track
+    players[0]?.state(0);
+    expect(ended).toEqual([]);
+  });
+
+  it('rejects at once a track that ends before it plays (a start past its end)', async () => {
+    autoPlay = false;
+    autoReady = false;
+    await provider.connect();
+    const playing = provider.play(track('abc'), 9999);
+    await vi.waitFor(() => expect(players).toHaveLength(1));
+    players[0]?.ready();
+    players[0]?.state(0);
+    await expect(playing).rejects.toThrow('ended before it played');
+  });
+
   it.each([2, 5, 100, 101, 150])('rejects play on player error %i', async (code) => {
     autoPlay = false;
     await provider.connect();

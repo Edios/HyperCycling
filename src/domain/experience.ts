@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { LANGS, type Lang } from './lang';
 import { BPM_MAX, BPM_MIN } from './bpm-match';
-import { songDurationSec, type MusicCue, type Workout } from './workout';
+import {
+  MAX_ALTERNATES,
+  songDurationSec,
+  type MusicCue,
+  type TrackRef,
+  type Workout,
+} from './workout';
 
 /**
  * Experience: a ready-made ride = a workout (class-style scenario) + music pins + a world theme +
@@ -64,6 +70,8 @@ export interface QueueItem extends SongSuggestion {
   /** Where playback starts (skips an intro), set by the author, seconds. */
   startOffsetSec?: number;
   version?: SongVersion;
+  /** Instrumental song whose ending may be played again to close a short gap (gap rule R3). */
+  loopable?: boolean;
 }
 
 /** What to look for in one song slot (`slot` = index in the workout's songs). */
@@ -80,13 +88,16 @@ export interface MusicHint extends SongSuggestion {
   /** Where playback of this (first) song starts, seconds. */
   startOffsetSec?: number;
   version?: SongVersion;
+  /** Instrumental song whose ending may be played again to close a short gap (gap rule R3). */
+  loopable?: boolean;
   /** The songs that follow this one in the slot, in order (the authored queue is this + these). */
   queue?: QueueItem[];
   /**
-   * The reserve, in order of preference. Never added on top of the queue: it only stands in
-   * for a song that is missing from the rider's catalogue or not playable in their region.
+   * The reserve, in order of preference. It stands in for a song that is missing from the rider's
+   * catalogue or not playable in their region, and, when it has YouTube uploads, it closes the
+   * silence at the end of a slot whose queue is too short (gap rule R2).
    */
-  alternatives?: SongSuggestion[];
+  alternatives?: QueueItem[];
 }
 
 export interface ExperienceText {
@@ -103,6 +114,11 @@ export interface Experience {
   workoutRef: { kind: 'builtin' | 'user'; id: string };
   /** Pins of the experience; they override the workout's own music cues. May be empty. */
   musicPins: MusicCue[];
+  /**
+   * A long, calm track the ride plays wherever the songs leave silence (gap rule R4), unless the
+   * workout has a fallback of its own. Kept here so built-in workouts stay free of track ids.
+   */
+  musicFallback?: TrackRef[];
   /** Song suggestions per slot; the rider turns them into pins with their own Spotify. Optional. */
   musicHints?: MusicHint[];
   worldTheme: WorldTheme;
@@ -141,6 +157,7 @@ const queueItemSchema = suggestionSchema.extend({
   durationSec: z.number().int().min(10).max(1800).optional(),
   startOffsetSec: z.number().int().min(0).max(600).optional(),
   version: versionSchema.optional(),
+  loopable: z.boolean().optional(),
 });
 
 const musicHintSchema = suggestionSchema.extend({
@@ -151,8 +168,9 @@ const musicHintSchema = suggestionSchema.extend({
   version: versionSchema.optional(),
   noBeat: z.boolean().optional(),
   explicit: z.boolean().optional(),
+  loopable: z.boolean().optional(),
   queue: z.array(queueItemSchema).max(8).optional(),
-  alternatives: z.array(suggestionSchema).max(5).optional(),
+  alternatives: z.array(queueItemSchema).max(5).optional(),
 });
 
 const pinTrackSchema = z.object({
@@ -191,6 +209,14 @@ export const experienceSchema: z.ZodType<Experience> = z
         }),
       )
       .default([]),
+    musicFallback: z
+      .array(
+        pinTrackSchema.extend({
+          alternates: z.array(pinTrackSchema).max(MAX_ALTERNATES).optional(),
+        }),
+      )
+      .max(4)
+      .optional(),
     musicHints: z.array(musicHintSchema).max(32).optional(),
     worldTheme: z.object({
       // an unknown theme (newer file, older app) falls back to the abstract look

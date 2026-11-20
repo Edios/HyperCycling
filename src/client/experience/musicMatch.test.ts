@@ -242,6 +242,16 @@ describe('applying the choices', () => {
 
   const YT_ONLY = { source: 'youtube', spotifyUsable: false } as const;
 
+  it("rides with the scenario's fallback track unless the workout has its own", () => {
+    expect(w.fallbackPlaylist).toEqual([]); // built-in workouts carry no track ids
+    const ride = withUserMusic(w, exp, {}, YT_ONLY);
+    expect(ride.fallbackPlaylist).toEqual(exp.musicFallback);
+    const own: TrackRef = { provider: 'youtube', id: 'ownfallback', title: 'Own', startAtSec: 0 };
+    expect(
+      withUserMusic({ ...w, fallbackPlaylist: [own] }, exp, {}, YT_ONLY).fallbackPlaylist,
+    ).toEqual([own]);
+  });
+
   it("plays the scenario's YouTube chain without any choice, each song with its backups", () => {
     const cues = withUserMusic(w, exp, {}, YT_ONLY).musicCues;
     expect(cues).toHaveLength(11);

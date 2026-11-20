@@ -24,6 +24,13 @@ export interface MusicProvider {
    */
   setFailureHandler?(handler: ((err: Error) => void) | undefined): void;
   /**
+   * Optional: `handler` is called once when the track that was started plays to its very end
+   * (YouTube ENDED, Spotify stopped at the end). It is replaced by the next `play` or
+   * `setEndHandler`. The director uses it to move on at once instead of keeping silence until the
+   * planned end of a song whose recording turned out shorter.
+   */
+  setEndHandler?(handler: (() => void) | undefined): void;
+  /**
    * Optional: looks up the name (and artists) of a track. The director uses it for tracks saved
    * without a title; it may reject and never holds up playback.
    */

@@ -28,7 +28,9 @@ function loadSongs() {
     const data = JSON.parse(readFileSync(join(hintsDir, file), 'utf8'));
     for (const [experience, hints] of Object.entries(data)) {
       for (const hint of hints) {
-        for (const item of [hint, ...(hint.queue ?? [])]) {
+        // Reserve songs with uploads close the silence of a short slot, so they are checked too.
+        const reserve = (hint.alternatives ?? []).filter((a) => (a.youtube ?? []).length > 0);
+        for (const item of [hint, ...(hint.queue ?? []), ...reserve]) {
           songs.push({
             where: `${experience} slot ${hint.slot + 1}`,
             name: `${item.artist} - ${item.title}`,

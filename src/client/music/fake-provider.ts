@@ -33,6 +33,8 @@ export interface FakeMusicProvider extends MusicProvider {
   failPlaysWith(error: Error | undefined): void;
   /** Simulates the started track breaking down (player error, stall): calls the failure handler. */
   breakDown(error?: Error): void;
+  /** Simulates the started track playing to its end: calls the end handler (once). */
+  end(): void;
 }
 
 /** In-memory provider for tests: records calls and fails on demand. */
@@ -44,6 +46,7 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
   let failWhen: ((track: TrackRef) => boolean) | undefined;
   let failError: Error | undefined;
   let onFailure: ((err: Error) => void) | undefined;
+  let onEnd: (() => void) | undefined;
   const calls: FakeCall[] = [];
   const log: string[] = [];
   const record = (call: FakeCall, line: string): void => {
@@ -74,6 +77,14 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
     breakDown(error = new Error('track broke down')) {
       onFailure?.(error);
     },
+    setEndHandler(handler) {
+      onEnd = handler;
+    },
+    end() {
+      const handler = onEnd;
+      onEnd = undefined;
+      handler?.();
+    },
     connect() {
       record({ type: 'connect' }, 'connect');
       if (connectFails) return Promise.reject(new Error('connect failed'));
@@ -81,6 +92,7 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
       return Promise.resolve();
     },
     play(track, offsetSec) {
+      onEnd = undefined; // a new track replaces the end handler of the previous one
       record({ type: 'play', track, offsetSec }, `play:${track.id}@${Math.round(offsetSec)}`);
       if (playFailures > 0) {
         playFailures -= 1;
