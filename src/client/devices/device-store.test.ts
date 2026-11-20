@@ -101,7 +101,9 @@ describe('device store with the fake Bluetooth', () => {
     const cp: BleCharacteristic = await service.getCharacteristic(
       CHARACTERISTIC.fitnessMachineControlPoint,
     );
-    await expect(cp.writeValue(requestControl())).rejects.toThrow(/indications are not enabled/);
+    await expect(cp.writeValue(requestControl().buffer as ArrayBuffer)).rejects.toThrow(
+      /indications are not enabled/,
+    );
   });
 
   it('times out after one retry when the trainer stays silent', async () => {
