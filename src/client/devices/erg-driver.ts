@@ -117,6 +117,8 @@ export interface ErgDriverOptions {
 /** FTP outside this range is treated as a typo: no ERG targets from it (review #113). */
 export const FTP_MIN_W = 50;
 export const FTP_MAX_W = 600;
+/** A 0x02 status this soon after our own Stop/Pause is our own. */
+const OWN_STOP_MS = 2000;
 /** Repeated failures to take control wait 1, 2, 4 … up to 30 s between attempts. */
 const RETRY_MAX_MS = 30_000;
 
@@ -156,8 +158,9 @@ export function createErgDriver({
   // Stopped on the device: wait for the ride to be paused and resumed by the rider.
   let deviceStopped = false;
   let pausedSinceStop = false;
-  // Our own Stop/Pause also makes the trainer report 0x02: not a stop on the device.
-  let ownStop = false;
+  // Our own Stop/Pause also makes the trainer report 0x02, before or after its 0x80 answer:
+  // a 0x02 within OWN_STOP_MS of our command is not a stop on the device (review #115).
+  let ownStopUntil = 0;
   let failures = 0;
   let nextAttemptMs = 0;
 
@@ -206,7 +209,7 @@ export function createErgDriver({
           loseControl();
         } else if (
           (s.kind === 'unknown' && s.code === 0x03) ||
-          (s.kind === 'stoppedOrPaused' && !ownStop)
+          (s.kind === 'stoppedOrPaused' && now() >= ownStopUntil)
         ) {
           // Stopped on the device (safety key 0x03, or stop/pause there 0x02): pause the ride and
           // do not take ERG back until the rider resumes (review #113).
@@ -254,9 +257,8 @@ export function createErgDriver({
 
   /** Stop, then Reset: the trainer drops the ERG load and gives control back (pitfall 1.10). */
   async function stopAndReset(): Promise<void> {
-    ownStop = true;
+    ownStopUntil = now() + OWN_STOP_MS;
     await send(stopOrPause('stop'));
-    ownStop = false;
     await send(reset());
     loseControl();
   }
@@ -355,9 +357,8 @@ export function createErgDriver({
 
     if (!m.running) {
       if (lastMode !== 'paused') {
-        ownStop = true;
+        ownStopUntil = now() + OWN_STOP_MS;
         const res = await send(stopOrPause('pause'));
-        ownStop = false;
         if (res) lastMode = 'paused';
         lastW = null;
       }

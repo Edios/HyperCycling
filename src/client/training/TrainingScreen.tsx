@@ -86,11 +86,8 @@ import { useLiveSnapshot } from '../devices/useDevices';
 import { useMePlayer } from '../settings/useMePlayer';
 import { ergTargetWatts, isSprint, powerLevel } from '../../domain/erg';
 import { useErg } from './useErg';
-import {
-  createExecutionTracker,
-  type BlockResult,
-  type ExecutionTracker,
-} from '../../domain/execution';
+import type { ExecutionTracker } from '../../domain/execution';
+import { useExecution } from './useExecution';
 import { hrTargetFor } from '../../domain/hr-zones';
 import styles from './TrainingScreen.module.css';
 
@@ -132,9 +129,6 @@ export function TrainingScreen() {
 function isTouch(): boolean {
   return typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
 }
-
-/** How long the "block met / not met" message stays. */
-const BLOCK_RESULT_MS = 5000;
 
 /** Closes the open block and returns the summary's execution part, if anything was scored. */
 function executionSummary(tracker: ExecutionTracker): Pick<LastResult, 'execution'> {
@@ -319,27 +313,19 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     [liveSnapshot, showsWatts, targetW, targetRpm, hrMax, trainerMode, hrBand],
   );
   const effortTable = settings.effortTable;
-  // Execution score (D21): one sample per live reading in trainer mode; a block result shows when
-  // the block ends, the total goes to the summary.
-  const execution = useRef(createExecutionTracker());
-  const [blockResult, setBlockResult] = useState<BlockResult | null>(null);
-  const [blockScore, setBlockScore] = useState<number | null>(null);
-  const segIndex = view?.index ?? -1;
-  const running = state.status === 'running';
-  useEffect(() => {
-    if (!trainerMode || !running || segIndex < 0) return;
-    const tracker = execution.current;
-    const before = tracker.results().length;
-    tracker.add(segIndex, liveSnapshot.powerW, targetW, Date.now());
-    const results = tracker.results();
-    if (results.length > before) setBlockResult(results[results.length - 1] ?? null);
-    setBlockScore(tracker.current());
-  }, [trainerMode, running, segIndex, liveSnapshot.powerW, targetW]);
-  useEffect(() => {
-    if (!blockResult) return;
-    const id = setTimeout(() => setBlockResult(null), BLOCK_RESULT_MS);
-    return () => clearTimeout(id);
-  }, [blockResult]);
+  // Execution score (D21), sampled every second (see useExecution): a block result shows when the
+  // block ends, the total goes to the summary.
+  const {
+    tracker: execution,
+    blockScore,
+    blockResult,
+    dismissBlockResult,
+  } = useExecution({
+    active: trainerMode && state.status === 'running',
+    segmentIndex: view?.index ?? -1,
+    powerW: liveSnapshot.powerW,
+    targetW,
+  });
 
   const trainerHud = useMemo(() => {
     if (!trainerMode || !erg || !ergSnap || riderFtp === undefined) return undefined;
@@ -439,12 +425,12 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         startedAt: startedAt.current ?? new Date().toISOString(),
         ...(rt.plan ? { plan: rt.plan } : {}),
         ...(rt.options?.experienceId ? { experienceId: rt.options.experienceId } : {}),
-        ...executionSummary(execution.current),
+        ...executionSummary(execution),
       });
       ended.current = true;
       navigate('/summary');
     },
-    [navigate],
+    [navigate, execution],
   );
 
   /** Leave for the main menu: no summary, and the unmount cleanup drops the session. */
@@ -794,7 +780,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
               n: blockResult.segmentIndex + 1,
               score: blockResult.score,
             })}
-            onClose={() => setBlockResult(null)}
+            onClose={dismissBlockResult}
           />
         )}
         {autoPauseNotice && signalBad && (

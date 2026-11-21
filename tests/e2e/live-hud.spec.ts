@@ -128,17 +128,26 @@ test('execution score: block result after a block, live score, total on the summ
   });
   await expect(page.getByTestId('power-bar')).toBeVisible();
   await expect(page.getByTestId('block-score')).toHaveText(/^\d+% on target$/, { timeout: 10_000 });
-  // Ride a few seconds on target, then skip to the next block.
-  await page.waitForTimeout(6000);
-  await page.keyboard.press('ArrowRight');
-  await expect(page.getByText(/^Block 1 (met|not met): \d+% on target$/)).toBeVisible({
-    timeout: 5000,
+  // The fake trainer has no noise: once ERG holds, the power sits exactly on the target and stays
+  // unchanged. Every second must still count (review #115 B1), so the block is met.
+  await expect(page.getByTestId('trainer-power')).toHaveText(String(await targetOf(page)), {
+    timeout: 10_000,
   });
+  await page.waitForTimeout(12_000);
+  const live = Number(
+    /^(\d+)%/.exec((await page.getByTestId('block-score').textContent()) ?? '')?.[1],
+  );
+  expect(live).toBeGreaterThanOrEqual(70);
+  await page.keyboard.press('ArrowRight');
+  const message = page.getByText(/^Block 1 met: \d+% on target$/);
+  await expect(message).toBeVisible({ timeout: 5000 });
+  const score = Number(/(\d+)%/.exec((await message.textContent()) ?? '')?.[1]);
+  expect(score).toBeGreaterThanOrEqual(70);
   // End the ride: the summary shows the total.
   await page.getByRole('button', { name: 'Menu' }).click();
   await page.getByRole('button', { name: 'End and see summary' }).click();
   await expect(page.getByTestId('summary-execution')).toHaveText(
-    /^Execution: \d+% on target · \d+ of \d+ blocks met$/,
+    /^Execution: \d+% on target · [1-9]\d* of \d+ blocks met$/,
   );
 });
 

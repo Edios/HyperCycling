@@ -395,7 +395,7 @@ describe('ERG driver', () => {
 
     it('a stop/pause on the device (0x02) counts too, our own pause does not', async () => {
       const stops: string[] = [];
-      const { bluetooth, driver, warm, setMoment } = await setup({
+      const { bluetooth, driver, settle, warm, setMoment } = await setup({
         onDeviceStop: (r) => stops.push(r),
       });
       await warm();
@@ -404,6 +404,14 @@ describe('ERG driver', () => {
       expect(stops).toEqual([]);
       setMoment({ running: true });
       await warm();
+      // A late 0x02 right after our own pause (after its 0x80 answer) is still ours.
+      setMoment({ running: false });
+      await settle(0);
+      bluetooth.devices.trainer.gatt.emit(0x2ada, Uint8Array.of(0x02, 0x02));
+      expect(stops).toEqual([]);
+      setMoment({ running: true });
+      await warm();
+      await settle(3000);
       bluetooth.devices.trainer.gatt.emit(0x2ada, Uint8Array.of(0x02, 0x01));
       expect(stops).toEqual(['stopped']);
       driver.dispose();

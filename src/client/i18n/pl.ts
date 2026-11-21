@@ -111,9 +111,9 @@ export const pl: Messages = {
     quickRideOnly: 'Zmiany tutaj dotyczą tylko tej jazdy.',
     quickYoutubeNone: 'Dodaj link YouTube na ekranie przygotowania, aby użyć tego tła.',
     exec: {
-      live: '{score}% w celu',
-      met: 'Blok {n} zaliczony: {score}% w celu',
-      notMet: 'Blok {n} niezaliczony: {score}% w celu',
+      live: '{score}% czasu w zakresie',
+      met: 'Blok {n} zaliczony: {score}% czasu w zakresie',
+      notMet: 'Blok {n} niezaliczony: {score}% czasu w zakresie',
     },
     erg: {
       autoPaused: 'Brak sygnału z trenażera: pauza. Jazda ruszy, gdy sygnał wróci.',
@@ -155,7 +155,7 @@ export const pl: Messages = {
   },
   summary: {
     execution: 'Wykonanie',
-    executionDetail: '{score}% w celu · zaliczone {met} z {total} bloków',
+    executionDetail: '{score}% czasu w zakresie · bloki zaliczone: {met}/{total}',
     experienceChapters: 'Przejechane części: {reached} z {total}',
     title: 'Podsumowanie treningu',
     completed: 'Ukończony',
