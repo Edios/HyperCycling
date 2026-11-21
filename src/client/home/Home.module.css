@@ -239,3 +239,34 @@
     padding: 1rem 16px 1.5rem;
   }
 }
+
+/* Phone in landscape: the title and the three modes on one screen, no lead paragraph. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .home {
+    min-height: 0;
+  }
+
+  .intro {
+    padding: 0.625rem 1.5rem 0.25rem;
+  }
+
+  .intro h1 {
+    font-size: 1.75rem;
+  }
+
+  .intro p {
+    display: none;
+  }
+
+  .tiles {
+    padding: 0.5rem 1.5rem 1rem;
+  }
+
+  .tile {
+    min-height: 10.5rem;
+  }
+
+  .body {
+    display: none;
+  }
+}
