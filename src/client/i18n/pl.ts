@@ -1651,6 +1651,16 @@ export const pl: Messages = {
       ftms: 'Trenażer musi obsługiwać Bluetooth FTMS. Ma go większość trenażerów z ostatnich lat.',
       keepOpen: 'Podczas jazdy trzymaj tę kartę otwartą i ekran włączony.',
     },
+    log: {
+      title: 'Log Bluetooth',
+      privacy:
+        'Jeśli coś nie działa, skopiuj lub zapisz log i wyślij go nam. Zawiera surowe bajty i stany urządzeń z tej sesji, a nic nie opuszcza tego urządzenia, dopóki sam go nie udostępnisz.',
+      copy: 'Kopiuj log Bluetooth',
+      save: 'Pobierz log',
+      copied: 'Skopiowano log',
+      copyFailed: 'Nie udało się skopiować. Użyj opcji Pobierz log.',
+      saved: 'Zapisano log',
+    },
     unsupported: {
       insecureContext:
         'Bluetooth wymaga bezpiecznej strony. Otwórz HyperCycling pod adresem https://hypercycling.app albo przez localhost na komputerze, na którym działa.',

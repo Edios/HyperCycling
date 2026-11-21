@@ -1,6 +1,7 @@
 import { useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
 import { Icon, type IconName } from '../ui/Icon';
+import { BleLogExport } from './BleLogExport';
 import type { DeviceKind, DeviceSlot, DeviceStore } from './device-store';
 import styles from './DevicesPanel.module.css';
 import { UNSUPPORTED_MESSAGE } from './support';
@@ -92,6 +93,7 @@ export function DevicesPanel({ variant, showTrainer, showWatts }: DevicesPanelPr
           </ul>
         </details>
       )}
+      {full && <BleLogExport log={store.log} />}
     </div>
   );
 }
