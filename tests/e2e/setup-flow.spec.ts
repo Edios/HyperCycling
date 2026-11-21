@@ -59,12 +59,13 @@ test.describe('phone 390x844', () => {
     await expect(setup).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Who is riding?' })).toBeVisible();
 
+    // Closed, the Start bar's "More" chip is the way in: no second line for the same thing.
     const toggle = page.getByTestId('advanced-toggle');
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toBeHidden();
     await expect(page.getByRole('switch', { name: 'Beeps' })).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 3 })).toHaveCount(0);
 
-    await toggle.click();
+    await page.getByTestId('bar-more').click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     for (const group of ['Music', 'Screen', 'Coach', 'Equipment']) {
       await expect(page.getByRole('heading', { level: 3, name: group })).toBeVisible();
@@ -89,7 +90,7 @@ test.describe('phone 390x844', () => {
     };
     expect(await bottomOf()).toBe(844);
 
-    await page.getByTestId('advanced-toggle').click();
+    await page.getByTestId('bar-more').click();
     await page.evaluate(() => window.scrollTo(0, 0));
     expect(await bottomOf()).toBe(844);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -115,7 +116,8 @@ test.describe('phone 390x844', () => {
       // scrolled beneath it, which depends on the font (CI vs a laptop) and is not a defect.
       await toEnd(page);
       expect(await seriousViolations(page), 'closed').toEqual([]);
-      await page.getByTestId('advanced-toggle').click();
+      // Freestyle opens it from the Start bar's chip, Experience from its own closed line.
+      await page.getByTestId(name === 'Freestyle' ? 'bar-more' : 'advanced-toggle').click();
       await expect(page.getByRole('heading', { level: 3, name: 'Coach' })).toBeVisible();
       await toEnd(page);
       expect(await seriousViolations(page), 'open').toEqual([]);
@@ -177,13 +179,14 @@ test('a manual-knob bike is never asked for watts when adding a rider', async ({
   await expect(page.getByTestId('setup-screen')).toBeVisible();
   await page.getByRole('button', { name: 'Add', exact: true }).click();
   await expect(page.getByLabel('Name')).toBeVisible();
-  await expect(page.getByLabel('FTP (W)')).toHaveCount(0);
+  await expect(page.getByLabel('FTP (W)', { exact: true })).toHaveCount(0);
   await page.getByLabel('Name').fill('Kasia');
   await page.getByRole('button', { name: 'Add rider' }).click();
   const chip = page.getByRole('button', { name: 'Kasia' });
   await expect(chip).toHaveAttribute('aria-pressed', 'true');
   await expect(chip).not.toContainText(' W');
-  await expect(page.getByText('Bike: Manual knob')).toBeVisible();
+  await page.getByTestId('advanced-toggle').click();
+  await expect(page.getByTestId('setup-bike-edit')).toContainText('Manual knob');
 });
 
 /**

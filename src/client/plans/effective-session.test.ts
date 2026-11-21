@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Plan } from '../../domain/plan';
-import { DEFAULT_SETTINGS } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 import { effectiveSession, FALLBACK_PROGRES_ID } from './effective-session';
 
 const RAMP_TEST_ID = 'ramp-test';
@@ -37,7 +37,7 @@ const plan: Plan = {
     },
   ],
 };
-const watts = DEFAULT_SETTINGS.equipment;
+const watts = METERED_SETTINGS.equipment;
 const noWatts = { ...watts, showsWatts: false };
 
 describe('effectiveSession', () => {

@@ -31,7 +31,7 @@ vi.mock('../data/repositories', () => ({
 import { DEFAULT_SETTINGS } from '../../domain/settings';
 import { loadSettings, resetSettingsForTests } from '../data/useSettings';
 import { setLang } from '../i18n';
-import { BikeCard } from './BikeCard';
+import { BikeWizard } from './BikeWizard';
 
 beforeEach(() => {
   setLang('en');
@@ -42,30 +42,10 @@ afterEach(() => {
   db.settings = undefined;
 });
 
-describe('BikeCard', () => {
-  it('"Skip and ride" starts at once and is remembered', async () => {
-    await loadSettings();
-    const onSkipRide = vi.fn();
-    render(<BikeCard onSkipRide={onSkipRide} />);
-    fireEvent.click(screen.getByTestId('bike-skip-ride'));
-    expect(onSkipRide).toHaveBeenCalledTimes(1);
-    await waitFor(() => expect(db.settings?.bikeSetupDone).toBe(true));
-    await waitFor(() => expect(screen.queryByTestId('bike-card')).toBeNull());
-    // nothing else changed
-    expect(db.settings?.resistanceMode).toBe(DEFAULT_SETTINGS.resistanceMode);
-  });
-
-  it('is not offered again once done', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, bikeSetupDone: true };
-    await loadSettings();
-    render(<BikeCard onSkipRide={() => undefined} />);
-    expect(screen.queryByTestId('bike-card')).toBeNull();
-  });
-
+describe('BikeWizard', () => {
   it('wizard: smart trainer takes two screens and saves mode, watts and FTP', async () => {
     await loadSettings();
-    render(<BikeCard onSkipRide={() => undefined} />);
-    fireEvent.click(screen.getByTestId('bike-open'));
+    render(<BikeWizard onClose={() => undefined} />);
     fireEvent.click(screen.getByTestId('bike-kind-smart'));
     fireEvent.click(screen.getByTestId('bike-next'));
     await waitFor(() => expect(screen.getByTestId('bike-ftp')).toHaveValue('150'));
@@ -80,8 +60,7 @@ describe('BikeCard', () => {
 
   it('wizard: manual knob is one screen, never asks for FTP and saves no watts', async () => {
     await loadSettings();
-    render(<BikeCard onSkipRide={() => undefined} />);
-    fireEvent.click(screen.getByTestId('bike-open'));
+    render(<BikeWizard onClose={() => undefined} />);
     fireEvent.click(screen.getByTestId('bike-kind-knob'));
     expect(screen.getByText('Step 1 of 1')).toBeInTheDocument();
     expect(screen.queryByTestId('knob-steps')).toBeNull();
@@ -95,8 +74,7 @@ describe('BikeCard', () => {
 
   it('wizard: knob + power meter still asks for FTP', async () => {
     await loadSettings();
-    render(<BikeCard onSkipRide={() => undefined} />);
-    fireEvent.click(screen.getByTestId('bike-open'));
+    render(<BikeWizard onClose={() => undefined} />);
     fireEvent.click(screen.getByTestId('bike-kind-knobPower'));
     fireEvent.click(screen.getByTestId('bike-next'));
     expect(await screen.findByTestId('bike-ftp')).toBeInTheDocument();
@@ -111,8 +89,8 @@ describe('BikeCard', () => {
       knobSteps: [2, 4, 6, 8, 10],
     } as Settings;
     await loadSettings();
-    render(<BikeCard onSkipRide={() => undefined} />);
-    fireEvent.click(screen.getByTestId('bike-skip-ride'));
+    render(<BikeWizard onClose={() => undefined} />);
+    fireEvent.click(screen.getByTestId('bike-next'));
     await waitFor(() => expect(db.settings?.bikeSetupDone).toBe(true));
     expect(db.settings).not.toHaveProperty('knobSteps');
     expect(db.settings?.resistanceMode).toBe('knob');
@@ -121,8 +99,7 @@ describe('BikeCard', () => {
 
   it('wizard: Skip marks it done without changing the bike', async () => {
     await loadSettings();
-    render(<BikeCard onSkipRide={() => undefined} />);
-    fireEvent.click(screen.getByTestId('bike-open'));
+    render(<BikeWizard onClose={() => undefined} />);
     fireEvent.click(screen.getByTestId('bike-skip'));
     await waitFor(() => expect(db.settings?.bikeSetupDone).toBe(true));
   });

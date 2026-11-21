@@ -9,7 +9,8 @@ import {
   type ProgressEntry,
 } from '../../domain/plan';
 import type { Player } from '../../domain/player';
-import { DEFAULT_SETTINGS, type Settings } from '../../domain/settings';
+import { type Settings } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 
 interface Db {
   settings?: Settings;
@@ -109,7 +110,7 @@ function withProgress(): PlanProgress {
 }
 
 beforeEach(() => {
-  db.settings = undefined;
+  db.settings = METERED_SETTINGS;
   db.progress = [];
   db.players = [];
   db.puts = { progress: [], players: [], settings: [] };
@@ -122,7 +123,7 @@ beforeEach(() => {
 
 describe('PlanDetail progress safety', () => {
   it('Continue reuses the stored entries with the new settings', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: quickBoost.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: quickBoost.id };
     db.progress = [withProgress()];
     renderDetail();
     await screen.findByTestId('preview-progres');
@@ -156,7 +157,7 @@ describe('PlanDetail progress safety', () => {
   });
 
   it('a failed save keeps the old active plan and shows an error', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: quickBoost.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: quickBoost.id };
     db.failProgressPut = true;
     renderDetail();
     await screen.findByTestId('preview-progres');
@@ -189,7 +190,7 @@ describe('PlanDetail progress safety', () => {
   });
 
   it('changing the start week of an active plan keeps entries and the next session follows', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: buildForm.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: buildForm.id };
     db.progress = [withProgress()];
     renderDetail();
     await screen.findByTestId('preview-progres');
@@ -232,7 +233,7 @@ describe('PlanDetail progress safety', () => {
   });
 
   it('a failed Start over leaves the old plan active and writes no reset', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: quickBoost.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: quickBoost.id };
     db.progress = [withProgress()];
     db.failProgressPut = true;
     renderDetail();
@@ -247,7 +248,7 @@ describe('PlanDetail progress safety', () => {
   });
 
   it('Start over does not erase progress when activation fails', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: quickBoost.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: quickBoost.id };
     db.progress = [withProgress()];
     db.failSettingsPut = true;
     renderDetail();

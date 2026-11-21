@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS, sessionConfigSchema, settingsSchema } from './settings';
 
 describe('DEFAULT_SETTINGS', () => {
-  it('has watts on, cadence on, RPM tile shown', () => {
+  it('has no watts (a plain knob bike), cadence on, RPM tile shown', () => {
     expect(DEFAULT_SETTINGS.equipment).toEqual({
-      showsWatts: true,
+      showsWatts: false,
       showsCadence: true,
       hideRpmTile: false,
     });

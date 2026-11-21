@@ -86,7 +86,11 @@ function progress(settings: PlanSettings): PlanProgress {
 beforeEach(() => {
   // These tests work with the advanced settings, which start closed.
   localStorage.setItem('hypercycling.setup.advanced', '1');
-  db.settings = undefined;
+  // A bike with a power meter (the default bike has none): riders carry an FTP in these tests.
+  db.settings = {
+    ...DEFAULT_SETTINGS,
+    equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: true },
+  };
   db.players = [mirek, ania];
   db.progress = [];
   db.puts = [];
@@ -140,7 +144,9 @@ describe('SetupScreen', () => {
     // R19: the choices belong to this ride; the saved defaults are not touched.
     expect(runtime.options).toMatchObject({ sounds: false, coach: true });
     await new Promise((r) => setTimeout(r, 20));
-    expect(saved).toEqual([]);
+    // Only "the bike question is answered" is stored, nothing else.
+    expect(saved).toHaveLength(1);
+    expect(saved[0]).toMatchObject({ bikeSetupDone: true, sounds: DEFAULT_SETTINGS.sounds });
   });
 
   it('preselects the me rider, or the only rider', async () => {
@@ -277,7 +283,9 @@ describe('SetupScreen', () => {
     await screen.findByTestId('where');
     expect(useSessionStore.getState().runtime!.options?.world).toBe('road');
     await new Promise((r) => setTimeout(r, 20));
-    expect(saved).toEqual([]);
+    // Only "the bike question is answered" is stored, nothing else.
+    expect(saved).toHaveLength(1);
+    expect(saved[0]).toMatchObject({ bikeSetupDone: true, sounds: DEFAULT_SETTINGS.sounds });
   });
 
   it('World offers every layout (Corners by default), with or without riders', async () => {

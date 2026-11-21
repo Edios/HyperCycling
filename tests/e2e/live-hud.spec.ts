@@ -40,7 +40,7 @@ async function rideWithSensors(page: Page): Promise<void> {
   await setup.getByRole('button', { name: 'Add', exact: true }).click();
   const form = page.getByTestId('add-player-form');
   await form.getByLabel('Name').fill('Mirek');
-  await form.getByLabel('FTP (W)').fill('250');
+  await form.getByLabel('FTP (W)', { exact: true }).fill('250');
   await form.getByRole('button', { name: 'Add rider' }).click();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();

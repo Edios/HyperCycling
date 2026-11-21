@@ -11,7 +11,8 @@ import {
 import type { Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
 import type { SessionLog } from '../../domain/session-log';
-import { DEFAULT_SETTINGS, type Settings } from '../../domain/settings';
+import { type Settings } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 
 interface Db {
   settings?: Settings;
@@ -125,7 +126,7 @@ function renderSummary(strict = false) {
 const planRef = { planId: plan.id, week: 1, slot: 'progres' as const };
 
 beforeEach(() => {
-  db.settings = { ...DEFAULT_SETTINGS, activePlanId: plan.id };
+  db.settings = { ...METERED_SETTINGS, activePlanId: plan.id };
   db.players = [mirek, ania];
   db.progress = [freshProgress()];
   db.logs = [];
@@ -259,7 +260,7 @@ describe('SummaryScreen', () => {
     });
 
     it('is hidden without an active plan', async () => {
-      db.settings = { ...DEFAULT_SETTINGS };
+      db.settings = { ...METERED_SETTINGS };
       useLastResult.getState().set(result({ workout: freestyleWorkout }));
       renderSummary();
       await screen.findByTestId('summary-name');
@@ -429,7 +430,7 @@ describe('SummaryScreen', () => {
             at: '2026-02-01T00:00:00.000Z',
           })),
       );
-      db.settings = { ...DEFAULT_SETTINGS, activePlanId: loop.id };
+      db.settings = { ...METERED_SETTINGS, activePlanId: loop.id };
       db.progress = [{ ...freshProgress(entries), id: loop.id, planId: loop.id }];
       useLastResult.getState().set(result({ workout: freestyleWorkout }));
       renderSummary();
@@ -473,7 +474,7 @@ describe('SummaryScreen', () => {
         });
 
       beforeEach(() => {
-        db.settings = { ...DEFAULT_SETTINGS, activePlanId: loop.id };
+        db.settings = { ...METERED_SETTINGS, activePlanId: loop.id };
         // Cycle 1 is closed, so cycle 2 is the active pass.
         db.progress = [{ ...freshProgress(allDone()), id: loop.id, planId: loop.id }];
       });
@@ -510,8 +511,8 @@ describe('SummaryScreen', () => {
 
     it('is hidden when the equipment shows no watts', async () => {
       db.settings = {
-        ...DEFAULT_SETTINGS,
-        equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
+        ...METERED_SETTINGS,
+        equipment: { ...METERED_SETTINGS.equipment, showsWatts: false },
       };
       useLastResult.getState().set(result({ workout: ramp }));
       renderSummary();
@@ -563,8 +564,8 @@ describe('SummaryScreen', () => {
 
     it('is hidden for the 20-minute test when the equipment shows no watts', async () => {
       db.settings = {
-        ...DEFAULT_SETTINGS,
-        equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
+        ...METERED_SETTINGS,
+        equipment: { ...METERED_SETTINGS.equipment, showsWatts: false },
       };
       useLastResult.getState().set(result({ workout: twenty }));
       renderSummary();

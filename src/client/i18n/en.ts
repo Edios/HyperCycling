@@ -13,11 +13,6 @@ export const en = {
     editor: 'Editor',
   },
   bike: {
-    cardTitle: 'Your bike',
-    cardBody:
-      'Tell us once what you ride on so ramps and numbers fit. Takes under a minute, and you can skip it.',
-    setUp: 'Set up my bike',
-    skipRide: 'Skip and ride',
     skip: 'Skip',
     next: 'Next',
     back: 'Back',
@@ -208,6 +203,8 @@ export const en = {
     maxPlayers: 'Up to 10 riders per session.',
     playerName: 'Name',
     playerFtp: 'FTP (W)',
+    ftpHelp:
+      'FTP is the power you can hold for an hour. Not sure? Enter 150; you can fix it under Players.',
     playerSave: 'Add rider',
     playerCancel: 'Cancel',
     nameError: 'Enter a name of 1 to 24 characters.',
@@ -1065,10 +1062,10 @@ export const en = {
     plan: 'Plan',
     planEyebrow: 'Plan · weeks built around your goal',
     planNext: 'Next in your plan, week {week} of {weeks}',
-    planBody: 'Answer a few questions and get a plan for the coming weeks',
+    planBody: 'A short quiz and a plan for your goal',
     free: 'Freestyle',
     freeEyebrow: 'Freestyle · a single ride',
-    freeBody: 'Pick from {count} workouts and ride right away',
+    freeBody: 'Pick a workout and ride right away',
     experience: 'Experience',
     experienceEyebrow: 'Experience · a cinematic ride',
     experienceBody: 'A workout with its own soundtrack',
