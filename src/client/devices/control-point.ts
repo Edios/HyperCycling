@@ -6,7 +6,7 @@
  * Status notifications may arrive before the response; they do not go through here.
  */
 
-import type { BleBytes } from '../../domain/ble/bytes';
+import { toBytes, type BleBytes } from '../../domain/ble/bytes';
 import { GattTimeoutError } from './gatt-queue';
 import { parseControlPointResponse, type ControlPointResponse } from '../../domain/ble/ftms';
 
@@ -22,6 +22,29 @@ export class ControlPointAbortedError extends Error {
     super(`Control Point: ${reason}`);
     this.name = 'ControlPointAbortedError';
   }
+}
+
+const RESULT_NAMES: Record<number, ControlPointResponse['result']> = {
+  0x01: 'success',
+  0x02: 'notSupported',
+  0x03: 'invalidParameter',
+  0x04: 'operationFailed',
+  0x05: 'controlNotPermitted',
+};
+
+/** A 1-byte result code, or 2 bytes "request op code, result code", without the 0x80 header. */
+function bareResponse(data: BleBytes, opcode: number): ControlPointResponse | null {
+  const bytes = toBytes(data);
+  const code =
+    bytes.length === 1
+      ? bytes[0]
+      : bytes.length === 2 && bytes[0] === opcode
+        ? bytes[1]
+        : undefined;
+  if (code === undefined) return null;
+  const result = RESULT_NAMES[code];
+  if (!result) return null;
+  return { requestOpcode: opcode, result, resultCode: code, parameters: new Uint8Array(0) };
 }
 
 export interface ControlPointClient {
@@ -105,7 +128,15 @@ export function createControlPointClient({
       try {
         response = parseControlPointResponse(data);
       } catch (error) {
-        onUnexpected?.(data, (error as Error).message);
+        const bare = pending ? bareResponse(data, pending.opcode) : null;
+        if (!bare || !pending) {
+          onUnexpected?.(data, (error as Error).message);
+          return;
+        }
+        // Some trainers (e.g. a Kickr Core) answer without the 0x80 header: accept the result
+        // code for the pending command instead of waiting for the timeout (oss-trainer-pitfalls #1).
+        onUnexpected?.(data, 'response without the 0x80 header, taken as the result code');
+        pending.resolve(bare);
         return;
       }
       if (!pending || pending.opcode !== response.requestOpcode) {

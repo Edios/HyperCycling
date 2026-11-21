@@ -127,3 +127,16 @@ describe('settingsSchema showHrZones', () => {
     expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, showHrZones: 'x' }).success).toBe(false);
   });
 });
+
+describe('trainer settings', () => {
+  it('default to sprint mode on and the cadence guard off; bad data falls back', async () => {
+    const { resolveTrainerSettings, settingsSchema, DEFAULT_SETTINGS } = await import('./settings');
+    expect(resolveTrainerSettings({})).toEqual({ sprintMode: true, cadenceGuard: false });
+    expect(resolveTrainerSettings({ trainer: { sprintMode: false, cadenceGuard: true } })).toEqual({
+      sprintMode: false,
+      cadenceGuard: true,
+    });
+    const parsed = settingsSchema.parse({ ...DEFAULT_SETTINGS, trainer: { sprintMode: 'yes' } });
+    expect(parsed.trainer).toBeUndefined();
+  });
+});

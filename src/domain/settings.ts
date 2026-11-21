@@ -73,6 +73,21 @@ export interface Settings {
   deezerLookup?: boolean;
   /** Max 10 entries. */
   recentYoutubeUrls: string[];
+  /** Smart trainer control; absent = defaults (TRAINER_DEFAULTS). */
+  trainer?: TrainerSettings;
+}
+
+export interface TrainerSettings {
+  /** Short or very hard blocks ride on fixed resistance instead of ERG (owner decision D2). */
+  sprintMode: boolean;
+  /** Lower the ERG target while cadence stays under 55 rpm (owner decision D4: off by default). */
+  cadenceGuard: boolean;
+}
+
+export const TRAINER_DEFAULTS: TrainerSettings = { sprintMode: true, cadenceGuard: false };
+
+export function resolveTrainerSettings(s: Pick<Settings, 'trainer'>): TrainerSettings {
+  return { ...TRAINER_DEFAULTS, ...s.trainer };
 }
 
 export const equipmentSchema: z.ZodType<Equipment> = z.object({
@@ -118,6 +133,10 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   getSongBpmKey: z.string().optional(),
   deezerLookup: z.boolean().optional(),
   recentYoutubeUrls: z.array(z.string()).max(10),
+  trainer: z
+    .object({ sprintMode: z.boolean(), cadenceGuard: z.boolean() })
+    .optional()
+    .catch(undefined),
 }) as unknown as z.ZodType<Settings>; // optional-field inference caveat
 
 export const DEFAULT_SETTINGS: Settings = {

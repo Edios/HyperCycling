@@ -40,7 +40,11 @@ import { FocusBadge, FocusRest } from './layouts/FocusRest';
 import { FOCUS_IN_MS, FOCUS_OUT_MS, fadeStyle } from './hud/motion';
 import { monotonicNowMs, useLastInput } from './useLastInput';
 import { bikeKindOf, hasKnob } from '../../domain/bike';
-import { resolveResistanceMode, type SessionConfig } from '../../domain/settings';
+import {
+  resolveResistanceMode,
+  resolveTrainerSettings,
+  type SessionConfig,
+} from '../../domain/settings';
 import {
   Navigate,
   UNSAFE_DataRouterContext,
@@ -80,7 +84,8 @@ import { buildTrainingView } from './view';
 import { buildLiveMeasures } from './live-measures';
 import { useLiveSnapshot } from '../devices/useDevices';
 import { useMePlayer } from '../settings/useMePlayer';
-import { targetWatts } from '../../domain/effort';
+import { ergTargetWatts, isSprint, powerLevel } from '../../domain/erg';
+import { useErg } from './useErg';
 import styles from './TrainingScreen.module.css';
 
 const CONTROLS_HIDE_MS = 3000;
@@ -121,6 +126,9 @@ export function TrainingScreen() {
 function isTouch(): boolean {
   return typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
 }
+
+/** Plus the 3 s until the link reads "stale": about 10 s of silence before the auto-pause. */
+const AUTO_PAUSE_AFTER_STALE_MS = 7000;
 
 function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const t = useT();
@@ -247,19 +255,76 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   // memo rebuilds only when a shown value or the block's target changes.
   const liveSnapshot = useLiveSnapshot();
   const { me } = useMePlayer();
-  // The trainer belongs to the first rider of the session, else to "me" (report 5.1).
-  const rider = runtime.players[0] ?? me;
+  // The trainer is the owner's: his FTP ("me"), else the first rider of the session (decision D3).
+  const rider = me ?? runtime.players[0];
+  const riderFtp = rider && Number.isFinite(rider.ftp) && rider.ftp > 0 ? rider.ftp : undefined;
   const showsWatts = settings.equipment.showsWatts;
+  const trainerSettings = useMemo(() => resolveTrainerSettings(settings), [settings]);
+  const { driver: erg, snapshot: ergSnap } = useErg(runtime, riderFtp, trainerSettings);
+  // Smart trainer mode: a trainer is (or was) connected and the bike shows watts.
+  const trainerMode =
+    showsWatts && liveSnapshot.trainer !== 'off' && erg !== null && ergSnap !== null;
+  const sprint =
+    view !== undefined && trainerSettings.sprintMode && isSprint(view.segment) && trainerMode;
   const targetW =
-    view && rider && Number.isFinite(rider.ftp) && rider.ftp > 0
-      ? targetWatts(rider.ftp, view.ftpPct)
+    view && riderFtp !== undefined && !sprint
+      ? ergTargetWatts({ ftp: riderFtp, ftpPct: view.ftpPct, biasPct: ergSnap?.biasPct ?? 0 })
       : null;
   const targetRpm = view?.segment.rpm;
   const hrMax = rider?.hrMax ?? me?.hrMax;
   const live = useMemo(
-    () => buildLiveMeasures(liveSnapshot, { showsWatts, targetW, targetRpm, hrMax }),
-    [liveSnapshot, showsWatts, targetW, targetRpm, hrMax],
+    () =>
+      buildLiveMeasures(liveSnapshot, {
+        showsWatts,
+        targetW,
+        targetRpm,
+        hrMax,
+        powerInRing: trainerMode,
+      }),
+    [liveSnapshot, showsWatts, targetW, targetRpm, hrMax, trainerMode],
   );
+  const effortTable = settings.effortTable;
+  const trainerHud = useMemo(() => {
+    if (!trainerMode || !erg || !ergSnap || riderFtp === undefined) return undefined;
+    return {
+      watts: liveSnapshot.powerW,
+      targetW,
+      level: powerLevel(liveSnapshot.powerW, riderFtp, effortTable),
+      targetLevel: powerLevel(targetW, riderFtp, effortTable),
+      status: ergSnap.status,
+      enabled: ergSnap.enabled,
+      biasPct: ergSnap.biasPct,
+      onToggle: () => erg.setEnabled(!erg.getSnapshot().enabled),
+      onNudge: (steps: number) => erg.nudge(steps),
+      onRetry: () => erg.retry(),
+    };
+  }, [trainerMode, erg, ergSnap, riderFtp, liveSnapshot.powerW, targetW, effortTable]);
+
+  // Auto-pause (owner decision): the trainer stays silent for ~10 s during a ride → pause with a
+  // clear message; resume by itself when the signal is back. (The link reads "stale" after 3 s.)
+  const autoPausedRef = useRef(false);
+  const [autoPauseNotice, setAutoPauseNotice] = useState(false);
+  const signalBad = trainerMode && liveSnapshot.trainer !== 'live';
+  const engineStatus = state.status;
+  useEffect(() => {
+    if (!signalBad) {
+      if (autoPausedRef.current) {
+        autoPausedRef.current = false;
+        const session = useSessionStore.getState();
+        if (session.state.status === 'paused') session.resume();
+      }
+      return;
+    }
+    if (engineStatus !== 'running') return;
+    const id = setTimeout(() => {
+      const session = useSessionStore.getState();
+      if (session.state.status !== 'running') return;
+      session.pause();
+      autoPausedRef.current = true;
+      setAutoPauseNotice(true);
+    }, AUTO_PAUSE_AFTER_STALE_MS);
+    return () => clearTimeout(id);
+  }, [signalBad, engineStatus]);
 
   // Pre-cue for the next step of a stepped ramp ("In 5 s: add resistance"), once per step.
   const lastStepCue = useRef<string | undefined>(undefined);
@@ -563,7 +628,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     segments: runtime.segments,
     players: runtime.players,
     showsWatts: settings.equipment.showsWatts,
-    knobCommand: hasKnob(bikeKindOf(resolveResistanceMode(settings), settings.equipment)),
+    // With a smart trainer in control there is no knob to turn: no relative knob commands.
+    knobCommand:
+      !trainerHud && hasKnob(bikeKindOf(resolveResistanceMode(settings), settings.equipment)),
     rpmIsTarget: !settings.equipment.showsCadence,
     hideRpmTile: settings.equipment.hideRpmTile,
     reducedMotion,
@@ -572,6 +639,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     controls,
     coach,
     ...(live ? { live } : {}),
+    ...(trainerHud ? { trainer: trainerHud } : {}),
   };
   const rootStyle: CSSProperties & Record<'--zone', string> = { '--zone': view.color };
   const hudLayer = tiled ? (
@@ -653,6 +721,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         </>
       )}
       <ToastStack>
+        {autoPauseNotice && signalBad && (
+          <Toast message={t('training.erg.autoPaused')} onClose={() => setAutoPauseNotice(false)} />
+        )}
         {wantsWorld && worldFailed && !unavailableDismissed && (
           <Toast message={t('world.unavailable')} onClose={() => setUnavailableDismissed(true)} />
         )}

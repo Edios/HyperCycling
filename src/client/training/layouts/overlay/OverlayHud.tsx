@@ -40,6 +40,7 @@ export function OverlayHud({
   controls,
   coach,
   live,
+  trainer,
   withPlayers = false,
 }: OverlayHudProps) {
   const showPlayers =
@@ -56,6 +57,7 @@ export function OverlayHud({
       position={view.position}
       step={{ index: view.stepIndex, count: view.stepCount }}
       showFtp={showsWatts}
+      {...(trainer ? { trainer } : {})}
       {...(knobCommand && view.resistanceCommand
         ? { resistanceCommand: view.resistanceCommand }
         : {})}
@@ -99,7 +101,7 @@ export function OverlayHud({
       data-material={glass ? 'glass' : 'solid'}
       data-measures={measures !== null}
       data-live={live !== undefined}
-      data-rider-in-power={!!live?.power && players.length <= 1}
+      data-rider-in-power={(!!live?.power || !!trainer) && players.length <= 1}
     >
       <div className={styles.edge} data-testid="overlay-edge" aria-hidden="true" />
       {showPlayers && (

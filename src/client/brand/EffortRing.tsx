@@ -23,9 +23,14 @@ export interface EffortRingProps {
    * empty) one after the other, 35 ms apart, and the number rolls. Off by default.
    */
   motion?: boolean;
+  /** Text in place of the number (e.g. live watts in trainer mode). */
+  text?: string;
+  /** 1..10: outline this segment as the target (trainer mode). */
+  marker?: number;
   className?: string;
 }
 
+const MARKER = '#eef1f7';
 const SEGMENT_MS = 260;
 const STAGGER_MS = 35;
 const ROLL_MS = 420;
@@ -40,6 +45,8 @@ export function EffortRing({
   label,
   numberTestId,
   motion = false,
+  text,
+  marker,
   className,
 }: EffortRingProps) {
   const value = Math.min(10, Math.max(0, Math.round(Number.isFinite(effort) ? effort : 0)));
@@ -48,6 +55,8 @@ export function EffortRing({
   const svgRef = useRef<SVGSVGElement>(null);
   const numRef = useRef<HTMLSpanElement>(null);
   const shown = useRef(value);
+  // Three or four digits (watts) need a smaller number than the two-digit effort.
+  const textScale = text && text.length > 2 ? 2.4 / Math.max(3, text.length) : 1;
 
   useLayoutEffect(() => {
     const from = shown.current;
@@ -110,6 +119,17 @@ export function EffortRing({
             />
           ),
         )}
+        {marker !== undefined && segs[marker - 1] && (
+          <path
+            d={segs[marker - 1]!.d}
+            fill="none"
+            stroke={MARKER}
+            strokeWidth={1.6}
+            strokeLinejoin="round"
+            data-testid="ring-marker"
+            data-marker={marker}
+          />
+        )}
       </svg>
       <span
         ref={numRef}
@@ -118,13 +138,13 @@ export function EffortRing({
         style={{
           fontSize:
             typeof size === 'number'
-              ? size * (quiet ? 0.44 : 0.4)
-              : `calc(${box} * ${quiet ? 0.44 : 'var(--num-k, 0.4)'})`,
+              ? size * (quiet ? 0.44 : 0.4) * textScale
+              : `calc(${box} * ${quiet ? 0.44 : 'var(--num-k, 0.4)'} * ${textScale})`,
           color: quiet ? QUIET_TEXT : numColor,
         }}
         aria-hidden={label ? true : undefined}
       >
-        {String(value).padStart(2, '0')}
+        {text ?? String(value).padStart(2, '0')}
       </span>
     </div>
   );

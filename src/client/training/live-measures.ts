@@ -21,6 +21,8 @@ export interface LiveContext {
   /** Target cadence of the block, if any. */
   targetRpm: number | undefined;
   hrMax: number | undefined;
+  /** Trainer mode shows the power in the effort ring: no separate power row. */
+  powerInRing?: boolean;
 }
 
 const SEVERITY: Record<LinkState, number> = { off: 0, live: 1, stale: 2, reconnecting: 3, lost: 4 };
@@ -34,7 +36,7 @@ export function buildLiveMeasures(live: LiveSnapshot, ctx: LiveContext): LiveMea
   if (signal === 'off') return undefined;
   const out: LiveMeasures = { signal };
   if (live.trainer !== 'off') {
-    if (ctx.showsWatts) out.power = { watts: live.powerW, target: ctx.targetW };
+    if (ctx.showsWatts && !ctx.powerInRing) out.power = { watts: live.powerW, target: ctx.targetW };
     const target = ctx.targetRpm ?? null;
     out.cadence = {
       rpm: live.cadenceRpm,

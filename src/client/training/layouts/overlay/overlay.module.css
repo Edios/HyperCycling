@@ -455,3 +455,9 @@
     gap: 3vw;
   }
 }
+
+/* Minimal keeps the trainer controls to the ERG chip: ±5 % would widen the wing into the clock. */
+.root[data-layout='tunnel']
+  :is([data-testid='erg-easier'], [data-testid='erg-harder'], [data-testid='erg-bias']) {
+  display: none;
+}
