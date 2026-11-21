@@ -1665,6 +1665,16 @@ export const en = {
       ftms: 'The trainer needs Bluetooth FTMS. Most trainers from the last few years have it.',
       keepOpen: 'While you ride, keep this tab open and the screen on.',
     },
+    log: {
+      title: 'Bluetooth log',
+      privacy:
+        'If something does not work, copy or save the log and send it to us. It holds raw bytes and device states from this session and nothing leaves this device unless you share it.',
+      copy: 'Copy log',
+      save: 'Download log',
+      copied: 'Log copied',
+      copyFailed: 'Could not copy. Use Download log instead.',
+      saved: 'Log saved',
+    },
     unsupported: {
       insecureContext:
         'Bluetooth needs a secure page. Open HyperCycling at https://hypercycling.app, or at localhost on the computer that runs it.',

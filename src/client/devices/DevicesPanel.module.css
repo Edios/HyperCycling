@@ -163,6 +163,30 @@
   gap: 0.375rem;
 }
 
+.logExport {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.logTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.logHint {
+  margin: 0;
+  color: var(--mut);
+  font-size: max(var(--fs-min), 0.9375rem);
+}
+
+.logActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 /* Very narrow screens: the button drops under the text so names and values keep their width. */
 @media (max-width: 22rem) {
   .row {
