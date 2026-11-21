@@ -160,10 +160,10 @@ export function EffortGroup({
         >
           {name}
         </div>
-        {trainer && trainer.targetW !== null && (
+        {trainer && trainer.targetW !== null && trainer.watts !== null && (
           <div className={styles.powerBar}>
             <RangeBar value={trainer.watts} {...targetBand(trainer.targetW)} testId="power-bar" />
-            {trainer.blockScore != null && (
+            {trainer.blockScore != null && trainer.watts !== null && (
               <div className={`${hud.cap} ${styles.blockScore}`} data-testid="block-score">
                 {t('training.exec.live', { score: trainer.blockScore })}
               </div>

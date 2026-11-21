@@ -124,6 +124,7 @@ export const en = {
       idle: 'Trainer',
       unsupported: 'No ERG',
       blocked: 'Another app controls the trainer',
+      ftpInvalid: 'Check your FTP (50–600 W)',
       retry: 'Try again',
       turnOn: 'Turn ERG on',
       turnOff: 'Turn ERG off: ride freely on a flat road',

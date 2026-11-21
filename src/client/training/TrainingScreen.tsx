@@ -387,14 +387,22 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   // Pre-cue for the next step of a stepped ramp ("In 5 s: add resistance"), once per step.
   const lastStepCue = useRef<string | undefined>(undefined);
   useEffect(() => {
-    if (!coachOn || state.status !== 'running') return;
+    // Step pre-cues tell a knob rider to turn the knob; in trainer mode ERG does it (review #113).
+    if (!coachOn || trainerMode || state.status !== 'running') return;
     const seg = runtime.segments[state.segmentIndex];
     if (!seg) return;
     const pre = stepPreCue(seg, state.segmentElapsedSec);
     if (!pre || pre.key === lastStepCue.current) return;
     lastStepCue.current = pre.key;
     setCue((prev) => ({ cue: pre.cue, key: prev.key + 1 }));
-  }, [coachOn, runtime.segments, state.status, state.segmentIndex, state.segmentElapsedSec]);
+  }, [
+    coachOn,
+    trainerMode,
+    runtime.segments,
+    state.status,
+    state.segmentIndex,
+    state.segmentElapsedSec,
+  ]);
 
   // M2 script: announcement, closing and silence notice, driven by the workout clock (not frames).
   const cuePlan = useMemo(

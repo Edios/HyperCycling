@@ -128,6 +128,7 @@ export const pl: Messages = {
       idle: 'Trenażer',
       unsupported: 'Bez ERG',
       blocked: 'Inna aplikacja steruje trenażerem',
+      ftpInvalid: 'Sprawdź FTP (50–600 W)',
       retry: 'Spróbuj ponownie',
       turnOn: 'Włącz ERG',
       turnOff: 'Wyłącz ERG: jazda swobodna jak po płaskim',
