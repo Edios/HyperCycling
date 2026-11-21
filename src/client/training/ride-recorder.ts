@@ -29,10 +29,18 @@ export interface RideSampleInput {
 }
 
 export interface RideRecorder {
-  /** One second of riding. */
-  sample(input: RideSampleInput): void;
-  /** Something happened at the current second of riding. */
-  event(kind: RideEventKind): void;
+  /** The ride runs (start or resume) from now on the riding clock. */
+  run(): void;
+  /** The ride stops running (pause, end, leaving): catch up first, then stop the riding clock. */
+  halt(input: RideSampleInput): void;
+  /**
+   * Adds every sample the riding clock says is due: the live values for the latest second and
+   * null for seconds a late or throttled timer missed (a hidden tab), so the record keeps one
+   * sample per real second of riding.
+   */
+  catchUp(input: RideSampleInput): void;
+  /** Something happened at the current second of riding (now, or at a known earlier time). */
+  event(kind: RideEventKind, atMs?: number): void;
   data(): RideBuffer;
 }
 
@@ -41,6 +49,13 @@ function value(v: number | null): number | null {
   return v !== null && Number.isFinite(v) && v >= 0 ? v : null;
 }
 
+const SAMPLE_MS = RIDE_SAMPLE_SEC * 1000;
+
+/**
+ * The riding clock counts wall-clock time while the ride runs, like the session engine's own
+ * clock (accumulated running time), but not the engine's workout position: skipping a block
+ * forward or back moves the workout, not the time ridden.
+ */
 export function createRideRecorder(
   initial?: RideBuffer,
   now: () => number = () => Date.now(),
@@ -49,24 +64,50 @@ export function createRideRecorder(
   const events: RideEvent[] = initial ? initial.events.map((e) => ({ ...e })) : [];
   let originMs = initial?.originMs ?? null;
   let lastMs = Math.max(0, samples.timeMs.at(-1) ?? 0, events.at(-1)?.atMs ?? 0);
+  /** Riding time before the current run (a resumed buffer counts its samples). */
+  let accMs = samples.power.length * SAMPLE_MS;
+  let runStart: number | null = null;
+
   /** Ms after the origin, never going back (a clock change must not reorder the record). */
-  const elapsed = (): number => {
-    const t = now();
+  const stamp = (t: number): number => {
     originMs ??= t;
     lastMs = Math.max(lastMs, Math.round(t - originMs));
     return lastMs;
   };
+  const push = (timeMs: number, input: RideSampleInput | null): void => {
+    samples.timeMs.push(timeMs);
+    samples.power.push(input ? value(input.powerW) : null);
+    samples.cadence.push(input ? value(input.cadenceRpm) : null);
+    samples.heartRate.push(input ? value(input.hrBpm) : null);
+    samples.targetW.push(input ? value(input.targetW) : null);
+    samples.segmentIndex.push(Math.max(0, input?.segmentIndex ?? samples.segmentIndex.at(-1) ?? 0));
+  };
+  const catchUp = (input: RideSampleInput): void => {
+    if (runStart === null) return;
+    const t = now();
+    const due = Math.floor((accMs + Math.max(0, t - runStart)) / SAMPLE_MS);
+    const missing = due - samples.power.length;
+    if (missing <= 0) return;
+    // Seconds nobody sampled: no data (null), each at its own second of wall-clock time.
+    for (let k = missing - 1; k >= 1; k--) push(stamp(t - k * SAMPLE_MS), null);
+    push(stamp(t), input);
+  };
   return {
-    sample(input) {
-      samples.timeMs.push(elapsed());
-      samples.power.push(value(input.powerW));
-      samples.cadence.push(value(input.cadenceRpm));
-      samples.heartRate.push(value(input.hrBpm));
-      samples.targetW.push(value(input.targetW));
-      samples.segmentIndex.push(Math.max(0, input.segmentIndex));
+    run() {
+      if (runStart !== null) return;
+      runStart = now();
+      originMs ??= runStart;
     },
-    event(kind) {
-      events.push({ atSec: samples.power.length * RIDE_SAMPLE_SEC, atMs: elapsed(), kind });
+    halt(input) {
+      if (runStart === null) return;
+      catchUp(input);
+      accMs += Math.max(0, now() - runStart);
+      runStart = null;
+    },
+    catchUp,
+    event(kind, atMs) {
+      const at = atMs !== undefined ? Math.max(0, Math.round(atMs)) : stamp(now());
+      events.push({ atSec: samples.power.length * RIDE_SAMPLE_SEC, atMs: at, kind });
     },
     data: () => ({ originMs, samples, events }),
   };

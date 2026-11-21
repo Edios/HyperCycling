@@ -50,7 +50,7 @@ describe('useRideRecorder', () => {
     const { samples, events } = result.current.recorder.data();
     expect(samples.power).toEqual([200, 200, 200, null, 200]);
     // Wall-clock times keep the 5 s pause.
-    expect(samples.timeMs).toEqual([0, 1000, 2000, 3000, 9000]);
+    expect(samples.timeMs).toEqual([1000, 2000, 3000, 4000, 10_000]);
     expect(events.map(({ atSec, kind }) => ({ atSec, kind }))).toEqual([
       { atSec: 3, kind: 'signalLost' },
       { atSec: 4, kind: 'autoPause' },

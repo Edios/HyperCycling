@@ -10,9 +10,12 @@ import {
   type RideRecorder,
 } from './ride-recorder';
 
-export const RIDE_SAMPLE_MS = 1000;
+/** How often the riding clock is checked; samples follow the clock, not this timer. */
+export const RIDE_SAMPLE_MS = 250;
 /** How often the recording is copied to session storage while riding. */
 export const RIDE_FLUSH_MS = 5000;
+
+const PAUSE_KINDS: ReadonlySet<RideEventKind> = new Set(['pause', 'autoPause', 'deviceStop']);
 
 export interface RideRecorderInput {
   status: EngineStatus;
@@ -53,6 +56,12 @@ export function createRideSession(workoutId: string, resumed: boolean): RideReco
   const kept = resumed ? loadRideBuffer(workoutId) : undefined;
   if (!resumed) clearRideBuffer();
   const recorder = createRideRecorder(kept);
+  // A reload cut the ride: unless it was paused already, the time until the resume is a pause.
+  const lastKind = kept?.events.at(-1)?.kind;
+  if (kept && kept.samples.power.length > 0 && !(lastKind && PAUSE_KINDS.has(lastKind))) {
+    // At the last kept second: what came after it until the reload is lost, not ridden.
+    recorder.event('pause', kept.samples.timeMs.at(-1));
+  }
   let finished = false;
   return {
     recorder,
@@ -85,22 +94,26 @@ export function useRideRecorder(
     latest.current = input;
   });
 
+  // The riding clock runs with the ride; samples are added as it says they are due.
   const running = input.status === 'running';
   useEffect(() => {
     if (!running) return;
-    const flushEvery = Math.max(1, Math.round(flushMs / sampleMs));
-    let ticks = 0;
+    recorder.run();
+    let savedAt = Date.now();
     const id = setInterval(() => {
-      const i = latest.current;
-      if (i.status !== 'running') return;
-      recorder.sample(i);
-      ticks += 1;
-      if (ticks % flushEvery === 0) handle.flush();
+      recorder.catchUp(latest.current);
+      if (Date.now() - savedAt >= flushMs) {
+        savedAt = Date.now();
+        handle.flush();
+      }
     }, sampleMs);
-    return () => clearInterval(id);
+    return () => {
+      clearInterval(id);
+      recorder.halt(latest.current);
+    };
   }, [running, recorder, handle, sampleMs, flushMs]);
 
-  // Pause / resume.
+  // Pause / resume (the riding clock has already stopped when this runs).
   const prevStatus = useRef<EngineStatus>(input.status);
   useEffect(() => {
     const prev = prevStatus.current;
@@ -127,6 +140,7 @@ export function useRideRecorder(
     const prev = prevLive.current;
     prevLive.current = live;
     if (prev === null || prev === live) return;
+    recorder.catchUp(latest.current);
     recorder.event(live ? 'signalBack' : 'signalLost');
   }, [input.trainerLink, live, started, recorder]);
 
@@ -136,6 +150,7 @@ export function useRideRecorder(
     const prev = prevErg.current;
     prevErg.current = on;
     if (!started || on === null || prev === null || prev === on) return;
+    recorder.catchUp(latest.current);
     recorder.event(on ? 'ergOn' : 'ergOff');
   }, [input.ergEnabled, started, recorder]);
 

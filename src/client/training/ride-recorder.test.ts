@@ -22,72 +22,106 @@ const meta = {
 describe('ride recorder', () => {
   afterEach(() => clearRideBuffer());
 
-  it('records one sample per call, missing or bad readings as null, events at the current second', () => {
+  const live = { powerW: 200, cadenceRpm: 90, hrBpm: 140, targetW: 210, segmentIndex: 0 };
+
+  it('samples by the riding clock: a 5 s clock jump gives 5 samples, the missed ones null', () => {
     let clock = 1_000_000;
     const r = createRideRecorder(undefined, () => clock);
-    r.sample({ powerW: 200, cadenceRpm: 90, hrBpm: 140, targetW: 210, segmentIndex: 0 });
-    clock += 400;
+    r.run();
+    clock += 1000;
+    r.catchUp(live);
+    clock += 5000; // the timer was throttled for 5 s
+    r.catchUp({ ...live, powerW: 250, segmentIndex: 1 });
+    const { samples } = r.data();
+    expect(samples.power).toEqual([200, null, null, null, null, 250]);
+    expect(samples.timeMs).toEqual([1000, 2000, 3000, 4000, 5000, 6000]);
+    expect(samples.segmentIndex).toEqual([0, 0, 0, 0, 0, 1]);
+    // Bad readings are null, never 0.
+    clock += 1000;
+    r.catchUp({ ...live, cadenceRpm: Number.NaN, hrBpm: -1 });
+    expect(r.data().samples.cadence.at(-1)).toBeNull();
+    expect(r.data().samples.heartRate.at(-1)).toBeNull();
+  });
+
+  it('a 30 s pause is not ridden, and its length can be read back from the record', () => {
+    let clock = Date.parse('2026-11-21T08:00:00.000Z');
+    const r = createRideRecorder(undefined, () => clock);
+    r.run();
+    clock += 3000;
+    r.halt(live);
     r.event('pause');
-    clock += 60_000; // a minute of pause: the gap shows in the wall-clock times
-    r.sample({ powerW: null, cadenceRpm: Number.NaN, hrBpm: -1, targetW: null, segmentIndex: 1 });
-    clock -= 5000; // the clock going back never reorders the record
+    clock += 30_000;
+    r.catchUp(live); // nothing is due while halted
     r.event('resume');
-    expect(r.data()).toEqual({
-      originMs: 1_000_000,
-      samples: {
-        timeMs: [0, 60_400],
-        power: [200, null],
-        cadence: [90, null],
-        heartRate: [140, null],
-        targetW: [210, null],
-        segmentIndex: [0, 1],
-      },
-      events: [
-        { atSec: 1, atMs: 400, kind: 'pause' },
-        { atSec: 2, atMs: 60_400, kind: 'resume' },
-      ],
-    });
+    r.run();
+    clock += 2000;
+    r.catchUp(live);
+    const ride = buildRideRecord(r.data(), meta)!;
+    expect(rideSchema.safeParse(ride).success).toBe(true);
+    expect(ride.summary.ridingSec).toBe(5);
+    const pause = ride.events.find((e) => e.kind === 'pause')!;
+    const resume = ride.events.find((e) => e.kind === 'resume')!;
+    expect(resume.atMs - pause.atMs).toBe(30_000);
+    expect(ride.samples.timeMs).toEqual([1000, 2000, 3000, 34_000, 35_000]);
+    expect(ride.startedAt).toBe('2026-11-21T08:00:00.000Z');
+  });
+
+  it('skipping blocks moves the workout, not the time ridden', () => {
+    let clock = 0;
+    const r = createRideRecorder(undefined, () => clock);
+    r.run();
+    clock += 1000;
+    r.catchUp(live);
+    clock += 1000;
+    r.catchUp({ ...live, segmentIndex: 4 }); // the rider skipped ahead three blocks
+    expect(r.data().samples.power).toEqual([200, 200]);
+    expect(r.data().samples.segmentIndex).toEqual([0, 4]);
   });
 
   it('builds a valid, versioned record keyed by the session log id', () => {
-    let clock = Date.parse('2026-11-21T08:00:03.000Z');
-    const r = createRideRecorder(undefined, () => (clock += 1000));
-    r.sample({ powerW: 200, cadenceRpm: 90, hrBpm: 140, targetW: 210, segmentIndex: 0 });
-    r.sample({ powerW: 220, cadenceRpm: 92, hrBpm: 150, targetW: 210, segmentIndex: 0 });
+    let clock = 0;
+    const r = createRideRecorder(undefined, () => clock);
+    r.run();
+    clock += 2000;
+    r.catchUp({ ...live, powerW: 220, hrBpm: 150 });
     const ride = buildRideRecord(r.data(), meta);
-    expect(ride).not.toBeNull();
-    expect(rideSchema.safeParse(ride).success).toBe(true);
     expect(ride).toMatchObject({
       id: 'log-1',
       sessionLogId: 'log-1',
       schemaVersion: 1,
-      // The wall-clock origin of the samples: the first sample.
-      startedAt: '2026-11-21T08:00:04.000Z',
-      samples: { timeMs: [0, 1000] },
-      summary: { avgPowerW: 210, avgHr: 145, blocksMet: 1, executionPct: 90 },
+      summary: { blocksMet: 1, executionPct: 90 },
     });
-    // The record is a copy: later samples do not change it.
-    r.sample({ powerW: 999, cadenceRpm: 90, hrBpm: 140, targetW: 210, segmentIndex: 0 });
-    expect(ride!.samples.power).toEqual([200, 220]);
+    clock += 1000;
+    r.catchUp(live);
+    expect(ride!.samples.power).toHaveLength(2); // the record is a copy
   });
 
   it('nothing is saved when no sensor sent anything', () => {
-    const r = createRideRecorder();
-    r.sample({ powerW: null, cadenceRpm: null, hrBpm: null, targetW: 200, segmentIndex: 0 });
+    let clock = 0;
+    const r = createRideRecorder(undefined, () => clock);
+    r.run();
+    clock += 2000;
+    r.catchUp({ ...live, powerW: null, cadenceRpm: null, hrBpm: null });
     expect(buildRideRecord(r.data(), meta)).toBeNull();
   });
 
-  it('keeps a reload buffer per workout in session storage', () => {
-    const r = createRideRecorder();
-    r.sample({ powerW: 180, cadenceRpm: 85, hrBpm: null, targetW: 200, segmentIndex: 2 });
+  it('keeps a reload buffer per workout; a resumed recorder carries on its riding clock', () => {
+    let clock = 0;
+    const r = createRideRecorder(undefined, () => clock);
+    r.run();
+    clock += 1000;
+    r.catchUp(live);
     saveRideBuffer('w1', r.data());
     expect(loadRideBuffer('w2')).toBeUndefined();
     const kept = loadRideBuffer('w1');
-    expect(kept?.samples.power).toEqual([180]);
-    // A recorder started from the buffer carries on.
-    const again = createRideRecorder(kept);
-    again.sample({ powerW: 190, cadenceRpm: 86, hrBpm: null, targetW: 200, segmentIndex: 2 });
-    expect(again.data().samples.power).toEqual([180, 190]);
+    expect(kept?.samples.power).toEqual([200]);
+    clock += 60_000; // the reload
+    const again = createRideRecorder(kept, () => clock);
+    again.run();
+    clock += 1000;
+    again.catchUp(live);
+    expect(again.data().samples.power).toEqual([200, 200]);
+    expect(again.data().samples.timeMs).toEqual([1000, 62_000]);
     clearRideBuffer();
     expect(loadRideBuffer('w1')).toBeUndefined();
     sessionStorage.setItem('hypercycling.rideBuffer', '{"workoutId":"w1","samples":{}}');

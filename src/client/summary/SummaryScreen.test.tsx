@@ -287,9 +287,12 @@ describe('SummaryScreen', () => {
 
   describe('ride (T6)', () => {
     function recordedRide(id: string): RideRecord {
-      const r = createRideRecorder();
+      let clock = 0;
+      const r = createRideRecorder(undefined, () => clock);
+      r.run();
       for (let i = 0; i < 40; i++) {
-        r.sample({ powerW: 200 + i, cadenceRpm: 90, hrBpm: 150, targetW: 210, segmentIndex: 0 });
+        clock += 1000;
+        r.catchUp({ powerW: 200 + i, cadenceRpm: 90, hrBpm: 150, targetW: 210, segmentIndex: 0 });
       }
       return buildRideRecord(r.data(), {
         id,
