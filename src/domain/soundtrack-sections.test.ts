@@ -439,6 +439,10 @@ describe('coverage', () => {
     expect(coverage(sections, tracks, ['house'], { share: 0.5 })[0]!.tracks).toBe(1);
   });
 
+  it('counts a category listed twice on one song once', () => {
+    expect(coverage(sections, [t(180, 'rock', 'rock')], ['rock'])[0]!.tracks).toBe(1);
+  });
+
   it('widens the tempo window with a tolerance', () => {
     const tracks = [t(168, 'rock')]; // 6.7% below 180
     expect(coverage(sections, tracks, ['rock'])[0]!.tracks).toBe(0);

@@ -116,7 +116,11 @@ export interface MusicSection {
   effort: { min: number; max: number; mean: number };
   /** Cadence weighted by time over the blocks that set one; `DEFAULT_RPM` when none does. */
   rpmMean: number;
-  /** False when no block of the section sets a cadence (the tempo is then a guess). */
+  /**
+   * False when no block of the section sets a cadence (the tempo is then a guess, shown as an
+   * estimated tempo). Such a section is compared on effort alone: merging, the limit of sections
+   * and splitting all ignore the cadence difference when either side's cadence is unknown.
+   */
   rpmKnown: boolean;
   /** Wanted song tempo on the beat: 2 x `rpmMean` (half/double via `targetBpms`). */
   targetBpm: number;
@@ -523,7 +527,10 @@ export function coverage(
         if (m && (halfDouble || m.kind === 'exact')) fitSec += s.durationSec;
       }
       if (fitSec < share * total) continue;
-      for (const c of new Set(t.categories)) {
+      const cats = t.categories;
+      for (let i = 0; i < cats.length; i++) {
+        const c = cats[i] as MusicCategoryId;
+        if (cats.indexOf(c) !== i) continue; // a category listed twice counts once
         const n = counts.get(c);
         if (n !== undefined) counts.set(c, n + 1);
       }
