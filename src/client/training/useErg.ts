@@ -29,6 +29,11 @@ export function useErg(
   useEffect(() => {
     const d = createErgDriver({
       store,
+      // Stopped on the trainer itself: pause the ride; ERG waits for the rider to resume.
+      onDeviceStop: () => {
+        const session = useSessionStore.getState();
+        if (session.state.status === 'running') session.pause();
+      },
       settings: () => settingsRef.current,
       moment: () => {
         const session = useSessionStore.getState();

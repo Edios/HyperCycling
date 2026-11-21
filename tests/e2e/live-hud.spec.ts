@@ -118,6 +118,39 @@ test('trainer mode: watts in the ring, ERG holds the target, ±5 %, ERG off, no 
   await expect(screen).not.toHaveAttribute('data-status', 'paused', { timeout: 10_000 });
 });
 
+test('execution score: block result after a block, live score, total on the summary', async ({
+  page,
+}) => {
+  await rideWithSensors(page);
+  await startRide(page);
+  await expect(page.getByTestId('erg-controls')).toHaveAttribute('data-status', 'erg', {
+    timeout: 10_000,
+  });
+  await expect(page.getByTestId('power-bar')).toBeVisible();
+  await expect(page.getByTestId('block-score')).toHaveText(/^\d+% on target$/, { timeout: 10_000 });
+  // The fake trainer has no noise: once ERG holds, the power sits exactly on the target and stays
+  // unchanged. Every second must still count (review #115 B1), so the block is met.
+  await expect(page.getByTestId('trainer-power')).toHaveText(String(await targetOf(page)), {
+    timeout: 10_000,
+  });
+  await page.waitForTimeout(12_000);
+  const live = Number(
+    /^(\d+)%/.exec((await page.getByTestId('block-score').textContent()) ?? '')?.[1],
+  );
+  expect(live).toBeGreaterThanOrEqual(70);
+  await page.keyboard.press('ArrowRight');
+  const message = page.getByText(/^Block 1 met: \d+% on target$/);
+  await expect(message).toBeVisible({ timeout: 5000 });
+  const score = Number(/(\d+)%/.exec((await message.textContent()) ?? '')?.[1]);
+  expect(score).toBeGreaterThanOrEqual(70);
+  // End the ride: the summary shows the total.
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await page.getByRole('button', { name: 'End and see summary' }).click();
+  await expect(page.getByTestId('summary-execution')).toHaveText(
+    /^Execution: \d+% on target · [1-9]\d* of \d+ blocks met$/,
+  );
+});
+
 const VIEWPORTS = [
   { name: 'pc', width: 1280, height: 800 },
   { name: 'phone-portrait', width: 390, height: 844 },
@@ -139,6 +172,13 @@ for (const vp of VIEWPORTS) {
       timeout: 10_000,
     });
     await page.mouse.move(vp.width / 2, vp.height / 2);
+    // Range bars stay thin bars in every layout (a flex quirk once made one a tall blob).
+    for (const id of ['power-bar', 'cadence-bar']) {
+      const box = await page.getByTestId(id).first().boundingBox();
+      expect(box, id).not.toBeNull();
+      expect(box!.height, id).toBeLessThanOrEqual(16);
+      expect(box!.width, id).toBeGreaterThan(40);
+    }
     await page.screenshot({ path: `${dir}/erg-${vp.name}.png` });
     await page.evaluate(() => clearInterval(window.__pump));
     await expect(page.getByTestId('live-signal')).toHaveText('No signal', { timeout: 6000 });

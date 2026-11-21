@@ -17,9 +17,32 @@ export const MET_SCORE = 70;
 /** Gaps between samples longer than this are a lost signal, not time on or off target. */
 export const MAX_SAMPLE_GAP_MS = 3000;
 
+/** The power band that counts as on target; the HUD's range bar draws exactly this (D22). */
+export function targetBand(targetW: number): { low: number; high: number } {
+  const half = Math.max(MIN_TOLERANCE_W, targetW * TOLERANCE);
+  return { low: targetW - half, high: targetW + half };
+}
+
 export function onTarget(watts: number, targetW: number): boolean {
-  const band = Math.max(MIN_TOLERANCE_W, targetW * TOLERANCE);
-  return Math.abs(watts - targetW) <= band;
+  const { low, high } = targetBand(targetW);
+  return watts >= low && watts <= high;
+}
+
+/**
+ * Where a range bar draws its band and marker, as fractions 0..1 of the bar: the band sits in the
+ * middle fifth-to-third of the bar (1.5 band widths of room on each side), the marker is clamped
+ * to the ends. Null value: no marker.
+ */
+export function barLayout(
+  value: number | null,
+  low: number,
+  high: number,
+): { from: number; to: number; marker: number | null } {
+  const width = Math.max(1, high - low);
+  const min = low - 1.5 * width;
+  const span = 4 * width;
+  const at = (v: number) => Math.min(1, Math.max(0, (v - min) / span));
+  return { from: at(low), to: at(high), marker: value === null ? null : at(value) };
 }
 
 export interface BlockResult {

@@ -106,6 +106,11 @@ export const en = {
     quickCoach: 'On-screen cues',
     quickRideOnly: 'Changes here apply to this ride only.',
     quickYoutubeNone: 'Add a YouTube link in the setup screen to use this background.',
+    exec: {
+      live: '{score}% on target',
+      met: 'Block {n} met: {score}% on target',
+      notMet: 'Block {n} not met: {score}% on target',
+    },
     erg: {
       autoPaused: 'No signal from the trainer: paused. The ride goes on when the signal is back.',
       power: 'Power',
@@ -119,6 +124,7 @@ export const en = {
       idle: 'Trainer',
       unsupported: 'No ERG',
       blocked: 'Another app controls the trainer',
+      ftpInvalid: 'Check your FTP (50–600 W)',
       retry: 'Try again',
       turnOn: 'Turn ERG on',
       turnOff: 'Turn ERG off: ride freely on a flat road',
@@ -144,6 +150,8 @@ export const en = {
     },
   },
   summary: {
+    execution: 'Execution',
+    executionDetail: '{score}% on target · {met} of {total} blocks met',
     experienceChapters: 'Parts ridden: {reached} of {total}',
     title: 'Workout summary',
     completed: 'Completed',
