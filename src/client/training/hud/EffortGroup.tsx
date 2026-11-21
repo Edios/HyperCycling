@@ -10,6 +10,8 @@ import { formatClock } from '../format';
 import hud from './hud.module.css';
 import { ErgControls, type TrainerHud } from './ErgControls';
 import { PositionBadge } from './PositionBadge';
+import { RangeBar } from './RangeBar';
+import { targetBand } from '../../../domain/execution';
 import styles from './EffortGroup.module.css';
 
 const COMMAND_KEYS: Record<ResistanceCommand, MessageKey> = {
@@ -158,6 +160,16 @@ export function EffortGroup({
         >
           {name}
         </div>
+        {trainer && trainer.targetW !== null && trainer.watts !== null && (
+          <div className={styles.powerBar}>
+            <RangeBar value={trainer.watts} {...targetBand(trainer.targetW)} testId="power-bar" />
+            {trainer.blockScore != null && trainer.watts !== null && (
+              <div className={`${hud.cap} ${styles.blockScore}`} data-testid="block-score">
+                {t('training.exec.live', { score: trainer.blockScore })}
+              </div>
+            )}
+          </div>
+        )}
         {hr && <div className={styles.hr}>{hr}</div>}
         <div className={styles.posRow}>
           <PositionBadge position={position} />

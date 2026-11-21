@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createExecutionTracker, onTarget } from './execution';
+import { barLayout, createExecutionTracker, onTarget, targetBand } from './execution';
 
 describe('onTarget', () => {
   it('±10 % of the target, at least ±10 W', () => {
@@ -53,5 +53,20 @@ describe('createExecutionTracker', () => {
     expect(t.total()).toBeNull();
     expect(t.current()).toBeNull();
     expect(t.closeBlock()).toBeNull();
+  });
+});
+
+describe('targetBand and barLayout (range bars, D22)', () => {
+  it('the band is the same tolerance as the met rule', () => {
+    expect(targetBand(200)).toEqual({ low: 180, high: 220 });
+    expect(targetBand(50)).toEqual({ low: 40, high: 60 });
+  });
+
+  it('band in the middle, marker clamped to the ends, no marker without a value', () => {
+    expect(barLayout(200, 180, 220)).toEqual({ from: 0.375, to: 0.625, marker: 0.5 });
+    expect(barLayout(1000, 180, 220).marker).toBe(1);
+    expect(barLayout(0, 180, 220).marker).toBe(0);
+    expect(barLayout(null, 85, 95).marker).toBeNull();
+    expect(barLayout(90, 90, 90).marker).toBe(0.375);
   });
 });

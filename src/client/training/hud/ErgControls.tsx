@@ -15,6 +15,8 @@ export interface TrainerHud {
   status: ErgStatus;
   enabled: boolean;
   biasPct: number;
+  /** Live score of the current block (% of time on target), null without data. */
+  blockScore?: number | null;
   onToggle(): void;
   onNudge(steps: number): void;
   onRetry(): void;
@@ -29,6 +31,7 @@ const CHIP: Record<ErgStatus, MessageKey> = {
   resistance: 'training.erg.resistance',
   paused: 'training.erg.paused',
   blocked: 'training.erg.blocked',
+  ftpInvalid: 'training.erg.ftpInvalid',
 };
 
 /**
@@ -39,8 +42,8 @@ export function ErgControls({ hud }: { hud: TrainerHud }) {
   const t = useT();
   const { status, enabled, biasPct } = hud;
   const active = status === 'erg' || status === 'resistance' || status === 'starting';
-  const canToggle = status !== 'unsupported' && status !== 'blocked';
-  const showBias = enabled && status !== 'unsupported' && status !== 'blocked';
+  const canToggle = status !== 'unsupported' && status !== 'blocked' && status !== 'ftpInvalid';
+  const showBias = enabled && canToggle;
   return (
     <div className={styles.row} data-testid="erg-controls" data-status={status}>
       <button

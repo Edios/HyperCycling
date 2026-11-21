@@ -4,6 +4,7 @@ import { useT } from '../../i18n';
 import { Icon } from '../../ui/Icon';
 import type { LiveMeasures } from '../live-measures';
 import { fitStyle } from './fit';
+import { RangeBar } from './RangeBar';
 import hud from './hud.module.css';
 import hrStyles from './HrTarget.module.css';
 import styles from './MeasuresGroup.module.css';
@@ -83,7 +84,7 @@ export function MeasuresGroup({
   }
 
   if (cadence && live?.cadence) {
-    const { rpm: actual, target, judgement } = live.cadence;
+    const { rpm: actual, target, judgement, band: cadenceBand } = live.cadence;
     const hint =
       judgement === 'low'
         ? t('training.live.faster')
@@ -106,6 +107,9 @@ export function MeasuresGroup({
         }
         icon={judgement === 'low' ? 'up' : judgement === 'high' ? 'down' : undefined}
         short={target !== null ? String(target) : undefined}
+        band={cadenceBand}
+        bandValue={actual}
+        bandTestId="cadence-bar"
         fit={fit}
       />,
     );
@@ -124,7 +128,7 @@ export function MeasuresGroup({
   }
 
   if (live?.hr) {
-    const { bpm, zone, noContact } = live.hr;
+    const { bpm, zone, noContact, band: hrBand } = live.hr;
     rows.push(
       <Row
         key="hr"
@@ -134,6 +138,9 @@ export function MeasuresGroup({
         unit={t('training.live.bpm')}
         note={!bare && noContact ? t('training.live.noContact') : undefined}
         zone={zone}
+        band={hrBand}
+        bandValue={bpm}
+        bandTestId="hr-bar"
         fit={fit}
       />,
     );
@@ -176,6 +183,9 @@ function Row({
   icon,
   zone,
   short,
+  band,
+  bandValue = null,
+  bandTestId,
   fit,
 }: {
   testId: string;
@@ -187,6 +197,10 @@ function Row({
   zone?: HrZone | null;
   /** Compact target ("/138") shown beside the number where the note line does not fit. */
   short?: string;
+  /** Target range bar under the row (D22). */
+  band?: { low: number; high: number };
+  bandValue?: number | null;
+  bandTestId?: string;
   fit: boolean;
 }) {
   const t = useT();
@@ -226,6 +240,7 @@ function Row({
           </span>
         )}
       </div>
+      {band && <RangeBar value={bandValue} low={band.low} high={band.high} testId={bandTestId} />}
     </div>
   );
 }

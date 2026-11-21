@@ -110,6 +110,11 @@ export const pl: Messages = {
     quickCoach: 'Komendy na ekranie',
     quickRideOnly: 'Zmiany tutaj dotyczą tylko tej jazdy.',
     quickYoutubeNone: 'Dodaj link YouTube na ekranie przygotowania, aby użyć tego tła.',
+    exec: {
+      live: '{score}% czasu w zakresie',
+      met: 'Blok {n} zaliczony: {score}% czasu w zakresie',
+      notMet: 'Blok {n} niezaliczony: {score}% czasu w zakresie',
+    },
     erg: {
       autoPaused: 'Brak sygnału z trenażera: pauza. Jazda ruszy, gdy sygnał wróci.',
       power: 'Moc',
@@ -123,6 +128,7 @@ export const pl: Messages = {
       idle: 'Trenażer',
       unsupported: 'Bez ERG',
       blocked: 'Inna aplikacja steruje trenażerem',
+      ftpInvalid: 'Sprawdź FTP (50–600 W)',
       retry: 'Spróbuj ponownie',
       turnOn: 'Włącz ERG',
       turnOff: 'Wyłącz ERG: jazda swobodna jak po płaskim',
@@ -148,6 +154,8 @@ export const pl: Messages = {
     },
   },
   summary: {
+    execution: 'Wykonanie',
+    executionDetail: '{score}% czasu w zakresie · bloki zaliczone: {met}/{total}',
     experienceChapters: 'Przejechane części: {reached} z {total}',
     title: 'Podsumowanie treningu',
     completed: 'Ukończony',

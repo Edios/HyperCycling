@@ -70,7 +70,9 @@ export type ErgStatus =
   | 'resistance'
   | 'paused'
   /** Another app holds the trainer. */
-  | 'blocked';
+  | 'blocked'
+  /** The rider's FTP is outside 50–600 W: no ERG until it is fixed (likely a typo). */
+  | 'ftpInvalid';
 
 export interface ErgSnapshot {
   status: ErgStatus;
@@ -105,7 +107,20 @@ export interface ErgDriverOptions {
   tickMs?: number;
   /** No trainer data for this long during a ride forces a reconnect (pitfall 1.5). */
   watchdogMs?: number;
+  /**
+   * The trainer reported it was stopped on the device (status 0x02 or the safety key 0x03): the
+   * ride should pause; ERG does not come back until the rider resumes it.
+   */
+  onDeviceStop?: (reason: 'stopped' | 'safetyKey') => void;
 }
+
+/** FTP outside this range is treated as a typo: no ERG targets from it (review #113). */
+export const FTP_MIN_W = 50;
+export const FTP_MAX_W = 600;
+/** A 0x02 status this soon after our own Stop/Pause is our own. */
+const OWN_STOP_MS = 2000;
+/** Repeated failures to take control wait 1, 2, 4 … up to 30 s between attempts. */
+const RETRY_MAX_MS = 30_000;
 
 const FLAT_ROAD = { windMps: 0, gradePct: 0, crr: 0.004, cwKgPerM: 0.51 };
 
@@ -116,6 +131,7 @@ export function createErgDriver({
   now = () => Date.now(),
   tickMs = 1000,
   watchdogMs = 12_000,
+  onDeviceStop,
 }: ErgDriverOptions): ErgDriver {
   const listeners = new Set<() => void>();
   let snapshot: ErgSnapshot = {
@@ -139,6 +155,14 @@ export function createErgDriver({
   let ramp: Ramp | null = null;
   let guard: GuardState = GUARD_IDLE;
   let unsupported = false;
+  // Stopped on the device: wait for the ride to be paused and resumed by the rider.
+  let deviceStopped = false;
+  let pausedSinceStop = false;
+  // Our own Stop/Pause also makes the trainer report 0x02, before or after its 0x80 answer:
+  // a 0x02 within OWN_STOP_MS of our command is not a stop on the device (review #115).
+  let ownStopUntil = 0;
+  let failures = 0;
+  let nextAttemptMs = 0;
 
   function publish(patch: Partial<ErgSnapshot>): void {
     const next = { ...snapshot, ...patch };
@@ -183,10 +207,18 @@ export function createErgDriver({
         if (s.kind === 'controlPermissionLost') {
           store.log.add('trainer', 'state', 'ERG: control lost (0xFF)');
           loseControl();
-        } else if (s.kind === 'unknown' && s.code === 0x03) {
-          // Stopped by the safety key: treat as a stop, take control again on the next step.
-          store.log.add('trainer', 'state', 'ERG: stopped by safety key (0x03)');
+        } else if (
+          (s.kind === 'unknown' && s.code === 0x03) ||
+          (s.kind === 'stoppedOrPaused' && now() >= ownStopUntil)
+        ) {
+          // Stopped on the device (safety key 0x03, or stop/pause there 0x02): pause the ride and
+          // do not take ERG back until the rider resumes (review #113).
+          const reason = s.kind === 'stoppedOrPaused' ? 'stopped' : 'safetyKey';
+          store.log.add('trainer', 'state', `ERG: stopped on the device (${reason})`);
           loseControl();
+          deviceStopped = true;
+          pausedSinceStop = false;
+          onDeviceStop?.(reason);
         }
       }),
       trainer.onData(() => void step()),
@@ -225,6 +257,7 @@ export function createErgDriver({
 
   /** Stop, then Reset: the trainer drops the ERG load and gives control back (pitfall 1.10). */
   async function stopAndReset(): Promise<void> {
+    ownStopUntil = now() + OWN_STOP_MS;
     await send(stopOrPause('stop'));
     await send(reset());
     loseControl();
@@ -290,7 +323,28 @@ export function createErgDriver({
       publish({ status: controlled ? 'paused' : 'idle', targetW: null });
       return;
     }
-    if (!controlled && !(await takeControl())) return;
+    if (m.ftp < FTP_MIN_W || m.ftp > FTP_MAX_W) {
+      publish({ status: 'ftpInvalid', targetW: null });
+      return;
+    }
+    if (deviceStopped) {
+      if (!m.running) pausedSinceStop = true;
+      if (!(m.running && pausedSinceStop)) {
+        publish({ status: 'paused', targetW: null });
+        return;
+      }
+      deviceStopped = false;
+    }
+    if (!controlled) {
+      if (t < nextAttemptMs) return;
+      if (!(await takeControl())) {
+        failures += 1;
+        nextAttemptMs = t + Math.min(RETRY_MAX_MS, 1000 * 2 ** (failures - 1));
+        return;
+      }
+      failures = 0;
+      nextAttemptMs = 0;
+    }
 
     if (!snapshot.enabled) {
       if (lastMode !== 'manual') {
@@ -303,6 +357,7 @@ export function createErgDriver({
 
     if (!m.running) {
       if (lastMode !== 'paused') {
+        ownStopUntil = now() + OWN_STOP_MS;
         const res = await send(stopOrPause('pause'));
         if (res) lastMode = 'paused';
         lastW = null;
@@ -423,6 +478,8 @@ export function createErgDriver({
     retry() {
       blocked = false;
       refusals = 0;
+      failures = 0;
+      nextAttemptMs = 0;
       loseControl();
       void step();
     },
