@@ -3,7 +3,7 @@
   position: relative;
   flex: 0 0 100%;
   width: 100%;
-  height: max(6px, calc(0.9 * var(--u, 4px)));
+  height: max(7px, calc(1.2 * var(--u, 4px)));
   margin-top: calc(0.6 * var(--u, 4px));
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);

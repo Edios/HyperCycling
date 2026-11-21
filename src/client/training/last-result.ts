@@ -15,6 +15,8 @@ export interface LastResult {
   plan?: { planId: string; week: number; slot: PlanSlot; cycle?: number };
   /** Built-in Experience that was ridden (its title and chapters show on the summary). */
   experienceId?: string;
+  /** Smart trainer execution score (D21): time-weighted total and each block's result. */
+  execution?: { total: number; blocks: { segmentIndex: number; score: number; met: boolean }[] };
   /** True when read back from session storage after a reload: it was already logged and counted. */
   restored?: true;
 }

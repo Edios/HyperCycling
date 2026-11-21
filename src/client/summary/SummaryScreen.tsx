@@ -154,6 +154,16 @@ function Summary({ result }: { result: LastResult }) {
         <div className={styles.chart}>
           <ProfileChart segments={segments} height="5.625rem" pastSec={result.riddenSec} thick />
         </div>
+        {result.execution && (
+          <p className={styles.timeLabel} data-testid="summary-execution">
+            {t('summary.execution')}:{' '}
+            {t('summary.executionDetail', {
+              score: result.execution.total,
+              met: result.execution.blocks.filter((b) => b.met).length,
+              total: result.execution.blocks.length,
+            })}
+          </p>
+        )}
         {result.players.length > 0 && (
           <div className={styles.chips} data-testid="summary-players">
             {result.players.map((p) => (

@@ -110,6 +110,11 @@ export const pl: Messages = {
     quickCoach: 'Komendy na ekranie',
     quickRideOnly: 'Zmiany tutaj dotyczą tylko tej jazdy.',
     quickYoutubeNone: 'Dodaj link YouTube na ekranie przygotowania, aby użyć tego tła.',
+    exec: {
+      live: '{score}% w celu',
+      met: 'Blok {n} zaliczony: {score}% w celu',
+      notMet: 'Blok {n} niezaliczony: {score}% w celu',
+    },
     erg: {
       autoPaused: 'Brak sygnału z trenażera: pauza. Jazda ruszy, gdy sygnał wróci.',
       power: 'Moc',
@@ -148,6 +153,8 @@ export const pl: Messages = {
     },
   },
   summary: {
+    execution: 'Wykonanie',
+    executionDetail: '{score}% w celu · zaliczone {met} z {total} bloków',
     experienceChapters: 'Przejechane części: {reached} z {total}',
     title: 'Podsumowanie treningu',
     completed: 'Ukończony',

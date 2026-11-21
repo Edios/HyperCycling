@@ -15,6 +15,8 @@ export interface TrainerHud {
   status: ErgStatus;
   enabled: boolean;
   biasPct: number;
+  /** Live score of the current block (% of time on target), null without data. */
+  blockScore?: number | null;
   onToggle(): void;
   onNudge(steps: number): void;
   onRetry(): void;
