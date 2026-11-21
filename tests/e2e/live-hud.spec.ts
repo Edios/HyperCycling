@@ -118,6 +118,30 @@ test('trainer mode: watts in the ring, ERG holds the target, ±5 %, ERG off, no 
   await expect(screen).not.toHaveAttribute('data-status', 'paused', { timeout: 10_000 });
 });
 
+test('execution score: block result after a block, live score, total on the summary', async ({
+  page,
+}) => {
+  await rideWithSensors(page);
+  await startRide(page);
+  await expect(page.getByTestId('erg-controls')).toHaveAttribute('data-status', 'erg', {
+    timeout: 10_000,
+  });
+  await expect(page.getByTestId('power-bar')).toBeVisible();
+  await expect(page.getByTestId('block-score')).toHaveText(/^\d+% on target$/, { timeout: 10_000 });
+  // Ride a few seconds on target, then skip to the next block.
+  await page.waitForTimeout(6000);
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByText(/^Block 1 (met|not met): \d+% on target$/)).toBeVisible({
+    timeout: 5000,
+  });
+  // End the ride: the summary shows the total.
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await page.getByRole('button', { name: 'End and see summary' }).click();
+  await expect(page.getByTestId('summary-execution')).toHaveText(
+    /^Execution: \d+% on target · \d+ of \d+ blocks met$/,
+  );
+});
+
 const VIEWPORTS = [
   { name: 'pc', width: 1280, height: 800 },
   { name: 'phone-portrait', width: 390, height: 844 },

@@ -72,7 +72,7 @@ import { CoachOverlay } from './hud/CoachOverlay';
 import { Countdown } from './hud/Countdown';
 import { EdgeFlash } from './hud/EdgeFlash';
 import { bindTrainingKeys } from './keyboard';
-import { useLastResult } from './last-result';
+import { useLastResult, type LastResult } from './last-result';
 import { BasicPlayers } from './layouts/BasicPlayers';
 import { BasicSolo } from './layouts/BasicSolo';
 import { subscribeSessionEvents, useSessionStore, type SessionRuntime } from './session-store';
@@ -86,6 +86,11 @@ import { useLiveSnapshot } from '../devices/useDevices';
 import { useMePlayer } from '../settings/useMePlayer';
 import { ergTargetWatts, isSprint, powerLevel } from '../../domain/erg';
 import { useErg } from './useErg';
+import {
+  createExecutionTracker,
+  type BlockResult,
+  type ExecutionTracker,
+} from '../../domain/execution';
 import { hrTargetFor } from '../../domain/hr-zones';
 import styles from './TrainingScreen.module.css';
 
@@ -126,6 +131,24 @@ export function TrainingScreen() {
 /** True on a touch-first device (no fine pointer): no keyboard, so no Space hint. */
 function isTouch(): boolean {
   return typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
+}
+
+/** How long the "block met / not met" message stays. */
+const BLOCK_RESULT_MS = 5000;
+
+/** Closes the open block and returns the summary's execution part, if anything was scored. */
+function executionSummary(tracker: ExecutionTracker): Pick<LastResult, 'execution'> {
+  tracker.closeBlock();
+  const total = tracker.total();
+  if (total === null) return {};
+  return {
+    execution: {
+      total,
+      blocks: tracker
+        .results()
+        .map(({ segmentIndex, score, met }) => ({ segmentIndex, score, met })),
+    },
+  };
 }
 
 /** Plus the 3 s until the link reads "stale": about 10 s of silence before the auto-pause. */
@@ -296,6 +319,28 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     [liveSnapshot, showsWatts, targetW, targetRpm, hrMax, trainerMode, hrBand],
   );
   const effortTable = settings.effortTable;
+  // Execution score (D21): one sample per live reading in trainer mode; a block result shows when
+  // the block ends, the total goes to the summary.
+  const execution = useRef(createExecutionTracker());
+  const [blockResult, setBlockResult] = useState<BlockResult | null>(null);
+  const [blockScore, setBlockScore] = useState<number | null>(null);
+  const segIndex = view?.index ?? -1;
+  const running = state.status === 'running';
+  useEffect(() => {
+    if (!trainerMode || !running || segIndex < 0) return;
+    const tracker = execution.current;
+    const before = tracker.results().length;
+    tracker.add(segIndex, liveSnapshot.powerW, targetW, Date.now());
+    const results = tracker.results();
+    if (results.length > before) setBlockResult(results[results.length - 1] ?? null);
+    setBlockScore(tracker.current());
+  }, [trainerMode, running, segIndex, liveSnapshot.powerW, targetW]);
+  useEffect(() => {
+    if (!blockResult) return;
+    const id = setTimeout(() => setBlockResult(null), BLOCK_RESULT_MS);
+    return () => clearTimeout(id);
+  }, [blockResult]);
+
   const trainerHud = useMemo(() => {
     if (!trainerMode || !erg || !ergSnap || riderFtp === undefined) return undefined;
     return {
@@ -306,11 +351,12 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       status: ergSnap.status,
       enabled: ergSnap.enabled,
       biasPct: ergSnap.biasPct,
+      blockScore,
       onToggle: () => erg.setEnabled(!erg.getSnapshot().enabled),
       onNudge: (steps: number) => erg.nudge(steps),
       onRetry: () => erg.retry(),
     };
-  }, [trainerMode, erg, ergSnap, riderFtp, liveSnapshot.powerW, targetW, effortTable]);
+  }, [trainerMode, erg, ergSnap, riderFtp, liveSnapshot.powerW, targetW, effortTable, blockScore]);
 
   // Auto-pause (owner decision): the trainer stays silent for ~10 s during a ride → pause with a
   // clear message; resume by itself when the signal is back. (The link reads "stale" after 3 s.)
@@ -385,6 +431,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         startedAt: startedAt.current ?? new Date().toISOString(),
         ...(rt.plan ? { plan: rt.plan } : {}),
         ...(rt.options?.experienceId ? { experienceId: rt.options.experienceId } : {}),
+        ...executionSummary(execution.current),
       });
       ended.current = true;
       navigate('/summary');
@@ -733,6 +780,15 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         </>
       )}
       <ToastStack>
+        {blockResult && (
+          <Toast
+            message={t(blockResult.met ? 'training.exec.met' : 'training.exec.notMet', {
+              n: blockResult.segmentIndex + 1,
+              score: blockResult.score,
+            })}
+            onClose={() => setBlockResult(null)}
+          />
+        )}
         {autoPauseNotice && signalBad && (
           <Toast message={t('training.erg.autoPaused')} onClose={() => setAutoPauseNotice(false)} />
         )}

@@ -267,3 +267,17 @@
   width: min(100%, var(--ring, calc(33 * var(--u))));
   margin: calc(0.4 * var(--u)) auto 0;
 }
+
+.blockScore {
+  text-align: center;
+  margin-top: calc(0.3 * var(--u));
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tight phone layouts keep the bar, not the extra line. */
+@media (max-width: 760px) and (orientation: portrait),
+  (orientation: landscape) and (max-height: 420px) {
+  .blockScore {
+    display: none;
+  }
+}

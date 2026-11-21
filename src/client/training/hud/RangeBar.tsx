@@ -16,6 +16,9 @@ export interface RangeBarProps {
  * transition, so a new reading glides instead of jumping.
  */
 export function RangeBar({ value, low, high, testId }: RangeBarProps) {
+  // No signal: nothing to place on the bar, and the "—" already says so; the space goes back
+  // to the HUD (tight phone layouts).
+  if (value === null) return null;
   const { from, to, marker } = barLayout(value, low, high);
   const inside = value !== null && value >= low && value <= high;
   return (
