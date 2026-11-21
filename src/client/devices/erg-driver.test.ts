@@ -88,7 +88,7 @@ describe('ERG driver', () => {
   afterEach(() => vi.useRealTimers());
 
   it('takes control and writes the target: Request Control → Start → Set Target Power', async () => {
-    const { driver, writes, settle, warm } = await setup();
+    const { driver, writes, warm } = await setup();
     await warm();
     // Entry ramp: half the target first (no measured power yet), the full target after ~4 s.
     expect(writes().slice(0, 3)).toEqual(['00', '07', '05 32 00']);
@@ -204,7 +204,7 @@ describe('ERG driver', () => {
   });
 
   it('control lost (0xFF) → Request Control again', async () => {
-    const { bluetooth, driver, writes, settle, warm } = await setup();
+    const { bluetooth, driver, writes, warm } = await setup();
     await warm();
     bluetooth.takeControlAway();
     const before = writes().length;
@@ -215,7 +215,7 @@ describe('ERG driver', () => {
   });
 
   it('another app holds the trainer: blocked after two refusals; retry works once it is free', async () => {
-    const { bluetooth, driver, settle, warm } = await setup({
+    const { bluetooth, driver, warm } = await setup({
       fake: { trainer: new FakeTrainer({ faults: { rejectControl: true } }) },
     });
     await warm();
@@ -228,7 +228,7 @@ describe('ERG driver', () => {
   });
 
   it('a trainer that does not take power targets is "unsupported"', async () => {
-    const { driver, settle, warm } = await setup({
+    const { driver, warm } = await setup({
       fake: { trainer: new FakeTrainer({ faults: { unsupportedOpcodes: [0x05] } }) },
     });
     await warm();
@@ -255,7 +255,7 @@ describe('ERG driver', () => {
   });
 
   it('cadence guard (when on) halves the target after 3 s under 55 rpm', async () => {
-    const { bluetooth, driver, writes, settle, warm } = await setup({
+    const { bluetooth, driver, writes, settle } = await setup({
       fake: { trainer: new FakeTrainer({ cadenceRpm: () => 40 }) },
       settings: { cadenceGuard: true },
     });
