@@ -26,3 +26,13 @@
   font-size: 1rem;
   box-shadow: 0 0.5rem 1.875rem rgb(0 0 0 / 0.4);
 }
+
+/*
+ * A ride on a phone in portrait: the controls and the timeline fill the bottom third, so a toast
+ * sits above them instead of covering the chart.
+ */
+@media (max-width: 760px) and (orientation: portrait) {
+  :global([data-testid='training-screen']) .stack {
+    bottom: 46vw;
+  }
+}

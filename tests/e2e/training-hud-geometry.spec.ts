@@ -160,6 +160,16 @@ async function problems(page: Page): Promise<string[]> {
     for (const b of document.querySelectorAll<HTMLElement>('[data-testid="controls"] button')) {
       const r = b.getBoundingClientRect();
       const label = b.getAttribute('aria-label') ?? '?';
+      // A phone in portrait drops two rare buttons on purpose (audit N-01: one calm row). Any
+      // other hidden button, or these two anywhere else, is a defect; the rest must be touch size.
+      if (b.getClientRects().length === 0) {
+        const phonePortrait = vw <= 760 && vh > vw;
+        if (!(phonePortrait && ['Previous block', 'Full screen'].includes(label)))
+          out.push(
+            `button "${label}" is hidden (only allowed for two buttons on a phone in portrait)`,
+          );
+        continue;
+      }
       if (Math.abs(r.width - r.height) > 1)
         out.push(`button "${label}" is ${r.width.toFixed(1)}x${r.height.toFixed(1)}, not 1:1`);
       if (r.width < 43)

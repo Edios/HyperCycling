@@ -58,17 +58,20 @@
 }
 
 /*
- * Phone portrait: the buttons wrap into centred rows (4 + 3, or 4 + 4 with the riders button);
- * a short last row is centred instead of leaving empty grid cells.
+ * Phone portrait: one row of at most six buttons (pause, next, mute, riders, quick settings,
+ * menu). Previous block and fullscreen are rare on a phone and stay on the keyboard and the
+ * wider screens, so the bar is one calm row instead of two.
  */
 @media (max-width: 760px) and (orientation: portrait) {
   .bar {
-    --gap: 2.4vw;
-    flex-wrap: wrap;
+    --gap: 3vw;
+    flex-wrap: nowrap;
     justify-content: center;
     gap: var(--gap);
-    /* Room for exactly four buttons per row. */
-    width: calc(4 * var(--btn) + 3 * var(--gap) + 1px);
+  }
+
+  .bar .rare {
+    display: none;
   }
 
   .bar .main {

@@ -448,6 +448,15 @@
     padding-top: 48px;
   }
 
+  /* The sensor row is plain text on the picture: no frame, no glass (one panel less to read). */
+  .root.root > [data-g='M'] {
+    background: none;
+    border: 0;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    padding-block: 0;
+  }
+
   /* One panel for the column on a phone: its sections keep the same order. */
   .col {
     display: flex;

@@ -154,3 +154,15 @@
     display: none;
   }
 }
+
+/* Phone in landscape: Start is a slim bar (a 44px button), not a third of the height. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .wrap {
+    padding-top: 0.25rem;
+    padding-bottom: calc(0.25rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .wrap .start {
+    height: 44px;
+  }
+}

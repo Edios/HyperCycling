@@ -316,3 +316,36 @@
     padding-block: 0.75rem;
   }
 }
+
+/*
+ * Phone in portrait: two rows. The first is the name and Save (the thing you do), the second the
+ * way back, the length and the help; the "hard minutes" line is left out (it is in the details).
+ */
+@media (max-width: 760px) {
+  .name {
+    order: -2;
+    /* The rest of the first row after Save, so the other items wrap to the second row. */
+    flex: 1 1 calc(100% - 7.5rem);
+    min-width: 0;
+  }
+
+  .bar > :last-child {
+    order: -1;
+    margin-left: 0;
+  }
+
+  .load,
+  .lbl {
+    display: none;
+  }
+
+  /* The home icon alone is a 44px target; "Freestyle" stays as the way back. */
+  .back:first-of-type {
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .total {
+    font-size: 1.375rem;
+  }
+}

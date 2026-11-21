@@ -177,36 +177,54 @@
 
 /* Phone: the same arrangement as aside, for every layout. */
 @media (max-width: 760px) and (orientation: portrait) {
-  .eff {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 4vw;
+  /* The ring is the one big thing; NEXT is a quiet bar under it (label, ring, time, position). */
+  .eff,
+  .aside {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.6vw;
   }
 
-  .dash {
+  .dash,
+  .aside .dash {
     display: none;
+  }
+
+  .nextLabel {
+    align-self: center;
   }
 
   .next,
-  .next[data-finish='true'] {
-    grid-template-areas:
-      'label'
-      'ring'
-      'time'
-      'pos';
-    grid-template-columns: auto;
-    row-gap: 1.2vw;
+  .next[data-finish='true'],
+  .aside .next {
+    grid-template-areas: 'label ring time pos';
+    grid-template-columns: auto auto auto auto;
+    column-gap: 3vw;
+    row-gap: 0;
+    justify-content: center;
     justify-items: start;
-    padding-top: 1vw;
+    align-items: center;
+    padding-top: 0;
   }
 
-  .nextDesc {
+  .next[data-finish='true'],
+  .aside .next[data-finish='true'] {
+    grid-template-areas: 'label time';
+    grid-template-columns: auto auto;
+  }
+
+  .nextDesc,
+  .aside .nextDesc {
     display: none;
   }
 
-  .nextTime {
-    font-size: var(--next-fs, 7.2vw);
+  .nextTime,
+  .aside .nextTime {
+    font-size: var(--next-fs, 6vw);
+    margin-top: 0;
+  }
+
+  .nextPos {
     margin-top: 0;
   }
 }
