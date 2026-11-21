@@ -8,13 +8,15 @@
 //   node scripts/check-experience-music.mjs --min 2    # working uploads required per song
 //
 // No network (or YouTube unreachable) is NOT a failure: the script says so and exits 0, so CI
-// without internet never goes red because of it. It only reads files in src/content/music-hints.
-import { readdirSync, readFileSync } from 'node:fs';
+// without internet never goes red because of it. It reads the scenario files in
+// src/content/music-hints and the soundtrack catalog (src/content/soundtrack/catalog.json).
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const hintsDir = join(root, 'src', 'content', 'music-hints');
+const catalogFile = join(root, 'src', 'content', 'soundtrack', 'catalog.json');
 const args = process.argv.slice(2);
 const soft = args.includes('--soft');
 const minIdx = args.indexOf('--min');
@@ -38,6 +40,15 @@ function loadSongs() {
           });
         }
       }
+    }
+  }
+  if (existsSync(catalogFile)) {
+    for (const track of JSON.parse(readFileSync(catalogFile, 'utf8')).tracks) {
+      songs.push({
+        where: `catalog ${track.id}`,
+        name: `${track.artist} - ${track.title}`,
+        ids: track.youtube.map((c) => c.id),
+      });
     }
   }
   return songs;
@@ -98,6 +109,7 @@ for (const song of songs) {
     console.log(`FEW   ${song.name} (${song.where}): ${working} working, ${MIN_WORKING} wanted`);
   }
 }
-if (unreachable > 0) console.log(`${unreachable} video(s) could not be reached and were not judged.`);
+if (unreachable > 0)
+  console.log(`${unreachable} video(s) could not be reached and were not judged.`);
 console.log(problems === 0 ? 'All uploads answer.' : `${problems} problem(s).`);
 process.exit(problems > 0 && !soft ? 1 : 0);
