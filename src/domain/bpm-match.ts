@@ -27,8 +27,20 @@ export const BPM_MAX = 220;
 
 const MULTIPLIER: Record<MatchKind, number> = { exact: 2, half: 1, double: 4 };
 const KIND_WEIGHT: Record<MatchKind, number> = { exact: 1, half: 0.85, double: 0.85 };
-const ON_BEAT = 0.03;
-const CLOSE = 0.06;
+/** A song within this share of a target tempo is on the beat. */
+export const BPM_ON_BEAT = 0.03;
+/** Default window: a song within this share of a target tempo is close enough. */
+export const BPM_CLOSE = 0.06;
+/** Wider window the soundtrack planner may fall back to when a section has too few songs. */
+export const BPM_RELAXED = 0.1;
+
+export interface MatchOptions {
+  /**
+   * Widest relative distance that still counts as a match (default `BPM_CLOSE`). Everything past
+   * `BPM_ON_BEAT` (or past the tolerance, if that is smaller) is a 'close' fit with the same score.
+   */
+  tolerance?: number;
+}
 
 function validNumber(n: number | undefined): n is number {
   return n !== undefined && Number.isFinite(n) && n > 0;
@@ -43,14 +55,20 @@ export function targetBpms(rpm: number): BpmTarget[] {
     .filter((t) => t.bpm >= BPM_MIN && t.bpm <= BPM_MAX);
 }
 
-/** Best fit of a song tempo to a cadence, or undefined when it does not fit at all. */
-export function matchBpm(bpm: number, rpm: number): BpmMatch | undefined {
+/**
+ * Best fit of a song tempo to a cadence, or undefined when it does not fit at all. Without options
+ * the window is `BPM_CLOSE` (6%); `tolerance` widens or narrows it (invalid values = default).
+ */
+export function matchBpm(bpm: number, rpm: number, opts?: MatchOptions): BpmMatch | undefined {
   if (!validNumber(bpm) || !validNumber(rpm)) return undefined;
+  const tol = opts?.tolerance;
+  const close = tol !== undefined && Number.isFinite(tol) && tol >= 0 ? tol : BPM_CLOSE;
+  const onBeat = Math.min(BPM_ON_BEAT, close);
   let best: BpmMatch | undefined;
   for (const target of targetBpms(rpm)) {
     const deviation = Math.abs(bpm - target.bpm) / target.bpm;
-    if (deviation > CLOSE) continue;
-    const fit: MatchFit = deviation <= ON_BEAT ? 'on-beat' : 'close';
+    if (deviation > close) continue;
+    const fit: MatchFit = deviation <= onBeat ? 'on-beat' : 'close';
     const score = (fit === 'on-beat' ? 1 : 0.6) * KIND_WEIGHT[target.kind];
     if (!best || score > best.score || (score === best.score && deviation < best.deviation)) {
       best = { kind: target.kind, fit, deviation, score };
