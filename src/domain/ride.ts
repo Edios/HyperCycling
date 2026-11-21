@@ -4,6 +4,10 @@
  *
  * Samples are taken once per second of riding (pauses are left out and noted as events).
  * A missing value is null, never 0 (no signal is not zero watts).
+ *
+ * Built so a FIT file (E2 exporter) can be made from it without loss: every sample and event has
+ * its wall-clock time (ms after `startedAt`), so 1 Hz timestamps, pause spans (the gaps between
+ * a pause and its resume), laps (from `segmentIndex`) and block results are all recoverable.
  */
 
 import { z } from 'zod';
@@ -25,6 +29,8 @@ export type RideEventKind =
 export interface RideEvent {
   /** Sample index (seconds of riding) at which it happened. */
   atSec: number;
+  /** Wall-clock time, ms after the ride's `startedAt`. */
+  atMs: number;
   kind: RideEventKind;
 }
 
@@ -36,6 +42,8 @@ export interface RideBlock {
 }
 
 export interface RideSamples {
+  /** Wall-clock time of each sample, ms after the ride's `startedAt` (gaps = pauses). */
+  timeMs: number[];
   power: (number | null)[];
   cadence: (number | null)[];
   heartRate: (number | null)[];
@@ -67,6 +75,7 @@ export interface RideRecord {
   schemaVersion: typeof RIDE_SCHEMA_VERSION;
   sessionLogId: string;
   workoutId: string;
+  /** Wall-clock time the recording starts from (the `timeMs` / `atMs` origin). */
   startedAt: string;
   endedAt: string;
   sampleSec: typeof RIDE_SAMPLE_SEC;
@@ -93,6 +102,7 @@ export const rideSchema: z.ZodType<RideRecord> = z
     ftp: nullableNumber,
     hrMax: nullableNumber,
     samples: z.object({
+      timeMs: z.array(z.number().int().min(0)),
       power: z.array(nullableNumber),
       cadence: z.array(nullableNumber),
       heartRate: z.array(nullableNumber),
@@ -102,6 +112,7 @@ export const rideSchema: z.ZodType<RideRecord> = z
     events: z.array(
       z.object({
         atSec: z.number().int().min(0),
+        atMs: z.number().int().min(0),
         kind: z.enum([
           'pause',
           'resume',
@@ -143,6 +154,7 @@ export const rideSchema: z.ZodType<RideRecord> = z
       const n = r.samples.power.length;
       const s = r.samples;
       return (
+        s.timeMs.length === n &&
         s.cadence.length === n &&
         s.heartRate.length === n &&
         s.targetW.length === n &&
@@ -153,7 +165,7 @@ export const rideSchema: z.ZodType<RideRecord> = z
   ) as unknown as z.ZodType<RideRecord>;
 
 export function emptySamples(): RideSamples {
-  return { power: [], cadence: [], heartRate: [], targetW: [], segmentIndex: [] };
+  return { timeMs: [], power: [], cadence: [], heartRate: [], targetW: [], segmentIndex: [] };
 }
 
 /** True when the ride has any sensor value at all (otherwise nothing is worth saving). */

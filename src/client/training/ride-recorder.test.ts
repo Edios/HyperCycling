@@ -23,24 +23,35 @@ describe('ride recorder', () => {
   afterEach(() => clearRideBuffer());
 
   it('records one sample per call, missing or bad readings as null, events at the current second', () => {
-    const r = createRideRecorder();
+    let clock = 1_000_000;
+    const r = createRideRecorder(undefined, () => clock);
     r.sample({ powerW: 200, cadenceRpm: 90, hrBpm: 140, targetW: 210, segmentIndex: 0 });
+    clock += 400;
     r.event('pause');
+    clock += 60_000; // a minute of pause: the gap shows in the wall-clock times
     r.sample({ powerW: null, cadenceRpm: Number.NaN, hrBpm: -1, targetW: null, segmentIndex: 1 });
+    clock -= 5000; // the clock going back never reorders the record
+    r.event('resume');
     expect(r.data()).toEqual({
+      originMs: 1_000_000,
       samples: {
+        timeMs: [0, 60_400],
         power: [200, null],
         cadence: [90, null],
         heartRate: [140, null],
         targetW: [210, null],
         segmentIndex: [0, 1],
       },
-      events: [{ atSec: 1, kind: 'pause' }],
+      events: [
+        { atSec: 1, atMs: 400, kind: 'pause' },
+        { atSec: 2, atMs: 60_400, kind: 'resume' },
+      ],
     });
   });
 
   it('builds a valid, versioned record keyed by the session log id', () => {
-    const r = createRideRecorder();
+    let clock = Date.parse('2026-11-21T08:00:03.000Z');
+    const r = createRideRecorder(undefined, () => (clock += 1000));
     r.sample({ powerW: 200, cadenceRpm: 90, hrBpm: 140, targetW: 210, segmentIndex: 0 });
     r.sample({ powerW: 220, cadenceRpm: 92, hrBpm: 150, targetW: 210, segmentIndex: 0 });
     const ride = buildRideRecord(r.data(), meta);
@@ -50,6 +61,9 @@ describe('ride recorder', () => {
       id: 'log-1',
       sessionLogId: 'log-1',
       schemaVersion: 1,
+      // The wall-clock origin of the samples: the first sample.
+      startedAt: '2026-11-21T08:00:04.000Z',
+      samples: { timeMs: [0, 1000] },
       summary: { avgPowerW: 210, avgHr: 145, blocksMet: 1, executionPct: 90 },
     });
     // The record is a copy: later samples do not change it.

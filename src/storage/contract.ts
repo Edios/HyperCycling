@@ -79,6 +79,7 @@ const log = (id: string): SessionLog => ({
 
 export function ride(id: string, power = 200): RideRecord {
   const samples = {
+    timeMs: [0, 1000, 5000],
     power: [power, power + 10, null],
     cadence: [90, 92, null],
     heartRate: [130, 131, 132],
@@ -96,7 +97,10 @@ export function ride(id: string, power = 200): RideRecord {
     ftp: 250,
     hrMax: 190,
     samples,
-    events: [{ atSec: 2, kind: 'autoPause' }],
+    events: [
+      { atSec: 2, atMs: 2000, kind: 'autoPause' },
+      { atSec: 2, atMs: 4000, kind: 'resume' },
+    ],
     blocks: [{ segmentIndex: 0, score: 100, met: true, measuredSec: 2 }],
     summary: summarizeRide(samples, [], 190),
   };

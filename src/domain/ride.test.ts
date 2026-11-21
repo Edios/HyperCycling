@@ -13,6 +13,7 @@ import {
 function samples(power: (number | null)[], extra: Partial<RideSamples> = {}): RideSamples {
   const n = power.length;
   return {
+    timeMs: extra.timeMs ?? power.map((_, i) => i * 1000),
     power,
     cadence: extra.cadence ?? Array<number | null>(n).fill(90),
     heartRate: extra.heartRate ?? Array<number | null>(n).fill(null),
@@ -103,7 +104,7 @@ describe('rideSchema', () => {
       ftp: 250,
       hrMax: null,
       samples: s,
-      events: [{ atSec: 1, kind: 'pause' }],
+      events: [{ atSec: 1, atMs: 1000, kind: 'pause' }],
       blocks: [],
       summary: summarizeRide(s, [], null),
     };

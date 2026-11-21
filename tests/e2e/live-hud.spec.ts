@@ -185,12 +185,15 @@ test('ride recording: the summary shows the ride and downloads it as JSON (T6)',
   const { readFileSync } = await import('node:fs');
   const ride = JSON.parse(readFileSync(path, 'utf8')) as {
     schemaVersion: number;
-    samples: { power: (number | null)[]; heartRate: (number | null)[] };
+    samples: { timeMs: number[]; power: (number | null)[]; heartRate: (number | null)[] };
     events: { kind: string }[];
   };
   expect(ride.schemaVersion).toBe(1);
   expect(ride.samples.power.length).toBeGreaterThanOrEqual(6);
   expect(ride.samples.heartRate).toContain(148);
+  // 1 Hz wall-clock times for the FIT exporter (E2), rising with every sample.
+  expect(ride.samples.timeMs).toHaveLength(ride.samples.power.length);
+  expect(ride.samples.timeMs.every((t, i, all) => i === 0 || t > all[i - 1]!)).toBe(true);
   expect(ride.events.map((e) => e.kind)).toEqual(expect.arrayContaining(['pause', 'resume']));
   // Kept on the device: the IndexedDB store holds it under the session log id.
   const stored = await page.evaluate(

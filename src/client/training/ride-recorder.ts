@@ -14,6 +14,8 @@ import { readCompat, removeCompat } from '../data/storage-compat';
 
 /** What the recorder holds during a ride (also the reload buffer in session storage). */
 export interface RideBuffer {
+  /** Wall-clock origin (epoch ms) of `timeMs` / `atMs`: the first sample or event; null before. */
+  originMs: number | null;
   samples: RideSamples;
   events: RideEvent[];
 }
@@ -39,11 +41,24 @@ function value(v: number | null): number | null {
   return v !== null && Number.isFinite(v) && v >= 0 ? v : null;
 }
 
-export function createRideRecorder(initial?: RideBuffer): RideRecorder {
+export function createRideRecorder(
+  initial?: RideBuffer,
+  now: () => number = () => Date.now(),
+): RideRecorder {
   const samples = initial ? cloneSamples(initial.samples) : emptySamples();
   const events: RideEvent[] = initial ? initial.events.map((e) => ({ ...e })) : [];
+  let originMs = initial?.originMs ?? null;
+  let lastMs = Math.max(0, samples.timeMs.at(-1) ?? 0, events.at(-1)?.atMs ?? 0);
+  /** Ms after the origin, never going back (a clock change must not reorder the record). */
+  const elapsed = (): number => {
+    const t = now();
+    originMs ??= t;
+    lastMs = Math.max(lastMs, Math.round(t - originMs));
+    return lastMs;
+  };
   return {
     sample(input) {
+      samples.timeMs.push(elapsed());
       samples.power.push(value(input.powerW));
       samples.cadence.push(value(input.cadenceRpm));
       samples.heartRate.push(value(input.hrBpm));
@@ -51,14 +66,15 @@ export function createRideRecorder(initial?: RideBuffer): RideRecorder {
       samples.segmentIndex.push(Math.max(0, input.segmentIndex));
     },
     event(kind) {
-      events.push({ atSec: samples.power.length * RIDE_SAMPLE_SEC, kind });
+      events.push({ atSec: samples.power.length * RIDE_SAMPLE_SEC, atMs: elapsed(), kind });
     },
-    data: () => ({ samples, events }),
+    data: () => ({ originMs, samples, events }),
   };
 }
 
 function cloneSamples(s: RideSamples): RideSamples {
   return {
+    timeMs: [...s.timeMs],
     power: [...s.power],
     cadence: [...s.cadence],
     heartRate: [...s.heartRate],
@@ -91,7 +107,7 @@ export function buildRideRecord(buffer: RideBuffer, meta: RideMeta): RideRecord 
     schemaVersion: RIDE_SCHEMA_VERSION,
     sessionLogId: meta.id,
     workoutId: meta.workoutId,
-    startedAt: meta.startedAt,
+    startedAt: buffer.originMs !== null ? new Date(buffer.originMs).toISOString() : meta.startedAt,
     endedAt: meta.endedAt,
     sampleSec: RIDE_SAMPLE_SEC,
     ftp: meta.ftp,
@@ -117,8 +133,9 @@ function isBuffer(v: unknown): v is StoredBuffer {
   const s = b['samples'] as Record<string, unknown> | undefined;
   if (typeof b['workoutId'] !== 'string' || !Array.isArray(b['events'])) return false;
   if (typeof s !== 'object' || s === null || !Array.isArray(s['power'])) return false;
+  if (b['originMs'] !== null && typeof b['originMs'] !== 'number') return false;
   const n = s['power'].length;
-  return ['cadence', 'heartRate', 'targetW', 'segmentIndex'].every(
+  return ['timeMs', 'cadence', 'heartRate', 'targetW', 'segmentIndex'].every(
     (k) => Array.isArray(s[k]) && (s[k] as unknown[]).length === n,
   );
 }
@@ -140,7 +157,7 @@ export function loadRideBuffer(workoutId: string): RideBuffer | undefined {
     if (!raw) return undefined;
     const parsed: unknown = JSON.parse(raw);
     if (!isBuffer(parsed) || parsed.workoutId !== workoutId) return undefined;
-    return { samples: parsed.samples, events: parsed.events };
+    return { originMs: parsed.originMs, samples: parsed.samples, events: parsed.events };
   } catch {
     return undefined;
   }
