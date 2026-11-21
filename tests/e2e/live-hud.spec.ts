@@ -166,7 +166,8 @@ test('ride recording: the summary shows the ride and downloads it as JSON (T6)',
   await page.keyboard.press('Space');
   await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running');
   await page.waitForTimeout(4000);
-  await page.getByRole('button', { name: 'Menu' }).click();
+  // The controls hide while riding: Esc opens the same exit question.
+  await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'End and see summary' }).click();
 
   const card = page.getByTestId('summary-ride');
