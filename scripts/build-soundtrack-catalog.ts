@@ -189,7 +189,8 @@ const text = await format(JSON.stringify(catalog), {
 if (checkOnly) {
   let current = '';
   try {
-    current = readFileSync(outPath, 'utf8');
+    // A Windows checkout may have turned LF into CRLF; that is not a content change.
+    current = readFileSync(outPath, 'utf8').replace(/\r\n/g, '\n');
   } catch {
     // missing file = out of date
   }
