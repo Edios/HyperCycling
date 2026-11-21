@@ -11,6 +11,8 @@ import {
 import type { Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
 import type { SessionLog } from '../../domain/session-log';
+import type { RideRecord } from '../../domain/ride';
+import { buildRideRecord, createRideRecorder } from '../training/ride-recorder';
 import { DEFAULT_SETTINGS, type Settings } from '../../domain/settings';
 
 interface Db {
@@ -18,12 +20,21 @@ interface Db {
   players: Player[];
   progress: PlanProgress[];
   logs: SessionLog[];
+  rides: RideRecord[];
   playerPuts: Player[];
   progressPuts: PlanProgress[];
   gets: number;
   failGetNo?: number;
 }
-const db: Db = { players: [], progress: [], logs: [], playerPuts: [], progressPuts: [], gets: 0 };
+const db: Db = {
+  players: [],
+  progress: [],
+  logs: [],
+  rides: [],
+  playerPuts: [],
+  progressPuts: [],
+  gets: 0,
+};
 
 vi.mock('../data/repositories', () => ({
   getRepositories: () =>
@@ -52,6 +63,12 @@ vi.mock('../data/repositories', () => ({
       sessionLogs: {
         put: (l: SessionLog) => {
           db.logs.push(l);
+          return Promise.resolve();
+        },
+      },
+      rides: {
+        put: (r: RideRecord) => {
+          db.rides.push(r);
           return Promise.resolve();
         },
       },
@@ -129,6 +146,7 @@ beforeEach(() => {
   db.players = [mirek, ania];
   db.progress = [freshProgress()];
   db.logs = [];
+  db.rides = [];
   db.playerPuts = [];
   db.progressPuts = [];
   db.gets = 0;
@@ -264,6 +282,68 @@ describe('SummaryScreen', () => {
       renderSummary();
       await screen.findByTestId('summary-name');
       noToggle();
+    });
+  });
+
+  describe('ride (T6)', () => {
+    function recordedRide(id: string): RideRecord {
+      const r = createRideRecorder();
+      for (let i = 0; i < 40; i++) {
+        r.sample({ powerW: 200 + i, cadenceRpm: 90, hrBpm: 150, targetW: 210, segmentIndex: 0 });
+      }
+      return buildRideRecord(r.data(), {
+        id,
+        workoutId: progresWorkout.id,
+        startedAt: '2026-03-01T10:00:00.000Z',
+        endedAt: '2026-03-01T10:01:00.000Z',
+        ftp: 270,
+        hrMax: 190,
+        blocks: [{ segmentIndex: 0, score: 80, met: true, measuredSec: 40 }],
+      })!;
+    }
+
+    it('shows the ride card, saves the ride under the log id and downloads its JSON', async () => {
+      useLastResult.getState().set(result({ logId: 'log-7', ride: recordedRide('log-7') }));
+      renderSummary();
+      const card = await screen.findByTestId('summary-ride');
+      expect(screen.getByTestId('ride-avg-power')).toHaveTextContent('220 W');
+      expect(screen.getByTestId('ride-np')).toHaveTextContent(/^\d+ W$/);
+      expect(screen.getByTestId('ride-hr')).toHaveTextContent('150 / 150 bpm');
+      expect(screen.getByTestId('ride-chart')).toBeInTheDocument();
+      expect(screen.getByTestId('ride-zones')).toBeInTheDocument();
+      await waitFor(() => expect(db.rides).toHaveLength(1));
+      expect(db.logs[0]!.id).toBe('log-7');
+      expect(db.rides[0]).toMatchObject({ id: 'log-7', sessionLogId: 'log-7' });
+
+      const create = vi.fn(() => 'blob:ride');
+      const revoke = vi.fn();
+      const urlBefore = {
+        createObjectURL: URL.createObjectURL,
+        revokeObjectURL: URL.revokeObjectURL,
+      };
+      Object.assign(URL, { createObjectURL: create, revokeObjectURL: revoke });
+      const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+      fireEvent.click(screen.getByRole('button', { name: 'Download ride (JSON)' }));
+      expect(click).toHaveBeenCalledTimes(1);
+      const blob = (create.mock.calls[0] as unknown as [Blob])[0];
+      const text = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.readAsText(blob);
+      });
+      const json = JSON.parse(text) as RideRecord;
+      expect(json).toMatchObject({ id: 'log-7', schemaVersion: 1 });
+      click.mockRestore();
+      Object.assign(URL, urlBefore);
+      expect(card).toHaveTextContent('Saved on this device only.');
+    });
+
+    it('a ride without sensors shows no card and saves no ride', async () => {
+      useLastResult.getState().set(result());
+      renderSummary();
+      await waitFor(() => expect(db.logs).toHaveLength(1));
+      expect(screen.queryByTestId('summary-ride')).toBeNull();
+      expect(db.rides).toHaveLength(0);
     });
   });
 

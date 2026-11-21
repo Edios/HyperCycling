@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { readCompat, removeCompat } from '../data/storage-compat';
 import type { PlanSlot } from '../../domain/plan';
+import type { RideRecord } from '../../domain/ride';
 import type { Player } from '../../domain/player';
 import type { SessionConfig } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
@@ -17,6 +18,10 @@ export interface LastResult {
   experienceId?: string;
   /** Smart trainer execution score (D21): time-weighted total and each block's result. */
   execution?: { total: number; blocks: { segmentIndex: number; score: number; met: boolean }[] };
+  /** Id the session log is saved under (the ride record shares it). */
+  logId?: string;
+  /** The recorded ride (T6), when a trainer or a strap sent data. */
+  ride?: RideRecord;
   /** True when read back from session storage after a reload: it was already logged and counted. */
   restored?: true;
 }
