@@ -31,6 +31,8 @@ async function setup(
   options: {
     fake?: ConstructorParameters<typeof FakeBluetooth>[0];
     settings?: Partial<TrainerSettings>;
+    ftp?: number;
+    onDeviceStop?: (reason: 'stopped' | 'safetyKey') => void;
   } = {},
 ) {
   const bluetooth = new FakeBluetooth(options.fake);
@@ -46,7 +48,7 @@ async function setup(
     elapsedInSegSec: 10,
     running: true,
     finished: false,
-    ftp: FTP,
+    ftp: options.ftp ?? FTP,
   };
   const trainerSettings: TrainerSettings = { ...TRAINER_DEFAULTS, ...options.settings };
   await store.connect('trainer');
@@ -55,6 +57,7 @@ async function setup(
     moment: () => moment,
     settings: () => trainerSettings,
     now: () => Date.now(),
+    ...(options.onDeviceStop ? { onDeviceStop: options.onDeviceStop } : {}),
   });
   const writes = () => bluetooth.writes.map((w) => hex(w.bytes));
   /** Lets time pass, then runs decision steps until the commands in flight are answered. */
@@ -364,6 +367,77 @@ describe('ERG driver', () => {
       expect(watts).toBeLessThanOrEqual(150);
       await warm();
       expect(writes().at(-1)).toBe('05 F0 00');
+      driver.dispose();
+    });
+  });
+
+  describe('review #113, non-critical', () => {
+    it('a stop on the device (safety key 0x03) pauses the ride; ERG waits for a resume', async () => {
+      const stops: string[] = [];
+      const { bluetooth, driver, writes, warm, setMoment } = await setup({
+        onDeviceStop: (r) => stops.push(r),
+      });
+      await warm();
+      bluetooth.devices.trainer.gatt.emit(0x2ada, Uint8Array.of(0x03));
+      expect(stops).toEqual(['safetyKey']);
+      const n = writes().length;
+      await warm(); // still "running": no new control
+      expect(writes()).toHaveLength(n);
+      expect(driver.getSnapshot().status).toBe('paused');
+      setMoment({ running: false });
+      await warm();
+      setMoment({ running: true });
+      await warm();
+      expect(writes().slice(n, n + 2)).toEqual(['00', '07']);
+      expect(driver.getSnapshot().status).toBe('erg');
+      driver.dispose();
+    });
+
+    it('a stop/pause on the device (0x02) counts too, our own pause does not', async () => {
+      const stops: string[] = [];
+      const { bluetooth, driver, settle, warm, setMoment } = await setup({
+        onDeviceStop: (r) => stops.push(r),
+      });
+      await warm();
+      setMoment({ running: false }); // our own Stop/Pause → status 0x02
+      await warm();
+      expect(stops).toEqual([]);
+      setMoment({ running: true });
+      await warm();
+      // A late 0x02 right after our own pause (after its 0x80 answer) is still ours.
+      setMoment({ running: false });
+      await settle(0);
+      bluetooth.devices.trainer.gatt.emit(0x2ada, Uint8Array.of(0x02, 0x02));
+      expect(stops).toEqual([]);
+      setMoment({ running: true });
+      await warm();
+      await settle(3000);
+      bluetooth.devices.trainer.gatt.emit(0x2ada, Uint8Array.of(0x02, 0x01));
+      expect(stops).toEqual(['stopped']);
+      driver.dispose();
+    });
+
+    it('an FTP outside 50–600 W gives no ERG target', async () => {
+      const { driver, writes, warm } = await setup({ ftp: 900 });
+      await warm();
+      expect(driver.getSnapshot().status).toBe('ftpInvalid');
+      expect(writes().some((w) => w.startsWith('05'))).toBe(false);
+      driver.dispose();
+    });
+
+    it('failing writes back off (1, 2, 4, 8 s …) instead of retrying every second', async () => {
+      const { bluetooth, driver, warm } = await setup();
+      const gatt = bluetooth.devices.trainer.gatt;
+      let attempts = 0;
+      const cp = gatt.chars.get(0x2ad9)!;
+      cp.writeValue = async () => {
+        attempts += 1;
+        throw Object.assign(new Error('GATT operation failed'), { name: 'NetworkError' });
+      };
+      cp.writeValueWithResponse = cp.writeValue;
+      for (let i = 0; i < 3; i++) await warm(); // ~18 s
+      expect(attempts).toBeGreaterThan(1);
+      expect(attempts).toBeLessThanOrEqual(6);
       driver.dispose();
     });
   });
