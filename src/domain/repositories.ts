@@ -1,6 +1,7 @@
 import type { ExportBundle } from './export-bundle';
 import type { PlanProgress } from './plan';
 import type { Player } from './player';
+import type { RideRecord } from './ride';
 import type { ActiveSession, SessionLog } from './session-log';
 import type { Settings } from './settings';
 import type { Workout } from './workout';
@@ -23,6 +24,11 @@ export interface Repositories {
   players: CollectionRepo<Player>;
   planProgress: CollectionRepo<PlanProgress>;
   sessionLogs: CollectionRepo<SessionLog>;
+  /**
+   * Recorded rides with sensor data (T6). Kept out of exportAll / replaceAll: heart rate is health
+   * data, so it never travels in the general backup (a ride is exported on its own).
+   */
+  rides: CollectionRepo<RideRecord>;
   settings: SingletonRepo<Settings>;
   activeSession: SingletonRepo<ActiveSession>;
   exportAll(): Promise<ExportBundle>;

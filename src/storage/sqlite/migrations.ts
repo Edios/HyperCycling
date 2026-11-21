@@ -9,6 +9,10 @@ export const MIGRATIONS: readonly string[] = [
   CREATE TABLE sessionLogs  (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
   CREATE TABLE singletons   (key TEXT PRIMARY KEY, json TEXT NOT NULL);
   `,
+  // 2: recorded rides with sensor data (T6).
+  `
+  CREATE TABLE rides        (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
+  `,
 ];
 
 export function migrate(db: Database): void {

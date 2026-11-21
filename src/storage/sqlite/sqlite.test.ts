@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS } from '../../domain/settings';
 import { bundle, runRepositoryContract, workout } from '../contract';
+import { MIGRATIONS } from './migrations';
 import { createSqliteRepositories } from './index';
 
 const opened: { close(): void }[] = [];
@@ -31,6 +32,22 @@ function pragma(path: string, name: string): unknown {
 }
 
 describe('sqlite migrations and persistence', () => {
+  it('upgrades a version 1 database to version 2 without touching its data', async () => {
+    const path = join(dir, 'v1.db');
+    const raw = new Database(path);
+    raw.exec(MIGRATIONS[0] as string);
+    raw.pragma('user_version = 1');
+    raw
+      .prepare('INSERT INTO players (id, json, updated_at) VALUES (?, ?, ?)')
+      .run('p1', JSON.stringify({ id: 'p1', name: 'Ola', ftp: 200 }), '2026-01-01T00:00:00.000Z');
+    raw.close();
+    const repos = createSqliteRepositories(path);
+    expect(await repos.players.get('p1')).toEqual({ id: 'p1', name: 'Ola', ftp: 200 });
+    expect(await repos.rides.list()).toEqual([]);
+    repos.close();
+    expect(pragma(path, 'user_version')).toBe(2);
+  });
+
   it('migrates user_version 0 to the current schema and creates tables', () => {
     const path = join(dir, 'fresh.db');
     new Database(path).close();
@@ -38,7 +55,7 @@ describe('sqlite migrations and persistence', () => {
 
     createSqliteRepositories(path).close();
 
-    expect(pragma(path, 'user_version')).toBe(1);
+    expect(pragma(path, 'user_version')).toBe(2);
     const check = new Database(path, { readonly: true });
     const tables = check
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table'")
@@ -46,7 +63,14 @@ describe('sqlite migrations and persistence', () => {
       .map((r) => (r as { name: string }).name);
     check.close();
     expect(tables).toEqual(
-      expect.arrayContaining(['workouts', 'players', 'planProgress', 'sessionLogs', 'singletons']),
+      expect.arrayContaining([
+        'workouts',
+        'players',
+        'planProgress',
+        'sessionLogs',
+        'singletons',
+        'rides',
+      ]),
     );
   });
 
@@ -66,7 +90,7 @@ describe('sqlite migrations and persistence', () => {
     const second = track(createSqliteRepositories(path));
     expect(await second.players.get('p1')).toEqual({ id: 'p1', name: 'Ola', ftp: 200 });
     expect(await second.settings.get()).toEqual(DEFAULT_SETTINGS);
-    expect(pragma(path, 'user_version')).toBe(1);
+    expect(pragma(path, 'user_version')).toBe(2);
   });
 
   it('refuses a database from a newer schema version', () => {
