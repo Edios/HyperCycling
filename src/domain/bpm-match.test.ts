@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BPM_CLOSE,
+  BPM_RELAXED,
   fitToRange,
   GENRES,
   genresForRpm,
@@ -56,6 +58,31 @@ describe('matchBpm', () => {
     expect(matchBpm(0, 90)).toBeUndefined();
     expect(matchBpm(120, 0)).toBeUndefined();
     expect(matchBpm(Number.NaN, 90)).toBeUndefined();
+  });
+});
+
+describe('matchBpm with a tolerance', () => {
+  it('without options keeps the 6% window', () => {
+    expect(BPM_CLOSE).toBe(0.06);
+    expect(matchBpm(170, 90)).toEqual(matchBpm(170, 90, {}));
+    expect(matchBpm(168, 90)).toBeUndefined(); // 6.7% below 180
+  });
+  it('widens the window to 10% for the relaxed planner step', () => {
+    const m = matchBpm(168, 90, { tolerance: BPM_RELAXED });
+    expect(m).toMatchObject({ kind: 'exact', fit: 'close', score: 0.6 });
+    expect(m!.deviation).toBeCloseTo(12 / 180, 9);
+    expect(matchBpm(160, 90, { tolerance: BPM_RELAXED })).toBeUndefined(); // 11% below
+  });
+  it('narrows the window, and on the beat never exceeds it', () => {
+    expect(matchBpm(176, 90, { tolerance: 0.02 })).toBeUndefined(); // 2.2% below
+    expect(matchBpm(178, 90, { tolerance: 0.02 })).toMatchObject({ fit: 'on-beat' });
+    expect(matchBpm(180, 90, { tolerance: 0 })).toMatchObject({ fit: 'on-beat', score: 1 });
+  });
+  it('ignores an invalid tolerance', () => {
+    for (const tolerance of [-1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(matchBpm(168, 90, { tolerance })).toBeUndefined();
+      expect(matchBpm(170, 90, { tolerance })).toEqual(matchBpm(170, 90));
+    }
   });
 });
 
