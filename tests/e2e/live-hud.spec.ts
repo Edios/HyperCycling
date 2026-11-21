@@ -163,6 +163,13 @@ for (const vp of VIEWPORTS) {
       timeout: 10_000,
     });
     await page.mouse.move(vp.width / 2, vp.height / 2);
+    // Range bars stay thin bars in every layout (a flex quirk once made one a tall blob).
+    for (const id of ['power-bar', 'cadence-bar']) {
+      const box = await page.getByTestId(id).first().boundingBox();
+      expect(box, id).not.toBeNull();
+      expect(box!.height, id).toBeLessThanOrEqual(16);
+      expect(box!.width, id).toBeGreaterThan(40);
+    }
     await page.screenshot({ path: `${dir}/erg-${vp.name}.png` });
     await page.evaluate(() => clearInterval(window.__pump));
     await expect(page.getByTestId('live-signal')).toHaveText('No signal', { timeout: 6000 });

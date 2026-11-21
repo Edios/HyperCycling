@@ -1,7 +1,9 @@
 /* Range bar (D22): a thin track, the target band, a marker for the live value. */
 .bar {
   position: relative;
-  flex: 0 0 100%;
+  /* Its own line in a wrapping row (label left, number right) and in a column alike: a fixed
+     height, never a flex-grown one. */
+  flex: none;
   width: 100%;
   height: max(7px, calc(1.2 * var(--u, 4px)));
   margin-top: calc(0.6 * var(--u, 4px));
