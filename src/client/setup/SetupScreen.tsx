@@ -2,7 +2,7 @@ import { effectiveMusicCues } from '../../domain/workout';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
-import { bikeKindOf, type BikeKind } from '../../domain/bike';
+import { bikeKindOf, bikeShowsWatts, type BikeKind } from '../../domain/bike';
 import { resolveResistanceMode, type WorldSettingId } from '../../domain/settings';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
 import { playerSchema, type Player } from '../../domain/player';
@@ -177,7 +177,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   const bikeKind: BikeKind = trainerConnected
     ? 'smart'
     : bikeKindOf(resolveResistanceMode(settings), settings.equipment);
-  const showsWatts = settings.equipment.showsWatts || trainerConnected;
+  const showsWatts = bikeShowsWatts(settings.equipment, trainerConnected);
   const spotifyConnected = useSpotifyConnected();
   // Songs the rider matched to their Spotify for this Experience (kept in this browser only).
   const [matched, setMatched] = useState<Choices>(() =>

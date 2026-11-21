@@ -185,3 +185,17 @@ for (const vp of VIEWPORTS) {
     await page.screenshot({ path: `${dir}/erg-nosignal-${vp.name}.png` });
   });
 }
+
+// The real default profile (a knob bike without watts, no metered switch) with a trainer connected:
+// the setup treats the trainer as the bike, so the ride must too (ERG chip and power in the ring).
+test.describe('fresh profile', () => {
+  test.use({ meteredBike: false });
+
+  test('a connected trainer rides in trainer mode without the watts switch', async ({ page }) => {
+    await rideWithSensors(page);
+    await startRide(page);
+    await expect(page.getByTestId('erg-controls')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('trainer-power')).toBeVisible();
+    await expect(page.getByTestId('effort-group').first()).toHaveAttribute('data-trainer', 'true');
+  });
+});
