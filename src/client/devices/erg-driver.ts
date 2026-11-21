@@ -33,6 +33,7 @@ import {
   sanePowerRange,
   shouldWrite,
   SPRINT_RESISTANCE_PCT,
+  startEntryRamp,
   startRamp,
   stepGuard,
   type ControlMode,
@@ -222,6 +223,13 @@ export function createErgDriver({
     gatt.disconnect();
   }
 
+  /** Stop, then Reset: the trainer drops the ERG load and gives control back (pitfall 1.10). */
+  async function stopAndReset(): Promise<void> {
+    await send(stopOrPause('stop'));
+    await send(reset());
+    loseControl();
+  }
+
   async function takeControl(): Promise<boolean> {
     publish({ status: 'starting' });
     const res = await send(requestControl());
@@ -272,7 +280,13 @@ export function createErgDriver({
       return;
     }
 
-    if (!m || m.finished) {
+    if (m?.finished) {
+      // End of the ride: leave the trainer free, not on the last ERG load (review #113 B1).
+      if (controlled) await stopAndReset();
+      publish({ status: 'idle', targetW: null, guardActive: false });
+      return;
+    }
+    if (!m) {
       publish({ status: controlled ? 'paused' : 'idle', targetW: null });
       return;
     }
@@ -334,14 +348,26 @@ export function createErgDriver({
       }) * guardFactor(guard, t),
     );
     if (boundary || lastMode !== 'erg') {
-      ramp = startRamp(lastW, goal, m.ftp, t);
+      // No previous target (new control, after a pause, a reconnect or ERG back on): an entry
+      // ramp from the measured power, never the full target at once (review #113 B3).
+      const fresh = latest && t - latest.atMs <= 3000 ? (latest.data.powerW ?? null) : null;
+      ramp = lastW === null ? startEntryRamp(fresh, goal, t) : startRamp(lastW, goal, m.ftp, t);
     } else if (ramp && ramp.toW !== goal) {
       ramp = { ...ramp, toW: goal };
     }
     const target = ramp ? rampValue(ramp, t) : goal;
+    // The last step of a ramp is always written, even if it is only 1–2 W from the previous one.
+    const rampEnds = ramp !== null && target === ramp.toW && lastW !== target;
     if (ramp && target === ramp.toW) ramp = null;
     if (
-      shouldWrite({ lastW, lastAtMs, nextW: target, nowMs: t, ftp: m.ftp, boundary }) ||
+      shouldWrite({
+        lastW,
+        lastAtMs,
+        nextW: target,
+        nowMs: t,
+        ftp: m.ftp,
+        boundary: boundary || rampEnds,
+      }) ||
       lastMode !== 'erg'
     ) {
       const res = await send(setTargetPower(target));
@@ -402,10 +428,7 @@ export function createErgDriver({
     },
     step,
     async finish() {
-      if (trainer && controlled) {
-        await send(stopOrPause('stop'));
-        await send(reset());
-      }
+      if (trainer && controlled) await stopAndReset();
       loseControl();
       publish({ status: 'idle', targetW: null });
     },

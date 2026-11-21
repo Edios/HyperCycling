@@ -48,7 +48,9 @@ export function useErg(
       },
     });
     setDriver(d);
+    const offPagehide = finishOnPagehide(d, window);
     return () => {
+      offPagehide();
       void d.finish().finally(() => d.dispose());
     };
   }, [store, runtime]);
@@ -59,4 +61,14 @@ export function useErg(
     driver ? driver.getSnapshot : none,
   );
   return { driver, snapshot };
+}
+
+/**
+ * Closing or reloading the tab: React cleanups may not run in time, so send Stop and Reset right
+ * away as a best effort (review #113 B1). Returns the unsubscribe.
+ */
+export function finishOnPagehide(driver: Pick<ErgDriver, 'finish'>, target: Window): () => void {
+  const onHide = () => void driver.finish();
+  target.addEventListener('pagehide', onHide);
+  return () => target.removeEventListener('pagehide', onHide);
 }

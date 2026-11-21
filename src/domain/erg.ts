@@ -68,9 +68,12 @@ export function ergTargetWatts({
   return Math.min(range.max, Math.max(range.min, stepped));
 }
 
-/** Blocks shorter than this, or this hard, ride on fixed resistance (D2). */
+/**
+ * Sprints ride on fixed resistance (D2, narrowed by D23): blocks that are both short (< 30 s)
+ * AND hard (effort ≥ 8). Short rests (Tabata 10 s, 15/15 recoveries) stay in ERG.
+ */
 export const SPRINT_MAX_SEC = 30;
-export const SPRINT_MIN_EFFORT = 9;
+export const SPRINT_MIN_EFFORT = 8;
 /** Resistance level for sprints, % (proposal R2, owner to confirm). */
 export const SPRINT_RESISTANCE_PCT = 40;
 
@@ -80,7 +83,7 @@ export function isSprint(
   segment: Pick<Segment, 'durationSec' | 'effortStart' | 'effortEnd'>,
 ): boolean {
   return (
-    segment.durationSec < SPRINT_MAX_SEC ||
+    segment.durationSec < SPRINT_MAX_SEC &&
     Math.max(segment.effortStart, segment.effortEnd) >= SPRINT_MIN_EFFORT
   );
 }
@@ -100,6 +103,8 @@ export interface Ramp {
   fromW: number;
   toW: number;
   startMs: number;
+  /** Default RAMP_MS. */
+  durationMs?: number;
 }
 
 /** A ramp for a new target, or null when the jump is small enough to send at once. */
@@ -113,8 +118,24 @@ export function startRamp(
   return { fromW, toW, startMs: nowMs };
 }
 
+/** Entry ramp (taking control, after a pause, a reconnect or ERG back on): never a sudden load. */
+export const ENTRY_RAMP_MS = 4000;
+/** Without a measured power the entry ramp starts at this share of the target. */
+export const ENTRY_START_SHARE = 0.5;
+
+/**
+ * Ramp for the first target after there was none: from the measured power (if any, and below the
+ * target), else from half the target, over ENTRY_RAMP_MS. Null when the step is negligible.
+ */
+export function startEntryRamp(measuredW: number | null, toW: number, nowMs: number): Ramp | null {
+  const fromW =
+    measuredW !== null && measuredW > 0 ? Math.min(measuredW, toW) : toW * ENTRY_START_SHARE;
+  if (toW - fromW < 10) return null;
+  return { fromW: Math.round(fromW), toW, startMs: nowMs, durationMs: ENTRY_RAMP_MS };
+}
+
 export function rampValue(ramp: Ramp, nowMs: number): number {
-  const k = Math.min(1, Math.max(0, (nowMs - ramp.startMs) / RAMP_MS));
+  const k = Math.min(1, Math.max(0, (nowMs - ramp.startMs) / (ramp.durationMs ?? RAMP_MS)));
   return Math.round(ramp.fromW + (ramp.toW - ramp.fromW) * k);
 }
 

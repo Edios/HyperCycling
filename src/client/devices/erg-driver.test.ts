@@ -66,12 +66,17 @@ async function setup(
       await done;
     }
   };
+  /** Long enough for the entry ramp (4 s) to reach the target. */
+  const warm = async () => {
+    for (let i = 0; i < 6; i++) await settle(1000);
+  };
   return {
     bluetooth,
     store,
     driver,
     writes,
     settle,
+    warm,
     setMoment: (m: Partial<ErgMoment> | null) => {
       moment = m === null ? null : { ...moment!, ...m };
     },
@@ -83,18 +88,18 @@ describe('ERG driver', () => {
   afterEach(() => vi.useRealTimers());
 
   it('takes control and writes the target: Request Control → Start → Set Target Power', async () => {
-    const { driver, writes, settle } = await setup();
-    await settle(1000);
-    await settle(1000);
-    expect(writes()).toEqual(['00', '07', '05 64 00']);
+    const { driver, writes, settle, warm } = await setup();
+    await warm();
+    // Entry ramp: half the target first (no measured power yet), the full target after ~4 s.
+    expect(writes().slice(0, 3)).toEqual(['00', '07', '05 32 00']);
+    expect(writes().at(-1)).toBe('05 64 00');
     expect(driver.getSnapshot()).toMatchObject({ status: 'erg', targetW: 100, enabled: true });
     driver.dispose();
   });
 
   it('changes the target at a block boundary within one tick; small moves inside a block wait', async () => {
-    const { driver, writes, settle, setMoment } = await setup();
-    await settle(1000);
-    await settle(1000);
+    const { driver, writes, settle, warm, setMoment } = await setup();
+    await warm();
     setMoment({ segment: seg(1, 300, 75), segmentIndex: 1 });
     await settle(1000);
     expect(writes().at(-1)).toBe('05 96 00');
@@ -106,9 +111,8 @@ describe('ERG driver', () => {
   });
 
   it('spreads a jump above 30 % FTP over about 3 s', async () => {
-    const { driver, writes, settle, setMoment } = await setup();
-    await settle(1000);
-    await settle(1000);
+    const { driver, writes, settle, warm, setMoment } = await setup();
+    await warm();
     setMoment({ segment: seg(1, 300, 150), segmentIndex: 1 });
     const targets: number[] = [];
     for (let i = 0; i < 5; i++) {
@@ -123,45 +127,46 @@ describe('ERG driver', () => {
   });
 
   it('pauses with Stop/Pause and resumes with Start + the target', async () => {
-    const { driver, writes, settle, setMoment } = await setup();
-    await settle(1000);
-    await settle(1000);
+    const { driver, writes, settle, warm, setMoment } = await setup();
+    await warm();
     setMoment({ running: false });
     await settle(1000);
     expect(writes().at(-1)).toBe('08 02');
     expect(driver.getSnapshot().status).toBe('paused');
     setMoment({ running: true });
-    await settle(1000);
-    await settle(1000);
-    expect(writes().slice(-2)).toEqual(['07', '05 64 00']);
+    const before = writes().length;
+    await warm();
+    // Resume: Start, then an entry ramp, never the full load at once (review #113 B3).
+    expect(writes().slice(before, before + 2)).toEqual(['07', '05 32 00']);
+    expect(writes().at(-1)).toBe('05 64 00');
     driver.dispose();
   });
 
   it('sprint blocks ride on fixed resistance (SINT16 ×0.1); sprint mode can be off', async () => {
     const a = await setup();
-    await a.settle(1000);
-    await a.settle(1000);
+    await a.warm();
     a.setMoment({ segment: seg(1, 20, 150, 10), segmentIndex: 1 });
     await a.settle(1000);
     expect(a.writes().at(-1)).toBe('04 90 01');
     expect(a.driver.getSnapshot().status).toBe('resistance');
     a.setMoment({ segment: seg(2, 300, 50), segmentIndex: 2 });
-    await a.settle(1000);
+    const back = a.writes().length;
+    await a.warm();
+    // Back to ERG after the sprint: an entry ramp, then the target.
+    expect(a.writes()[back]).toBe('05 32 00');
     expect(a.writes().at(-1)).toBe('05 64 00');
     a.driver.dispose();
 
     const b = await setup({ settings: { sprintMode: false } });
     b.setMoment({ segment: seg(1, 20, 150, 10), segmentIndex: 1 });
-    await b.settle(1000);
-    await b.settle(1000);
+    await b.warm();
     expect(b.writes().at(-1)).toBe('05 2C 01');
     b.driver.dispose();
   });
 
   it('ERG off by hand: flat road (full Crr/Cw, never zeros); back on resends the target', async () => {
-    const { driver, writes, settle } = await setup();
-    await settle(1000);
-    await settle(1000);
+    const { driver, writes, settle, warm } = await setup();
+    await warm();
     driver.setEnabled(false);
     await settle(1000);
     expect(writes().at(-1)).toBe('11 00 00 00 00 28 33');
@@ -173,9 +178,8 @@ describe('ERG driver', () => {
   });
 
   it('±5 % adjusts the target', async () => {
-    const { driver, writes, settle } = await setup();
-    await settle(1000);
-    await settle(1000);
+    const { driver, writes, settle, warm } = await setup();
+    await warm();
     driver.nudge(1);
     await settle(1000);
     expect(writes().at(-1)).toBe('05 69 00');
@@ -187,50 +191,47 @@ describe('ERG driver', () => {
   });
 
   it('after a dropped link the whole sequence runs again with the current target', async () => {
-    const { bluetooth, driver, writes, settle } = await setup();
-    await settle(1000);
-    await settle(1000);
+    const { bluetooth, driver, writes, settle, warm } = await setup();
+    await warm();
     const before = writes().length;
     bluetooth.dropLink('trainer');
+    await warm();
     await settle(1000);
-    await settle(1000);
-    await settle(1000);
-    expect(writes().slice(before)).toEqual(['00', '07', '05 64 00']);
+    await warm();
+    expect(writes().slice(before, before + 3)).toEqual(['00', '07', '05 32 00']);
+    expect(writes().at(-1)).toBe('05 64 00');
     driver.dispose();
   });
 
   it('control lost (0xFF) → Request Control again', async () => {
-    const { bluetooth, driver, writes, settle } = await setup();
-    await settle(1000);
-    await settle(1000);
+    const { bluetooth, driver, writes, settle, warm } = await setup();
+    await warm();
     bluetooth.takeControlAway();
-    await settle(1000);
-    await settle(1000);
-    expect(writes().slice(-3)).toEqual(['00', '07', '05 64 00']);
+    const before = writes().length;
+    await warm();
+    expect(writes().slice(before, before + 2)).toEqual(['00', '07']);
+    expect(writes().at(-1)).toBe('05 64 00');
     driver.dispose();
   });
 
   it('another app holds the trainer: blocked after two refusals; retry works once it is free', async () => {
-    const { bluetooth, driver, settle } = await setup({
+    const { bluetooth, driver, settle, warm } = await setup({
       fake: { trainer: new FakeTrainer({ faults: { rejectControl: true } }) },
     });
-    await settle(1000);
-    await settle(1000);
+    await warm();
     expect(driver.getSnapshot().status).toBe('blocked');
     bluetooth.trainer.faults = {};
     driver.retry();
-    await settle(1000);
-    await settle(1000);
+    await warm();
     expect(driver.getSnapshot().status).toBe('erg');
     driver.dispose();
   });
 
   it('a trainer that does not take power targets is "unsupported"', async () => {
-    const { driver, settle } = await setup({
+    const { driver, settle, warm } = await setup({
       fake: { trainer: new FakeTrainer({ faults: { unsupportedOpcodes: [0x05] } }) },
     });
-    await settle(1000);
-    await settle(1000);
+    await warm();
     expect(driver.getSnapshot().status).toBe('unsupported');
     driver.dispose();
   });
@@ -254,11 +255,11 @@ describe('ERG driver', () => {
   });
 
   it('cadence guard (when on) halves the target after 3 s under 55 rpm', async () => {
-    const { bluetooth, driver, writes, settle } = await setup({
+    const { bluetooth, driver, writes, settle, warm } = await setup({
       fake: { trainer: new FakeTrainer({ cadenceRpm: () => 40 }) },
       settings: { cadenceGuard: true },
     });
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 10; i++) {
       bluetooth.pump(Date.now());
       await settle(1000);
     }
@@ -268,9 +269,8 @@ describe('ERG driver', () => {
   });
 
   it('finish: Stop then Reset; no ride: idle', async () => {
-    const { driver, writes, settle, setMoment } = await setup();
-    await settle(1000);
-    await settle(1000);
+    const { driver, writes, settle, warm, setMoment } = await setup();
+    await warm();
     setMoment(null);
     await settle(1000);
     expect(driver.getSnapshot().status).toBe('paused');
@@ -299,5 +299,72 @@ describe('ERG driver', () => {
     await settle(1000);
     expect(driver.getSnapshot().status).toBe('idle');
     driver.dispose();
+  });
+
+  describe('review #113', () => {
+    it('B1: the end of the ride sends Stop and Reset; the trainer has no target left', async () => {
+      const { bluetooth, driver, writes, settle, warm, setMoment } = await setup();
+      await warm();
+      expect(bluetooth.trainer.targetPowerW).toBe(100);
+      setMoment({ running: false, finished: true });
+      await settle(1000);
+      expect(writes().slice(-2)).toEqual(['08 01', '01']);
+      expect(bluetooth.trainer.targetPowerW).toBeNull();
+      expect(bluetooth.trainer.hasControl).toBe(false);
+      expect(driver.getSnapshot().status).toBe('idle');
+      // It stays released: no new Request Control after the end.
+      const n = writes().length;
+      await settle(3000);
+      expect(writes()).toHaveLength(n);
+      driver.dispose();
+    });
+
+    it('B1: closing the page sends Stop and Reset at once', async () => {
+      const { finishOnPagehide } = await import('../training/useErg');
+      const { bluetooth, driver, writes, warm } = await setup();
+      await warm();
+      const off = finishOnPagehide(driver, window);
+      window.dispatchEvent(new Event('pagehide'));
+      await vi.advanceTimersByTimeAsync(20);
+      expect(writes().slice(-2)).toEqual(['08 01', '01']);
+      expect(bluetooth.trainer.targetPowerW).toBeNull();
+      off();
+      driver.dispose();
+    });
+
+    it('B2: a 10 s rest and both halves of 15/15 stay in ERG', async () => {
+      const { driver, writes, warm, setMoment } = await setup();
+      await warm();
+      setMoment({ segment: seg(1, 10, 45, 1), segmentIndex: 1 });
+      await warm();
+      expect(driver.getSnapshot().status).toBe('erg');
+      setMoment({ segment: seg(2, 15, 120, 9), segmentIndex: 2 });
+      await warm();
+      expect(writes().at(-1)).toBe('04 90 01'); // short AND hard: sprint
+      setMoment({ segment: seg(3, 15, 50, 2), segmentIndex: 3 });
+      await warm();
+      expect(driver.getSnapshot().status).toBe('erg');
+      driver.dispose();
+    });
+
+    it('B3: reconnect in a 120 % FTP interval ramps in instead of the full load', async () => {
+      const { bluetooth, writes, settle, warm, setMoment, driver } = await setup();
+      setMoment({ segment: seg(0, 300, 120, 8), segmentIndex: 0 });
+      await warm();
+      expect(writes().at(-1)).toBe('05 F0 00'); // 240 W
+      const before = writes().length;
+      bluetooth.dropLink('trainer');
+      await settle(1000);
+      await settle(1000);
+      const firstTarget = writes()
+        .slice(before)
+        .find((w) => w.startsWith('05'))!
+        .split(' ');
+      const watts = parseInt(firstTarget[2]! + firstTarget[1]!, 16);
+      expect(watts).toBeLessThanOrEqual(150);
+      await warm();
+      expect(writes().at(-1)).toBe('05 F0 00');
+      driver.dispose();
+    });
   });
 });

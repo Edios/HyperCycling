@@ -9,6 +9,7 @@ import {
   isSprint,
   powerLevel,
   rampValue,
+  startEntryRamp,
   sanePowerRange,
   shouldWrite,
   startRamp,
@@ -59,11 +60,14 @@ describe('sprint mode', () => {
   const seg = (durationSec: number, effortStart: number, effortEnd = effortStart) =>
     ({ durationSec, effortStart, effortEnd }) as Parameters<typeof isSprint>[0];
 
-  it('short or very hard blocks are sprints', () => {
-    expect(isSprint(seg(20, 7))).toBe(true);
-    expect(isSprint(seg(60, 9))).toBe(true);
-    expect(isSprint(seg(120, 3, 9))).toBe(true);
-    expect(isSprint(seg(30, 8))).toBe(false);
+  it('only short AND hard blocks are sprints (D23)', () => {
+    expect(isSprint(seg(20, 8))).toBe(true);
+    expect(isSprint(seg(15, 10))).toBe(true);
+    expect(isSprint(seg(10, 1))).toBe(false); // Tabata rest
+    expect(isSprint(seg(15, 2))).toBe(false); // 15/15 recovery
+    expect(isSprint(seg(15, 7))).toBe(false);
+    expect(isSprint(seg(60, 10))).toBe(false); // long and hard: ERG
+    expect(isSprint(seg(30, 9))).toBe(false);
   });
 
   it('switches to resistance only while sprint mode is on', () => {
@@ -145,5 +149,23 @@ describe('powerLevel', () => {
     expect(powerLevel(156, 200)).toBe(5); // 78 %
     expect(powerLevel(200, 200)).toBe(8); // 100 %
     expect(powerLevel(400, 200)).toBe(10);
+  });
+});
+
+describe('entry ramp (no previous target)', () => {
+  it('starts from the measured power, or half the target, over 4 s', () => {
+    const r = startEntryRamp(120, 300, 0)!;
+    expect(rampValue(r, 0)).toBe(120);
+    expect(rampValue(r, 2000)).toBe(210);
+    expect(rampValue(r, 4000)).toBe(300);
+    const blind = startEntryRamp(null, 300, 0)!;
+    expect(rampValue(blind, 0)).toBe(150);
+    expect(startEntryRamp(0, 300, 0)!.fromW).toBe(150);
+  });
+
+  it('no ramp when the rider already pushes the target or the step is tiny', () => {
+    expect(startEntryRamp(320, 300, 0)).toBeNull();
+    expect(startEntryRamp(295, 300, 0)).toBeNull();
+    expect(startEntryRamp(null, 15, 0)).toBeNull();
   });
 });
