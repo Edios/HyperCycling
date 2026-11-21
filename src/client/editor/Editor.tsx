@@ -419,7 +419,7 @@ export function Editor({
         <div className={styles.grid}>
           <Palette readOnly={readOnly} onAdd={(kind) => dispatch({ type: 'addBlock', kind })} />
           <main className={styles.center}>
-            <div className={styles.laneLabel}>{t('editor.music')}</div>
+            {hasMusic && <div className={styles.laneLabel}>{t('editor.music')}</div>}
             <MusicLane
               workout={workout}
               selectedId={state.selectedId}

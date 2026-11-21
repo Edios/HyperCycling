@@ -417,3 +417,15 @@
 .devices:empty {
   display: none;
 }
+
+/* Phone in landscape: less air around the grid so the cards are seen above the Start bar. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .grid {
+    gap: 1rem 1.25rem;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .summary {
+    padding: 1rem 1.25rem;
+  }
+}

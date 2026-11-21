@@ -40,7 +40,12 @@ export function ControlsBar(p: ControlsBarProps) {
       aria-label={t('training.controls')}
       inert={p.hidden}
     >
-      <button type="button" aria-label={t('training.previous')} onClick={click(p.onPrev)}>
+      <button
+        type="button"
+        className={styles.rare}
+        aria-label={t('training.previous')}
+        onClick={click(p.onPrev)}
+      >
         <Icon name="prev" size="1em" />
       </button>
       <button
@@ -67,7 +72,12 @@ export function ControlsBar(p: ControlsBarProps) {
           <Icon name="players" size="1em" />
         </button>
       )}
-      <button type="button" aria-label={t('training.fullscreen')} onClick={click(p.onFullscreen)}>
+      <button
+        type="button"
+        className={styles.rare}
+        aria-label={t('training.fullscreen')}
+        onClick={click(p.onFullscreen)}
+      >
         <Icon name="fullscreen" size="1em" />
       </button>
       <button
