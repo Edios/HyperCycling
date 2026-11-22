@@ -1,0 +1,22 @@
+name: Install dependencies
+description: Node 24 with node_modules restored from the cache (npm ci runs only on a cache miss).
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: npm
+    # node_modules holds a native build (better-sqlite3): key it by the exact Node version too.
+    - id: node
+      shell: bash
+      run: echo "version=$(node -v)" >> "$GITHUB_OUTPUT"
+    - id: modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ steps.node.outputs.version }}-${{ hashFiles('package-lock.json') }}
+    - if: steps.modules.outputs.cache-hit != 'true'
+      shell: bash
+      run: npm ci
