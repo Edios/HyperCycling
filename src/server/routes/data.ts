@@ -107,7 +107,11 @@ export function registerDataRoutes(
       if (!c) return fail(reply, 404, 'Not found');
       if (idTooLong(req.params.id)) return fail(reply, 400, 'Invalid id');
       const item = await repoFor(c).get(req.params.id);
-      return item === undefined ? fail(reply, 404, 'Not found') : item;
+      if (item !== undefined) return item;
+      // No saved music plan is the normal state of most workouts, asked about on every ride setup:
+      // answered like an empty singleton (204), not with a 404 the browser logs as an error.
+      if (c === 'soundtrack-plans') return reply.code(204).send();
+      return fail(reply, 404, 'Not found');
     },
   );
 

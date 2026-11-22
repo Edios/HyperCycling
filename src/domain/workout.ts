@@ -189,7 +189,8 @@ const plainTrackSchema = z.object({
   // Lenient on purpose: an end at or before the start is ignored (see trackEndSec), not rejected.
   endAtSec: z.number().min(0).optional(),
   bpm: z.number().min(BPM_MIN).max(BPM_MAX).optional(),
-  bpmSource: z.enum(['getsongbpm', 'deezer', 'catalog']).optional(),
+  // An unknown source (from a newer build) is dropped, not a reason to refuse the whole workout.
+  bpmSource: z.enum(['getsongbpm', 'deezer', 'catalog']).optional().catch(undefined),
   notEmbeddable: z.boolean().optional(),
 });
 

@@ -278,3 +278,24 @@ describe('slot queue model', () => {
     ]);
   });
 });
+
+describe('track tempo source', () => {
+  const withSource = (bpmSource: unknown) =>
+    makeWorkout({
+      musicCues: [{ blockId: 'r1a', rep: 2, track: { ...track, bpm: 120, bpmSource } as never }],
+    });
+
+  it("accepts the song catalog as a source ('catalog')", () => {
+    const r = workoutSchema.parse(withSource('catalog'));
+    expect(r.musicCues[0]?.track.bpmSource).toBe('catalog');
+  });
+
+  it('drops an unknown source (from a newer build) instead of refusing the whole workout', () => {
+    const r = workoutSchema.safeParse(withSource('spotify-audio-analysis'));
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.musicCues[0]?.track.bpmSource).toBeUndefined();
+      expect(r.data.musicCues[0]?.track.bpm).toBe(120);
+    }
+  });
+});

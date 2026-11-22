@@ -11,10 +11,32 @@ async function toWizard(page: import('@playwright/test').Page): Promise<void> {
   await expect(page.getByTestId('soundtrack-wizard')).toBeVisible();
 }
 
+// Runs on both builds: the local one reads the plan from the server (/api, SQLite), the pages
+// one from IndexedDB. No saved plan is the normal state and must not log an error.
+test('a ride setup of a workout without a saved music plan logs no error in the console', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text());
+  });
+  page.on('pageerror', (e) => errors.push(e.message));
+  const requests: { url: string; status: number }[] = [];
+  page.on('response', (r) => {
+    if (r.url().includes('soundtrack-plans')) requests.push({ url: r.url(), status: r.status() });
+  });
+  await page.goto('./#/setup/music-climbs');
+  await expect(page.getByTestId('setup-screen')).toBeVisible();
+  await expect(page.getByTestId('setup-soundtrack')).toHaveAttribute('data-state', 'none');
+  await page.waitForTimeout(500);
+  expect(errors).toEqual([]);
+  // On the local build the lookup is a real request and it is not a failed one.
+  for (const r of requests) expect(r.status, r.url).toBeLessThan(400);
+});
+
 test('the matched music is saved on the device: it is there after a reload, until it is removed', async ({
   page,
-}, info) => {
-  test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+}) => {
   await toWizard(page);
   await page.getByTestId('soundtrack-next').click();
   await page.getByTestId('soundtrack-next').click();

@@ -41,7 +41,9 @@ export function createHttpRepositories(
       },
       async get(id) {
         const res = await call(`/api/${url}/${encodeURIComponent(id)}`, 'GET');
-        return res.status === 404 ? undefined : ((await res.json()) as T);
+        // 404: no such item. 204: the server's way of saying "none" for items that are usually
+        // missing (a saved music plan), so the browser logs no failed request.
+        return res.status === 404 || res.status === 204 ? undefined : ((await res.json()) as T);
       },
       async put(item) {
         await orThrow(`/api/${url}/${encodeURIComponent(item.id)}`, 'PUT', item);

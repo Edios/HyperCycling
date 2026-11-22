@@ -183,8 +183,10 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
   const finish = (): void => {
     if (!plan) return;
     preview.stop();
-    // Taken over at once and written to the device; the ride setup says if the write failed.
-    void confirmPlan(plan).then(() => navigate(`/setup/${encodeURIComponent(workout.id)}`));
+    // Taken over at once and written to the device meanwhile; the ride setup says if the write
+    // failed (a slow or blocked storage never holds the button).
+    void confirmPlan(plan);
+    navigate(`/setup/${encodeURIComponent(workout.id)}`);
   };
 
   const back = (): void => {
