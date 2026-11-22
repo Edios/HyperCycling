@@ -670,6 +670,11 @@ export const pl: Messages = {
       nobeat: 'bez rytmu',
     },
     partTitle: '{role} · wysiłek {range} · {time}',
+    partMusic: '{profile} · energia {energy} z 5',
+    profile: {
+      steady: 'Równy wysiłek',
+      intervals: 'Interwały',
+    },
     stretched: 'Dobraliśmy też z sąsiednich rodzajów muzyki.',
     offTempo: 'Tempo tu nie pasuje. Spróbuj innych rodzajów muzyki.',
     silence: 'Cisza {time}.',

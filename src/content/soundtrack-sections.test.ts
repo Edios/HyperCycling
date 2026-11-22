@@ -11,7 +11,10 @@ import {
   type CoverageTrack,
   type MusicSection,
 } from '../domain/soundtrack';
+import { parseCatalog } from '../domain/soundtrack-catalog';
+import { planSoundtrack } from '../domain/soundtrack-plan';
 import { flattenWorkout } from '../domain/segments';
+import rawCatalog from './soundtrack/catalog.json';
 import { totalDurationSec, type Workout } from '../domain/workout';
 
 /** True when a section is one top-level block or one repetition of a repeat. */
@@ -114,6 +117,54 @@ describe('sectionsOf on the built-in workouts', () => {
         expect([0, total]).toContain(inside);
       }
     }
+  });
+
+  it('golden: the interval profile changes no grouping and no queue goes empty (energy spec §2a)', () => {
+    const catalog = parseCatalog(rawCatalog).tracks;
+    let total = 0;
+    const intervals: string[] = [];
+    const empty: string[] = [];
+    for (const w of builtinWorkouts) {
+      const sections = sectionsOf(w);
+      total += sections.length;
+      for (const s of sections) {
+        if (s.profile !== 'intervals') {
+          expect(s.workEffort, `${w.id}/${s.id}`).toBe(s.effort.mean);
+          continue;
+        }
+        // The music follows the work phase: harder than the mean, never a warm-up or cool-down.
+        expect(s.workEffort, `${w.id}/${s.id}`).toBeGreaterThan(s.effort.mean);
+        expect(['tempo', 'hard', 'peak']).toContain(s.role);
+        expect(s.energy).toBeGreaterThanOrEqual(4);
+        if (!intervals.includes(w.id)) intervals.push(w.id);
+      }
+      for (const p of planSoundtrack(w, catalog).sections)
+        if (!p.locked && p.picks.length === 0) empty.push(`${w.id}/${p.sectionId}`);
+    }
+    // Section count over all built-in workouts before the profile existed (origin/main 91e298f).
+    expect(total).toBe(653);
+    expect(empty).toEqual([]);
+    // Short-interval workouts; a long-recovery sprint (a repetition of 150 s or more) stays steady.
+    expect(intervals.sort()).toEqual([
+      'billat-30-30',
+      'cadence-warmup',
+      'class-hills-40',
+      'climb-and-attack',
+      'forty-twenty',
+      'ladder-10-20-30',
+      'micro-attacks',
+      'micro-fifteen-fifteen',
+      'micro-storm',
+      'music-30-30-beats',
+      'music-wall',
+      'saddle-attack',
+      'sprint-steps',
+      'tabata-20-10',
+      'tabata-lite',
+      'thirty-fifteen',
+      'thirty-fifteen-2x10',
+      'waves',
+    ]);
   });
 
   it('groups and rates coverage fast enough for the wizard (spec: < 5 ms per workout)', () => {

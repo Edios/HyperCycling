@@ -108,6 +108,8 @@ const section = (over: Partial<MusicSection> = {}): MusicSection => ({
   rpmKnown: true,
   targetBpm: 180,
   energy: 3,
+  profile: 'steady',
+  workEffort: 5,
   ...over,
 });
 

@@ -21,6 +21,9 @@
  * 6. Role: the first section is the warm-up when it stays at effort 4 or below, or starts at
  *    `scaling.warmupBlockId` with a mean effort of 5 or below (short bursts inside a warm-up); a section starting at `scaling.cooldownBlockId`, or the last one at mean
  *    effort 3 or below, is the cool-down; the rest by mean effort. Energy comes from the effort.
+ * 7. Profile (music energy spec §2a): a section of short hard efforts with rests in between
+ *    (`intervalProfile`) is `intervals`; its energy, role and cadence come from the work phase,
+ *    not the mean (a warm-up or cool-down stays as it is). Everything else is `steady`.
  *    Locked sections (the workout's cooldown track, or a cue
  *    the author or user already placed) are kept whole and never merged with anything.
  *
@@ -94,6 +97,14 @@ export const DEFAULT_RPM = 90;
 
 export type SectionRole = 'warmup' | 'steady' | 'tempo' | 'hard' | 'peak' | 'cooldown';
 export type SectionEnergy = 1 | 2 | 3 | 4 | 5;
+export type SectionProfile = 'steady' | 'intervals';
+
+/** An `intervals` section crosses the middle of its effort range at least this many times... */
+export const INTERVAL_MIN_CROSSINGS = 3;
+/** ...spans at least this much effort (max - min)... */
+export const INTERVAL_MIN_RANGE = 4;
+/** ...and its work phases (above the middle) last less than this on average, seconds. */
+export const INTERVAL_MAX_WORK_SEC = 60;
 /** Why a section keeps the music it already has: the cooldown track, or a cue already placed. */
 export type SectionLock = 'cooldownTrack' | 'userCue';
 
@@ -114,7 +125,11 @@ export interface MusicSection {
   role: SectionRole;
   /** Effort 1-10: min/max over the blocks, mean weighted by time (a ramp counts as its mid-point). */
   effort: { min: number; max: number; mean: number };
-  /** Cadence weighted by time over the blocks that set one; `DEFAULT_RPM` when none does. */
+  /**
+   * Cadence the music follows: weighted by time over the blocks that set one, `DEFAULT_RPM` when
+   * none does. For an `intervals` section, the cadence of the work phase (the rest takes what plays);
+   * the whole section's when the work phase sets none.
+   */
   rpmMean: number;
   /**
    * False when no block of the section sets a cadence (the tempo is then a guess, shown as an
@@ -124,7 +139,18 @@ export interface MusicSection {
   rpmKnown: boolean;
   /** Wanted song tempo on the beat: 2 x `rpmMean` (half/double via `targetBpms`). */
   targetBpm: number;
+  /** Energy 1-5 wanted from the songs: `energyOf(workEffort)` (see `profile`). */
   energy: SectionEnergy;
+  /**
+   * 'intervals' = short hard efforts with rests in between (see `intervalProfile`): the music
+   * follows the work phase, not the mean, so a sprint is not read as a medium ride.
+   */
+  profile: SectionProfile;
+  /**
+   * Effort the music follows: the time-weighted mean of the work phase (segments above the middle
+   * of the effort range) for an `intervals` section, `effort.mean` otherwise.
+   */
+  workEffort: number;
   locked?: SectionLock;
 }
 
@@ -405,6 +431,71 @@ export function roleOfEffort(effortMean: number): Exclude<SectionRole, 'warmup' 
   return 'peak';
 }
 
+/** Role of an `intervals` section by the effort of its work phase (music energy spec §2a). */
+export function roleOfWork(workEffort: number): Exclude<SectionRole, 'warmup' | 'cooldown'> {
+  if (workEffort >= 9) return 'peak';
+  if (workEffort >= 7) return 'hard';
+  return roleOfEffort(workEffort);
+}
+
+/** What the music of a run of segments follows: its profile, work effort and cadence. */
+interface IntervalProfile {
+  profile: SectionProfile;
+  workEffort: number;
+  rpm: number;
+}
+
+/**
+ * A run is `intervals` when it crosses the middle of its effort range ((min + max) / 2) at least
+ * `INTERVAL_MIN_CROSSINGS` times, spans at least `INTERVAL_MIN_RANGE` and its work phases (runs of
+ * segments above the middle, a ramp counted at its mid-point) last under `INTERVAL_MAX_WORK_SEC` on
+ * average, and one work + rest cycle (the run's length / its work phases) is shorter than
+ * `MIN_SECTION_SEC` (longer intervals are a section per repetition already). The music then
+ * follows the work phase: its time-weighted effort and cadence (the
+ * whole run's cadence when the work phase sets none). Otherwise the run's mean and cadence.
+ */
+function intervalProfile(segments: readonly Segment[], p: Piece, st: Stats): IntervalProfile {
+  const steadyProfile: IntervalProfile = {
+    profile: 'steady',
+    workEffort: st.effortMean,
+    rpm: st.rpmMean,
+  };
+  if (st.effortMax - st.effortMin < INTERVAL_MIN_RANGE) return steadyProfile;
+  const mid = (st.effortMin + st.effortMax) / 2;
+  let crossings = 0;
+  let phases = 0;
+  let workSec = 0;
+  let workEffortSum = 0;
+  let rpmSum = 0;
+  let rpmSec = 0;
+  let wasAbove = false;
+  for (let i = p.first; i <= p.last; i++) {
+    const s = segments[i] as Segment;
+    const above = segEffortMean(s) > mid;
+    if (i > p.first && above !== wasAbove) crossings += 1;
+    if (above) {
+      if (!wasAbove) phases += 1; // wasAbove starts false: the first segment opens a phase
+      workSec += s.durationSec;
+      workEffortSum += segEffortMean(s) * s.durationSec;
+      if (s.rpm !== undefined && Number.isFinite(s.rpm) && s.rpm > 0) {
+        rpmSum += s.rpm * s.durationSec;
+        rpmSec += s.durationSec;
+      }
+    }
+    wasAbove = above;
+  }
+  if (crossings < INTERVAL_MIN_CROSSINGS || phases === 0 || workSec <= 0) return steadyProfile;
+  if (workSec / phases >= INTERVAL_MAX_WORK_SEC) return steadyProfile;
+  // Long intervals (a work + rest cycle of MIN_SECTION_SEC or more) keep their sections as they
+  // are, also when merging joined two of their repetitions (spec §2a).
+  if (st.durationSec / phases >= MIN_SECTION_SEC) return steadyProfile;
+  return {
+    profile: 'intervals',
+    workEffort: workEffortSum / workSec,
+    rpm: rpmSec > 0 ? rpmSum / rpmSec : st.rpmMean,
+  };
+}
+
 /**
  * The workout's music sections, in time order, covering the whole workout without gaps.
  * Empty for a workout without blocks.
@@ -441,6 +532,14 @@ export function sectionsOf(w: Workout, opts: SectionOptions = {}): MusicSection[
     else if (isLast && st.effortMean <= 3) role = 'cooldown';
     else role = roleOfEffort(st.effortMean);
 
+    // A warm-up or cool-down with short bursts in it stays calm music: the profile only changes
+    // how the music reads the work in between (music energy spec §2a).
+    const calm = role === 'warmup' || role === 'cooldown';
+    const prof = calm
+      ? { profile: 'steady' as const, workEffort: st.effortMean, rpm: st.rpmMean }
+      : intervalProfile(segments, p, st);
+    if (prof.profile === 'intervals') role = roleOfWork(prof.workEffort);
+
     const section: MusicSection = {
       id: `s${i + 1}`,
       anchor: { blockId: firstSeg.blockId, rep: firstSeg.rep },
@@ -449,10 +548,12 @@ export function sectionsOf(w: Workout, opts: SectionOptions = {}): MusicSection[
       blockRefs,
       role,
       effort: { min: st.effortMin, max: st.effortMax, mean: st.effortMean },
-      rpmMean: st.rpmMean,
+      rpmMean: prof.rpm,
       rpmKnown: st.rpmKnown,
-      targetBpm: 2 * st.rpmMean,
-      energy: energyOf(st.effortMean),
+      targetBpm: 2 * prof.rpm,
+      energy: energyOf(prof.workEffort),
+      profile: prof.profile,
+      workEffort: prof.workEffort,
     };
     if (p.locked) section.locked = p.locked;
     return section;
