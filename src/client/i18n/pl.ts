@@ -961,7 +961,7 @@ export const pl: Messages = {
         label: 'Pokaż odtwarzacz muzyki',
         hint: 'Regulamin YouTube wymaga widocznego odtwarzacza (co najmniej 200 × 200 px, z tytułem utworu). Pokazujemy go podczas jazdy i w podglądzie muzyki.',
         offNote:
-          'Odtwarzacz jest ukryty. To Twój wybór i Twoja odpowiedzialność wobec regulaminu YouTube; muzyka nadal gra.',
+          'Odtwarzacz jest ukryty. To Twój wybór i Twoja odpowiedzialność wobec regulaminu YouTube; muzyka nadal gra. Odtwarzacz jest tylko przesunięty poza ekran, a zgodność tego z regulaminem nie jest potwierdzona prawnie.',
       },
       deezer: {
         label: 'Wyszukiwanie tempa w Deezer (bez klucza)',

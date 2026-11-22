@@ -362,6 +362,8 @@
     grid-template-columns: minmax(14rem, 20rem) minmax(0, 1fr);
     gap: 2rem;
     align-items: start;
+    /* Not glued to the top on a tall screen: the content sits a little lower. */
+    padding-top: clamp(0rem, 7vh, 4rem);
   }
 
   .side {

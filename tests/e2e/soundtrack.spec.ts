@@ -97,11 +97,13 @@ function dockProblems(page: Page, overlays: boolean): Promise<string[]> {
       .querySelector('[data-testid="music-player-hide"]')
       ?.getBoundingClientRect();
     if (!hide || hide.width < 43 || hide.height < 43) out.push('the hide button is under 44 px');
-    // On a phone in portrait the player overlays the screen on purpose (the rider turned it on).
-    if (overlays) return out;
+    // On a phone in portrait the player overlays the HUD tiles on purpose (the rider turned it on;
+    // the tiles cannot shrink enough to leave room), but never the controls: pause stays reachable.
     const others = [
       ...document.querySelectorAll<HTMLElement>(
-        '[data-g], [data-testid="controls"], [data-testid="now-playing"]',
+        overlays
+          ? '[data-testid="controls"]'
+          : '[data-g], [data-testid="controls"], [data-testid="now-playing"]',
       ),
     ].filter((p) => p.getBoundingClientRect().width > 0 && !p.closest('[data-hidden]'));
     for (const p of others) {

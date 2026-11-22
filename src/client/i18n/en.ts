@@ -955,7 +955,7 @@ export const en = {
         label: 'Show the music player',
         hint: 'YouTube’s terms ask for a visible player (at least 200 × 200 px, with the song title). It is shown during a ride and in the music preview.',
         offNote:
-          'The player is hidden. That is your own choice and your own responsibility under YouTube’s terms; the music still plays.',
+          'The player is hidden. That is your own choice and your own responsibility under YouTube’s terms; the music still plays. The player is only moved off screen, and whether that meets the terms has not been confirmed legally.',
       },
       deezer: {
         label: 'Deezer tempo lookup (no key)',
