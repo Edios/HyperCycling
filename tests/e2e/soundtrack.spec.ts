@@ -76,8 +76,8 @@ async function startRunning(page: Page): Promise<void> {
 }
 
 /** Everything wrong with the music player on the ride screen, as readable lines. */
-function dockProblems(page: Page, overlays: boolean): Promise<string[]> {
-  return page.evaluate((overlays) => {
+function dockProblems(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
     const TOL = 1.5;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -97,15 +97,11 @@ function dockProblems(page: Page, overlays: boolean): Promise<string[]> {
       .querySelector('[data-testid="music-player-hide"]')
       ?.getBoundingClientRect();
     if (!hide || hide.width < 43 || hide.height < 43) out.push('the hide button is under 44 px');
-    // On a phone in portrait the player overlays the HUD tiles on purpose (the rider turned it on;
-    // the tiles cannot shrink enough to leave room), but never the controls: pause stays reachable.
-    const others = [
-      ...document.querySelectorAll<HTMLElement>(
-        overlays
-          ? '[data-testid="controls"]'
-          : '[data-g], [data-testid="controls"], [data-testid="now-playing"]',
-      ),
+    // The HUD is laid out beside or above the player (never under it): no panel, no control.
+    const panels = [
+      ...document.querySelectorAll<HTMLElement>('[data-g], [data-testid="controls"]'),
     ].filter((p) => p.getBoundingClientRect().width > 0 && !p.closest('[data-hidden]'));
+    const others = panels;
     for (const p of others) {
       const r = p.getBoundingClientRect();
       const ox = Math.min(d.right, r.right) - Math.max(d.left, r.left);
@@ -115,8 +111,43 @@ function dockProblems(page: Page, overlays: boolean): Promise<string[]> {
           `the player overlaps ${p.getAttribute('data-g') ?? p.getAttribute('data-testid')}`,
         );
     }
+    // The tiles stay whole in what is left: inside the screen, text inside its panel (a little
+    // slack for the line box), panels not on each other. This is the geometry the HUD keeps
+    // without a player (training-hud-geometry.spec), held with it too.
+    for (const p of panels) {
+      const r = p.getBoundingClientRect();
+      const g = p.getAttribute('data-g') ?? p.getAttribute('data-testid');
+      if (r.left < -TOL || r.right > vw + TOL || r.top < -TOL || r.bottom > vh + TOL)
+        out.push(`panel ${g} outside the screen`);
+      const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+      let n: Node | null;
+      while ((n = walker.nextNode())) {
+        const text = (n.textContent ?? '').trim();
+        const el = n.parentElement;
+        if (!text || !el || getComputedStyle(el).visibility === 'hidden') continue;
+        if (el.closest('.sr-only, [aria-hidden="true"]')) continue;
+        const range = document.createRange();
+        range.selectNodeContents(n);
+        const t = range.getBoundingClientRect();
+        if (t.width === 0 || t.height === 0) continue;
+        const slack = t.height * 0.2;
+        if (t.left < r.left - TOL || t.right > r.right + TOL)
+          out.push(`text "${text}" sticks out of panel ${g} sideways`);
+        if (t.top < r.top - slack || t.bottom > r.bottom + slack)
+          out.push(`text "${text}" sticks out of panel ${g} vertically`);
+      }
+    }
+    for (let i = 0; i < panels.length; i += 1) {
+      for (let j = i + 1; j < panels.length; j += 1) {
+        const a = panels[i]!.getBoundingClientRect();
+        const b = panels[j]!.getBoundingClientRect();
+        const ox = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+        const oy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+        if (ox > 2 && oy > 2) out.push(`panels ${i} and ${j} overlap`);
+      }
+    }
     return out;
-  }, overlays);
+  });
 }
 
 const VIEWPORTS = [
@@ -269,7 +300,7 @@ test.describe('Match music', () => {
         await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'true');
       }
       await shot(page, `soundtrack-ride-${v.name}`);
-      found.push(...(await dockProblems(page, portrait)).map((m) => `${v.name}: ${m}`));
+      found.push(...(await dockProblems(page)).map((m) => `${v.name}: ${m}`));
       if (portrait) {
         await page.getByTestId('music-player-hide').click();
         await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');

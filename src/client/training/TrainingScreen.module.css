@@ -64,6 +64,34 @@
   position: absolute;
 }
 
+/*
+ * A phone in portrait has no column to spare: the room is a band at the bottom (the player 200 px
+ * high, its caption laid over the picture) and the HUD is laid out above it with smaller tiles.
+ */
+@media (max-width: 760px) and (orientation: portrait) {
+  .root[data-player='true'] {
+    --player-band: 212px;
+  }
+
+  .root[data-player='true'] .layout {
+    margin-left: 0;
+    height: calc(100% - var(--player-band));
+  }
+
+  .root[data-player='true'] .layout > * {
+    --ring: 26vw;
+    --nring: 9vw;
+    --time-fs: 10vw;
+    --mval: 6.2vw;
+    --next-fs: 4.8vw;
+    --lbl: 3.3vw;
+    --cap: 2.9vw;
+    --tl: 6.5vw;
+    --rname: 4.4vw;
+    --rwatts: 6.5vw;
+  }
+}
+
 /* The player's caption carries the title: the corner label would say it twice. */
 .root[data-player='true'] :global([data-testid='now-playing']) {
   display: none;

@@ -33,18 +33,45 @@
   left: -10000px;
 }
 
-/* A phone in portrait has no column to spare: the player overlays the lower screen, above the controls. */
+/*
+ * A phone in portrait has no column to spare: the player takes a band at the bottom (the HUD is
+ * laid out above it, TrainingScreen). The caption lies over the lower edge of the picture and the
+ * hide button over its upper corner, so the whole dock is 200 px high.
+ */
 @media (max-width: 760px) and (orientation: portrait) {
   .ride {
     left: 50%;
     top: auto;
-    bottom: 150px;
+    bottom: 6px;
     transform: translateX(-50%);
   }
 
   .ride[data-visible='false'] {
     left: -10000px;
     transform: none;
+  }
+
+  .ride {
+    height: 200px;
+  }
+
+  .ride .bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    min-height: 40px;
+    padding-left: 8px;
+    background: linear-gradient(transparent, rgb(0 0 0 / 0.78));
+  }
+
+  .ride .hide {
+    position: absolute;
+    top: -160px;
+    right: 0;
+    background: rgb(0 0 0 / 0.45);
+    border-radius: 0 0 0 10px;
+    color: #fff;
   }
 }
 
