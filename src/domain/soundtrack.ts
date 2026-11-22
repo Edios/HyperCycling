@@ -478,7 +478,8 @@ export const COVERAGE_SHARE = 0.6;
 
 /** What `coverage` needs of a song (a catalog track or a library song with categories). */
 export interface CoverageTrack {
-  bpm: number;
+  /** Undefined = no clear beat: such a song fits the cool-down only. */
+  bpm?: number;
   categories: readonly MusicCategoryId[];
 }
 
@@ -523,6 +524,7 @@ export function coverage(
           fitSec += s.durationSec;
           continue;
         }
+        if (t.bpm === undefined) continue; // no beat to match a cadence
         const m = matchBpm(t.bpm, s.rpmMean, { tolerance });
         if (m && (halfDouble || m.kind === 'exact')) fitSec += s.durationSec;
       }

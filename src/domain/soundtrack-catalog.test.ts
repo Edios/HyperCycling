@@ -100,6 +100,19 @@ describe('catalogTrackSchema', () => {
     expect(valid({ ...track(), gem: false })).toBe(false);
   });
 
+  it('needs the tempo of a song on the beat only', () => {
+    const noTempo = track({ bpm: undefined });
+    expect(valid(noTempo)).toBe(false);
+    expect(catalogTrackSchema.safeParse(noTempo).error?.issues[0]?.path).toEqual(['bpm']);
+    expect(valid({ ...noTempo, beat: 'none' })).toBe(true);
+    expect(valid(track({ beat: 'none' }))).toBe(true); // a nominal tempo may stay
+  });
+
+  it('knows the fallback trait', () => {
+    expect(valid(track({ traits: ['instrumental', 'fallback'] }))).toBe(true);
+    expect(valid({ ...track(), traits: ['backup'] })).toBe(false);
+  });
+
   it('wraps the tracks in a versioned file', () => {
     expect(catalogSchema.safeParse({ v: 1, tracks: [track()] }).success).toBe(true);
     expect(catalogSchema.safeParse({ v: 2, tracks: [track()] }).success).toBe(false);
@@ -150,6 +163,9 @@ describe('catalogProblems', () => {
     // 104 rpm and half-time songs keep any role.
     expect(catalogProblems([track({ bpm: 104, roles: ['steady'] })])).toEqual([]);
     expect(catalogProblems([track({ bpm: 128, roles: ['climb'] })])).toEqual([]);
+    // No beat, no cadence: any role.
+    const noTempo = track({ bpm: undefined, beat: 'none', roles: ['cooldown'] });
+    expect(catalogProblems([noTempo])).toEqual([]);
   });
 });
 

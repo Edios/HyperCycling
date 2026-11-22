@@ -439,6 +439,12 @@ describe('coverage', () => {
     expect(coverage(sections, tracks, ['house'], { share: 0.5 })[0]!.tracks).toBe(1);
   });
 
+  it('lets a song without a beat fit the cool-down only', () => {
+    const beatless: CoverageTrack = { categories: ['lofi'] };
+    expect(coverage(sections, [beatless], ['lofi'])[0]!.tracks).toBe(0); // 25%
+    expect(coverage(sections, [beatless], ['lofi'], { share: 0.25 })[0]!.tracks).toBe(1);
+  });
+
   it('counts a category listed twice on one song once', () => {
     expect(coverage(sections, [t(180, 'rock', 'rock')], ['rock'])[0]!.tracks).toBe(1);
   });

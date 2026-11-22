@@ -22,7 +22,11 @@ import { MUSIC_CATEGORIES, type MusicCategoryId } from './soundtrack';
 export const TRACK_ROLES = ['warmup', 'steady', 'climb', 'intervals', 'cooldown'] as const;
 export type TrackRole = (typeof TRACK_ROLES)[number];
 
-export const TRACK_TRAITS = ['instrumental', 'loopable', 'long-intro'] as const;
+/**
+ * `fallback` = a long, calm instrumental the ride may play wherever the songs leave silence (gap
+ * rule R4, soundtrack spec §12): one or two in the catalog.
+ */
+export const TRACK_TRAITS = ['instrumental', 'loopable', 'long-intro', 'fallback'] as const;
 export type TrackTrait = (typeof TRACK_TRAITS)[number];
 
 export type TrackEnergy = 1 | 2 | 3 | 4 | 5;
@@ -31,8 +35,11 @@ export type TrackEnergy = 1 | 2 | 3 | 4 | 5;
 export interface CatalogTrack extends QueueItem {
   /** Stable slug, e.g. "kavinsky-nightcall"; a saved plan refers to it. */
   id: string;
-  /** Felt tempo (verified with two sources, octave folded to the one heard). */
-  bpm: number;
+  /**
+   * Felt tempo (verified with two sources, octave folded to the one heard). Required for a song on
+   * the beat; absent for a song without a clear beat (`beat: 'none'`).
+   */
+  bpm?: number;
   /** Length of the preferred version, seconds. */
   durationSec: number;
   /** At least two uploads, main first, each with its own length. */
@@ -43,7 +50,7 @@ export interface CatalogTrack extends QueueItem {
   roles: TrackRole[];
   /** 1 = calm, 5 = peak. */
   energy: TrackEnergy;
-  /** 'none' = no clear beat (cool-down); the tempo is then not compared. */
+  /** 'none' = no clear beat (cool-down); there is no tempo to compare. */
   beat: 'steady' | 'none';
   /** False = explicit lyrics in the listed version. */
   clean: boolean;
@@ -100,30 +107,35 @@ const uploadSchema = z.strictObject({
  * One catalog entry. Strict: an unknown key (a Spotify id, a URL, a helper field of the proposal)
  * is an error, so nothing but the schema's metadata can reach the shipped file.
  */
-export const catalogTrackSchema = z.strictObject({
-  id: z.string().regex(SLUG).max(80),
-  artist: z.string().trim().min(1).max(120),
-  title: z.string().trim().min(1).max(160),
-  bpm: z.number().min(BPM_MIN).max(BPM_MAX),
-  durationSec: z.number().int().min(TRACK_MIN_SEC).max(TRACK_MAX_SEC),
-  version: z.enum(['extended', 'radio']).optional(),
-  startOffsetSec: z.number().int().min(0).max(600).optional(),
-  categories: z.array(z.enum(MUSIC_CATEGORIES)).min(1).refine(distinct, 'duplicate category'),
-  roles: z.array(z.enum(TRACK_ROLES)).min(1).refine(distinct, 'duplicate role'),
-  energy: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
-  beat: z.enum(['steady', 'none']),
-  clean: z.boolean(),
-  traits: z.array(z.enum(TRACK_TRAITS)).min(1).refine(distinct, 'duplicate trait').optional(),
-  bpmNote: z.string().min(1).max(160).optional(),
-  gem: z.literal(true).optional(),
-  pl: z.literal(true).optional(),
-  verified: z.string().regex(ISO_DATE),
-  youtube: z
-    .array(uploadSchema)
-    .min(MIN_UPLOADS)
-    .max(MAX_UPLOADS)
-    .refine((ups) => distinct(ups.map((u) => u.id)), 'the same upload twice'),
-});
+export const catalogTrackSchema = z
+  .strictObject({
+    id: z.string().regex(SLUG).max(80),
+    artist: z.string().trim().min(1).max(120),
+    title: z.string().trim().min(1).max(160),
+    bpm: z.number().min(BPM_MIN).max(BPM_MAX).optional(),
+    durationSec: z.number().int().min(TRACK_MIN_SEC).max(TRACK_MAX_SEC),
+    version: z.enum(['extended', 'radio']).optional(),
+    startOffsetSec: z.number().int().min(0).max(600).optional(),
+    categories: z.array(z.enum(MUSIC_CATEGORIES)).min(1).refine(distinct, 'duplicate category'),
+    roles: z.array(z.enum(TRACK_ROLES)).min(1).refine(distinct, 'duplicate role'),
+    energy: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
+    beat: z.enum(['steady', 'none']),
+    clean: z.boolean(),
+    traits: z.array(z.enum(TRACK_TRAITS)).min(1).refine(distinct, 'duplicate trait').optional(),
+    bpmNote: z.string().min(1).max(160).optional(),
+    gem: z.literal(true).optional(),
+    pl: z.literal(true).optional(),
+    verified: z.string().regex(ISO_DATE),
+    youtube: z
+      .array(uploadSchema)
+      .min(MIN_UPLOADS)
+      .max(MAX_UPLOADS)
+      .refine((ups) => distinct(ups.map((u) => u.id)), 'the same upload twice'),
+  })
+  .refine((t) => t.beat === 'none' || t.bpm !== undefined, {
+    message: 'a song on the beat needs its BPM',
+    path: ['bpm'],
+  });
 
 export const catalogSchema = z.strictObject({
   v: z.literal(1),
@@ -153,11 +165,13 @@ export function catalogProblems(tracks: readonly CatalogTrack[]): string[] {
         problems.push(`${t.id}: upload ${u.id} also used by ${owner}`);
       } else uploads.set(u.id, t.id);
     }
+    const rpm = t.bpm === undefined ? undefined : catalogRpm(t.bpm);
     if (
-      catalogRpm(t.bpm) >= ROLE_SPRINT_RPM &&
+      rpm !== undefined &&
+      rpm >= ROLE_SPRINT_RPM &&
       (t.roles.length !== 1 || t.roles[0] !== 'intervals')
     ) {
-      problems.push(`${t.id}: ridden at ${catalogRpm(t.bpm)} rpm, so its only role is intervals`);
+      problems.push(`${t.id}: ridden at ${rpm} rpm, so its only role is intervals`);
     }
   }
   return problems;
