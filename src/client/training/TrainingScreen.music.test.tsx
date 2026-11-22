@@ -238,14 +238,16 @@ describe('now playing, mute and warnings', () => {
     expect(music.provider.calls.filter((c) => c.type === 'pause')).toHaveLength(0);
   });
 
-  describe('on a phone in portrait', () => {
-    const portrait = (on: boolean) =>
+  describe('on a mobile device', () => {
+    /** A phone: `mobile` matches the mobile query, `portrait` also the portrait one. */
+    const device = (mobile: boolean, portrait = false) =>
       vi.stubGlobal('matchMedia', (query: string) => ({
-        matches: on && query.includes('orientation: portrait'),
+        matches: query.includes('orientation: portrait') ? mobile && portrait : mobile,
         media: query,
         addEventListener: () => undefined,
         removeEventListener: () => undefined,
       }));
+    const portrait = (on: boolean) => device(on, on);
 
     it('does not show the player until the rider switched it on', async () => {
       portrait(true);
@@ -255,6 +257,38 @@ describe('now playing, mute and warnings', () => {
       expect(screen.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
       expect(screen.getByTestId('training-screen')).not.toHaveAttribute('data-player');
       expect(screen.getByTestId('now-playing')).toBeInTheDocument();
+    });
+
+    it('does not show the player on a phone on its side either, until switched on', async () => {
+      device(true, false);
+      load(workoutWith({ fallbackPlaylist: [titled] }), true);
+      await renderScreen();
+      await startRunning();
+      expect(screen.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
+      expect(screen.getByTestId('training-screen')).not.toHaveAttribute('data-player');
+    });
+
+    it('shows it beside the HUD on a phone on its side when the rider turned it on', async () => {
+      device(true, false);
+      repoSettings.value = { ...DEFAULT_SETTINGS, showMusicPlayer: true };
+      resetSettingsForTests();
+      load(workoutWith({ fallbackPlaylist: [titled] }), true);
+      await renderScreen();
+      await startRunning();
+      await waitFor(() =>
+        expect(screen.getByTestId('music-dock')).toHaveAttribute('data-visible', 'true'),
+      );
+      expect(screen.getByTestId('training-screen')).toHaveAttribute('data-player', 'true');
+    });
+
+    it('keeps a rider\'s own "off" on a computer and their "on" on a phone', async () => {
+      device(false);
+      repoSettings.value = { ...DEFAULT_SETTINGS, showMusicPlayer: false };
+      resetSettingsForTests();
+      load(workoutWith({ fallbackPlaylist: [titled] }), true);
+      await renderScreen();
+      await startRunning();
+      expect(screen.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
     });
 
     it('shows it, with the HUD above it and without the corner label, when the setting says so', async () => {

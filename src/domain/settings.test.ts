@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SETTINGS,
   musicPlayerShown,
-  musicPlayerShownOnRide,
   sessionConfigSchema,
   settingsSchema,
 } from './settings';
@@ -77,12 +76,14 @@ describe('the music player setting', () => {
     expect(musicPlayerShown({ showMusicPlayer: false })).toBe(false);
   });
 
-  it('on a phone in portrait it is shown only when the rider switched it on', () => {
-    expect(musicPlayerShownOnRide({}, false)).toBe(true);
-    expect(musicPlayerShownOnRide({ showMusicPlayer: false }, false)).toBe(false);
-    expect(musicPlayerShownOnRide({}, true)).toBe(false);
-    expect(musicPlayerShownOnRide({ showMusicPlayer: false }, true)).toBe(false);
-    expect(musicPlayerShownOnRide({ showMusicPlayer: true }, true)).toBe(true);
+  it("on a mobile device it starts off, and the rider's own choice wins everywhere", () => {
+    expect(musicPlayerShown({}, false)).toBe(true);
+    expect(musicPlayerShown({}, true)).toBe(false);
+    // Saved values keep their meaning on both kinds of device.
+    expect(musicPlayerShown({ showMusicPlayer: true }, true)).toBe(true);
+    expect(musicPlayerShown({ showMusicPlayer: false }, true)).toBe(false);
+    expect(musicPlayerShown({ showMusicPlayer: true }, false)).toBe(true);
+    expect(musicPlayerShown({ showMusicPlayer: false }, false)).toBe(false);
   });
 
   it('is stored as a boolean and loads from settings saved before it existed', () => {

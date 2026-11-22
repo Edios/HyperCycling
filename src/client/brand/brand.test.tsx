@@ -118,6 +118,12 @@ describe('EffortRing', () => {
     render(<EffortRing effort={5} size="var(--ring)" numberTestId="n" />);
     expect((screen.getByTestId('n') as HTMLElement).style.fontSize).toContain('var(--num-k, 0.4)');
   });
+  it('never lets three digits of live watts grow past the default size, whatever --num-k says', () => {
+    render(<EffortRing effort={5} size="var(--ring)" numberTestId="n" text="131" />);
+    expect((screen.getByTestId('n') as HTMLElement).style.fontSize).toContain(
+      'min(var(--num-k, 0.4), 0.4)',
+    );
+  });
   it('puts the number test id on the number', () => {
     render(<EffortRing effort={5} numberTestId="n" />);
     expect(screen.getByTestId('n')).toHaveTextContent('05');
@@ -151,6 +157,23 @@ describe('EffortRing', () => {
       rerender(<EffortRing effort={7} motion />);
       expect(animate).toHaveBeenCalledTimes(3);
       expect(container.querySelectorAll('path')).toHaveLength(10);
+    });
+
+    it('never animates a ring that shows a live reading (watts): the number stays fully drawn', () => {
+      stub();
+      const { rerender, getByTestId } = render(
+        <EffortRing effort={4} motion text="115" numberTestId="w" />,
+      );
+      for (const [level, watts] of [
+        [5, '131'],
+        [4, '118'],
+        [6, '152'],
+        [3, '96'],
+      ] as const) {
+        rerender(<EffortRing effort={level} motion text={watts} numberTestId="w" />);
+        expect(getByTestId('w')).toHaveTextContent(watts);
+      }
+      expect(animate).not.toHaveBeenCalled(); // no fade, no roll, no staggered segments
     });
 
     it('does nothing without motion', () => {

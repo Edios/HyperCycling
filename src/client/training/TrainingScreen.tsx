@@ -14,6 +14,7 @@ import type { FrameInput, WorldTheme } from '../world/world';
 import { getExperience } from '../data/builtin';
 import { resolveChapters } from '../../domain/experience';
 import { MusicPlayerDock } from '../music/MusicPlayerDock';
+import { useMusicPlayerShown } from '../music/useMusicPlayerShown';
 import { useMediaQuery } from './useMediaQuery';
 import { useMusicDirector } from '../music/useMusicDirector';
 import { Toast, ToastStack } from '../ui/Toast';
@@ -43,7 +44,6 @@ import { FOCUS_IN_MS, FOCUS_OUT_MS, fadeStyle } from './hud/motion';
 import { monotonicNowMs, useLastInput } from './useLastInput';
 import { bikeKindOf, bikeShowsWatts, hasKnob } from '../../domain/bike';
 import {
-  musicPlayerShownOnRide,
   resolveResistanceMode,
   resolveTrainerSettings,
   type SessionConfig,
@@ -233,9 +233,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const worldId = runtime.options?.world ?? settings.hyperrideWorld;
   const musicAudible = soundsOn && !muted;
   const playerSlot = useRef<HTMLDivElement>(null);
-  // A phone in portrait has no room beside the HUD: there the player is only on by the rider's word.
+  // On a mobile device the player starts off (the rider's own choice always wins).
   const portraitPhone = useMediaQuery('(max-width: 760px) and (orientation: portrait)');
-  const playerShown = musicPlayerShownOnRide(settings, portraitPhone);
+  const playerShown = useMusicPlayerShown();
   const setPlayerShown = useCallback(
     (on: boolean): void => {
       void updateSettings({ showMusicPlayer: on }).catch((err) =>

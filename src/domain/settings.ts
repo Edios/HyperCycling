@@ -159,21 +159,14 @@ export const DEFAULT_SETTINGS: Settings = {
   recentYoutubeUrls: [],
 };
 
-/** The music player is shown unless the rider turned it off. */
-export function musicPlayerShown(s: Pick<Settings, 'showMusicPlayer'>): boolean {
-  return s.showMusicPlayer !== false;
-}
-
 /**
- * Whether the player is shown during a ride. A phone in portrait has no room for a 200 x 200 px
- * player beside the HUD, so there it is shown only when the rider switched it on themselves
- * (`true`); everywhere else it is shown unless they switched it off.
+ * Whether the music player is shown. The rider's own choice (`showMusicPlayer`, true or false)
+ * always wins; when they never chose, it is shown on a computer and off on a mobile device (a
+ * phone or tablet has no room for a 200 x 200 px player beside the HUD; they can turn it on in
+ * Settings or in the quick settings of a ride). Settings saved before this rule keep their value.
  */
-export function musicPlayerShownOnRide(
-  s: Pick<Settings, 'showMusicPlayer'>,
-  portraitPhone: boolean,
-): boolean {
-  return portraitPhone ? s.showMusicPlayer === true : musicPlayerShown(s);
+export function musicPlayerShown(s: Pick<Settings, 'showMusicPlayer'>, mobile = false): boolean {
+  return s.showMusicPlayer ?? !mobile;
 }
 
 /** The effective mode: a stored object without the field is an existing rider and stays smooth. */

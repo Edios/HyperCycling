@@ -1,7 +1,7 @@
 // jsdom's default address is http://localhost:3000/, which is exactly the case to warn about.
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Settings } from '../../domain/settings';
 
 const repo = vi.hoisted(() => ({ settings: undefined as Settings | undefined }));
@@ -147,6 +147,51 @@ describe('Settings, music player', () => {
     );
     fireEvent.click(toggle);
     await waitFor(() => expect(repo.settings?.showMusicPlayer).toBe(true));
+  });
+});
+
+describe('Settings, music player on a mobile device', () => {
+  const mobile = (on: boolean) =>
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: on,
+      media: query,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('starts off on a phone, says why, and the rider can turn it on', async () => {
+    mobile(true);
+    renderScreen();
+    const toggle = (await screen.findByRole('switch', {
+      name: 'Show the music player',
+    })) as HTMLInputElement;
+    expect(toggle.checked).toBe(false);
+    expect(screen.getByTestId('music-player-hint')).toHaveTextContent('starts off');
+    // Not the rider's own choice: no note about their responsibility.
+    expect(screen.queryByTestId('music-player-off-note')).not.toBeInTheDocument();
+    fireEvent.click(toggle);
+    await waitFor(() => expect(repo.settings?.showMusicPlayer).toBe(true));
+  });
+
+  it('keeps a value the rider chose before: on stays on, off stays off', async () => {
+    mobile(true);
+    repo.settings = { ...DEFAULT_SETTINGS, showMusicPlayer: true };
+    const view = renderScreen();
+    const toggle = (await screen.findByRole('switch', {
+      name: 'Show the music player',
+    })) as HTMLInputElement;
+    await waitFor(() => expect(toggle.checked).toBe(true));
+    view.unmount();
+    resetSettingsForTests();
+    mobile(false);
+    repo.settings = { ...DEFAULT_SETTINGS, showMusicPlayer: false };
+    renderScreen();
+    const off = (await screen.findByRole('switch', {
+      name: 'Show the music player',
+    })) as HTMLInputElement;
+    expect(off.checked).toBe(false);
+    expect(await screen.findByTestId('music-player-off-note')).toBeInTheDocument();
   });
 });
 

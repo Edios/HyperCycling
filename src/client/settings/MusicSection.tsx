@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useState } from 'react';
-import { musicPlayerShown, type SpotifySettings } from '../../domain/settings';
+import type { SpotifySettings } from '../../domain/settings';
+import { useMusicPlayerShown } from '../music/useMusicPlayerShown';
 import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
 import { closeDeezerBridge } from '../music/deezer/client';
@@ -108,6 +109,7 @@ export function MusicSection() {
   const connected = hasCredentials(cfg);
   const envDefault = resolveClientId(undefined);
   const save_ = useSave();
+  const playerShown = useMusicPlayerShown();
   const gsbpmFieldId = useId();
   const [gsbpmKey, setGsbpmKey] = useState(settings.getSongBpmKey ?? '');
   const clientIdFieldId = useId();
@@ -351,13 +353,13 @@ export function MusicSection() {
       <div className={styles.field}>
         <Toggle
           label={t('settings.music.player.label')}
-          checked={musicPlayerShown(settings)}
+          checked={playerShown}
           onChange={(on) => void save_({ showMusicPlayer: on })}
         />
         <p className={styles.note} data-testid="music-player-hint">
           {t('settings.music.player.hint')}
         </p>
-        {!musicPlayerShown(settings) && (
+        {settings.showMusicPlayer === false && (
           <p className={styles.note} role="status" data-testid="music-player-off-note">
             {t('settings.music.player.offNote')}
           </p>
