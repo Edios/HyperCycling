@@ -151,6 +151,67 @@ test('execution score: block result after a block, live score, total on the summ
   );
 });
 
+test('ride recording: the summary shows the ride and downloads it as JSON (T6)', async ({
+  page,
+}) => {
+  await rideWithSensors(page);
+  await startRide(page);
+  await expect(page.getByTestId('erg-controls')).toHaveAttribute('data-status', 'erg', {
+    timeout: 10_000,
+  });
+  // A short pause and resume, then a few more seconds of riding.
+  await page.waitForTimeout(4000);
+  await page.keyboard.press('Space');
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'paused');
+  await page.keyboard.press('Space');
+  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running');
+  await page.waitForTimeout(4000);
+  // The controls hide while riding: Esc opens the same exit question.
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'End and see summary' }).click();
+
+  const card = page.getByTestId('summary-ride');
+  await expect(card).toBeVisible();
+  await expect(page.getByTestId('ride-avg-power')).toHaveText(/^\d+ W$/);
+  await expect(page.getByTestId('ride-hr')).toHaveText('148 / 148 bpm');
+  await expect(page.getByTestId('ride-chart')).toBeVisible();
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    card.getByRole('button', { name: 'Download ride (JSON)' }).click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/^hypercycling-ride-\d{4}-\d{2}-\d{2}-\d{4}\.json$/);
+  const path = await download.path();
+  const { readFileSync } = await import('node:fs');
+  const ride = JSON.parse(readFileSync(path, 'utf8')) as {
+    schemaVersion: number;
+    samples: { timeMs: number[]; power: (number | null)[]; heartRate: (number | null)[] };
+    events: { kind: string }[];
+  };
+  expect(ride.schemaVersion).toBe(1);
+  expect(ride.samples.power.length).toBeGreaterThanOrEqual(6);
+  expect(ride.samples.heartRate).toContain(148);
+  // 1 Hz wall-clock times for the FIT exporter (E2), rising with every sample.
+  expect(ride.samples.timeMs).toHaveLength(ride.samples.power.length);
+  expect(ride.samples.timeMs.every((t, i, all) => i === 0 || t > all[i - 1]!)).toBe(true);
+  expect(ride.events.map((e) => e.kind)).toEqual(expect.arrayContaining(['pause', 'resume']));
+  // Kept on the device: the IndexedDB store holds it under the session log id.
+  const stored = await page.evaluate(
+    () =>
+      new Promise<number>((resolve, reject) => {
+        const req = indexedDB.open('spinning-tutor');
+        req.onerror = () => reject(req.error);
+        req.onsuccess = () => {
+          const tx = req.result.transaction('rides', 'readonly');
+          const count = tx.objectStore('rides').count();
+          count.onsuccess = () => resolve(count.result);
+          count.onerror = () => reject(count.error);
+        };
+      }),
+  );
+  expect(stored).toBe(1);
+});
+
 const VIEWPORTS = [
   { name: 'pc', width: 1280, height: 800 },
   { name: 'phone-portrait', width: 390, height: 844 },

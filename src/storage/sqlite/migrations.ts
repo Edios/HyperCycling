@@ -1,6 +1,9 @@
 import type { Database } from 'better-sqlite3';
 
-/** Each entry upgrades the schema from version `index` to `index + 1`. Append only, never edit. */
+/**
+ * Each entry upgrades the schema from version `index` to `index + 1`. Append only, never edit or
+ * remove (also on a rollback: an older server refuses a newer database, so undo with a new entry).
+ */
 export const MIGRATIONS: readonly string[] = [
   `
   CREATE TABLE workouts     (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
@@ -8,6 +11,10 @@ export const MIGRATIONS: readonly string[] = [
   CREATE TABLE planProgress (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
   CREATE TABLE sessionLogs  (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
   CREATE TABLE singletons   (key TEXT PRIMARY KEY, json TEXT NOT NULL);
+  `,
+  // 2: recorded rides with sensor data (T6).
+  `
+  CREATE TABLE rides        (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
   `,
 ];
 

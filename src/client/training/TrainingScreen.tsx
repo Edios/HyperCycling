@@ -82,12 +82,17 @@ import { useReducedMotion } from './useReducedMotion';
 import { useSessionLoop } from './useSessionLoop';
 import { buildTrainingView } from './view';
 import { buildLiveMeasures } from './live-measures';
-import { useLiveSnapshot } from '../devices/useDevices';
+import { useDeviceStore, useLiveSnapshot } from '../devices/useDevices';
+import { liveMetricsFor } from '../devices/live-metrics';
 import { useMePlayer } from '../settings/useMePlayer';
 import { ergTargetWatts, isSprint, powerLevel } from '../../domain/erg';
 import { useErg } from './useErg';
 import type { ExecutionTracker } from '../../domain/execution';
 import { useExecution } from './useExecution';
+import { useRideRecorder } from './useRideRecorder';
+import { buildRideRecord, loadRideBlocks } from './ride-recorder';
+import type { RideEventKind } from '../../domain/ride';
+import { newId } from '../../domain/ids';
 import { hrTargetFor } from '../../domain/hr-zones';
 import styles from './TrainingScreen.module.css';
 
@@ -279,7 +284,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   // The setup's rule: the switch or a trainer that is connected (a fresh profile has no switch).
   const showsWatts = bikeShowsWatts(settings.equipment, liveSnapshot.trainer !== 'off');
   const trainerSettings = useMemo(() => resolveTrainerSettings(settings), [settings]);
-  const { driver: erg, snapshot: ergSnap } = useErg(runtime, riderFtp, trainerSettings);
+  // Why the next pause happens, for the ride recording (auto-pause, stop on the trainer).
+  const pauseReason = useRef<RideEventKind | null>(null);
+  const onDeviceStop = useCallback(() => {
+    pauseReason.current = 'deviceStop';
+  }, []);
+  const { driver: erg, snapshot: ergSnap } = useErg(runtime, riderFtp, trainerSettings, {
+    onDeviceStop,
+  });
   // Smart trainer mode: a trainer is (or was) connected and the bike shows watts.
   const trainerMode =
     showsWatts && liveSnapshot.trainer !== 'off' && erg !== null && ergSnap !== null;
@@ -316,17 +328,46 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const effortTable = settings.effortTable;
   // Execution score (D21), sampled every second (see useExecution): a block result shows when the
   // block ends, the total goes to the summary.
+  // A ride resumed after a reload or from another screen carries on with its kept recording.
+  const [resumedRide] = useState(() => state.status !== 'idle' || state.workoutElapsedSec > 0);
+  const [closedBefore] = useState(() => (resumedRide ? loadRideBlocks(runtime.workout.id) : []));
   const {
     tracker: execution,
     blockScore,
     blockResult,
     dismissBlockResult,
-  } = useExecution({
-    active: trainerMode && state.status === 'running',
-    segmentIndex: view?.index ?? -1,
-    powerW: liveSnapshot.powerW,
-    targetW,
-  });
+  } = useExecution(
+    {
+      active: trainerMode && state.status === 'running',
+      segmentIndex: view?.index ?? -1,
+      powerW: liveSnapshot.powerW,
+      targetW,
+    },
+    { closedBefore },
+  );
+
+  // Ride recording (T6): power, cadence and HR every second of riding, with or without a trainer.
+  // Power of each second from the raw readings (FIT / Coach), not the HUD's 3 s average.
+  const deviceStore = useDeviceStore();
+  const readPowerW = useCallback(() => liveMetricsFor(deviceStore).secondPowerW(), [deviceStore]);
+  const ride = useRideRecorder(
+    {
+      status: state.status,
+      trainerLink: liveSnapshot.trainer,
+      readPowerW,
+      cadenceRpm: liveSnapshot.cadenceRpm,
+      hrBpm: liveSnapshot.hrBpm,
+      targetW,
+      segmentIndex: view?.index ?? 0,
+      ergEnabled: trainerMode && ergSnap ? ergSnap.enabled : null,
+    },
+    {
+      workoutId: runtime.workout.id,
+      resumed: resumedRide,
+      pauseReasonRef: pauseReason,
+      blocks: () => execution.results(),
+    },
+  );
 
   const trainerHud = useMemo(() => {
     if (!trainerMode || !erg || !ergSnap || riderFtp === undefined) return undefined;
@@ -364,6 +405,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     const id = setTimeout(() => {
       const session = useSessionStore.getState();
       if (session.state.status !== 'running') return;
+      pauseReason.current = 'autoPause';
       session.pause();
       autoPausedRef.current = true;
       setAutoPauseNotice(true);
@@ -417,28 +459,44 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       const rt = s.runtime;
       if (!rt || ended.current) return;
       const total = rt.segments.reduce((sum, seg) => sum + seg.durationSec, 0);
+      const exec = executionSummary(execution);
+      const logId = newId();
+      const started = startedAt.current ?? new Date().toISOString();
+      const rideRecord = buildRideRecord(ride.recorder.data(), {
+        id: logId,
+        workoutId: rt.workout.id,
+        startedAt: started,
+        endedAt: new Date().toISOString(),
+        ftp: riderFtp ?? null,
+        hrMax: hrMax ?? null,
+        blocks: execution.results(),
+      });
+      ride.finish();
       useLastResult.getState().set({
         workout: rt.workout,
         riddenSec: completed ? total : Math.min(s.state.workoutElapsedSec, total),
         completed,
         config: rt.config,
         players: rt.players,
-        startedAt: startedAt.current ?? new Date().toISOString(),
+        startedAt: started,
         ...(rt.plan ? { plan: rt.plan } : {}),
         ...(rt.options?.experienceId ? { experienceId: rt.options.experienceId } : {}),
-        ...executionSummary(execution),
+        ...exec,
+        logId,
+        ...(rideRecord ? { ride: rideRecord } : {}),
       });
       ended.current = true;
       navigate('/summary');
     },
-    [navigate, execution],
+    [navigate, execution, ride, riderFtp, hrMax],
   );
 
   /** Leave for the main menu: no summary, and the unmount cleanup drops the session. */
   const leaveWithoutSaving = useCallback(() => {
     ended.current = true;
+    ride.finish();
     navigate('/');
-  }, [navigate]);
+  }, [navigate, ride]);
 
   // Engine events: beeps, edge flash, coach cue, finish.
   useEffect(() => {

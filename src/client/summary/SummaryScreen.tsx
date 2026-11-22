@@ -33,6 +33,7 @@ import {
   withFtp,
 } from './model';
 import { saveSessionLog, syncPlanEntry } from './persist';
+import { RideCard } from './RideCard';
 import styles from './SummaryScreen.module.css';
 
 /** Route /summary. Redirects home when there is no finished session to show. */
@@ -164,6 +165,7 @@ function Summary({ result }: { result: LastResult }) {
             })}
           </p>
         )}
+        {result.ride && <RideCard ride={result.ride} />}
         {result.players.length > 0 && (
           <div className={styles.chips} data-testid="summary-players">
             {result.players.map((p) => (

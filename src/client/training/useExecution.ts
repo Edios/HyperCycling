@@ -25,14 +25,18 @@ export interface ExecutionInput {
  */
 export function useExecution(
   input: ExecutionInput,
-  { now = () => Date.now(), sampleMs = EXECUTION_SAMPLE_MS } = {},
+  {
+    now = () => Date.now(),
+    sampleMs = EXECUTION_SAMPLE_MS,
+    closedBefore = [],
+  }: { now?: () => number; sampleMs?: number; closedBefore?: readonly BlockResult[] } = {},
 ): {
   tracker: ExecutionTracker;
   blockScore: number | null;
   blockResult: BlockResult | null;
   dismissBlockResult(): void;
 } {
-  const [tracker] = useState(createExecutionTracker);
+  const [tracker] = useState(() => createExecutionTracker(closedBefore));
   const latest = useRef(input);
   const clock = useRef(now);
   useEffect(() => {

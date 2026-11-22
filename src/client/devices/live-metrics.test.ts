@@ -25,6 +25,20 @@ describe('createLiveMetrics', () => {
     expect(live.getSnapshot()).toBe(OFF_SNAPSHOT);
   });
 
+  it('gives the power of the last second for the ride record; none without a trainer', async () => {
+    const trainer = new FakeTrainer({ noiseW: 0, freeRidePowerW: 150 });
+    const { bluetooth, store, live } = setup({ trainer });
+    expect(live.secondPowerW()).toBeNull();
+    await store.connect('trainer');
+    for (let i = 0; i < 10; i++) {
+      await vi.advanceTimersByTimeAsync(1000);
+      bluetooth.pump(Date.now());
+    }
+    expect(live.secondPowerW()).toBe(150);
+    await vi.advanceTimersByTimeAsync(5000); // silent
+    expect(live.secondPowerW()).toBeNull();
+  });
+
   it('shows a 3 s power average, cadence and heart rate while data flows', async () => {
     const trainer = new FakeTrainer({ noiseW: 0, freeRidePowerW: 150 });
     const { bluetooth, store, live } = setup({

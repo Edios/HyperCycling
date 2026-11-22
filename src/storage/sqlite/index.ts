@@ -9,7 +9,9 @@ import { migrate } from './migrations';
 // Server-only module: never import it from client code (native addon).
 
 const TABLES = ['workouts', 'players', 'planProgress', 'sessionLogs'] as const;
-type Table = (typeof TABLES)[number];
+/** Kept out of export and replace (health data, see Repositories.rides). */
+const PRIVATE_TABLES = ['rides'] as const;
+type Table = (typeof TABLES)[number] | (typeof PRIVATE_TABLES)[number];
 
 export type SqliteRepositories = Repositories & {
   close(): void;
@@ -28,7 +30,7 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
   }
 
   const stmts = Object.fromEntries(
-    TABLES.map((t) => [
+    [...TABLES, ...PRIVATE_TABLES].map((t) => [
       t,
       {
         all: db.prepare(`SELECT json FROM ${t} ORDER BY id`),
@@ -113,6 +115,7 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
   const sessionLogs = collection('sessionLogs', (v) =>
     validate('session log', schemas.sessionLogs, v),
   );
+  const rides = collection('rides', (v) => validate('ride', schemas.rides, v));
   const settings = singleton('settings', (v) => validate('settings', schemas.settings, v));
 
   const replace = db.transaction((b: ReturnType<typeof validateBundle>) => {
@@ -131,6 +134,7 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
     players,
     planProgress,
     sessionLogs,
+    rides,
     settings,
     activeSession: singleton('activeSession', (v) =>
       validate('active session', schemas.activeSession, v),

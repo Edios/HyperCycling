@@ -72,6 +72,7 @@ export function createHttpRepositories(
     players: collection('players'),
     planProgress: collection('plan-progress'),
     sessionLogs: collection('session-logs'),
+    rides: collection('rides'),
     settings: singleton('settings'),
     activeSession: singleton('active-session'),
     async exportAll() {

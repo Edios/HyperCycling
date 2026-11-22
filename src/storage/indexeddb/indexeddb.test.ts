@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { bundle as sampleBundle, runRepositoryContract, workout } from '../contract';
+import { bundle as sampleBundle, ride, runRepositoryContract, workout } from '../contract';
 import { createIndexedDbRepositories } from './index';
 
 let n = 0;
@@ -30,6 +30,40 @@ describe('indexeddb replaceAll rollback', () => {
 
     const after = await repos.exportAll();
     expect({ ...after, exportedAt: '' }).toEqual({ ...before, exportedAt: '' });
+    repos.close();
+  });
+});
+
+describe('indexeddb version 1 → 2 (rides store, T6)', () => {
+  it('adds the rides store and keeps the existing data', async () => {
+    const name = `upgrade-db-${++n}`;
+    // A database as version 1 left it: the first collections and singletons, with data.
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open(name, 1);
+      req.onupgradeneeded = () => {
+        const d = req.result;
+        for (const s of ['workouts', 'players', 'planProgress', 'sessionLogs']) {
+          d.createObjectStore(s, { keyPath: 'id' });
+        }
+        d.createObjectStore('singletons');
+      };
+      req.onsuccess = () => {
+        const d = req.result;
+        const tx = d.transaction('players', 'readwrite');
+        tx.objectStore('players').put({ id: 'p1', name: 'Ola', ftp: 200 });
+        tx.oncomplete = () => {
+          d.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error);
+      };
+      req.onerror = () => reject(req.error);
+    });
+    const repos = await createIndexedDbRepositories(name);
+    expect(await repos.players.get('p1')).toEqual({ id: 'p1', name: 'Ola', ftp: 200 });
+    expect(await repos.rides.list()).toEqual([]);
+    await repos.rides.put(ride('r1'));
+    expect(await repos.rides.get('r1')).toEqual(ride('r1'));
     repos.close();
   });
 });

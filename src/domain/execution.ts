@@ -66,8 +66,11 @@ export interface ExecutionTracker {
   current(): number | null;
 }
 
-export function createExecutionTracker(): ExecutionTracker {
-  const closed: BlockResult[] = [];
+/** `closed`: blocks finished before a reload (the ride carries on with them). */
+export function createExecutionTracker(
+  closedBefore: readonly BlockResult[] = [],
+): ExecutionTracker {
+  const closed: BlockResult[] = closedBefore.map((b) => ({ ...b }));
   let segment = -1;
   let onMs = 0;
   let allMs = 0;

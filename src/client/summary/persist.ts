@@ -16,7 +16,7 @@ const logged = new WeakSet<LastResult>();
 
 export function buildSessionLog(result: LastResult, endedAt: string): SessionLog {
   return {
-    id: newId(),
+    id: result.logId ?? newId(),
     workoutId: result.workout.id,
     startedAt: result.startedAt,
     endedAt,
@@ -33,7 +33,10 @@ export async function saveSessionLog(result: LastResult): Promise<void> {
   logged.add(result);
   try {
     const repos = await getRepositories();
-    await repos.sessionLogs.put(buildSessionLog(result, new Date().toISOString()));
+    const log = buildSessionLog(result, new Date().toISOString());
+    await repos.sessionLogs.put(log);
+    // The ride stays on this device only (health data): never in the backup export.
+    if (result.ride) await repos.rides.put({ ...result.ride, id: log.id, sessionLogId: log.id });
   } catch (err) {
     console.warn('Saving the session log failed', err);
   }

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { APP_ID, type ExportBundle } from '../domain/export-bundle';
 import type { PlanProgress } from '../domain/plan';
 import type { Player } from '../domain/player';
+import { summarizeRide, type RideRecord } from '../domain/ride';
 import type { CollectionRepo, Repositories } from '../domain/repositories';
 import type { ActiveSession, SessionLog } from '../domain/session-log';
 import { DEFAULT_SETTINGS, type SessionConfig, type Settings } from '../domain/settings';
@@ -76,6 +77,35 @@ const log = (id: string): SessionLog => ({
   config: session,
 });
 
+export function ride(id: string, power = 200): RideRecord {
+  const samples = {
+    timeMs: [0, 1000, 5000],
+    power: [power, power + 10, null],
+    cadence: [90, 92, null],
+    heartRate: [130, 131, 132],
+    targetW: [200, 200, 200],
+    segmentIndex: [0, 0, 1],
+  };
+  return {
+    id,
+    schemaVersion: 1,
+    sessionLogId: id,
+    workoutId: 'w1',
+    startedAt: '2026-01-01T10:00:00.000Z',
+    endedAt: '2026-01-01T10:00:03.000Z',
+    sampleSec: 1,
+    ftp: 250,
+    hrMax: 190,
+    samples,
+    events: [
+      { atSec: 2, atMs: 2000, kind: 'autoPause' },
+      { atSec: 2, atMs: 4000, kind: 'resume' },
+    ],
+    blocks: [{ segmentIndex: 0, score: 100, met: true, measuredSec: 2 }],
+    summary: summarizeRide(samples, [], 190),
+  };
+}
+
 const settings = (): Settings => ({ ...DEFAULT_SETTINGS, basicTheme: 'light', sounds: false });
 
 const active = (): ActiveSession => ({
@@ -142,6 +172,13 @@ const collections: CollectionCase[] = [
     make: (id) => log(id),
     changed: (id) => ({ ...log(id), riddenSec: 5 }),
     bad: (id) => ({ ...log(id), riddenSec: -1 }),
+  },
+  {
+    label: 'rides',
+    repo: (r) => r.rides,
+    make: (id) => ride(id),
+    changed: (id) => ride(id, 250),
+    bad: (id) => ({ ...ride(id), schemaVersion: 9 }) as unknown as RideRecord,
   },
 ];
 
@@ -242,6 +279,15 @@ export function runRepositoryContract(name: string, makeRepos: () => Promise<Rep
     });
 
     describe('exportAll / replaceAll', () => {
+      it('keeps rides out of the export and leaves them alone on replaceAll (health data)', async () => {
+        await repos.rides.put(ride('r1'));
+        const b = await repos.exportAll();
+        expect(b).not.toHaveProperty('rides');
+        expect(JSON.stringify(b)).not.toContain('heartRate');
+        await repos.replaceAll(bundle());
+        expect(await repos.rides.get('r1')).toEqual(ride('r1'));
+      });
+
       it('exports an empty store with null settings', async () => {
         const b = await repos.exportAll();
         expect(b).toMatchObject({

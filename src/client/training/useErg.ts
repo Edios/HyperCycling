@@ -16,13 +16,16 @@ export function useErg(
   runtime: SessionRuntime,
   ftp: number | undefined,
   trainerSettings: TrainerSettings,
+  { onDeviceStop }: { onDeviceStop?: () => void } = {},
 ): { driver: ErgDriver | null; snapshot: ErgSnapshot | null } {
   const store = useDeviceStore();
   const ftpRef = useRef(ftp);
   const settingsRef = useRef(trainerSettings);
+  const onDeviceStopRef = useRef(onDeviceStop);
   useEffect(() => {
     ftpRef.current = ftp;
     settingsRef.current = trainerSettings;
+    onDeviceStopRef.current = onDeviceStop;
   });
   const [driver, setDriver] = useState<ErgDriver | null>(null);
 
@@ -32,7 +35,9 @@ export function useErg(
       // Stopped on the trainer itself: pause the ride; ERG waits for the rider to resume.
       onDeviceStop: () => {
         const session = useSessionStore.getState();
-        if (session.state.status === 'running') session.pause();
+        if (session.state.status !== 'running') return;
+        onDeviceStopRef.current?.();
+        session.pause();
       },
       settings: () => settingsRef.current,
       moment: () => {

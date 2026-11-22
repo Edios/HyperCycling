@@ -2,21 +2,31 @@ import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import { APP_ID } from '../../domain/export-bundle';
 import type { PlanProgress } from '../../domain/plan';
 import type { Player } from '../../domain/player';
+import type { RideRecord } from '../../domain/ride';
 import type { CollectionRepo, Repositories, SingletonRepo } from '../../domain/repositories';
 import type { ActiveSession, SessionLog } from '../../domain/session-log';
 import type { Settings } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
 import { byId, schemas, validate, validateBundle } from '../validation';
 
-const DB_VERSION = 1;
+/**
+ * 1: first schema. 2: `rides` store (T6).
+ *
+ * Upgrades are one way: a browser that opened version 2 cannot be opened by an older build
+ * (VersionError). If a change is ever rolled back, never lower this number or remove an upgrade
+ * step; ship the rollback as a new, higher version instead. The same holds for the SQLite
+ * migrations (an older server refuses a newer database).
+ */
+const DB_VERSION = 2;
 const COLLECTIONS = ['workouts', 'players', 'planProgress', 'sessionLogs'] as const;
-type CollectionName = (typeof COLLECTIONS)[number];
+type CollectionName = (typeof COLLECTIONS)[number] | 'rides';
 
 interface TutorDb extends DBSchema {
   workouts: { key: string; value: Workout };
   players: { key: string; value: Player };
   planProgress: { key: string; value: PlanProgress };
   sessionLogs: { key: string; value: SessionLog };
+  rides: { key: string; value: RideRecord };
   singletons: { key: string; value: Settings | ActiveSession };
 }
 
@@ -76,9 +86,13 @@ export async function createIndexedDbRepositories(
       // another tab wants to upgrade or delete the database: let go of it
       (event.target as IDBDatabase).close();
     },
-    upgrade(d) {
-      for (const name of COLLECTIONS) d.createObjectStore(name, { keyPath: 'id' });
-      d.createObjectStore('singletons');
+    upgrade(d, oldVersion) {
+      // Versions only add stores: existing data is never touched.
+      if (oldVersion < 1) {
+        for (const name of COLLECTIONS) d.createObjectStore(name, { keyPath: 'id' });
+        d.createObjectStore('singletons');
+      }
+      if (oldVersion < 2) d.createObjectStore('rides', { keyPath: 'id' });
     },
   });
 
@@ -92,6 +106,7 @@ export async function createIndexedDbRepositories(
     sessionLogs: collection(db, 'sessionLogs', (v) =>
       validate('session log', schemas.sessionLogs, v),
     ),
+    rides: collection(db, 'rides', (v) => validate('ride', schemas.rides, v)),
     settings: singleton(db, 'settings', (v) => validate('settings', schemas.settings, v)),
     activeSession: singleton(db, 'activeSession', (v) =>
       validate('active session', schemas.activeSession, v),

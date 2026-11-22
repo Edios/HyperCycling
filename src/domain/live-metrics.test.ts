@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { zoneForBpm } from './hr-zones';
-import { createPowerSmoother, judgeCadence, MAX_VALID_WATTS } from './live-metrics';
+import {
+  createPowerSmoother,
+  createSecondPower,
+  judgeCadence,
+  MAX_VALID_WATTS,
+} from './live-metrics';
 
 describe('createPowerSmoother', () => {
   it('is empty until the first reading and returns a single fresh reading as is', () => {
@@ -95,5 +100,33 @@ describe('zoneForBpm', () => {
     expect(zoneForBpm(130, undefined)).toBeNull();
     expect(zoneForBpm(130, 0)).toBeNull();
     expect(zoneForBpm(Number.NaN, 190)).toBeNull();
+  });
+});
+
+describe('createSecondPower (ride record, review #120 B2)', () => {
+  it('a 1 s peak stays a peak (the 3 s HUD average would flatten it)', () => {
+    const p = createSecondPower();
+    const hud = createPowerSmoother();
+    // 4 Hz readings: 200 W, one second at 600 W, then 200 W again.
+    for (let t = 0; t <= 2000; t += 250) {
+      const w = t > 1000 && t <= 2000 ? 600 : 200;
+      p.push(w, t);
+      hud.push(w, t);
+    }
+    expect(p.value(2000)).toBe(600);
+    expect(Math.round(hud.value(2000)!)).toBeLessThan(500);
+  });
+
+  it('a slow trainer: the last reading holds up to 2 s; no reading after that is null', () => {
+    const p = createSecondPower();
+    expect(p.value(0)).toBeNull();
+    p.push(180, 1000);
+    expect(p.value(1500)).toBe(180);
+    expect(p.value(2900)).toBe(180); // nothing in this second, the last reading is 1.9 s old
+    expect(p.value(3100)).toBeNull();
+    p.push(Number.NaN, 3200); // invalid readings are ignored
+    expect(p.value(3300)).toBeNull();
+    p.reset();
+    expect(p.value(3300)).toBeNull();
   });
 });

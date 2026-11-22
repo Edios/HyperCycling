@@ -2,6 +2,7 @@ import type { z } from 'zod';
 import { exportBundleSchema, type ExportBundle } from '../domain/export-bundle';
 import { planProgressSchema } from '../domain/plan';
 import { playerSchema } from '../domain/player';
+import { rideSchema } from '../domain/ride';
 import { activeSessionSchema, sessionLogSchema } from '../domain/session-log';
 import { settingsSchema } from '../domain/settings';
 import { workoutSchema } from '../domain/workout';
@@ -11,6 +12,7 @@ export const schemas = {
   players: playerSchema,
   planProgress: planProgressSchema,
   sessionLogs: sessionLogSchema,
+  rides: rideSchema,
   settings: settingsSchema,
   activeSession: activeSessionSchema,
 } as const;
