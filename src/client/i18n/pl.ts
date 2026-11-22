@@ -966,7 +966,7 @@ export const pl: Messages = {
       },
       player: {
         label: 'Pokaż odtwarzacz muzyki',
-        hint: 'Regulamin YouTube wymaga widocznego odtwarzacza (co najmniej 200 × 200 px, z tytułem utworu). Pokazujemy go podczas jazdy i w podglądzie muzyki.',
+        hint: 'Regulamin YouTube wymaga widocznego odtwarzacza (co najmniej 200 × 200 px, z tytułem utworu). Pokazujemy go podczas jazdy i w podglądzie muzyki. Na telefonie i tablecie jest domyślnie wyłączony, bo brakuje tam miejsca: włącz go tutaj albo w szybkich ustawieniach jazdy.',
         offNote:
           'Odtwarzacz jest ukryty. To Twój wybór i Twoja odpowiedzialność wobec regulaminu YouTube; muzyka nadal gra. Odtwarzacz jest tylko przesunięty poza ekran, a zgodność tego z regulaminem nie jest potwierdzona prawnie.',
       },

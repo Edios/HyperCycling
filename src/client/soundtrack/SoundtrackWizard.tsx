@@ -18,10 +18,10 @@ import {
 import { totalDurationSec, type Workout } from '../../domain/workout';
 import { localizedText } from '../data/localized';
 import { useLibrary } from '../data/useLibrary';
-import { musicPlayerShown } from '../../domain/settings';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT } from '../i18n';
 import { MusicPlayerDock } from '../music/MusicPlayerDock';
+import { useMusicPlayerShown } from '../music/useMusicPlayerShown';
 import { formatClock } from '../training/format';
 import { Button } from '../ui/Button';
 import { Chip } from '../ui/Chip';
@@ -56,6 +56,7 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
   const { settings, updateSettings } = useSettings();
   const catalogState = useSoundtrackCatalog();
   const preview = usePreview();
+  const playerShown = useMusicPlayerShown();
 
   const totalSec = totalDurationSec(workout);
   const tooShort = totalSec < MIN_WIZARD_SEC;
@@ -384,7 +385,7 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
         <MusicPlayerDock
           variant="inline"
           track={preview.now?.track ?? null}
-          shown={musicPlayerShown(settings)}
+          shown={playerShown}
           slotRef={preview.slotRef}
           onHide={() => void updateSettings({ showMusicPlayer: false })}
         />

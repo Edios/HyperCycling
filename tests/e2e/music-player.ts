@@ -69,8 +69,8 @@ export async function startRunningWithMusic(page: Page): Promise<void> {
 }
 
 /**
- * Makes sure the player is shown. A phone in portrait shows it only by the rider's word (the
- * quick settings switch); elsewhere it is on already.
+ * Makes sure the player is shown. A mobile device (a phone, in either orientation) shows it only
+ * by the rider's word (the quick settings switch); a computer has it on already.
  */
 export async function showPlayer(page: Page): Promise<void> {
   const dock = page.getByTestId('music-dock');

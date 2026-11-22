@@ -169,9 +169,13 @@ test.describe('Match music', () => {
     for (const v of VIEWPORTS) {
       await page.setViewportSize({ width: v.width, height: v.height });
       await wakeControls(page);
-      const portrait = v.name.startsWith('phone-portrait');
-      if (portrait) {
-        // A phone in portrait shows the player only by the rider's word.
+      // A computer shows the player by default; a mobile device (a phone, in either orientation)
+      // only by the rider's word.
+      const mobile = v.name !== 'pc';
+      if (!mobile) {
+        await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'true');
+      }
+      if (mobile) {
         await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
         await expect(page.getByTestId('now-playing')).toBeVisible();
         await shot(page, `soundtrack-ride-${v.name}-default`);
@@ -180,14 +184,14 @@ test.describe('Match music', () => {
       }
       await shot(page, `soundtrack-ride-${v.name}`);
       found.push(...(await playerProblems(page)).map((m) => `${v.name}: ${m}`));
-      if (portrait) {
+      if (mobile) {
         await page.getByTestId('music-player-hide').click();
         await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
       }
     }
     expect(found).toEqual([]);
     await page.setViewportSize({ width: 1280, height: 800 });
-    // The rider's "off" of the portrait sizes holds on the wide ones too; the switch brings it back.
+    // The rider's "off" of the phone sizes holds on the computer too; the switch brings it back.
     await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
     await showPlayer(page);
 
