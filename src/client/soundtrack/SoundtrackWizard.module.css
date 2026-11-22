@@ -213,6 +213,13 @@
   font-size: 1.1875rem;
 }
 
+/* What the stretch wants from the music: steady or intervals, and the energy. */
+.partMusic {
+  margin: 0;
+  color: var(--mut);
+  font-size: 0.875rem;
+}
+
 .lock,
 .replace {
   flex: none;

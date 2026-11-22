@@ -366,6 +366,132 @@ describe('sectionsOf: limit, roles, energy, locks', () => {
   });
 });
 
+describe('sectionsOf: interval profile (music energy spec §2a)', () => {
+  /** The owner's sprint: 8 x (15 s at effort 9-10, 105 rpm / 20 s at effort 2, 70 rpm). */
+  const sprint = (
+    work: SteadyBlock | RampBlock = ramp('on', 15, 9, 10, 105),
+    rest: SteadyBlock | RampBlock = steady('off', 20, 2, 70),
+  ) =>
+    workout([
+      ramp('wu', 300, 2, 4, 90),
+      repeat('sprint', 8, [work, rest]),
+      ramp('cd', 300, 4, 1, 85),
+    ]);
+
+  it('rates the sprint by its work phase: energy 5, peak, the work cadence (bug: energy 3, tempo, ~85 rpm)', () => {
+    const w = sprint();
+    const s = sectionsOf(w);
+    expectWellFormed(w, s);
+    const part = s.find((x) => x.anchor.blockId === 'on')!;
+    expect(part.blockRefs).toHaveLength(16);
+    expect({ energy: part.energy, role: part.role, rpm: part.rpmMean }).toEqual({
+      energy: 5,
+      role: 'peak',
+      rpm: 105,
+    });
+    expect(part.targetBpm).toBe(210);
+    expect(part.profile).toBe('intervals');
+    expect(part.workEffort).toBeCloseTo(9.5, 9);
+    // The honest mean stays what it is (the profile is how the music reads it).
+    expect(part.effort.mean).toBeCloseTo((15 * 9.5 + 20 * 2) / 35, 9);
+  });
+
+  it('gives a work phase of 7-8.9 the hard role and energy 4', () => {
+    const s = sectionsOf(sprint(steady('on', 20, 8, 100), steady('off', 20, 3, 75)));
+    const part = s.find((x) => x.anchor.blockId === 'on')!;
+    expect(part.profile).toBe('intervals');
+    expect(part.workEffort).toBe(8);
+    expect(part.role).toBe('hard');
+    expect(part.energy).toBe(4);
+    expect(part.rpmMean).toBe(100);
+  });
+
+  it('keeps the whole-section cadence when the work phase sets none', () => {
+    const s = sectionsOf(sprint(steady('on', 15, 10), steady('off', 20, 2, 70)));
+    const part = s.find((x) => x.anchor.blockId === 'on')!;
+    expect(part.profile).toBe('intervals');
+    expect(part.rpmMean).toBe(70);
+    expect(part.rpmKnown).toBe(true);
+  });
+
+  it('is steady when the effort range is below 4 (the 30/30 HIIT at 6/5)', () => {
+    const w = workout([
+      ramp('wu', 240, 2, 4, 90),
+      repeat('hiit', 4, [steady('on', 30, 6, 90), steady('off', 30, 5, 85)]),
+      ramp('cd', 300, 4, 1, 85),
+    ]);
+    const part = sectionsOf(w)[1]!;
+    expect(part.profile).toBe('steady');
+    expect(part.workEffort).toBe(part.effort.mean);
+    expect(part.energy).toBe(3);
+    expect(part.rpmMean).toBeCloseTo(87.5, 9);
+  });
+
+  it('is steady when the work phases last 60 s or more on average', () => {
+    const s = sectionsOf(sprint(steady('on', 60, 9, 100), steady('off', 60, 2, 80)));
+    const part = s.find((x) => x.anchor.blockId === 'on')!;
+    expect(part.profile).toBe('steady');
+    expect(part.energy).toBe(energyOf(part.effort.mean));
+    expect(part.role).toBe(roleOfEffort(part.effort.mean));
+  });
+
+  it('is steady with fewer than 3 crossings of the middle of the effort range', () => {
+    const w = workout([steady('a', 120, 2, 80), steady('b', 50, 9, 100), steady('c', 120, 3, 80)]);
+    const s = sectionsOf(w);
+    expect(s).toHaveLength(1);
+    expect(s[0]!.profile).toBe('steady');
+  });
+
+  it('leaves long intervals (a repetition of 150 s or more) as they were: one section each', () => {
+    const w = workout([
+      ramp('wu', 300, 2, 4, 90),
+      repeat('long', 4, [steady('on', 90, 9, 100), steady('off', 90, 2, 80)]),
+      ramp('cd', 300, 4, 1, 85),
+    ]);
+    const s = sectionsOf(w);
+    expectWellFormed(w, s);
+    for (const x of s.filter((y) => y.anchor.blockId === 'on')) {
+      expect(x.profile).toBe('steady');
+      expect(x.energy).toBe(energyOf(x.effort.mean));
+      expect(x.rpmMean).toBeCloseTo((90 * 100 + 90 * 80) / 180, 9);
+    }
+  });
+
+  it('leaves long repetitions merged into one section as they were (standing starts, 300 s each)', () => {
+    const w = workout([
+      ramp('wu', 300, 2, 4, 90),
+      repeat('starts', 4, [
+        steady('st', 10, 10, 72),
+        steady('sit', 20, 9, 100),
+        steady('off', 270, 2, 85),
+      ]),
+      ramp('cd', 300, 4, 1, 85),
+    ]);
+    const s = sectionsOf(w);
+    expectWellFormed(w, s);
+    const merged = s.filter((x) => x.anchor.blockId === 'st');
+    expect(merged.some((x) => new Set(x.blockRefs.map((r) => r.rep)).size > 1)).toBe(true);
+    for (const x of merged) {
+      expect(x.profile).toBe('steady');
+      expect(x.energy).toBe(energyOf(x.effort.mean));
+    }
+  });
+
+  it('keeps the warm-up a warm-up even with short bursts in it', () => {
+    const w = workout(
+      [
+        repeat('wu', 6, [steady('easy', 40, 3, 85), steady('burst', 10, 7, 110)]),
+        steady('main', 600, 6, 90),
+      ],
+      { scaling: { warmupBlockId: 'wu', cooldownBlockId: 'x' } },
+    );
+    const first = sectionsOf(w)[0]!;
+    expect(first.role).toBe('warmup');
+    expect(first.energy).toBe(energyOf(first.effort.mean));
+    expect(first.rpmMean).toBeCloseTo((40 * 85 + 10 * 110) / 50, 9);
+  });
+});
+
 describe('energyOf and roleOfEffort', () => {
   it('maps effort to energy per the spec table', () => {
     expect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(energyOf)).toEqual([1, 1, 1, 2, 3, 3, 4, 4, 5, 5]);

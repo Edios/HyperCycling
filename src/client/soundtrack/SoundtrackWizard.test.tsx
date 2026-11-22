@@ -191,6 +191,26 @@ describe('step 2: the songs', () => {
     expect(within(first).getByTestId('soundtrack-replace')).toBeInTheDocument();
   });
 
+  it('says what each stretch wants from the music: steady or intervals, and the energy', async () => {
+    await toStep2('tabata-20-10');
+    const music = screen
+      .getAllByTestId('soundtrack-part')
+      .map((p) => within(p).getByTestId('soundtrack-part-music').textContent);
+    expect(music).toContain('Intervals · energy 5 of 5');
+    expect(music.some((m) => /^Steady effort · energy [1-5] of 5$/.test(m ?? ''))).toBe(true);
+  });
+
+  it('says it in Polish too', async () => {
+    setLang('pl');
+    renderWizard('tabata-20-10');
+    await waitFor(() => expect(next()).toBeEnabled());
+    fireEvent.click(next());
+    await screen.findByRole('heading', { level: 2, name: 'Proponujemy takie utwory' });
+    const music = screen.getAllByTestId('soundtrack-part-music').map((m) => m.textContent);
+    expect(music).toContain('Interwały · energia 5 z 5');
+    expect(music.some((m) => /^Równy wysiłek · energia [1-5] z 5$/.test(m ?? ''))).toBe(true);
+  });
+
   it('shuffles to other songs, keeps the locked stretch and plays no song twice', async () => {
     await toStep2();
     const before = songIds();

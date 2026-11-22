@@ -664,6 +664,11 @@ export const en = {
       nobeat: 'no beat',
     },
     partTitle: '{role} · effort {range} · {time}',
+    partMusic: '{profile} · energy {energy} of 5',
+    profile: {
+      steady: 'Steady effort',
+      intervals: 'Intervals',
+    },
     stretched: 'We also picked from neighbouring kinds of music.',
     offTempo: 'The tempo does not match here. Try other kinds of music.',
     silence: 'Silence of {time} here.',

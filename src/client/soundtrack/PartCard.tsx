@@ -104,6 +104,12 @@ export function PartCard({
           {locked ? t('soundtrack.locked') : t('soundtrack.lock')}
         </button>
       </header>
+      <p className={styles.partMusic} data-testid="soundtrack-part-music">
+        {t('soundtrack.partMusic', {
+          profile: t(`soundtrack.profile.${section.profile}`),
+          energy: section.energy,
+        })}
+      </p>
       {planned.picks.length > 0 && (
         <ol className={styles.songs}>
           {planned.picks.map((pick, i) => {
