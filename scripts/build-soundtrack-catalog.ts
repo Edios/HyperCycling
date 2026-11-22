@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { format, resolveConfig } from 'prettier';
 import {
   catalogRpm,
+  ENERGY_NOTE_MAX,
   parseCatalog,
   ROLE_SPRINT_RPM,
   TRACK_ROLES,
@@ -167,6 +168,19 @@ interface ProposalTrack {
   _proposal: { version: string; roles: string[]; pl: boolean; sub?: string };
 }
 
+/**
+ * The second energy tagging (energy-matching spec, section 4): `energy` heard by ear, independent
+ * of BPM, and a one-sentence note where there is a doubt or a conflict with the role. The tags
+ * live next to this script (`soundtrack-energy-tags.json`); a song without a tag keeps the
+ * proposal's rough energy and has no `tagged`.
+ */
+const ENERGY_TAGS = JSON.parse(
+  readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), 'soundtrack-energy-tags.json'),
+    'utf8',
+  ),
+) as Record<string, { energy: number; note?: string }>;
+
 function fail(message: string): never {
   console.error(message);
   process.exit(1);
@@ -218,7 +232,12 @@ function toCatalog(t: ProposalTrack): CatalogTrack {
   if (t._proposal.version !== 'album') out.version = t._proposal.version;
   out.categories = categories(t);
   out.roles = roles(t);
-  out.energy = t.energy;
+  const tag = ENERGY_TAGS[t.id];
+  out.energy = tag?.energy ?? t.energy;
+  if (tag !== undefined) {
+    out.tagged = 2;
+    if (tag.note !== undefined) out.energyNote = tag.note;
+  }
   out.beat = t.beat;
   out.clean = t.clean;
   const traits = [...(t.traits ?? []), ...(FALLBACK.has(t.id) ? ['fallback'] : [])];
@@ -253,6 +272,16 @@ const selection = [...approved, ...ADDED];
 const byId = new Map(proposal.tracks.map((t) => [t.id, t]));
 const vetoed = selection.filter((id) => VETOED.has(id));
 if (vetoed.length > 0) fail(`Vetoed songs in the selection: ${vetoed.join(', ')}`);
+const unknownTags = Object.keys(ENERGY_TAGS).filter((id) => !selection.includes(id));
+if (unknownTags.length > 0)
+  fail(`Energy tags for songs not in the catalog: ${unknownTags.join(', ')}`);
+const longNotes = Object.entries(ENERGY_TAGS).filter(
+  ([, t]) => (t.note ?? '').length > ENERGY_NOTE_MAX,
+);
+if (longNotes.length > 0)
+  fail(
+    `Energy notes over ${ENERGY_NOTE_MAX} characters: ${longNotes.map(([id]) => id).join(', ')}`,
+  );
 const missing = selection.filter((id) => !byId.has(id));
 if (missing.length > 0) fail(`Selected ids missing from the proposal: ${missing.join(', ')}`);
 

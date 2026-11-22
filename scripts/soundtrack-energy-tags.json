@@ -1,0 +1,643 @@
+{
+  "kiss-i-was-made-for-lovin-you": {
+    "energy": 4
+  },
+  "slipknot-wait-and-bleed": {
+    "energy": 5
+  },
+  "audioslave-be-yourself": {
+    "energy": 3,
+    "note": "Mid-tempo melodic rock; the intervals role comes from 117 BPM, not from the sound."
+  },
+  "linkin-park-crawling": {
+    "energy": 4
+  },
+  "rammstein-mein-herz-brennt": {
+    "energy": 3,
+    "note": "Quiet start, heavy marching riffs later; kept at 3 for a warm-up."
+  },
+  "rammstein-deutschland": {
+    "energy": 5,
+    "note": "Industrial stomp, relentless."
+  },
+  "system-of-a-down-hypnotize": {
+    "energy": 5,
+    "note": "Fast and aggressive; raised from 4."
+  },
+  "iron-maiden-run-to-the-hills": {
+    "energy": 5
+  },
+  "metallica-the-memory-remains": {
+    "energy": 3
+  },
+  "system-of-a-down-sugar": {
+    "energy": 5
+  },
+  "ac-dc-back-in-black": {
+    "energy": 4
+  },
+  "ac-dc-hells-bells": {
+    "energy": 4,
+    "note": "Slow heavy groove after a bell intro."
+  },
+  "ac-dc-rock-n-roll-train": {
+    "energy": 4
+  },
+  "ac-dc-whole-lotta-rosie": {
+    "energy": 5
+  },
+  "rancid-time-bomb": {
+    "energy": 5
+  },
+  "the-hives-main-offender": {
+    "energy": 5
+  },
+  "the-offspring-self-esteem": {
+    "energy": 4
+  },
+  "rise-against-prayer-of-the-refugee": {
+    "energy": 5
+  },
+  "nirvana-come-as-you-are": {
+    "energy": 3,
+    "note": "Laid-back grunge; the intervals role comes from 120 BPM, not from the sound."
+  },
+  "nirvana-smells-like-teen-spirit": {
+    "energy": 5,
+    "note": "Explosive chorus; raised from 4."
+  },
+  "foals-inhaler": {
+    "energy": 5
+  },
+  "guns-n-roses-welcome-to-the-jungle": {
+    "energy": 5
+  },
+  "green-day-wake-me-up-when-september-ends": {
+    "energy": 2,
+    "note": "Acoustic ballad; the intervals role comes from 105 BPM, not from the sound."
+  },
+  "guns-n-roses-sweet-child-o-mine": {
+    "energy": 4,
+    "note": "Classic driving rock after a long guitar intro."
+  },
+  "arctic-monkeys-do-i-wanna-know": {
+    "energy": 3,
+    "note": "Brooding heavy groove, not a peak."
+  },
+  "foo-fighters-everlong": {
+    "energy": 5
+  },
+  "muse-starlight": {
+    "energy": 4
+  },
+  "muse-time-is-running-out": {
+    "energy": 4
+  },
+  "creedence-clearwater-revival-fortunate-son": {
+    "energy": 4,
+    "note": "Raw rock and roll; lowered from 5 because it is not heavy."
+  },
+  "soft-cell-tainted-love": {
+    "energy": 3
+  },
+  "alphaville-forever-young": {
+    "energy": 2,
+    "note": "Slow anthemic synth-pop; lowered from 3."
+  },
+  "wham-wake-me-up-before-you-go-go": {
+    "energy": 4,
+    "note": "Bright upbeat pop, not a peak; lowered from 5."
+  },
+  "culture-club-karma-chameleon": {
+    "energy": 2,
+    "note": "Light pop groove; lowered from 4."
+  },
+  "jennifer-rush-the-power-of-love": {
+    "energy": 2,
+    "note": "Power ballad."
+  },
+  "michael-jackson-black-or-white": {
+    "energy": 4,
+    "note": "Riff-driven pop-rock, not a peak; lowered from 5."
+  },
+  "depeche-mode-never-let-me-down-again": {
+    "energy": 3,
+    "note": "Mid-tempo synth-rock; the intervals role comes from 106 BPM. Lowered from 4."
+  },
+  "dzem-sen-o-victorii": {
+    "energy": 2,
+    "note": "Slow blues-rock ballad; lowered from 3."
+  },
+  "strachy-na-lachy-pila-tango": {
+    "energy": 4,
+    "note": "Fast folk-punk with a long intro; intervals role kept as catalogued."
+  },
+  "hey-moja-i-twoja-nadzieja": {
+    "energy": 3,
+    "note": "Mid-tempo melodic pop-rock; the intervals role comes from 109 BPM."
+  },
+  "behemoth-ora-pro-nobis-lucifer": {
+    "energy": 5,
+    "note": "Extreme metal; long intro conflicts with the intervals role."
+  },
+  "kult-polska": {
+    "energy": 4,
+    "note": "Heavy marching rock anthem; lowered from 5."
+  },
+  "republika-mamona": {
+    "energy": 4
+  },
+  "happysad-zanim-pojde": {
+    "energy": 2,
+    "note": "Gentle indie ballad that builds late; lowered from 3."
+  },
+  "myslovitz-miec-czy-byc": {
+    "energy": 3,
+    "note": "Medium guitar rock; lowered from 4."
+  },
+  "maanam-kocham-cie-kochanie-moje": {
+    "energy": 3,
+    "note": "Catchy mid-tempo rock; 174 BPM is felt as 87. Lowered from 4."
+  },
+  "wilki-baska": {
+    "energy": 3,
+    "note": "Singalong folk-rock; lowered from 4."
+  },
+  "bajm-biala-armia": {
+    "energy": 3,
+    "note": "Mid-tempo 80s pop-rock; lowered from 4."
+  },
+  "feel-jak-aniola-glos": {
+    "energy": 2,
+    "note": "Pop ballad; lowered from 3."
+  },
+  "sylwia-grzeszczak-ksiezniczka": {
+    "energy": 3,
+    "note": "Slow pop groove; lowered from 4."
+  },
+  "maryla-rodowicz-malgoska": {
+    "energy": 3,
+    "note": "Singalong folk-pop; the intervals role comes from 108 BPM."
+  },
+  "doda-nie-daj-sie": {
+    "energy": 4
+  },
+  "kaliber-44-konfrontacje": {
+    "energy": 4
+  },
+  "margaret-what-you-do": {
+    "energy": 3,
+    "note": "Light dance-pop; lowered from 4."
+  },
+  "justice-alakazam": {
+    "energy": 5,
+    "note": "Distorted electro; raised from 4."
+  },
+  "the-chemical-brothers-go": {
+    "energy": 5,
+    "note": "Relentless big beat; raised from 4."
+  },
+  "justice-dvno": {
+    "energy": 5
+  },
+  "underworld-born-slippy-nuxx": {
+    "energy": 5,
+    "note": "Long trance build-up; conflicts with the intervals role (long intro)."
+  },
+  "justice-genesis": {
+    "energy": 5,
+    "note": "Distorted and hard-driving; raised from 4."
+  },
+  "the-chemical-brothers-hey-boy-hey-girl": {
+    "energy": 5
+  },
+  "the-prodigy-mindfields": {
+    "energy": 5,
+    "note": "Heavy breakbeats; raised from 4. Long intro conflicts with the intervals role."
+  },
+  "fatboy-slim-gangster-trippin": {
+    "energy": 2,
+    "note": "Lazy breakbeat groove; lowered from 3."
+  },
+  "the-prodigy-out-of-space": {
+    "energy": 5
+  },
+  "justice-phantom-pt-ii": {
+    "energy": 4
+  },
+  "the-chemical-brothers-star-guitar": {
+    "energy": 4,
+    "note": "Builds slowly; keeps the driving climb feel."
+  },
+  "the-chemical-brothers-do-it-again": {
+    "energy": 4
+  },
+  "the-prodigy-invaders-must-die": {
+    "energy": 5
+  },
+  "the-chemical-brothers-galvanize": {
+    "energy": 4,
+    "note": "Slow start, hard driving beat."
+  },
+  "netsky-come-alive": {
+    "energy": 5,
+    "note": "Drum and bass at full drive; raised from 4."
+  },
+  "netsky-your-way": {
+    "energy": 3,
+    "note": "Soft liquid drum and bass; the one calm exception."
+  },
+  "metrik-freefall": {
+    "energy": 5
+  },
+  "sub-focus-close": {
+    "energy": 4
+  },
+  "noisia-stigma": {
+    "energy": 5
+  },
+  "sigma-glitterball": {
+    "energy": 4
+  },
+  "sub-focus-out-the-blue": {
+    "energy": 5,
+    "note": "Euphoric peak drum and bass; raised from 4."
+  },
+  "pendulum-visions": {
+    "energy": 5,
+    "note": "Heavy rock-drum and bass; long intro conflicts with the intervals role."
+  },
+  "perturbator-humans-are-such-easy-prey": {
+    "energy": 5
+  },
+  "lazerhawk-redline": {
+    "energy": 4
+  },
+  "perturbator-miami-disco": {
+    "energy": 5,
+    "note": "Distorted bass-heavy synthwave; raised from 4."
+  },
+  "college-a-real-hero": {
+    "energy": 2,
+    "note": "Dreamy synth-pop; the intervals role comes from 112 BPM, not from the sound."
+  },
+  "carpenter-brut-sunday-lunch": {
+    "energy": 5
+  },
+  "lazerhawk-overdrive": {
+    "energy": 4
+  },
+  "gunship-fly-for-your-life": {
+    "energy": 4
+  },
+  "kavinsky-pacific-coast-highway": {
+    "energy": 2,
+    "note": "Laid-back sax groove; lowered from 3. The intervals role comes from 120 BPM."
+  },
+  "cascada-everytime-we-touch": {
+    "energy": 4
+  },
+  "2-unlimited-no-limit": {
+    "energy": 5
+  },
+  "gala-freed-from-desire": {
+    "energy": 4
+  },
+  "robert-miles-children": {
+    "energy": 2,
+    "note": "Calm piano dream trance; lowered from 3."
+  },
+  "skrillex-make-it-bun-dem": {
+    "energy": 5
+  },
+  "marshmello-friends": {
+    "energy": 3
+  },
+  "calvin-harris-one-kiss": {
+    "energy": 4,
+    "note": "Steady club groove; raised from 3."
+  },
+  "leftfield-phat-planet": {
+    "energy": 4
+  },
+  "four-tet-angel-echoes": {
+    "energy": 2,
+    "note": "Soft instrumental electronica; the intervals role comes from 115 BPM."
+  },
+  "kygo-stole-the-show": {
+    "energy": 2,
+    "note": "Chilled tropical house; lowered from 3."
+  },
+  "alan-walker-faded": {
+    "energy": 2,
+    "note": "Moody mid-tempo electro; lowered from 3."
+  },
+  "daft-punk-giorgio-by-moroder": {
+    "energy": 4,
+    "note": "Builds into a frantic finale after a long intro; conflicts with the intervals role."
+  },
+  "portishead-glory-box": {
+    "energy": 1,
+    "note": "Slow trip-hop; the intervals role comes from 120 BPM, not from the sound."
+  },
+  "tycho-awake": {
+    "energy": 1,
+    "note": "Ambient and spacious; lowered from 2."
+  },
+  "natasha-bedingfield-unwritten": {
+    "energy": 3
+  },
+  "carly-rae-jepsen-run-away-with-me": {
+    "energy": 3,
+    "note": "Euphoric but mid-tempo pop; the intervals role comes from 119 BPM. Lowered from 4."
+  },
+  "lorde-team": {
+    "energy": 2,
+    "note": "Slow moody pop; lowered from 3."
+  },
+  "the-weeknd-blinding-lights": {
+    "energy": 4
+  },
+  "lewis-capaldi-someone-you-loved": {
+    "energy": 1,
+    "note": "Quiet piano ballad; lowered from 2. The intervals role comes from 110 BPM."
+  },
+  "hot-chip-over-and-over": {
+    "energy": 4,
+    "note": "Slow disco build; long intro conflicts with the intervals role."
+  },
+  "charli-xcx-boom-clap": {
+    "energy": 3,
+    "note": "Laid-back pop; lowered from 4."
+  },
+  "ariana-grande-7-rings": {
+    "energy": 3
+  },
+  "the-weeknd-starboy": {
+    "energy": 3
+  },
+  "rihanna-we-found-love": {
+    "energy": 5
+  },
+  "passion-pit-take-a-walk": {
+    "energy": 3,
+    "note": "Light indie-pop; lowered from 4."
+  },
+  "mark-ronson-uptown-funk": {
+    "energy": 4
+  },
+  "metronomy-the-look": {
+    "energy": 2,
+    "note": "Laid-back synth-pop; lowered from 3."
+  },
+  "carly-rae-jepsen-call-me-maybe": {
+    "energy": 3,
+    "note": "Bouncy pop, not driving; lowered from 4."
+  },
+  "cypress-hill-hand-on-the-pump": {
+    "energy": 3,
+    "note": "Mid-tempo hip-hop groove; lowered from 4."
+  },
+  "house-of-pain-jump-around": {
+    "energy": 5
+  },
+  "death-grips-get-got": {
+    "energy": 5
+  },
+  "future-mask-off": {
+    "energy": 3,
+    "note": "Slow trap with a flute loop; lowered from 4."
+  },
+  "ice-cube-it-was-a-good-day": {
+    "energy": 2
+  },
+  "denzel-curry-ultimate": {
+    "energy": 5
+  },
+  "dj-snake-turn-down-for-what": {
+    "energy": 5
+  },
+  "lizzo-juice": {
+    "energy": 4
+  },
+  "caribou-sun": {
+    "energy": 4,
+    "note": "Hypnotic builder after a long intro."
+  },
+  "boys-noize-oh": {
+    "energy": 5
+  },
+  "duke-dumont-ocean-drive": {
+    "energy": 3,
+    "note": "Easy tropical house; the intervals role comes from 115 BPM. Lowered from 4."
+  },
+  "axwell-ingrosso-more-than-you-know": {
+    "energy": 3,
+    "note": "Pop-house singalong; the intervals role comes from 123 BPM, not from the sound."
+  },
+  "swedish-house-mafia-save-the-world": {
+    "energy": 5
+  },
+  "disclosure-omen": {
+    "energy": 4
+  },
+  "eric-prydz-opus": {
+    "energy": 4,
+    "note": "Long progressive build; the drop is late."
+  },
+  "black-coffee-wish-you-were-here": {
+    "energy": 2,
+    "note": "Deep house, easy groove; the intervals role comes from 120 BPM. Lowered from 3."
+  },
+  "don-omar-dale-don-dale": {
+    "energy": 4,
+    "note": "Reggaeton banger; lowered from 5."
+  },
+  "becky-g-sin-pijama": {
+    "energy": 3,
+    "note": "Smooth reggaeton pop; lowered from 4."
+  },
+  "j-balvin-rojo": {
+    "energy": 3,
+    "note": "Slow reggaeton; lowered from 4."
+  },
+  "anuel-aa-china": {
+    "energy": 4
+  },
+  "anuel-aa-secreto": {
+    "energy": 3,
+    "note": "Slow sensual reggaeton; lowered from 4."
+  },
+  "ozuna-se-preparo": {
+    "energy": 3,
+    "note": "Slow reggaeton; lowered from 4."
+  },
+  "los-lobos-la-bamba": {
+    "energy": 4,
+    "note": "Fast and cheerful rock and roll; lowered from 5."
+  },
+  "shakira-loca": {
+    "energy": 3,
+    "note": "Mid-tempo Latin pop; the intervals role comes from 112 BPM. Lowered from 4."
+  },
+  "santana-smooth": {
+    "energy": 3,
+    "note": "Smooth Latin rock groove; the intervals role comes from 116 BPM."
+  },
+  "shakira-la-tortura": {
+    "energy": 3,
+    "note": "Mid-tempo Latin pop; lowered from 4."
+  },
+  "beach-house-space-song": {
+    "energy": 1,
+    "note": "Ambient dream pop; lowered from 2."
+  },
+  "chet-faker-gold": {
+    "energy": 1,
+    "note": "Sparse slow soul; lowered from 3."
+  },
+  "tame-impala-borderline": {
+    "energy": 2
+  },
+  "tame-impala-let-it-happen": {
+    "energy": 4,
+    "note": "Psychedelic build after a long intro."
+  },
+  "beach-house-myth": {
+    "energy": 1,
+    "note": "Ambient dream pop; lowered from 2."
+  },
+  "bonobo-black-sands": {
+    "energy": 1,
+    "note": "Lush downtempo; lowered from 2."
+  },
+  "michael-jackson-billie-jean": {
+    "energy": 3,
+    "note": "Mid-tempo groove; the intervals role comes from 117 BPM. Lowered from 4."
+  },
+  "stevie-wonder-superstition": {
+    "energy": 4
+  },
+  "kenny-loggins-danger-zone": {
+    "energy": 4,
+    "note": "Driving 80s rock; lowered from 5."
+  },
+  "cyndi-lauper-girls-just-want-to-have-fun": {
+    "energy": 3,
+    "note": "Bouncy pop; lowered from 4."
+  },
+  "mark-morrison-return-of-the-mack": {
+    "energy": 3,
+    "note": "Swinging R&B groove; lowered from 4."
+  },
+  "madonna-hung-up": {
+    "energy": 4,
+    "note": "Dance-pop with a long intro; lowered from 5."
+  },
+  "madonna-like-a-prayer": {
+    "energy": 4,
+    "note": "Choir finale lifts it; long intro conflicts with the intervals role."
+  },
+  "a-ha-take-on-me": {
+    "energy": 4
+  },
+  "daft-punk-burnin": {
+    "energy": 4,
+    "note": "Long build-up; conflicts with the intervals role (long intro)."
+  },
+  "daft-punk-get-lucky": {
+    "energy": 3,
+    "note": "Soft disco groove; the intervals role comes from 116 BPM, not from the sound."
+  },
+  "daft-punk-around-the-world": {
+    "energy": 3,
+    "note": "Hypnotic mid-tempo house; the intervals role comes from 121 BPM."
+  },
+  "daft-punk-da-funk": {
+    "energy": 4
+  },
+  "daft-punk-robot-rock": {
+    "energy": 5,
+    "note": "Heavy riff loop; raised from 4."
+  },
+  "daft-punk-digital-love": {
+    "energy": 3
+  },
+  "daft-punk-harder-better-faster-stronger": {
+    "energy": 4
+  },
+  "daft-punk-aerodynamic": {
+    "energy": 4
+  },
+  "brian-eno-an-ending": {
+    "energy": 1
+  },
+  "ludovico-einaudi-nuvole-bianche": {
+    "energy": 1
+  },
+  "olafur-arnalds-near-light": {
+    "energy": 1,
+    "note": "Slow build, still very soft."
+  },
+  "stars-of-the-lid-requiem-for-dying-mothers-pt-2": {
+    "energy": 1
+  },
+  "sigur-ros-hoppipolla": {
+    "energy": 2,
+    "note": "Swelling but gentle; may feel like a 3."
+  },
+  "cigarettes-after-sex-apocalypse": {
+    "energy": 1
+  },
+  "enrique-iglesias-hero": {
+    "energy": 1,
+    "note": "Quiet acoustic ballad; lowered from 2."
+  },
+  "perfect-niewiele-ci-moge-dac": {
+    "energy": 2,
+    "note": "Rock ballad; lowered from 3."
+  },
+  "massive-attack-teardrop": {
+    "energy": 1
+  },
+  "chet-faker-no-diggity": {
+    "energy": 1
+  },
+  "tycho-dive": {
+    "energy": 2,
+    "note": "Dreamy mid-tempo electronic; lowered from 3."
+  },
+  "goldie-inner-city-life": {
+    "energy": 3,
+    "note": "Atmospheric jungle, softer than most drum and bass."
+  },
+  "celia-cruz-la-vida-es-un-carnaval": {
+    "energy": 4,
+    "note": "Joyful salsa; lowered from 5."
+  },
+  "shakira-whenever-wherever": {
+    "energy": 3,
+    "note": "Mid-tempo Latin pop; lowered from 4."
+  },
+  "glass-animals-heat-waves": {
+    "energy": 2,
+    "note": "Dreamy and slow; lowered from 3."
+  },
+  "bonobo-kong": {
+    "energy": 3
+  },
+  "coolio-gangsta-s-paradise": {
+    "energy": 2,
+    "note": "Slow dark hip-hop; lowered from 3."
+  },
+  "gorillaz-clint-eastwood": {
+    "energy": 2,
+    "note": "Laid-back trip-hop; lowered from 3."
+  },
+  "eminem-lose-yourself": {
+    "energy": 5
+  },
+  "katy-perry-dark-horse": {
+    "energy": 3
+  }
+}
