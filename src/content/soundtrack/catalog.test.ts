@@ -13,6 +13,8 @@ import {
 import {
   catalogProblems,
   catalogRpm,
+  ENERGY_NOTE_MAX,
+  isSprintTrack,
   parseCatalog,
   ROLE_SPRINT_RPM,
   type CatalogTrack,
@@ -73,6 +75,41 @@ describe('soundtrack catalog: contract', () => {
     const levels = new Set(tracks.map((t) => t.energy));
     expect([...levels].sort()).toEqual([1, 2, 3, 4, 5]);
     expect(tracks.filter((t) => t.energy === 5).length).toBeGreaterThanOrEqual(20);
+  });
+
+  it('is tagged by ear: every song carries the second revision', () => {
+    expect(tracks.filter((t) => t.tagged !== 2).map((t) => t.id)).toEqual([]);
+    for (const t of tracks) {
+      if (t.energyNote !== undefined)
+        expect(t.energyNote.length, t.id).toBeLessThanOrEqual(ENERGY_NOTE_MAX);
+    }
+  });
+
+  it('spreads the energy: every level has at least 8% of the songs', () => {
+    for (const level of [1, 2, 3, 4, 5] as const) {
+      const share = tracks.filter((t) => t.energy === level).length / tracks.length;
+      expect(share, `energy ${level}`).toBeGreaterThanOrEqual(0.08);
+    }
+    // Not clustered in one level (the first tagging had 44% at 4).
+    for (const level of [1, 2, 3, 4, 5] as const) {
+      const share = tracks.filter((t) => t.energy === level).length / tracks.length;
+      expect(share, `energy ${level}`).toBeLessThanOrEqual(0.35);
+    }
+  });
+
+  it('has enough peak songs for sprints and hard intervals', () => {
+    const peaks = tracks.filter((t) => t.energy === 5 && t.roles.includes('intervals'));
+    expect(peaks.length).toBeGreaterThanOrEqual(12);
+    expect(tracks.filter(isSprintTrack).length).toBeGreaterThanOrEqual(40);
+  });
+
+  it('explains every conflict between a role and the sound in an energy note', () => {
+    // Also what `catalogProblems` checks; here the list a reviewer reads.
+    const conflicts = tracks.filter((t) => t.roles.includes('intervals') && !isSprintTrack(t));
+    for (const t of conflicts) expect(t.energyNote, t.id).toBeTruthy();
+    for (const t of tracks.filter((x) => x.energy === 5 && x.roles.includes('warmup'))) {
+      expect(t.energyNote, t.id).toBeTruthy();
+    }
   });
 
   it('marks explicit songs, most of the catalog is clean', () => {

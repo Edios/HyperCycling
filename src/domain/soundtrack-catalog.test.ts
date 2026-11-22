@@ -4,7 +4,9 @@ import {
   catalogRpm,
   catalogSchema,
   catalogTrackSchema,
+  ENERGY_NOTE_MAX,
   HALF_FROM_BPM,
+  isSprintTrack,
   parseCatalog,
   type CatalogTrack,
 } from './soundtrack-catalog';
@@ -87,6 +89,16 @@ describe('catalogTrackSchema', () => {
     expect(valid({ ...track(), energy: 6 })).toBe(false);
   });
 
+  it('takes the energy tagging revision and a short energy note, both optional', () => {
+    expect(valid(track({ tagged: 2 }))).toBe(true);
+    expect(valid(track({ tagged: 2, energyNote: 'Soft ballad; ridden at 105 rpm.' }))).toBe(true);
+    expect(valid(track({ energyNote: 'x'.repeat(ENERGY_NOTE_MAX) }))).toBe(true);
+    expect(valid(track({ energyNote: 'x'.repeat(ENERGY_NOTE_MAX + 1) }))).toBe(false);
+    expect(valid(track({ energyNote: '   ' }))).toBe(false);
+    expect(valid({ ...track(), tagged: 1 })).toBe(false);
+    expect(valid({ ...track(), tagged: 3 })).toBe(false);
+  });
+
   it('needs known, distinct categories and roles and a slug id', () => {
     expect(valid(track({ categories: [] }))).toBe(false);
     expect(valid({ ...track(), categories: ['jazz'] })).toBe(false);
@@ -166,6 +178,49 @@ describe('catalogProblems', () => {
     // No beat, no cadence: any role.
     const noTempo = track({ bpm: undefined, beat: 'none', roles: ['cooldown'] });
     expect(catalogProblems([noTempo])).toEqual([]);
+  });
+});
+
+describe('sprint songs: intervals, energy 4-5, no long intro', () => {
+  it('knows a sprint song', () => {
+    expect(isSprintTrack(track({ roles: ['intervals'], energy: 4 }))).toBe(true);
+    expect(isSprintTrack(track({ roles: ['steady', 'intervals'], energy: 5 }))).toBe(true);
+    expect(isSprintTrack(track({ roles: ['intervals'], energy: 3 }))).toBe(false);
+    expect(isSprintTrack(track({ roles: ['steady'], energy: 5 }))).toBe(false);
+    expect(isSprintTrack(track({ roles: ['intervals'], energy: 5, traits: ['long-intro'] }))).toBe(
+      false,
+    );
+  });
+
+  const tagged = (over: Partial<CatalogTrack>) => track({ tagged: 2, bpm: 120, ...over });
+
+  it('lets a tagged intervals song that is not a sprint song stand only with a note', () => {
+    const calm = tagged({ roles: ['intervals'], energy: 2 });
+    expect(catalogProblems([calm])).toEqual([
+      'artist-song: intervals role without sprint energy needs an energyNote',
+    ]);
+    expect(catalogProblems([{ ...calm, energyNote: 'Ballad; 105 rpm only by BPM.' }])).toEqual([]);
+    const slowStart = tagged({ roles: ['intervals'], energy: 5, traits: ['long-intro'] });
+    expect(catalogProblems([slowStart])).toHaveLength(1);
+    expect(catalogProblems([tagged({ roles: ['intervals'], energy: 4 })])).toEqual([]);
+  });
+
+  it('asks for a note on a peak song in a warm-up or cool-down', () => {
+    const hot = tagged({ bpm: 90, roles: ['warmup'], energy: 5 });
+    expect(catalogProblems([hot])).toEqual([
+      'artist-song: energy 5 in a warm-up or cool-down needs an energyNote',
+    ]);
+    expect(catalogProblems([{ ...hot, energyNote: 'Heavy riffs after a quiet start.' }])).toEqual(
+      [],
+    );
+    expect(catalogProblems([tagged({ bpm: 90, roles: ['warmup'], energy: 4 })])).toEqual([]);
+  });
+
+  it('does not ask an untagged (first revision) song for a note, and a note needs a revision', () => {
+    expect(catalogProblems([track({ bpm: 120, roles: ['intervals'], energy: 2 })])).toEqual([]);
+    expect(catalogProblems([track({ energyNote: 'Doubt.' })])).toEqual([
+      'artist-song: an energy note needs the tagging revision (tagged: 2)',
+    ]);
   });
 });
 

@@ -48,8 +48,18 @@ export interface CatalogTrack extends QueueItem {
   categories: MusicCategoryId[];
   /** What the song suits in a ride (at least one); see `ROLE_SPRINT_RPM`. */
   roles: TrackRole[];
-  /** 1 = calm, 5 = peak. */
+  /**
+   * How the song sounds, 1 = ambient or lo-fi, 5 = peak (heavy, aggressive, a drop). Heard by ear,
+   * independent of the BPM and of the tempo the song is ridden at (energy-matching spec, section 2).
+   */
   energy: TrackEnergy;
+  /** Revision of the energy tagging this song went through (absent = the first, rough one). */
+  tagged?: 2;
+  /**
+   * One sentence on the energy, for the spot check: a doubt, a big change, or a conflict with the
+   * song's role (e.g. a calm ballad that is ridden at 105 rpm and so is an intervals song).
+   */
+  energyNote?: string;
   /** 'none' = no clear beat (cool-down); there is no tempo to compare. */
   beat: 'steady' | 'none';
   /** False = explicit lyrics in the listed version. */
@@ -95,6 +105,9 @@ export const TRACK_MAX_SEC = 900;
 export const MIN_UPLOADS = 2;
 export const MAX_UPLOADS = 6;
 
+/** Longest energy note, characters. */
+export const ENERGY_NOTE_MAX = 120;
+
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -124,6 +137,8 @@ export const catalogTrackSchema = z
     categories: z.array(z.enum(MUSIC_CATEGORIES)).min(1).refine(distinct, 'duplicate category'),
     roles: z.array(z.enum(TRACK_ROLES)).min(1).refine(distinct, 'duplicate role'),
     energy: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
+    tagged: z.literal(2).optional(),
+    energyNote: z.string().trim().min(1).max(ENERGY_NOTE_MAX).optional(),
     beat: z.enum(['steady', 'none']),
     clean: z.boolean(),
     traits: z.array(z.enum(TRACK_TRAITS)).min(1).refine(distinct, 'duplicate trait').optional(),
@@ -153,6 +168,14 @@ export const catalogSchema = z.strictObject({
  * duplicate ids, the same song twice (`songKey`), one upload under two songs, and the owner's
  * role rule (a song ridden at `ROLE_SPRINT_RPM` or faster is for intervals only).
  */
+/**
+ * A song for sprints: it has the intervals role, it is not calm (energy 4 or 5) and it does not
+ * start with a long intro (the drop has to come from the first repeat).
+ */
+export function isSprintTrack(t: Pick<CatalogTrack, 'roles' | 'energy' | 'traits'>): boolean {
+  return t.roles.includes('intervals') && t.energy >= 4 && !t.traits?.includes('long-intro');
+}
+
 export function catalogProblems(tracks: readonly CatalogTrack[]): string[] {
   const problems: string[] = [];
   const ids = new Set<string>();
@@ -178,6 +201,18 @@ export function catalogProblems(tracks: readonly CatalogTrack[]): string[] {
       (t.roles.length !== 1 || t.roles[0] !== 'intervals')
     ) {
       problems.push(`${t.id}: ridden at ${rpm} rpm, so its only role is intervals`);
+    }
+    // Sprint = intervals + energy 4-5 + no long intro. A song that has the intervals role without
+    // being one (a ballad ridden at 105 rpm), or a peak song for a warm-up or cool-down, is kept
+    // as catalogued but has to say why: the tagging does not change roles, it reports them.
+    if (t.energyNote !== undefined && t.tagged === undefined) {
+      problems.push(`${t.id}: an energy note needs the tagging revision (tagged: 2)`);
+    }
+    if (t.tagged === 2 && t.energyNote === undefined) {
+      const unfit = t.roles.includes('intervals') && !isSprintTrack(t);
+      const hot = t.energy === 5 && (t.roles.includes('warmup') || t.roles.includes('cooldown'));
+      if (unfit) problems.push(`${t.id}: intervals role without sprint energy needs an energyNote`);
+      if (hot) problems.push(`${t.id}: energy 5 in a warm-up or cool-down needs an energyNote`);
     }
   }
   return problems;
