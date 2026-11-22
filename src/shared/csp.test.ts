@@ -37,6 +37,7 @@ const NOT_FETCHED = new Set([
   'https://api.deezer.com', // loaded only by the sandboxed bridge page (see the bridge tests)
   'https://github.com', // project link in the Home footer (navigation only)
   'https://edios.github.io', // old Pages address, kept in the redirect URI hint
+  'https://www.strava.com', // upload page link on the ride card (a plain <a>, navigation only)
 ]);
 
 function sourceFiles(dir: string): string[] {
