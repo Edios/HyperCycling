@@ -29,4 +29,28 @@ describe('PositionBadge', () => {
     expect(badge).toHaveAttribute('data-position', 'seated');
     expect(badge.textContent ?? '').not.toMatch(/undefined/);
   });
+
+  it('highlights the position it is about to change to (R6)', () => {
+    render(<PositionBadge position="seated" upcoming="standing" />);
+    const badge = screen.getByTestId('position-badge');
+    expect(badge).toHaveAttribute('data-upcoming', 'standing');
+    expect(badge).toHaveAttribute('data-animated', 'true');
+    // The change is announced to assistive tech too, without changing the current position.
+    expect(badge).toHaveAttribute('data-position', 'seated');
+    expect(badge).toHaveAccessibleName(/seated.*standing/i);
+  });
+
+  it('shows no highlight when no change is coming', () => {
+    render(<PositionBadge position="seated" />);
+    const badge = screen.getByTestId('position-badge');
+    expect(badge).not.toHaveAttribute('data-upcoming');
+    expect(badge).not.toHaveAttribute('data-animated');
+  });
+
+  it('keeps the highlight but does not animate it under reduced motion', () => {
+    render(<PositionBadge position="seated" upcoming="standing" reducedMotion />);
+    const badge = screen.getByTestId('position-badge');
+    expect(badge).toHaveAttribute('data-upcoming', 'standing');
+    expect(badge).not.toHaveAttribute('data-animated');
+  });
 });

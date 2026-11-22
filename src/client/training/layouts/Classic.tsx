@@ -76,6 +76,7 @@ export function Classic({
           labelKey={view.labelKey}
           {...(view.next ? { next: view.next } : {})}
           position={view.position}
+          upcomingPosition={view.upcomingPosition}
           step={{ index: view.stepIndex, count: view.stepCount }}
           motion={!reducedMotion}
           showFtp={showsWatts}

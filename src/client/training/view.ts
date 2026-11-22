@@ -33,9 +33,13 @@ export interface TrainingView {
   resistanceCommand: ResistanceCommand | null;
   /** Last seconds of a running block. */
   pulse: boolean;
+  /** Position the next block switches to, set only in the last seconds before the change. */
+  upcomingPosition?: Position;
 }
 
 const PULSE_SEC = 3;
+/** How long before a seated/standing change the position badge starts to call it. */
+export const POSITION_WARN_SEC = 8;
 
 export function buildTrainingView(
   segments: readonly Segment[],
@@ -74,5 +78,9 @@ export function buildTrainingView(
     pulse: state.status === 'running' && remainingSec > 0 && remainingSec <= PULSE_SEC,
   };
   if (next) view.next = next;
+  const nextPosition = next ? positionOf(next) : undefined;
+  if (nextPosition && nextPosition !== view.position && remainingSec <= POSITION_WARN_SEC) {
+    view.upcomingPosition = nextPosition;
+  }
   return view;
 }

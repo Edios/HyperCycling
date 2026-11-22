@@ -51,7 +51,11 @@ export function FocusRest({ view, active, reducedMotion, showFtp = true }: Focus
             numberTestId="focus-rest-effort"
           />
           <div className={styles.name}>{label}</div>
-          <PositionBadge position={view.position} />
+          <PositionBadge
+            position={view.position}
+            upcoming={view.upcomingPosition}
+            reducedMotion={reducedMotion}
+          />
         </div>
         <div className={styles.timeBox}>
           <div className={styles.caption}>{t('training.timeLeft')}</div>
