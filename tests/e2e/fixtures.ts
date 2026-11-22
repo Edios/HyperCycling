@@ -42,7 +42,14 @@ const EDITOR_TOUR_KEY = 'tour.editor.v1';
  * IndexedDB, which is already separate for every test, and needs nothing.)
  */
 export const test = base.extend<
-  { cleanActiveSession: void; advancedOpen: void; editorTourSeen: boolean; seedEditorTour: void },
+  {
+    cleanActiveSession: void;
+    advancedOpen: void;
+    editorTourSeen: boolean;
+    seedEditorTour: void;
+    meteredBike: boolean;
+    seedMeteredBike: void;
+  },
   { localServer: string | null }
 >({
   localServer: [
@@ -123,6 +130,27 @@ export const test = base.extend<
    * `test.use({ editorTourSeen: false })`.
    */
   editorTourSeen: [true, { option: true }],
+  /**
+   * A fresh profile starts on a plain knob bike without watts. Most ride tests need watts and FTP,
+   * so they start on a bike with a power meter; `test.use({ meteredBike: false })` keeps the
+   * real default.
+   */
+  meteredBike: [true, { option: true }],
+  seedMeteredBike: [
+    async ({ context, meteredBike }, use) => {
+      if (meteredBike) {
+        await context.addInitScript(() => {
+          try {
+            localStorage.setItem('hypercycling.e2e.meteredBike', '1');
+          } catch {
+            // Storage unavailable: the plain default.
+          }
+        });
+      }
+      await use();
+    },
+    { auto: true },
+  ],
   seedEditorTour: [
     async ({ context, editorTourSeen }, use) => {
       if (editorTourSeen) {

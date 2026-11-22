@@ -15,11 +15,6 @@ export const pl: Messages = {
     editor: 'Edytor',
   },
   bike: {
-    cardTitle: 'Twój rower',
-    cardBody:
-      'Powiedz raz, na czym jeździsz, żeby rampy i liczby pasowały. Zajmie mniej niż minutę, można pominąć.',
-    setUp: 'Ustaw mój rower',
-    skipRide: 'Pomiń i jedź',
     skip: 'Pomiń',
     next: 'Dalej',
     back: 'Wstecz',
@@ -227,6 +222,8 @@ export const pl: Messages = {
     maxPlayers: 'Maksymalnie 10 osób w sesji.',
     playerName: 'Imię',
     playerFtp: 'FTP (W)',
+    ftpHelp:
+      'FTP to moc, którą utrzymasz przez godzinę. Nie znasz? Wpisz 150, poprawisz w Graczach.',
     playerSave: 'Dodaj osobę',
     playerCancel: 'Anuluj',
     nameError: 'Podaj imię od 1 do 24 znaków.',
@@ -1086,10 +1083,10 @@ export const pl: Messages = {
     plan: 'Plan',
     planEyebrow: 'Plan · tygodnie pod Twój cel',
     planNext: 'Dziś w planie, tydzień {week} z {weeks}',
-    planBody: 'Odpowiedz na kilka pytań i dostaniesz plan na kilka tygodni',
+    planBody: 'Krótka ankieta i plan pod Twój cel',
     free: 'Freestyle',
     freeEyebrow: 'Freestyle · jedna jazda',
-    freeBody: 'Wybierz z {count} treningów i jedź od razu',
+    freeBody: 'Wybierz trening i jedź od razu',
     experience: 'Experience',
     experienceEyebrow: 'Experience · filmowa jazda',
     experienceBody: 'Trening z własną ścieżką dźwiękową',

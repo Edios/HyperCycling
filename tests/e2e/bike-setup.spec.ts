@@ -10,20 +10,22 @@ async function openSetup(page: Page, info: Parameters<typeof seedSettings>[1]): 
   await expect(page.getByTestId('setup-screen')).toBeVisible();
 }
 
-test('Skip and ride: starts with the defaults, never asks again', async ({ page }, info) => {
+test('Start without answering: rides with the defaults, the bike line is gone next time', async ({
+  page,
+}, info) => {
   await openSetup(page, info);
-  await expect(page.getByTestId('bike-card')).toBeVisible();
-  await page.getByTestId('bike-skip-ride').click();
+  await expect(page.getByTestId('bike-line')).toBeVisible();
+  await page.getByTestId('start').click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
 
-  // Back on the setup the card is gone, and Settings still offers the step.
+  // Back on the setup the line is gone, and Settings still offers the step.
   await page.keyboard.press('Escape');
   await page.getByRole('dialog').getByRole('button', { name: 'End and see summary' }).click();
   await expect(page.getByTestId('summary-screen')).toBeVisible();
   await page.goto('./#/plan');
   await page.getByRole('button', { name: 'Ride', exact: true }).click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
-  await expect(page.getByTestId('bike-card')).toBeHidden();
+  await expect(page.getByTestId('bike-line')).toBeHidden();
 });
 
 test('Manual knob: one screen, no FTP, nothing to calibrate (390px: no sideways scroll)', async ({
@@ -40,7 +42,7 @@ test('Manual knob: one screen, no FTP, nothing to calibrate (390px: no sideways 
   expect(overflow).toBe(false);
   await page.getByTestId('bike-next').click();
   await expect(page.getByTestId('bike-wizard')).toBeHidden();
-  await expect(page.getByTestId('bike-card')).toBeHidden();
+  await expect(page.getByTestId('bike-line')).toBeHidden();
 
   await page.goto('./#/settings');
   await expect(page.getByTestId('bike-redo')).toBeAttached();
@@ -61,5 +63,5 @@ test('Settings saved with the old knob steps still open', async ({ page }, info)
   await seedSettings(page, info, 'build-form', old);
   await page.getByRole('button', { name: 'Ride', exact: true }).click();
   await expect(page.getByTestId('setup-screen')).toBeVisible();
-  await expect(page.getByTestId('bike-card')).toBeHidden();
+  await expect(page.getByTestId('bike-line')).toBeHidden();
 });

@@ -8,7 +8,8 @@ import {
   type PlanSettings,
 } from '../../domain/plan';
 import type { Player } from '../../domain/player';
-import { DEFAULT_SETTINGS, type Settings } from '../../domain/settings';
+import { type Settings } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 
 interface Db {
   settings?: Settings;
@@ -98,7 +99,7 @@ function minutes(testId: string): number {
 }
 
 beforeEach(() => {
-  db.settings = undefined;
+  db.settings = METERED_SETTINGS;
   db.progress = [];
   db.players = [];
   db.puts = { progress: [], players: [], settings: [] };
@@ -119,7 +120,7 @@ describe('PlanGallery', () => {
   });
 
   it('marks the active plan and offers Customize', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: 'build-form' };
+    db.settings = { ...METERED_SETTINGS, activePlanId: 'build-form' };
     renderGallery();
     await waitFor(() =>
       expect(
@@ -216,7 +217,7 @@ describe('PlanDetail', () => {
   });
 
   it('asks for confirmation when another plan is active and keeps its progress', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: quickBoost.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: quickBoost.id };
     db.progress = [progressFor(quickBoost, DEFAULT_PLAN_SETTINGS)];
     renderDetail();
     await screen.findByTestId('preview-progres');
@@ -237,7 +238,7 @@ describe('PlanDetail', () => {
   });
 
   it('Save changes on the active plan updates its settings and keeps the entries', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: buildForm.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: buildForm.id };
     const existing = progressFor(buildForm, { ...DEFAULT_PLAN_SETTINGS, sessionMinutes: 60 });
     existing.entries = [
       {
@@ -296,8 +297,8 @@ describe('PlanDetail', () => {
 
   it('hides the FTP field and swaps the FTP test when the bike shows no watts', async () => {
     db.settings = {
-      ...DEFAULT_SETTINGS,
-      equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
+      ...METERED_SETTINGS,
+      equipment: { ...METERED_SETTINGS.equipment, showsWatts: false },
     };
     renderDetail();
     await screen.findByTestId('preview-progres');

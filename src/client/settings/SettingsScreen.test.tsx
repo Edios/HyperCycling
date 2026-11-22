@@ -49,7 +49,7 @@ vi.mock('../data/repositories', () => ({
 }));
 
 import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
-import { DEFAULT_SETTINGS } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 import { resetSettingsForTests } from '../data/useSettings';
 import { setLang } from '../i18n';
 import { resetSharedSpotifyProviderForTests } from '../music/spotify/shared';
@@ -144,7 +144,7 @@ describe('General', () => {
   });
 
   it('applies a stored language when the app loads', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, lang: 'pl' };
+    db.settings = { ...METERED_SETTINGS, lang: 'pl' };
     renderScreen();
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Ustawienia' }),
@@ -172,6 +172,7 @@ describe('General', () => {
 
 describe('Equipment & FTP', () => {
   it('saves the three bike toggles', async () => {
+    db.settings = METERED_SETTINGS;
     renderScreen();
     const eq = await section('equipment');
     fireEvent.click(within(eq).getByRole('switch', { name: 'Bike shows watts' }));
@@ -341,7 +342,7 @@ describe('Training', () => {
 
   it('keeps the rest of an existing lastSession', async () => {
     db.settings = {
-      ...DEFAULT_SETTINGS,
+      ...METERED_SETTINGS,
       lastSession: { background: 'basic', hud: 'solo', playerIds: ['a'], music: true },
     };
     renderScreen();
@@ -402,7 +403,7 @@ describe('Zones', () => {
 
   it('restores defaults only after confirmation', async () => {
     db.settings = {
-      ...DEFAULT_SETTINGS,
+      ...METERED_SETTINGS,
       effortTable: DEFAULT_EFFORT_TABLE.map((r) => (r.level === 1 ? { ...r, ftpPct: 30 } : r)),
     };
     renderScreen();
@@ -579,7 +580,7 @@ describe('Data', () => {
 
   it('clears the recent YouTube links', async () => {
     db.settings = {
-      ...DEFAULT_SETTINGS,
+      ...METERED_SETTINGS,
       recentYoutubeUrls: ['https://youtu.be/a', 'https://youtu.be/b'],
     };
     renderScreen();
@@ -593,7 +594,7 @@ describe('Data', () => {
 
   it('clearing the recent links also forgets the prefilled setup link', async () => {
     db.settings = {
-      ...DEFAULT_SETTINGS,
+      ...METERED_SETTINGS,
       recentYoutubeUrls: ['https://youtu.be/a'],
       lastSession: {
         background: 'youtube',

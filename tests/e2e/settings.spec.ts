@@ -5,7 +5,7 @@ async function addMe(page: Page, name: string, ftp: string): Promise<void> {
   await page.goto('./#/players');
   const form = page.getByTestId('add-player-form');
   await form.getByLabel('Name').fill(name);
-  await form.getByLabel('FTP (W)').fill(ftp);
+  await form.getByLabel('FTP (W)', { exact: true }).fill(ftp);
   await form.getByRole('button', { name: 'Add', exact: true }).click();
   await expect(page.getByTestId('player-row').filter({ hasText: name })).toBeVisible();
   await page.getByRole('button', { name: `This is me: ${name}` }).click();
@@ -51,14 +51,18 @@ test('settings: the FTP calculator saves the result as my FTP', async ({ page })
   await addMe(page, name, '200');
 
   await page.goto('./#/settings');
-  await expect(page.getByTestId('my-ftp').getByLabel('FTP (W)')).toHaveValue('200');
+  await expect(page.getByTestId('my-ftp').getByLabel('FTP (W)', { exact: true })).toHaveValue(
+    '200',
+  );
 
   await page.getByRole('button', { name: /FTP test guide/ }).click();
   await page.getByRole('radio', { name: '20-minute test' }).check({ force: true });
   await page.getByLabel('20-minute average power (W)').fill('300');
   await expect(page.getByTestId('ftp-result')).toHaveText('Your FTP: 285 W');
   await page.getByRole('button', { name: 'Save as my FTP' }).click();
-  await expect(page.getByTestId('my-ftp').getByLabel('FTP (W)')).toHaveValue('285');
+  await expect(page.getByTestId('my-ftp').getByLabel('FTP (W)', { exact: true })).toHaveValue(
+    '285',
+  );
 
   await page.goto('./#/players');
   await expect(page.getByTestId('player-row').filter({ hasText: name })).toContainText('285');

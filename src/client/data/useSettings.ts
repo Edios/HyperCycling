@@ -41,6 +41,29 @@ function mergeSettings(stored: Partial<Settings>): Settings {
   return merged;
 }
 
+/** e2e builds only: the localStorage switch that starts a fresh profile on a metered bike. */
+export const E2E_METERED_BIKE_KEY = 'hypercycling.e2e.meteredBike';
+
+/**
+ * Settings of a profile that has stored nothing yet: the plain knob bike without watts. The e2e
+ * builds can start on a bike with a power meter instead (most ride tests need watts and FTP).
+ */
+function freshSettings(): Settings {
+  if (import.meta.env.VITE_E2E === '1') {
+    try {
+      if (localStorage.getItem(E2E_METERED_BIKE_KEY) === '1') {
+        return {
+          ...DEFAULT_SETTINGS,
+          equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: true },
+        };
+      }
+    } catch {
+      // storage blocked: the plain default
+    }
+  }
+  return DEFAULT_SETTINGS;
+}
+
 let loading: Promise<void> | undefined;
 
 export function loadSettings(): Promise<void> {
@@ -49,7 +72,7 @@ export function loadSettings(): Promise<void> {
       const repos = await getRepositories();
       const stored = await repos.settings.get();
       useSettingsStore.setState({
-        settings: stored ? mergeSettings(stored) : DEFAULT_SETTINGS,
+        settings: stored ? mergeSettings(stored) : freshSettings(),
         loaded: true,
         loadFailed: false,
       });

@@ -32,17 +32,33 @@ interface AdvancedPanelProps {
   panelRef?: Ref<HTMLDivElement>;
   /** The quiet line beside the title while closed: what is inside. */
   hint: string;
+  /** The Start bar already carries a "More" shortcut: on a phone the closed line would repeat it. */
+  chipBar?: boolean;
 }
 
 /**
  * "Advanced settings": a collapsed accordion under "Who rides". Closed it is one quiet line; open it
  * shows named groups (see {@link Group}) in two columns on a wide screen and one list on a phone.
  */
-export function AdvancedPanel({ open, onToggle, left, right, panelRef, hint }: AdvancedPanelProps) {
+export function AdvancedPanel({
+  open,
+  onToggle,
+  left,
+  right,
+  panelRef,
+  hint,
+  chipBar = false,
+}: AdvancedPanelProps) {
   const t = useT();
   const bodyId = useId();
   return (
-    <div ref={panelRef} className={styles.panel} data-testid="advanced">
+    <div
+      ref={panelRef}
+      className={styles.panel}
+      data-testid="advanced"
+      data-chip-bar={chipBar}
+      data-open={open}
+    >
       <button
         type="button"
         className={styles.head}

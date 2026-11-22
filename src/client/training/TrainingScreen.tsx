@@ -39,7 +39,7 @@ import { FOCUS_INPUT_HOLD_MS, focusVisible } from './focus-visibility';
 import { FocusBadge, FocusRest } from './layouts/FocusRest';
 import { FOCUS_IN_MS, FOCUS_OUT_MS, fadeStyle } from './hud/motion';
 import { monotonicNowMs, useLastInput } from './useLastInput';
-import { bikeKindOf, hasKnob } from '../../domain/bike';
+import { bikeKindOf, bikeShowsWatts, hasKnob } from '../../domain/bike';
 import {
   resolveResistanceMode,
   resolveTrainerSettings,
@@ -281,7 +281,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   // The trainer is the owner's: his FTP ("me"), else the first rider of the session (decision D3).
   const rider = me ?? runtime.players[0];
   const riderFtp = rider && Number.isFinite(rider.ftp) && rider.ftp > 0 ? rider.ftp : undefined;
-  const showsWatts = settings.equipment.showsWatts;
+  // The setup's rule: the switch or a trainer that is connected (a fresh profile has no switch).
+  const showsWatts = bikeShowsWatts(settings.equipment, liveSnapshot.trainer !== 'off');
   const trainerSettings = useMemo(() => resolveTrainerSettings(settings), [settings]);
   // Why the next pause happens, for the ride recording (auto-pause, stop on the trainer).
   const pauseReason = useRef<RideEventKind | null>(null);
@@ -738,7 +739,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     view,
     segments: runtime.segments,
     players: runtime.players,
-    showsWatts: settings.equipment.showsWatts,
+    showsWatts,
     // With a smart trainer in control there is no knob to turn: no relative knob commands.
     knobCommand:
       !trainerHud && hasKnob(bikeKindOf(resolveResistanceMode(settings), settings.equipment)),
@@ -825,7 +826,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
               view={view}
               active={!hudShown}
               reducedMotion={reducedMotion}
-              showFtp={settings.equipment.showsWatts}
+              showFtp={showsWatts}
             />
           )}
           {hudLayer}

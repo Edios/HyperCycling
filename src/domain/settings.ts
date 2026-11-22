@@ -141,7 +141,7 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
 
 export const DEFAULT_SETTINGS: Settings = {
   effortTable: DEFAULT_EFFORT_TABLE,
-  equipment: { showsWatts: true, showsCadence: true, hideRpmTile: false },
+  equipment: { showsWatts: false, showsCadence: true, hideRpmTile: false },
   basicTheme: 'dark',
   sounds: true,
   coach: true,

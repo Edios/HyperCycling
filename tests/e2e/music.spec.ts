@@ -130,7 +130,7 @@ async function rideWithRider(page: Page, name: string, world: boolean): Promise<
   await page.getByRole('button', { name: 'Add', exact: true }).click();
   const form = page.getByTestId('add-player-form');
   await form.getByLabel('Name').fill('Mirek');
-  await form.getByLabel('FTP (W)').fill('250');
+  await form.getByLabel('FTP (W)', { exact: true }).fill('250');
   await form.getByRole('button', { name: 'Add rider' }).click();
   const music = page.getByRole('switch', { name: 'Music' });
   if (!(await music.isChecked())) await music.check();

@@ -1,13 +1,13 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_PLAN_SETTINGS, type Plan, type PlanSettings } from '../../domain/plan';
-import { DEFAULT_SETTINGS } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 import { builtinPlans, getWorkout } from '../data/builtin';
 import { PlanCalendar } from './PlanCalendar';
 import { sessionsPerWeek, workoutPeakLevel } from './model';
 
 const buildForm = builtinPlans.find((p) => p.id === 'build-form') as Plan;
-const watts = DEFAULT_SETTINGS.equipment;
+const watts = METERED_SETTINGS.equipment;
 const noWatts = { ...watts, showsWatts: false };
 
 function renderCal(settings: Partial<PlanSettings> = {}, equipment = watts, plan = buildForm) {

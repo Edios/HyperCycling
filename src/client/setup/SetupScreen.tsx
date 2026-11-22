@@ -2,7 +2,7 @@ import { effectiveMusicCues } from '../../domain/workout';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
-import { bikeKindOf, type BikeKind } from '../../domain/bike';
+import { bikeKindOf, bikeShowsWatts, type BikeKind } from '../../domain/bike';
 import { resolveResistanceMode, type WorldSettingId } from '../../domain/settings';
 import { DEFAULT_PLAN_SETTINGS, type PlanSettings } from '../../domain/plan';
 import { playerSchema, type Player } from '../../domain/player';
@@ -59,7 +59,7 @@ import {
   type Background,
 } from './model';
 import type { LayoutKind } from '../training/overlay-layouts';
-import { BikeCard } from '../bike/BikeCard';
+import { useDeviceStore, useDevicesState } from '../devices/useDevices';
 import { DevicesPanel } from '../devices/DevicesPanel';
 import { BikeWizard } from '../bike/BikeWizard';
 import { AdvancedPanel, Group, readAdvancedOpen, saveAdvancedOpen } from './AdvancedPanel';
@@ -171,8 +171,13 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   const [layoutOpen, setLayoutOpen] = useState(false);
   const [bikeOpen, setBikeOpen] = useState(false);
   const advancedRef = useRef<HTMLDivElement>(null);
-  const bikeKind = bikeKindOf(resolveResistanceMode(settings), settings.equipment);
-  const showsWatts = settings.equipment.showsWatts;
+  // A connected trainer IS the bike: smart, with watts. Nothing to ask about the bike then.
+  const devices = useDevicesState(useDeviceStore());
+  const trainerConnected = devices.trainer.status === 'connected';
+  const bikeKind: BikeKind = trainerConnected
+    ? 'smart'
+    : bikeKindOf(resolveResistanceMode(settings), settings.equipment);
+  const showsWatts = bikeShowsWatts(settings.equipment, trainerConnected);
   const spotifyConnected = useSpotifyConnected();
   // Songs the rider matched to their Spotify for this Experience (kept in this browser only).
   const [matched, setMatched] = useState<Choices>(() =>
@@ -272,6 +277,9 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
 
   const start = (): void => {
     if (youtubeInvalid) return;
+    // Starting without answering the bike question is the answer: it is not asked again.
+    if (!settings.bikeSetupDone)
+      void updateSettings({ bikeSetupDone: true }).catch(() => undefined);
     const config = buildConfig(
       {
         background,
@@ -642,12 +650,13 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
                 onCancel={() => setAdding(false)}
               />
             )}
-            {!experience && (
-              <p className={styles.info}>
+            {!experience && !settings.bikeSetupDone && !trainerConnected && (
+              <p className={styles.info} data-testid="bike-line">
                 <button
                   type="button"
                   className={styles.linkBtn}
                   onClick={() => setBikeOpen(true)}
+                  data-testid="bike-open"
                   aria-label={`${t('setup.bikeEdit')}: ${bikeName}`}
                 >
                   {t('setup.bikeLine', { bike: bikeName })} <Icon name="edit" size={14} />
@@ -655,17 +664,12 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
               </p>
             )}
             <div className={styles.devices}>
-              <DevicesPanel
-                variant="compact"
-                showTrainer={bikeKind !== 'knob'}
-                showWatts={showsWatts}
-              />
+              <DevicesPanel variant="compact" showTrainer showWatts={showsWatts} />
             </div>
           </section>
 
-          <BikeCard onSkipRide={start} />
-
           <AdvancedPanel
+            chipBar={!experience}
             open={advancedOpen}
             onToggle={setAdvanced}
             panelRef={advancedRef}
@@ -817,16 +821,18 @@ function AddPlayerForm({
         )}
       </Field>
       {showsWatts && (
-        <Field label={t('setup.playerFtp')} {...(errors.ftp ? { error: errors.ftp } : {})}>
-          {(id) => (
-            <input
-              id={id}
-              inputMode="numeric"
-              value={ftp}
-              onChange={(e) => setFtp(e.target.value)}
-            />
-          )}
-        </Field>
+        <SettingRow topic={t('setup.playerFtp')} help={t('setup.ftpHelp')}>
+          <Field label={t('setup.playerFtp')} {...(errors.ftp ? { error: errors.ftp } : {})}>
+            {(id) => (
+              <input
+                id={id}
+                inputMode="numeric"
+                value={ftp}
+                onChange={(e) => setFtp(e.target.value)}
+              />
+            )}
+          </Field>
+        </SettingRow>
       )}
       {errors.save && (
         <p role="alert" className={styles.saveError}>

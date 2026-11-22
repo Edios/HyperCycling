@@ -8,7 +8,7 @@ test('heart-rate zones: HRmax from age, zone column and toggle in Settings', asy
   const form = page.getByTestId('add-player-form');
   const name = `Hr-${Date.now()}`;
   await form.getByLabel('Name').fill(name);
-  await form.getByLabel('FTP (W)').fill('220');
+  await form.getByLabel('FTP (W)', { exact: true }).fill('220');
   await form.getByLabel('Age (not stored)').fill('36');
   await form.getByRole('button', { name: 'Calculate' }).click();
   await expect(form.getByLabel('Max heart rate (bpm)')).toHaveValue('183');
