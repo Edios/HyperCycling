@@ -802,7 +802,15 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       data-chip={runtime.config.music && nowPlaying !== null ? 'true' : undefined}
       // The HUD steps aside for the music player: a column on its left, or on a phone in portrait
       // a band at the bottom (the HUD is laid out in what is left, smaller).
-      data-player={playerShown && nowPlaying?.provider === 'youtube' ? 'true' : undefined}
+      // The overlay layouts (World) keep their own place in portrait: the player overlays them
+      // ('over'), above the controls.
+      data-player={
+        playerShown && nowPlaying?.provider === 'youtube'
+          ? portraitPhone && !tiled
+            ? 'over'
+            : 'true'
+          : undefined
+      }
       className={`${styles.root} ${hideControls ? styles.noCursor : ''}`}
       style={rootStyle}
     >

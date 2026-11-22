@@ -47,8 +47,8 @@
 
 /*
  * The music player (YouTube asks for 200 x 200 px, visible) sits in a column on the left: the whole
- * HUD, its controls and timeline included, is laid out in what is left. Under a phone in portrait
- * (no room) nothing moves and the player overlays the screen, only when the rider turned it on.
+ * HUD, its controls and timeline included, is laid out in what is left. On a phone in portrait the
+ * room is a band at the bottom instead (see below).
  */
 .root[data-player='true'] {
   --player-room: 232px;
@@ -66,29 +66,48 @@
 
 /*
  * A phone in portrait has no column to spare: the room is a band at the bottom (the player 200 px
- * high, its caption laid over the picture) and the HUD is laid out above it with smaller tiles.
+ * high, its caption laid over the picture). The plain tiles are laid out above it with smaller
+ * sizes, scaled by the width AND by the height that is left (--pk: 1vw on a 390 x 844 screen,
+ * less on a shorter one, e.g. with the browser's address bar showing). The overlay layouts (World)
+ * keep their own place on the screen: the player overlays them above the controls (MusicPlayerDock).
  */
 @media (max-width: 760px) and (orientation: portrait) {
   .root[data-player='true'] {
     --player-band: 212px;
   }
 
-  .root[data-player='true'] .layout {
+  .root[data-player='true'] .layout:not(.overlayLayer) {
     margin-left: 0;
     height: calc(100% - var(--player-band));
+    /* 3.9 px (1vw of 390) per 632 px of height left (844 - 212). */
+    --pk: min(1vw, calc((100 * var(--vh) - var(--player-band)) * 0.00617));
   }
 
-  .root[data-player='true'] .layout > * {
-    --ring: 26vw;
-    --nring: 9vw;
-    --time-fs: 10vw;
-    --mval: 6.2vw;
-    --next-fs: 4.8vw;
-    --lbl: 3.3vw;
-    --cap: 2.9vw;
-    --tl: 6.5vw;
-    --rname: 4.4vw;
-    --rwatts: 6.5vw;
+  .root[data-player='true'] .overlayLayer {
+    inset: 0;
+    margin-left: 0;
+  }
+
+  .root[data-player='true'] .layout:not(.overlayLayer) > * {
+    --ring: calc(26 * var(--pk));
+    --nring: calc(9 * var(--pk));
+    --time-fs: calc(10 * var(--pk));
+    --mval: calc(6.2 * var(--pk));
+    --next-fs: calc(4.8 * var(--pk));
+    --lbl: calc(3.3 * var(--pk));
+    --cap: calc(2.9 * var(--pk));
+    --tl: calc(6.5 * var(--pk));
+    --rname: calc(4.4 * var(--pk));
+    --rwatts: calc(6.5 * var(--pk));
+    /* The strip for the corner label is not there (the player's caption says it): its height goes
+       to the tiles. (The coach's cue slot is made smaller in Classic.module.css.) */
+    padding-top: calc(4 * var(--u));
+  }
+
+  /* Live sensors add rows to the tiles (power target, ERG, heart rate): the ring gives a little more. */
+  .root[data-player='true'] .layout:not(.overlayLayer) > [data-live='true'] {
+    --ring: calc(21 * var(--pk));
+    --nring: calc(8 * var(--pk));
   }
 }
 

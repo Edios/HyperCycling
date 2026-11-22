@@ -2,6 +2,13 @@ import path from 'node:path';
 import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+import {
+  playerProblems,
+  showPlayer,
+  startRunningWithMusic,
+  stubYoutube,
+  wakeControls,
+} from './music-player';
 
 // "Match music" end to end: the wizard from a workout preview, the visible YouTube player in the
 // preview and in the ride, and the ride with the matched songs. Rides autosave to the shared local
@@ -12,43 +19,6 @@ const SHOTS = process.env.SHOTS_DIR ?? '';
 const shot = async (page: Page, name: string): Promise<void> => {
   if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
 };
-
-const FAKE_API = `
-window.__yt = { calls: [], frames: 0 };
-window.YT = {
-  Player: function (el, opts) {
-    window.__yt.frames++;
-    var frame = document.createElement('div');
-    frame.setAttribute('data-testid', 'fake-yt-player');
-    frame.style.cssText = 'width:' + opts.width + 'px;height:' + opts.height + 'px;background:#1d3557;';
-    el.appendChild(frame);
-    var target = {
-      playVideo: function () { window.__yt.calls.push('play'); },
-      pauseVideo: function () { window.__yt.calls.push('pause'); },
-      mute: function () {}, unMute: function () {},
-      setVolume: function (v) { window.__yt.calls.push('volume:' + v); },
-      destroy: function () { window.__yt.calls.push('destroy'); },
-      loadVideoById: function (o) {
-        window.__yt.calls.push('load:' + o.videoId + '@' + (o.startSeconds || 0));
-        setTimeout(function () { opts.events.onStateChange({ target: target, data: 1 }); }, 20);
-      }
-    };
-    window.__yt.calls.push('create:' + opts.videoId + '@' + (opts.playerVars.start || 0));
-    setTimeout(function () {
-      opts.events.onReady({ target: target });
-      setTimeout(function () { opts.events.onStateChange({ target: target, data: 1 }); }, 20);
-    }, 30);
-    return target;
-  }
-};
-setTimeout(function () { window.onYouTubeIframeAPIReady && window.onYouTubeIframeAPIReady(); }, 0);
-`;
-
-async function stubYoutube(page: Page): Promise<void> {
-  await page.route('https://www.youtube.com/iframe_api', (route) =>
-    route.fulfill({ contentType: 'text/javascript', body: FAKE_API }),
-  );
-}
 
 const ytCalls = (page: Page): Promise<string[]> =>
   page.evaluate(() => (window as unknown as { __yt?: { calls: string[] } }).__yt?.calls ?? []);
@@ -61,99 +31,11 @@ async function toWizard(page: Page): Promise<void> {
   await expect(page.getByTestId('soundtrack-wizard')).toBeVisible();
 }
 
-async function startRunning(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Start', exact: true }).click();
-  await expect(page.getByTestId('training-screen')).toBeVisible();
-  await expect(async () => {
-    if ((await page.getByTestId('training-screen').getAttribute('data-status')) === 'idle')
-      await page.keyboard.press('Space');
-    await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
-      timeout: 1500,
-    });
-  }).toPass({ timeout: 20_000 });
-  // The corner label gives way to the player's own caption, so it is only attached.
-  await expect(page.getByTestId('now-playing')).toBeAttached({ timeout: 20_000 });
-}
-
-/** Everything wrong with the music player on the ride screen, as readable lines. */
-function dockProblems(page: Page): Promise<string[]> {
-  return page.evaluate(() => {
-    const TOL = 1.5;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const out: string[] = [];
-    const dock = document.querySelector<HTMLElement>('[data-testid="music-dock"]');
-    const frame = document.querySelector<HTMLElement>('[data-testid="music-player-frame"]');
-    if (!dock || dock.getAttribute('data-visible') !== 'true') return ['the player is not shown'];
-    const d = dock.getBoundingClientRect();
-    const f = frame?.getBoundingClientRect();
-    if (!f || f.width < 199.5 || f.height < 199.5)
-      out.push(`the player is ${f?.width}x${f?.height}, YouTube asks for 200x200 at least`);
-    if (d.left < -TOL || d.top < -TOL || d.right > vw + TOL || d.bottom > vh + TOL)
-      out.push(`the player is outside the screen ${JSON.stringify(d)}`);
-    const name = document.querySelector('[data-testid="music-player-name"]');
-    if (!name?.textContent?.trim()) out.push('the player shows no title');
-    const hide = document
-      .querySelector('[data-testid="music-player-hide"]')
-      ?.getBoundingClientRect();
-    if (!hide || hide.width < 43 || hide.height < 43) out.push('the hide button is under 44 px');
-    // The HUD is laid out beside or above the player (never under it): no panel, no control.
-    const panels = [
-      ...document.querySelectorAll<HTMLElement>('[data-g], [data-testid="controls"]'),
-    ].filter((p) => p.getBoundingClientRect().width > 0 && !p.closest('[data-hidden]'));
-    const others = panels;
-    for (const p of others) {
-      const r = p.getBoundingClientRect();
-      const ox = Math.min(d.right, r.right) - Math.max(d.left, r.left);
-      const oy = Math.min(d.bottom, r.bottom) - Math.max(d.top, r.top);
-      if (ox > 2 && oy > 2)
-        out.push(
-          `the player overlaps ${p.getAttribute('data-g') ?? p.getAttribute('data-testid')}`,
-        );
-    }
-    // The tiles stay whole in what is left: inside the screen, text inside its panel (a little
-    // slack for the line box), panels not on each other. This is the geometry the HUD keeps
-    // without a player (training-hud-geometry.spec), held with it too.
-    for (const p of panels) {
-      const r = p.getBoundingClientRect();
-      const g = p.getAttribute('data-g') ?? p.getAttribute('data-testid');
-      if (r.left < -TOL || r.right > vw + TOL || r.top < -TOL || r.bottom > vh + TOL)
-        out.push(`panel ${g} outside the screen`);
-      const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
-      let n: Node | null;
-      while ((n = walker.nextNode())) {
-        const text = (n.textContent ?? '').trim();
-        const el = n.parentElement;
-        if (!text || !el || getComputedStyle(el).visibility === 'hidden') continue;
-        if (el.closest('.sr-only, [aria-hidden="true"]')) continue;
-        const range = document.createRange();
-        range.selectNodeContents(n);
-        const t = range.getBoundingClientRect();
-        if (t.width === 0 || t.height === 0) continue;
-        const slack = t.height * 0.2;
-        if (t.left < r.left - TOL || t.right > r.right + TOL)
-          out.push(`text "${text}" sticks out of panel ${g} sideways`);
-        if (t.top < r.top - slack || t.bottom > r.bottom + slack)
-          out.push(`text "${text}" sticks out of panel ${g} vertically`);
-      }
-    }
-    for (let i = 0; i < panels.length; i += 1) {
-      for (let j = i + 1; j < panels.length; j += 1) {
-        const a = panels[i]!.getBoundingClientRect();
-        const b = panels[j]!.getBoundingClientRect();
-        const ox = Math.min(a.right, b.right) - Math.max(a.left, b.left);
-        const oy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-        if (ox > 2 && oy > 2) out.push(`panels ${i} and ${j} overlap`);
-      }
-    }
-    return out;
-  });
-}
-
 const VIEWPORTS = [
   { width: 1280, height: 800, name: 'pc' },
   { width: 844, height: 390, name: 'phone-landscape' },
   { width: 390, height: 844, name: 'phone-portrait' },
+  { width: 390, height: 734, name: 'phone-portrait-bar' },
 ];
 
 test.describe('Match music', () => {
@@ -161,6 +43,7 @@ test.describe('Match music', () => {
     page,
   }, info) => {
     test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+    test.setTimeout(90_000); // axe and many steps, on a busy machine
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
     await stubYoutube(page);
@@ -280,27 +163,23 @@ test.describe('Match music', () => {
     await page.getByTestId('soundtrack-next').click();
     await page.getByRole('button', { name: 'To the ride' }).click();
     await expect(page.getByTestId('setup-soundtrack')).toHaveAttribute('data-state', 'ready');
-    await startRunning(page);
+    await startRunningWithMusic(page);
 
     const found: string[] = [];
     for (const v of VIEWPORTS) {
       await page.setViewportSize({ width: v.width, height: v.height });
-      await page.mouse.move(3, 3);
-      await page.mouse.move(8, 8);
-      await page.waitForTimeout(400);
-      const portrait = v.name === 'phone-portrait';
+      await wakeControls(page);
+      const portrait = v.name.startsWith('phone-portrait');
       if (portrait) {
-        // No room beside the HUD on a phone in portrait: the player waits for the rider's word.
+        // A phone in portrait shows the player only by the rider's word.
         await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
         await expect(page.getByTestId('now-playing')).toBeVisible();
-        await shot(page, 'soundtrack-ride-phone-portrait-default');
-        await page.getByRole('button', { name: 'Quick settings' }).click();
-        await page.getByRole('switch', { name: 'Music player' }).check();
-        await page.getByRole('button', { name: 'Close' }).click();
-        await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'true');
+        await shot(page, `soundtrack-ride-${v.name}-default`);
+        await showPlayer(page);
+        await wakeControls(page);
       }
       await shot(page, `soundtrack-ride-${v.name}`);
-      found.push(...(await dockProblems(page)).map((m) => `${v.name}: ${m}`));
+      found.push(...(await playerProblems(page)).map((m) => `${v.name}: ${m}`));
       if (portrait) {
         await page.getByTestId('music-player-hide').click();
         await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
@@ -308,12 +187,9 @@ test.describe('Match music', () => {
     }
     expect(found).toEqual([]);
     await page.setViewportSize({ width: 1280, height: 800 });
-    // The landscape sizes after the portrait one: the rider's "off" holds there too.
+    // The rider's "off" of the portrait sizes holds on the wide ones too; the switch brings it back.
     await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
-    await page.getByRole('button', { name: 'Quick settings' }).click();
-    await page.getByRole('switch', { name: 'Music player' }).check();
-    await page.getByRole('button', { name: 'Close' }).click();
-    await expect(page.getByTestId('music-dock')).toHaveAttribute('data-visible', 'true');
+    await showPlayer(page);
 
     // The song of the ride is from the matched plan, in YouTube's player.
     expect((await ytCalls(page))[0]).toMatch(/^create:/);

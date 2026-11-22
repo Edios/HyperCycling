@@ -261,6 +261,15 @@
     --tl: calc(4.2 * var(--u));
   }
 
+  /* The music player takes a column on the left (TrainingScreen): the strip has less width. */
+  :global([data-player='true']) .root[data-layout='tunnel'] {
+    --ring: calc(20 * var(--u));
+    --nring: calc(7 * var(--u));
+    --time-fs: calc(14.5 * var(--u));
+    --mval: calc(5 * var(--u));
+    --next-fs: calc(4.6 * var(--u));
+  }
+
   .root[data-layout='tunnel'] > [data-g='C'] {
     left: 50%;
     top: var(--my);

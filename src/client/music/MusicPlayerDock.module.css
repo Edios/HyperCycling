@@ -26,7 +26,8 @@
   position: fixed;
   left: 15px;
   top: calc(4.4 * var(--u, 8px));
-  z-index: 19;
+  /* Under the quick settings panel (z-index 15), above the HUD tiles. */
+  z-index: 14;
 }
 
 .ride[data-visible='false'] {
@@ -51,23 +52,35 @@
     transform: none;
   }
 
+  /* The overlay layouts (World) are not laid out above a band: the player overlays them, above the controls. */
+  :global([data-player='over']) .ride {
+    bottom: 150px;
+  }
+
   .ride {
     height: 200px;
   }
 
+  /* The caption and the hide button are anchored to the dock itself (not to a bar that may grow). */
   .ride .bar {
+    display: contents;
+  }
+
+  .ride .name {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
+    box-sizing: border-box;
     min-height: 40px;
-    padding-left: 8px;
+    padding: 6px 52px 6px 8px;
+    justify-content: flex-end;
     background: linear-gradient(transparent, rgb(0 0 0 / 0.78));
   }
 
   .ride .hide {
     position: absolute;
-    top: -160px;
+    top: 0;
     right: 0;
     background: rgb(0 0 0 / 0.45);
     border-radius: 0 0 0 10px;
