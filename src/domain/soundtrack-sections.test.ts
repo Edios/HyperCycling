@@ -4,6 +4,7 @@ import {
   bestCategories,
   CATEGORY_TEMPO,
   coverage,
+  COVERAGE_SHARE,
   DEFAULT_RPM,
   energyOf,
   isMusicCategory,
@@ -415,7 +416,8 @@ describe('coverage', () => {
     categories,
   });
 
-  it('counts songs that fit at least 60% of the time, per category', () => {
+  it('counts songs that fit at least half of the time, per category', () => {
+    expect(COVERAGE_SHARE).toBe(0.5);
     const tracks = [
       t(90, 'electronic'), // half time at 90 rpm: 600 + 300 cool-down = 75%
       t(180, 'rock', 'electronic'), // on the beat at 90 rpm: 75%
@@ -424,19 +426,20 @@ describe('coverage', () => {
     ];
     const cov = coverage(sections, tracks);
     const by = Object.fromEntries(cov.map((c) => [c.category, c.tracks]));
-    expect(by).toMatchObject({ electronic: 2, rock: 1, house: 0, pop: 0, lofi: 0 });
+    expect(by).toMatchObject({ electronic: 2, rock: 1, house: 1, pop: 0, lofi: 0 });
     expect(cov.map((c) => c.category)).toEqual([...MUSIC_CATEGORIES]);
-    expect(bestCategories(cov)).toEqual(['electronic', 'rock']);
+    expect(bestCategories(cov)).toEqual(['electronic', 'house']); // ties keep the category order
   });
 
   it('respects the category list, the half/double switch and the share', () => {
-    const tracks = [t(90, 'electronic'), t(130, 'house')];
-    expect(coverage(sections, tracks, ['house', 'electronic'])).toEqual([
-      { category: 'house', tracks: 0 },
+    const tracks = [t(90, 'electronic'), t(130, 'house'), t(100, 'pop')];
+    expect(coverage(sections, tracks, ['pop', 'electronic'])).toEqual([
+      { category: 'pop', tracks: 0 },
       { category: 'electronic', tracks: 1 },
     ]);
     expect(coverage(sections, tracks, ['electronic'], { halfDouble: false })[0]!.tracks).toBe(0);
-    expect(coverage(sections, tracks, ['house'], { share: 0.5 })[0]!.tracks).toBe(1);
+    expect(coverage(sections, tracks, ['house'], { share: 0.6 })[0]!.tracks).toBe(0);
+    expect(coverage(sections, tracks, ['pop'], { share: 0.25 })[0]!.tracks).toBe(1);
   });
 
   it('lets a song without a beat fit the cool-down only', () => {

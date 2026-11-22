@@ -473,8 +473,12 @@ function topLevelIds(w: Workout): Map<string, string> {
 // Coverage (step 1 of the wizard: which categories suit this workout)
 // ---------------------------------------------------------------------------------------------
 
-/** A song counts for a category when it fits the sections of at least this share of the time. */
-export const COVERAGE_SHARE = 0.6;
+/**
+ * A song counts for a category when it fits the sections of at least this share of the time. Half,
+ * not most: a workout that alternates climbs (~65 rpm) and flats (~87 rpm) has no song that fits
+ * 60% of it, and the wizard would dim every category although the planner fills each part well.
+ */
+export const COVERAGE_SHARE = 0.5;
 
 /** What `coverage` needs of a song (a catalog track or a library song with categories). */
 export interface CoverageTrack {
@@ -499,7 +503,8 @@ export interface CategoryCoverage {
 }
 
 /**
- * For each category (in the given order), how many songs fit the workout's tempo for most of it.
+ * For each category (in the given order), how many songs fit the workout's tempo for at least
+ * `share` of it (default `COVERAGE_SHARE`, half the time).
  * Locked sections are left out (their music is set); a cool-down fits any song (no beat needed).
  * Only dims chips and words a hint; never builds a queue.
  */

@@ -212,7 +212,7 @@ describe('soundtrack catalog with coverage() on built-in workouts', () => {
 
   it('suggests the categories that fit the workout best', () => {
     const best = (id: string) => bestCategories(coverage(sectionsOf(workout(id)), tracks));
-    expect(best('high-cadence-drills')[0]).toBe('pop');
+    expect(best('high-cadence-drills')).toContain('pop');
     expect(best('music-climbs')[0]).toBe('rock');
     expect(best('class-endurance-45')).toContain('electronic');
     expect(count('standing-climbs', 'electronic')).toBeGreaterThanOrEqual(5);
@@ -232,13 +232,21 @@ describe('soundtrack catalog with coverage() on built-in workouts', () => {
     }
   });
 
-  it('leaves no built-in workout without a category, except the known mixed-cadence ones', () => {
-    // coverage() asks one song to fit 60% of the time; these alternate ~65 rpm climbs with
-    // ~87 rpm flats, so no single song does. The planner (PR 3) picks per section instead.
+  it('leaves no built-in workout without a category, mixed cadences included', () => {
     const none = builtinWorkouts
       .filter((w) => coverage(sectionsOf(w), tracks).every((c) => c.tracks === 0))
       .map((w) => w.id);
-    expect(none).toEqual(['big-gear-ladder', 'class-neon-grid-45', 'demo-mixed']);
+    expect(none).toEqual([]);
+    // These alternate ~65 rpm climbs with ~87 rpm flats: no song fits 60% of them, half does.
+    for (const id of ['class-neon-grid-45', 'big-gear-ladder', 'demo-mixed']) {
+      const s = sectionsOf(workout(id));
+      expect(bestCategories(coverage(s, tracks)).length, id).toBeGreaterThan(0);
+      const strict = coverage(s, tracks, MUSIC_CATEGORIES, { share: 0.6 });
+      expect(
+        strict.every((c) => c.tracks === 0),
+        id,
+      ).toBe(true);
+    }
   });
 
   it('has songs for every open section of every built-in workout', () => {
