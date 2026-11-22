@@ -133,5 +133,6 @@ describe('ride recorder', () => {
     expect(rideFileName({ startedAt: '2026-11-21T08:05:00.000Z' })).toMatch(
       /^hypercycling-ride-2026-11-2\d-\d{4}\.json$/,
     );
+    expect(rideFileName({ startedAt: '2026-11-21T08:05:00.000Z' }, 'fit')).toMatch(/\.fit$/);
   });
 });

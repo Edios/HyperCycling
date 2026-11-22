@@ -160,6 +160,11 @@ export const en = {
       zones: 'Time in heart rate zones',
       zone: 'Zone {n}',
       download: 'Download ride (JSON)',
+      downloadFit: 'Download FIT',
+      fitHr: 'Heart rate in the FIT file',
+      fitHint:
+        'The .fit file opens in Strava, Garmin Connect (Import Data), intervals.icu and most training apps.',
+      fitStrava: 'Open the Strava upload page',
       privacy: 'Saved on this device only.',
     },
     experienceChapters: 'Parts ridden: {reached} of {total}',
