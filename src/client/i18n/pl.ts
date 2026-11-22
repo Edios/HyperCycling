@@ -599,7 +599,7 @@ export const pl: Messages = {
     'rpm-high':
       'Kadencja {rpm} obr./min jest za szybka: powyżej {max} obr./min tylko do {sec} s, inaczej dodaj opór.',
     'standing-rpm':
-      'Stanie przy {rpm} obr./min: stanie wymaga oporu i wolnej kadencji, do {max} obr./min.',
+      'Stanie przy {rpm} obr./min to za szybko: na podjeździe do {max} obr./min, w krótkim sprincie (od {sprintPct}% FTP, do {sprintSec} s) do {sprintMax} obr./min.',
     'standing-light': 'Stanie przy ok. {pct}% FTP: dodaj opór, zanim wstaniesz.',
     'standing-bout': 'Stanie {sec} s bez przerwy: trzymaj się {max} s na jedno wstanie.',
     'standing-total': 'Stanie łącznie {min} min: praktyczny limit to {max} min na zajęcia.',

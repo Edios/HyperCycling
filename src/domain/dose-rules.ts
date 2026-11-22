@@ -45,7 +45,16 @@ export interface DoseThresholds {
   /** Above this cadence only short bursts are fine. */
   rpmFast: number;
   rpmFastMaxSec: number;
+  /** Standing cadence ceiling on a climb (resistance first, slow legs). */
   standingRpmMax: number;
+  /**
+   * A short, hard standing effort (a sprint or the jump that opens a short interval) is ridden
+   * faster: from `standingSprintFtpPct` and up to `standingSprintMaxSec` the ceiling is
+   * `standingSprintRpmMax`. Standing at 70 rpm at 150 % FTP is a standing start, not a sprint.
+   */
+  standingSprintRpmMax: number;
+  standingSprintFtpPct: number;
+  standingSprintMaxSec: number;
   /** Standing below this %FTP is "standing without load". */
   standingMinFtpPct: number;
   standingBoutSec: number;
@@ -67,6 +76,9 @@ export const DOSE_THRESHOLDS: Record<DoseLevel, DoseThresholds> = {
     rpmFast: 110,
     rpmFastMaxSec: 30,
     standingRpmMax: 75,
+    standingSprintRpmMax: 105,
+    standingSprintFtpPct: 120,
+    standingSprintMaxSec: 30,
     standingMinFtpPct: 55,
     standingBoutSec: 60,
     standingTotalSec: 7 * 60,
@@ -83,6 +95,9 @@ export const DOSE_THRESHOLDS: Record<DoseLevel, DoseThresholds> = {
     rpmFast: 105,
     rpmFastMaxSec: 20,
     standingRpmMax: 70,
+    standingSprintRpmMax: 100,
+    standingSprintFtpPct: 120,
+    standingSprintMaxSec: 15,
     standingMinFtpPct: 60,
     standingBoutSec: 30,
     standingTotalSec: 5 * 60,
@@ -142,12 +157,21 @@ export function doseWarnings(w: Workout, opts: DoseOptions = {}): DoseWarning[] 
     }
     if (s.position === 'standing') {
       standingSec += s.durationSec;
-      if (s.rpm !== undefined && s.rpm > th.standingRpmMax) {
+      const sprintStand =
+        peak(s) >= th.standingSprintFtpPct && s.durationSec <= th.standingSprintMaxSec;
+      const rpmMax = sprintStand ? th.standingSprintRpmMax : th.standingRpmMax;
+      if (s.rpm !== undefined && s.rpm > rpmMax) {
         add({
           code: 'standing-rpm',
           level: 'warn',
           ...at(s),
-          params: { rpm: s.rpm, max: th.standingRpmMax },
+          params: {
+            rpm: s.rpm,
+            max: th.standingRpmMax,
+            sprintMax: th.standingSprintRpmMax,
+            sprintPct: th.standingSprintFtpPct,
+            sprintSec: th.standingSprintMaxSec,
+          },
         });
       }
       if (peak(s) < th.standingMinFtpPct) {

@@ -592,7 +592,7 @@ export const en = {
     'rpm-high':
       'Cadence {rpm} rpm is too fast: above {max} rpm only up to {sec} s, otherwise add resistance.',
     'standing-rpm':
-      'Standing at {rpm} rpm: standing needs resistance and a slow cadence, up to {max} rpm.',
+      'Standing at {rpm} rpm is too fast: standing on a climb up to {max} rpm, in a short sprint (from {sprintPct}% FTP, up to {sprintSec} s) up to {sprintMax} rpm.',
     'standing-light': 'Standing at about {pct}% FTP: add resistance before standing up.',
     'standing-bout': 'Standing for {sec} s in one go: keep standing bouts to {max} s.',
     'standing-total':

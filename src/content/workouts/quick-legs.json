@@ -1,15 +1,15 @@
 {
   "id": "quick-legs",
   "name": "Quick Legs",
-  "description": "Two series of three songs, each with a tempo climb and a sprint mid-song, ending with a recovery song.",
+  "description": "Two series of three songs, each with a tempo climb and a sprint mid-song, ending with a recovery song. The first sprint after each climb is ridden standing.",
   "localized": {
     "en": {
       "name": "Quick Legs",
-      "description": "Two series of three songs, each with a tempo climb and a sprint mid-song, ending with a recovery song."
+      "description": "Two series of three songs, each with a tempo climb and a sprint mid-song, ending with a recovery song. The first sprint after each climb is ridden standing."
     },
     "pl": {
       "name": "Szybkie nogi",
-      "description": "Dwie serie trzech piosenek z podjazdem tempa i sprintem pośrodku, na koniec piosenka na uspokojenie."
+      "description": "Dwie serie trzech piosenek z podjazdem tempa i sprintem pośrodku, na koniec piosenka na uspokojenie. Pierwszy sprint po każdym podjeździe jedziesz na stojąco."
     }
   },
   "category": "freestyle",
@@ -119,8 +119,8 @@
           "intensity": {
             "ftpPct": 135
           },
-          "rpm": 106,
-          "position": "seated",
+          "rpm": 100,
+          "position": "standing",
           "label": "@sprint",
           "cue": "@sprint"
         },

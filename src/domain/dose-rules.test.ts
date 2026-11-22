@@ -52,6 +52,42 @@ describe('doseWarnings', () => {
     expect(codes(make([wu(), ...many, cd()]))).toContain('standing-total');
   });
 
+  it('allows a faster cadence when standing in a short, hard sprint', () => {
+    const sprint = (sec: number, ftpPct: number, rpm: number): Block =>
+      ({
+        kind: 'steady',
+        id: 'p',
+        durationSec: sec,
+        intensity: { ftpPct },
+        rpm,
+        position: 'standing',
+      }) as Block;
+    const rest = steady('r', 300, 2);
+    // >= 120 % FTP and <= 30 s: up to 105 rpm.
+    expect(codes(make([wu(), sprint(15, 150, 100), rest, cd()]))).toEqual([]);
+    expect(codes(make([wu(), sprint(30, 120, 105), rest, cd()]))).toEqual([]);
+    expect(codes(make([wu(), sprint(15, 150, 110), rest, cd()]))).toEqual(['standing-rpm']);
+    // Too long or too easy for a sprint: the climb ceiling (75 rpm) applies.
+    expect(codes(make([wu(), sprint(40, 150, 90), rest, cd()]))).toContain('standing-rpm');
+    expect(codes(make([wu(), sprint(15, 110, 90), rest, cd()]))).toEqual(['standing-rpm']);
+    expect(codes(make([wu(), sprint(15, 110, 75), rest, cd()]))).toEqual([]);
+    // The gentle level: up to 15 s and 100 rpm.
+    expect(codes(make([wu(), sprint(15, 150, 100), rest, cd()]), 'gentle')).toEqual([]);
+    expect(codes(make([wu(), sprint(20, 150, 95), rest, cd()]), 'gentle')).toContain(
+      'standing-rpm',
+    );
+    const found = doseWarnings(make([wu(), sprint(15, 150, 110), rest, cd()])).find(
+      (x) => x.code === 'standing-rpm',
+    );
+    expect(found?.params).toEqual({
+      rpm: 110,
+      max: 75,
+      sprintMax: 105,
+      sprintPct: 120,
+      sprintSec: 30,
+    });
+  });
+
   it('flags sprints over 30 s, except in a test', () => {
     const hard = { kind: 'steady', id: 'p', durationSec: 40, intensity: { ftpPct: 150 } } as Block;
     expect(codes(make([wu(), hard, steady('r', 300, 2), cd()]))).toEqual(['sprint-long']);

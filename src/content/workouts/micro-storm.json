@@ -1,15 +1,15 @@
 {
   "id": "micro-storm",
   "name": "Micro Storm",
-  "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy.",
+  "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy. Every other effort opens with 10 seconds standing.",
   "localized": {
     "en": {
       "name": "Micro Storm",
-      "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy."
+      "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy. Every other effort opens with 10 seconds standing."
     },
     "pl": {
       "name": "Mikroburza",
-      "description": "Trzy serie po dziesięć razy 30 sekund mocno i 30 sekund luzu."
+      "description": "Trzy serie po dziesięć razy 30 sekund mocno i 30 sekund luzu. Co drugi wysiłek zaczynasz 10 s na stojąco."
     }
   },
   "category": "freestyle",
@@ -101,7 +101,17 @@
         {
           "kind": "steady",
           "id": "ms-2",
-          "durationSec": 30,
+          "durationSec": 10,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "standing"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-2-sit",
+          "durationSec": 20,
           "intensity": {
             "ftpPct": 125
           },
@@ -141,7 +151,17 @@
         {
           "kind": "steady",
           "id": "ms-6",
-          "durationSec": 30,
+          "durationSec": 10,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "standing"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-6-sit",
+          "durationSec": 20,
           "intensity": {
             "ftpPct": 125
           },
@@ -181,7 +201,17 @@
         {
           "kind": "steady",
           "id": "ms-10",
-          "durationSec": 30,
+          "durationSec": 10,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "standing"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-10-sit",
+          "durationSec": 20,
           "intensity": {
             "ftpPct": 125
           },
@@ -221,7 +251,17 @@
         {
           "kind": "steady",
           "id": "ms-14",
-          "durationSec": 30,
+          "durationSec": 10,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "standing"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-14-sit",
+          "durationSec": 20,
           "intensity": {
             "ftpPct": 125
           },
@@ -261,7 +301,17 @@
         {
           "kind": "steady",
           "id": "ms-18",
-          "durationSec": 30,
+          "durationSec": 10,
+          "intensity": {
+            "ftpPct": 125
+          },
+          "rpm": 105,
+          "position": "standing"
+        },
+        {
+          "kind": "steady",
+          "id": "ms-18-sit",
+          "durationSec": 20,
           "intensity": {
             "ftpPct": 125
           },
