@@ -20,7 +20,9 @@ export interface EffortRingProps {
   numberTestId?: string;
   /**
    * Motion on an effort change (transform and opacity only): the segments in between fill (or
-   * empty) one after the other, 35 ms apart, and the number rolls. Off by default.
+   * empty) one after the other, 35 ms apart, and the number rolls. Off by default. Never for a
+   * ring that shows a live reading (`text`, e.g. watts): that level changes with every wobble of
+   * the reading, and a number that fades in each time is half transparent much of the time.
    */
   motion?: boolean;
   /** Text in place of the number (e.g. live watts in trainer mode). */
@@ -57,12 +59,13 @@ export function EffortRing({
   const shown = useRef(value);
   // Three or four digits (watts) need a smaller number than the two-digit effort.
   const textScale = text && text.length > 2 ? 2.4 / Math.max(3, text.length) : 1;
+  const live = text !== undefined;
 
   useLayoutEffect(() => {
     const from = shown.current;
     shown.current = value;
     const svg = svgRef.current;
-    if (!motion || from === value || !svg || typeof svg.animate !== 'function') return;
+    if (!motion || live || from === value || !svg || typeof svg.animate !== 'function') return;
     const up = value > from;
     const paths = svg.querySelectorAll('path');
     const changed: number[] = [];
@@ -84,7 +87,7 @@ export function EffortRing({
       ],
       { duration: ROLL_MS, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)' },
     );
-  }, [value, motion]);
+  }, [value, motion, live]);
 
   return (
     <div

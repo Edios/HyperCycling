@@ -354,11 +354,55 @@ const SENSOR_VIEWPORTS = [
   { width: 1280, height: 800, name: 'laptop' },
 ];
 
+/**
+ * The watts in the middle of the Power ring are always fully readable: no animation running on
+ * them (a number that fades in on every change of the power level is half transparent most of
+ * the time), full opacity, and clear of the arc (inside the ring's inner circle).
+ */
+async function powerNumberProblems(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const out: string[] = [];
+    const num = document.querySelector<HTMLElement>('[data-testid="trainer-power"]');
+    const ring = num?.closest<HTMLElement>('[data-testid="effort-ring"]');
+    if (!num || !ring) return ['the watts number is missing'];
+    if (num.getAnimations().length > 0) out.push('the watts number is animating');
+    let el: HTMLElement | null = num;
+    while (el && el !== ring.parentElement) {
+      if (Number(getComputedStyle(el).opacity) < 1) out.push('the watts number is not opaque');
+      el = el.parentElement;
+    }
+    for (const seg of ring.querySelectorAll('path')) {
+      if (seg.getAnimations().length > 0) out.push('a ring segment is animating');
+    }
+    const r = ring.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(num);
+    const t = range.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    const half = r.width / 2;
+    // The arc lies between ~0.65 and 1.0 of the radius: the number's corners stay inside 0.6.
+    for (const [x, y] of [
+      [t.left, t.top],
+      [t.right, t.top],
+      [t.left, t.bottom],
+      [t.right, t.bottom],
+    ]) {
+      if (Math.hypot(x! - cx, y! - cy) > half * 0.6) {
+        out.push(`the watts number "${num.textContent}" reaches the arc`);
+        break;
+      }
+    }
+    return out;
+  });
+}
+
 /** Problems with the live rows, then with the same rows after the sensors went quiet. */
 async function sensorProblems(page: Page, label: string): Promise<string[]> {
   const bad: string[] = [];
   await expect(page.getByTestId('rpm-value')).toHaveAttribute('data-signal', 'live');
   for (const p of await problems(page)) bad.push(`${label} live: ${p}`);
+  for (const p of await powerNumberProblems(page)) bad.push(`${label} watts: ${p}`);
   await page.evaluate(() => clearInterval(window.__sensorPump));
   await expect(page.getByTestId('live-signal')).toBeVisible({ timeout: 6000 });
   await shot(page, `${label.replace(' ', '-')}-nosignal`);

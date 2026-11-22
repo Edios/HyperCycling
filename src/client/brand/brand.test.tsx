@@ -153,6 +153,23 @@ describe('EffortRing', () => {
       expect(container.querySelectorAll('path')).toHaveLength(10);
     });
 
+    it('never animates a ring that shows a live reading (watts): the number stays fully drawn', () => {
+      stub();
+      const { rerender, getByTestId } = render(
+        <EffortRing effort={4} motion text="115" numberTestId="w" />,
+      );
+      for (const [level, watts] of [
+        [5, '131'],
+        [4, '118'],
+        [6, '152'],
+        [3, '96'],
+      ] as const) {
+        rerender(<EffortRing effort={level} motion text={watts} numberTestId="w" />);
+        expect(getByTestId('w')).toHaveTextContent(watts);
+      }
+      expect(animate).not.toHaveBeenCalled(); // no fade, no roll, no staggered segments
+    });
+
     it('does nothing without motion', () => {
       stub();
       const { rerender } = render(<EffortRing effort={3} />);
