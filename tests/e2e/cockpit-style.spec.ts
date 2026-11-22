@@ -12,10 +12,13 @@ async function startOverlay(page: Page): Promise<void> {
   await page.getByRole('button', { name: /^World/ }).click();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
-  await page.keyboard.press('Space');
-  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
-    timeout: 8000,
-  });
+  await expect(async () => {
+    if ((await page.getByTestId('training-screen').getAttribute('data-status')) === 'idle')
+      await page.keyboard.press('Space');
+    await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
+      timeout: 1500,
+    });
+  }).toPass({ timeout: 30_000 });
 }
 
 async function showLayout(page: Page, id: string): Promise<void> {
@@ -27,6 +30,9 @@ async function showLayout(page: Page, id: string): Promise<void> {
       .waitFor({ state: 'attached', timeout: 150 })
       .catch(() => undefined);
   }
+  // Move the mouse so the HUD wakes (a hidden layer is not visible).
+  await page.mouse.move(200, 200);
+  await page.mouse.move(260, 240, { steps: 3 });
   await expect(page.getByTestId(id)).toBeVisible();
 }
 
@@ -37,6 +43,7 @@ async function showLayout(page: Page, id: string): Promise<void> {
  */
 async function settled<T>(read: () => Promise<T>): Promise<T> {
   let previous: string | undefined;
+  let stable = 0;
   let last: T | undefined;
   await expect
     .poll(
@@ -45,7 +52,8 @@ async function settled<T>(read: () => Promise<T>): Promise<T> {
         const now = JSON.stringify(last);
         const same = now === previous;
         previous = now;
-        return same;
+        stable = same ? stable + 1 : 0;
+        return stable >= 3;
       },
       { intervals: [150], timeout: 6000 },
     )
@@ -56,9 +64,11 @@ async function settled<T>(read: () => Promise<T>): Promise<T> {
 
 /** Ink box of the effort numeral and the vertical extent of the 'Effort' word / caption. */
 async function ringMetrics(page: Page) {
-  return page.evaluate(() => {
+  return page.evaluate(async () => {
     const num = document.querySelector('[data-testid="effort-value-number"]') as HTMLElement;
     const cs = getComputedStyle(num);
+    // Canvas text metrics need the numeral's font loaded, or they describe the fallback font.
+    await document.fonts.load(`${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`);
     const range = document.createRange();
     range.selectNodeContents(num);
     const r = range.getBoundingClientRect();
@@ -190,11 +200,6 @@ for (const ring of [230, 260, 300]) {
       await page.setViewportSize({ width: 1920, height: 1080 });
       await startOverlay(page);
       await showLayout(page, layout);
-      await page.evaluate((px) => {
-        document.querySelectorAll('[data-layout]').forEach((el) => {
-          (el as HTMLElement).style.setProperty('--ring', `${px}px`);
-        });
-      }, ring);
       // Layout geometry only: the glass tilt would inflate the boxes it is measured with.
       await page.evaluate(() => {
         const sheet = new CSSStyleSheet();
@@ -203,18 +208,26 @@ for (const ring of [230, 260, 300]) {
       });
       await page.evaluate(() => document.fonts.ready);
       for (let step = 0; step < 3; step += 1) {
+        // A block change can re-create the layout element, dropping the inline size: set it again.
+        await page.evaluate((px) => {
+          document.querySelectorAll('[data-layout]').forEach((el) => {
+            (el as HTMLElement).style.setProperty('--ring', `${px}px`);
+          });
+        }, ring);
         const m = await settled(() => ringMetrics(page));
         if (m.inside) {
-          expect(m.labelTop!, `effort ${m.effort}`).toBeGreaterThanOrEqual(
-            m.numBottom + 0.25 * m.capHeight,
-          );
+          expect(
+            m.labelTop!,
+            `effort ${m.effort} step ${step} ring ${m.ringW}`,
+          ).toBeGreaterThanOrEqual(m.numBottom + 0.25 * m.capHeight);
           expect(m.labelBottom!).toBeLessThanOrEqual(m.nameTop + 0.5);
         } else if (m.labelTop !== null) {
           expect(m.labelTop).toBeGreaterThanOrEqual(m.numBottom);
         }
+        const before = await page.getByTestId('effort-name').textContent();
         await page.keyboard.press('ArrowRight');
-        // The next block animates in; there is no DOM signal for "done", so this stays a sleep.
-        await page.waitForTimeout(1000);
+        // The next block replaces the name; the metrics are read after that, once they settle.
+        await expect(page.getByTestId('effort-name')).not.toHaveText(before ?? '');
       }
     });
   }

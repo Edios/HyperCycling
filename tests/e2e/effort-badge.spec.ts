@@ -9,10 +9,13 @@ async function startRide(page: Page, background: RegExp): Promise<void> {
   await page.getByRole('button', { name: background }).click();
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
-  await page.keyboard.press('Space');
-  await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
-    timeout: 8000,
-  });
+  await expect(async () => {
+    if ((await page.getByTestId('training-screen').getAttribute('data-status')) === 'idle')
+      await page.keyboard.press('Space');
+    await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
+      timeout: 1500,
+    });
+  }).toPass({ timeout: 30_000 });
 }
 
 /** Gap in px between the bottom of the effort name and the top of the badge (negative = overlap). */
