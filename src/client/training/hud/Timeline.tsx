@@ -20,6 +20,8 @@ export interface TimelineProps {
 }
 
 const MAX_EFFORT = 10;
+/** Gap between bars, the same as `.bars` in Timeline.module.css. */
+const BAR_GAP_PX = 2;
 type BarState = 'past' | 'current' | 'future';
 
 /** Group P, the floor: workout name, block n of m, elapsed and remaining, and the whole timeline. */
@@ -35,7 +37,15 @@ export function Timeline({
   const total = segments.reduce((sum, s) => sum + s.durationSec, 0);
   const safeElapsed = Number.isFinite(elapsedSec) ? elapsedSec : 0;
   const clamped = Math.min(Math.max(safeElapsed, 0), total);
-  const cursorPct = total > 0 ? (clamped / total) * 100 : 0;
+  // The bars are separated by gaps and share only the width left after them, so the playhead
+  // follows the same layout (the gaps before its bar plus its share of the rest). A plain
+  // percentage of the whole width drifts off the bars, worse with many short blocks.
+  const frac = total > 0 ? clamped / total : 0;
+  const barIdx = Math.max(
+    0,
+    segments.findLastIndex((s) => s.startSec <= clamped),
+  );
+  const cursorLeft = `calc(${barIdx * BAR_GAP_PX}px + ${frac} * (100% - ${Math.max(0, segments.length - 1) * BAR_GAP_PX}px))`;
   const blockText =
     blockIndex === undefined
       ? undefined
@@ -106,7 +116,7 @@ export function Timeline({
             );
           })}
         </div>
-        <div data-cursor className={styles.cursor} style={{ left: `${cursorPct}%` }} />
+        <div data-cursor className={styles.cursor} style={{ left: cursorLeft }} />
       </div>
     </div>
   );

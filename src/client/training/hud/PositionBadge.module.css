@@ -37,3 +37,43 @@
   border-color: #f4f6fa;
   color: #0b0e14;
 }
+
+/*
+ * A change is coming (last seconds of the block): the badge blinks between the current position
+ * and the one it is about to switch to, so the rider sees it before it happens. The motion is
+ * dropped for prefers-reduced-motion (the badge then just shows the coming position, no blink).
+ */
+.calling {
+  animation: position-call 1s ease-in-out infinite;
+}
+
+@keyframes position-call {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 calc(0.8 * var(--u, 8px)) rgba(244, 246, 250, 0.45);
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calling {
+    animation: none;
+  }
+}
+
+/* The badge dresses as the coming position, so the change is visible before it happens. */
+.badge[data-upcoming='standing'] {
+  background: #f4f6fa;
+  border-color: #f4f6fa;
+  color: #0b0e14;
+}
+
+.badge[data-upcoming='seated'] {
+  background: transparent;
+  border-color: var(--sub, #a4aec0);
+  color: var(--sub, #a4aec0);
+}

@@ -5,6 +5,10 @@ import styles from './PositionBadge.module.css';
 export interface PositionBadgeProps {
   /** A missing position (older data) reads as seated. */
   position: Position | undefined;
+  /** The position the next block switches to: the badge calls it before the change. */
+  upcoming?: Position | undefined;
+  /** Reduced motion or Effects off: the call stays visible but does not move. */
+  reducedMotion?: boolean;
   className?: string;
 }
 
@@ -39,21 +43,31 @@ function StandingIcon() {
  * Seated / standing as an icon and a word (never colour alone). Standing is the loud one:
  * filled, because the rider has to act; seated is the quiet default.
  */
-export function PositionBadge({ position, className }: PositionBadgeProps) {
+export function PositionBadge({
+  position,
+  upcoming,
+  reducedMotion = false,
+  className,
+}: PositionBadgeProps) {
   const t = useT();
   const resolved: Position = position === 'standing' ? 'standing' : 'seated';
   const word = t(resolved === 'standing' ? 'training.standing' : 'training.seated');
+  const change = upcoming && upcoming !== resolved ? upcoming : undefined;
+  const changeWord = change ? t(change === 'standing' ? 'training.standing' : 'training.seated') : '';
+  const label = `${t('training.position')}: ${word}${change ? `, ${t('training.next')}: ${changeWord}` : ''}`;
   return (
     <div
-      className={`${styles.badge} ${className ?? ''}`}
+      className={`${styles.badge} ${change && !reducedMotion ? styles.calling : ''} ${className ?? ''}`}
       data-testid="position-badge"
       data-position={resolved}
+      data-upcoming={change}
+      data-animated={change && !reducedMotion ? 'true' : undefined}
       role="img"
-      aria-label={`${t('training.position')}: ${word}`}
+      aria-label={label}
     >
-      {resolved === 'standing' ? <StandingIcon /> : <SeatedIcon />}
+      {(change ?? resolved) === 'standing' ? <StandingIcon /> : <SeatedIcon />}
       <span className={styles.word} aria-hidden="true">
-        {word}
+        {change ? changeWord : word}
       </span>
     </div>
   );

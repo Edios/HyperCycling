@@ -55,6 +55,7 @@ export function OverlayHud({
       labelKey={view.labelKey}
       {...(view.next ? { next: view.next } : {})}
       position={view.position}
+      upcomingPosition={view.upcomingPosition}
       step={{ index: view.stepIndex, count: view.stepCount }}
       showFtp={showsWatts}
       {...(trainer ? { trainer } : {})}

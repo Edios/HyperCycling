@@ -245,7 +245,9 @@ describe('Timeline', () => {
     const root = screen.getByTestId('timeline');
     const bars = root.querySelectorAll<HTMLElement>('[data-state]');
     expect(bars[1]?.style.flexGrow).toBe('120');
-    expect(root.querySelector<HTMLElement>('[data-cursor]')?.style.left).toBe('50%');
+    expect(root.querySelector<HTMLElement>('[data-cursor]')?.style.left).toBe(
+      'calc(2px + 0.5 * (100% - 4px))',
+    );
   });
   it('draws ramps with a clip-path slope', () => {
     render(<Timeline segments={segments} elapsedSec={0} />);
@@ -297,14 +299,43 @@ describe('Timeline', () => {
   it('treats non-finite elapsed as 0', () => {
     render(<Timeline segments={segments} elapsedSec={Number.NaN} />);
     const root = screen.getByTestId('timeline');
-    expect(root.querySelector<HTMLElement>('[data-cursor]')?.style.left).toBe('0%');
+    expect(root.querySelector<HTMLElement>('[data-cursor]')?.style.left).toBe(
+      'calc(0px + 0 * (100% - 4px))',
+    );
     expect(root).toHaveTextContent('0:00 / 4:00');
+  });
+  describe('cursor stays on the bars after skipping blocks (#16)', () => {
+    // 30 s sprints between long blocks: bars have a 2 px gap, so a plain elapsed/total percentage
+    // drifts away from the bar the rider is in.
+    const mixed = [
+      seg({ index: 0, startSec: 0, durationSec: 600, effortStart: 3, effortEnd: 3 }),
+      seg({ index: 1, startSec: 600, durationSec: 30, effortStart: 9, effortEnd: 9 }),
+      seg({ index: 2, startSec: 630, durationSec: 90, effortStart: 4, effortEnd: 4 }),
+      seg({ index: 3, startSec: 720, durationSec: 30, effortStart: 9, effortEnd: 9 }),
+    ];
+    const GAP = 2;
+    const left = (el: number) => {
+      render(<Timeline segments={mixed} elapsedSec={el} />);
+      return screen.getByTestId('timeline').querySelector<HTMLElement>('[data-cursor]')?.style.left;
+    };
+    // The bar layout: the gaps before block k plus its share of the width left after all gaps.
+    const expected = (k: number, frac: number) =>
+      `calc(${k * GAP}px + ${frac} * (100% - ${(mixed.length - 1) * GAP}px))`;
+    it('skip of the first block: the cursor sits on the left edge of the second bar', () => {
+      expect(left(600)).toBe(expected(1, 600 / 750));
+    });
+    it('skip of several blocks: the cursor sits on the left edge of that bar', () => {
+      expect(left(720)).toBe(expected(3, 720 / 750));
+    });
+    it('skip of the last block (finished): the cursor is at the right end', () => {
+      expect(left(750)).toBe(expected(3, 1));
+    });
   });
   it('clamps the cursor after the end', () => {
     render(<Timeline segments={segments} elapsedSec={9999} />);
     expect(
       screen.getByTestId('timeline').querySelector<HTMLElement>('[data-cursor]')?.style.left,
-    ).toBe('100%');
+    ).toBe('calc(4px + 1 * (100% - 4px))');
   });
 });
 
