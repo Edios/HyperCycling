@@ -1,15 +1,15 @@
 {
   "id": "thirty-fifteen",
   "name": "Thirty-Fifteen",
-  "description": "Two sets of twelve rounds of 30 seconds hard and 15 seconds easy. Every other effort opens with 10 seconds standing.",
+  "description": "Two sets of twelve rounds of 30 seconds hard and 15 seconds easy.",
   "localized": {
     "en": {
       "name": "Thirty-Fifteen",
-      "description": "Two sets of twelve rounds of 30 seconds hard and 15 seconds easy. Every other effort opens with 10 seconds standing."
+      "description": "Two sets of twelve rounds of 30 seconds hard and 15 seconds easy."
     },
     "pl": {
       "name": "Trzydzieści/piętnaście",
-      "description": "Dwie serie po dwanaście razy 30 sekund mocno i 15 sekund luzu. Co drugi wysiłek zaczynasz 10 s na stojąco."
+      "description": "Dwie serie po dwanaście razy 30 sekund mocno i 15 sekund luzu."
     }
   },
   "category": "freestyle",
@@ -101,17 +101,7 @@
         {
           "kind": "steady",
           "id": "tf-2",
-          "durationSec": 10,
-          "intensity": {
-            "ftpPct": 120
-          },
-          "rpm": 105,
-          "position": "standing"
-        },
-        {
-          "kind": "steady",
-          "id": "tf-2-sit",
-          "durationSec": 20,
+          "durationSec": 30,
           "intensity": {
             "ftpPct": 120
           },
@@ -151,17 +141,7 @@
         {
           "kind": "steady",
           "id": "tf-6",
-          "durationSec": 10,
-          "intensity": {
-            "ftpPct": 120
-          },
-          "rpm": 105,
-          "position": "standing"
-        },
-        {
-          "kind": "steady",
-          "id": "tf-6-sit",
-          "durationSec": 20,
+          "durationSec": 30,
           "intensity": {
             "ftpPct": 120
           },
@@ -201,17 +181,7 @@
         {
           "kind": "steady",
           "id": "tf-10",
-          "durationSec": 10,
-          "intensity": {
-            "ftpPct": 120
-          },
-          "rpm": 105,
-          "position": "standing"
-        },
-        {
-          "kind": "steady",
-          "id": "tf-10-sit",
-          "durationSec": 20,
+          "durationSec": 30,
           "intensity": {
             "ftpPct": 120
           },
@@ -251,17 +221,7 @@
         {
           "kind": "steady",
           "id": "tf-14",
-          "durationSec": 10,
-          "intensity": {
-            "ftpPct": 120
-          },
-          "rpm": 105,
-          "position": "standing"
-        },
-        {
-          "kind": "steady",
-          "id": "tf-14-sit",
-          "durationSec": 20,
+          "durationSec": 30,
           "intensity": {
             "ftpPct": 120
           },
@@ -301,17 +261,7 @@
         {
           "kind": "steady",
           "id": "tf-18",
-          "durationSec": 10,
-          "intensity": {
-            "ftpPct": 120
-          },
-          "rpm": 105,
-          "position": "standing"
-        },
-        {
-          "kind": "steady",
-          "id": "tf-18-sit",
-          "durationSec": 20,
+          "durationSec": 30,
           "intensity": {
             "ftpPct": 120
           },
@@ -351,17 +301,7 @@
         {
           "kind": "steady",
           "id": "tf-22",
-          "durationSec": 10,
-          "intensity": {
-            "ftpPct": 120
-          },
-          "rpm": 105,
-          "position": "standing"
-        },
-        {
-          "kind": "steady",
-          "id": "tf-22-sit",
-          "durationSec": 20,
+          "durationSec": 30,
           "intensity": {
             "ftpPct": 120
           },

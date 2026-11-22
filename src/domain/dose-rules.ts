@@ -141,8 +141,22 @@ export function doseWarnings(w: Workout, opts: DoseOptions = {}): DoseWarning[] 
     toSec: s.startSec + s.durationSec,
   });
 
+  // Standing is judged per run: back-to-back standing segments are one time out of the saddle.
+  const runSec: number[] = new Array<number>(segs.length).fill(0);
+  for (let a = 0; a < segs.length;) {
+    if (segs[a]!.position !== 'standing') {
+      a++;
+      continue;
+    }
+    let b = a;
+    let sec = 0;
+    while (b < segs.length && segs[b]!.position === 'standing') sec += segs[b++]!.durationSec;
+    for (let c = a; c < b; c++) runSec[c] = sec;
+    a = b;
+  }
+
   let standingSec = 0;
-  for (const s of segs) {
+  for (const [idx, s] of segs.entries()) {
     if (s.rpm !== undefined) {
       if (s.rpm < th.rpmMin)
         add({ code: 'rpm-low', level: 'warn', ...at(s), params: { rpm: s.rpm, min: th.rpmMin } });
@@ -157,8 +171,8 @@ export function doseWarnings(w: Workout, opts: DoseOptions = {}): DoseWarning[] 
     }
     if (s.position === 'standing') {
       standingSec += s.durationSec;
-      const sprintStand =
-        peak(s) >= th.standingSprintFtpPct && s.durationSec <= th.standingSprintMaxSec;
+      const run = runSec[idx]!;
+      const sprintStand = peak(s) >= th.standingSprintFtpPct && run <= th.standingSprintMaxSec;
       const rpmMax = sprintStand ? th.standingSprintRpmMax : th.standingRpmMax;
       if (s.rpm !== undefined && s.rpm > rpmMax) {
         add({
@@ -182,12 +196,13 @@ export function doseWarnings(w: Workout, opts: DoseOptions = {}): DoseWarning[] 
           params: { pct: Math.round(peak(s)) },
         });
       }
-      if (s.durationSec > th.standingBoutSec) {
+      const runStart = idx === 0 || segs[idx - 1]!.position !== 'standing';
+      if (runStart && run > th.standingBoutSec) {
         add({
           code: 'standing-bout',
           level: 'warn',
           ...at(s),
-          params: { sec: s.durationSec, max: th.standingBoutSec },
+          params: { sec: run, max: th.standingBoutSec },
         });
       }
     }

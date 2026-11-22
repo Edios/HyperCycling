@@ -88,6 +88,32 @@ describe('doseWarnings', () => {
     });
   });
 
+  it('judges standing per run of back-to-back standing segments', () => {
+    const up = (id: string, sec: number, ftpPct: number, rpm: number): Block =>
+      ({
+        kind: 'steady',
+        id,
+        durationSec: sec,
+        intensity: { ftpPct },
+        rpm,
+        position: 'standing',
+      }) as Block;
+    const rest = steady('r', 300, 2);
+    // Two 25 s standing pieces make a 50 s run: not a short sprint, so 75 rpm is the ceiling.
+    const pair = doseWarnings(
+      make([wu(), up('a', 25, 125, 100), up('b', 25, 125, 100), rest, cd()]),
+    );
+    expect(pair.map((x) => `${x.blockId} ${x.code}`)).toEqual(['a standing-rpm', 'b standing-rpm']);
+    // Two 40 s pieces make an 80 s run: one standing bout too long, reported once.
+    const long = doseWarnings(make([wu(), up('a', 40, 80, 70), up('b', 40, 80, 70), rest, cd()]));
+    expect(long.map((x) => x.code)).toEqual(['standing-bout']);
+    expect(long[0]?.params).toEqual({ sec: 80, max: 60 });
+    // A seated gap splits the runs.
+    expect(
+      codes(make([wu(), up('a', 15, 150, 100), steady('s', 60, 2), up('b', 15, 150, 100), cd()])),
+    ).toEqual([]);
+  });
+
   it('flags sprints over 30 s, except in a test', () => {
     const hard = { kind: 'steady', id: 'p', durationSec: 40, intensity: { ftpPct: 150 } } as Block;
     expect(codes(make([wu(), hard, steady('r', 300, 2), cd()]))).toEqual(['sprint-long']);
