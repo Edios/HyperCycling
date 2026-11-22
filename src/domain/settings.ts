@@ -71,6 +71,12 @@ export interface Settings {
    * from api.deezer.com, so the rider opts in under Settings -> Music.
    */
   deezerLookup?: boolean;
+  /**
+   * Show the YouTube music player on screen (YouTube's terms ask for a visible player of at least
+   * 200x200 px). Absent = shown; false is the rider's own choice (Settings, or the quick switch
+   * during a ride).
+   */
+  showMusicPlayer?: boolean;
   /** Max 10 entries. */
   recentYoutubeUrls: string[];
   /** Smart trainer control; absent = defaults (TRAINER_DEFAULTS). */
@@ -132,6 +138,7 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   spotify: spotifySettingsSchema.optional(),
   getSongBpmKey: z.string().optional(),
   deezerLookup: z.boolean().optional(),
+  showMusicPlayer: z.boolean().optional(),
   recentYoutubeUrls: z.array(z.string()).max(10),
   trainer: z
     .object({ sprintMode: z.boolean(), cadenceGuard: z.boolean() })
@@ -151,6 +158,23 @@ export const DEFAULT_SETTINGS: Settings = {
   resistanceMode: 'knob',
   recentYoutubeUrls: [],
 };
+
+/** The music player is shown unless the rider turned it off. */
+export function musicPlayerShown(s: Pick<Settings, 'showMusicPlayer'>): boolean {
+  return s.showMusicPlayer !== false;
+}
+
+/**
+ * Whether the player is shown during a ride. A phone in portrait has no room for a 200 x 200 px
+ * player beside the HUD, so there it is shown only when the rider switched it on themselves
+ * (`true`); everywhere else it is shown unless they switched it off.
+ */
+export function musicPlayerShownOnRide(
+  s: Pick<Settings, 'showMusicPlayer'>,
+  portraitPhone: boolean,
+): boolean {
+  return portraitPhone ? s.showMusicPlayer === true : musicPlayerShown(s);
+}
 
 /** The effective mode: a stored object without the field is an existing rider and stays smooth. */
 export function resolveResistanceMode(s: Pick<Settings, 'resistanceMode'>): ResistanceMode {

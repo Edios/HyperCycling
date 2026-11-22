@@ -123,9 +123,12 @@ for (const size of VIEWPORTS) {
     await page.getByRole('button', { name: 'Quick settings' }).click();
     const panel = page.getByTestId('quick-settings');
     await expect(panel).toBeVisible();
-    // Only the layout and Lite: no background, world, riders, beeps or cues.
+    // Only the layout, Lite and the music player: no background, world, riders, beeps or cues.
     await expect(panel.getByRole('radio')).toHaveCount(5);
-    await expect(panel.getByRole('switch')).toHaveCount(1);
+    const switches = panel.getByRole('switch');
+    await expect(switches).toHaveCount(2);
+    await expect(panel.getByRole('switch', { name: 'Lite (weaker device)' })).toBeVisible();
+    await expect(panel.getByRole('switch', { name: 'Music player' })).toBeVisible();
     const box = await panel.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.x).toBeGreaterThanOrEqual(0);
@@ -140,6 +143,17 @@ for (const size of VIEWPORTS) {
         .map((e) => e.textContent),
     );
     expect(clipped).toEqual([]);
+    // The music player switch (the last row) can be reached: the panel scrolls, and once scrolled
+    // to it the row is inside the panel and on the screen.
+    const toggle = panel.getByRole('switch', { name: 'Music player' });
+    await toggle.scrollIntoViewIfNeeded();
+    const rowBox = await toggle.locator('xpath=ancestor::label').boundingBox();
+    const panelBox = await panel.boundingBox();
+    expect(rowBox).not.toBeNull();
+    expect(rowBox!.y).toBeGreaterThanOrEqual(panelBox!.y - 1);
+    expect(rowBox!.y + rowBox!.height).toBeLessThanOrEqual(panelBox!.y + panelBox!.height + 1);
+    expect(rowBox!.y + rowBox!.height).toBeLessThanOrEqual(size.height + 1);
+    expect(rowBox!.height).toBeGreaterThanOrEqual(44);
   });
 }
 

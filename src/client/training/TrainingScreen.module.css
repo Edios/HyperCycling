@@ -45,6 +45,30 @@
   box-sizing: border-box;
 }
 
+/*
+ * The music player (YouTube asks for 200 x 200 px, visible) sits in a column on the left: the whole
+ * HUD, its controls and timeline included, is laid out in what is left. Under a phone in portrait
+ * (no room) nothing moves and the player overlays the screen, only when the rider turned it on.
+ */
+.root[data-player='true'] {
+  --player-room: 232px;
+}
+
+/* Positioned, so the layout's own absolutely placed tiles are laid out inside what is left. */
+.root[data-player='true'] .layout {
+  position: relative;
+  margin-left: var(--player-room);
+}
+
+.root[data-player='true'] .overlayLayer {
+  position: absolute;
+}
+
+/* The player's caption carries the title: the corner label would say it twice. */
+.root[data-player='true'] :global([data-testid='now-playing']) {
+  display: none;
+}
+
 .center {
   /* Above the HUD tiles and the NEXT strip, so the count-in digit is never covered. */
   z-index: 5;

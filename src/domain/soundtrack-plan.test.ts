@@ -595,6 +595,109 @@ describe('planSoundtrack', () => {
     expect(performance.now() - t0).toBeLessThan(200);
   });
 
+  it('changes the fingerprint when the cadence or the effort changes, not the name', () => {
+    const base = workout([steady('a', 300, 5, 90)]);
+    const f = soundtrackFingerprint(base);
+    expect(soundtrackFingerprint(workout([steady('a', 300, 5, 80)]))).not.toBe(f);
+    expect(soundtrackFingerprint(workout([steady('a', 300, 7, 90)]))).not.toBe(f);
+    expect(soundtrackFingerprint(workout([steady('a', 300, 5)]))).not.toBe(f);
+    expect(soundtrackFingerprint({ ...base, name: 'Other', description: 'x' })).toBe(f);
+  });
+
+  it('keeps its own copy of the preferences', () => {
+    const mine = prefs({ categories: ['rock'] });
+    const p = planSoundtrack(ride, catalog, mine);
+    mine.categories.push('pop');
+    mine.seed = 99;
+    expect(p.prefs.categories).toEqual(['rock']);
+    expect(p.prefs.seed).toBe(DEFAULT_SOUNDTRACK_PREFS.seed);
+  });
+
+  describe('exclude and keep (Replace, Shuffle with locked sections)', () => {
+    const all = (p: SoundtrackPlan) => allPicks(p).map((x) => x.ref.id);
+
+    it('never plans a song the rider threw out', () => {
+      const first = planSoundtrack(ride, catalog, prefs());
+      const gone = new Set(all(first).slice(0, 3));
+      const second = planSoundtrack(ride, catalog, prefs(), { exclude: gone });
+      for (const id of gone) expect(all(second)).not.toContain(id);
+      for (const s of second.sections) expect(s.report.gapSec).toBeLessThanOrEqual(10);
+    });
+
+    it('ignores an excluded id that is not in the catalog', () => {
+      const a = planSoundtrack(ride, catalog, prefs());
+      expect(planSoundtrack(ride, catalog, prefs(), { exclude: new Set(['nope']) })).toEqual(a);
+    });
+
+    it('keeps a locked section as it is and builds the rest around it', () => {
+      const first = planSoundtrack(ride, catalog, prefs({ seed: 1 }));
+      const locked = first.sections[1]!;
+      const keep = new Map([[locked.sectionId, locked]]);
+      const next = planSoundtrack(ride, catalog, prefs({ seed: 7 }), { keep });
+      expect(next.sections[1]).toEqual(locked);
+      // The other sections are planned again (another seed) and never repeat a locked song.
+      const lockedIds = new Set(locked.picks.map((x) => x.ref.id));
+      next.sections.forEach((s, i) => {
+        if (i !== 1) for (const x of s.picks) expect(lockedIds.has(x.ref.id)).toBe(false);
+      });
+      const keys = all(next).map((id) => songKey(byId(catalog).get(id)!));
+      expect(new Set(keys).size).toBe(keys.length);
+      expect(all(next)).not.toEqual(all(first));
+    });
+
+    it('never repeats a song that a LATER locked section keeps', () => {
+      const first = planSoundtrack(ride, catalog, prefs({ seed: 1 }));
+      // Lock every section but the first: the first is planned again with a new seed and must
+      // stay clear of the songs of all the others, though they come after it in the ride.
+      const keep = new Map(first.sections.slice(1).map((s) => [s.sectionId, s]));
+      for (const seed of [2, 3, 4, 5, 6]) {
+        const next = planSoundtrack(ride, catalog, prefs({ seed }), {
+          keep,
+          exclude: new Set(first.sections[0]!.picks.map((x) => x.ref.id)),
+        });
+        const keys = all(next).map((id) => songKey(byId(catalog).get(id)!));
+        expect(new Set(keys).size, `seed ${seed}`).toBe(keys.length);
+      }
+    });
+
+    it('keeps everything when every section is locked', () => {
+      const first = planSoundtrack(ride, catalog, prefs({ seed: 1 }));
+      const keep = new Map(first.sections.map((s) => [s.sectionId, s]));
+      const next = planSoundtrack(ride, catalog, prefs({ seed: 5 }), { keep });
+      expect(next.sections).toEqual(first.sections);
+    });
+
+    it('does not add a second Polish song when a locked section has one', () => {
+      const first = planSoundtrack(ride, catalog, prefs());
+      const withPl = first.sections.find((s) =>
+        s.picks.some((x) => byId(catalog).get(x.ref.id)!.pl),
+      )!;
+      const keep = new Map([[withPl.sectionId, withPl]]);
+      const next = planSoundtrack(ride, catalog, prefs({ seed: 3 }), { keep });
+      const pl = all(next).filter((id) => byId(catalog).get(id)!.pl);
+      expect(pl).toEqual(
+        withPl.picks.map((x) => x.ref.id).filter((id) => byId(catalog).get(id)!.pl),
+      );
+    });
+
+    it('ignores a lock whose section changed or whose song left the catalog', () => {
+      const first = planSoundtrack(ride, catalog, prefs({ seed: 1 }));
+      const locked = first.sections[0]!;
+      const plain = planSoundtrack(ride, catalog, prefs({ seed: 2 }));
+      const longer = { ...locked, durationSec: locked.durationSec + 30 };
+      expect(
+        planSoundtrack(ride, catalog, prefs({ seed: 2 }), {
+          keep: new Map([[locked.sectionId, longer]]),
+        }),
+      ).toEqual(plain);
+      const gone = catalog.filter((t) => t.id !== locked.picks[0]!.ref.id);
+      const other = planSoundtrack(ride, gone, prefs({ seed: 2 }), {
+        keep: new Map([[locked.sectionId, locked]]),
+      });
+      expect(other.sections[0]!.picks.map((x) => x.ref.id)).not.toContain(locked.picks[0]!.ref.id);
+    });
+  });
+
   it('changes the fingerprint when the structure changes', () => {
     const other = workout([steady('wu', 300, 2, 90)]);
     expect(soundtrackFingerprint(ride)).toMatch(/^[0-9a-f]{8}$/);

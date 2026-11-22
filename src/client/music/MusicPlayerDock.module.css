@@ -1,0 +1,110 @@
+/*
+ * The music player dock. YouTube asks for a visible player of at least 200 x 200 px, so the frame
+ * is never smaller (the slot is exactly that) and never scaled. Parked (hidden by the rider, or
+ * nothing from YouTube plays) it sits off screen but stays in the page, so the music goes on.
+ */
+.dock {
+  box-sizing: border-box;
+  width: 200px;
+  background: var(--panel, rgba(9, 11, 18, 0.8));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+  border-radius: 10px;
+  overflow: hidden;
+  color: var(--fg, #fff);
+}
+
+.dock[data-visible='false'] {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* During a ride: top of the left column the HUD leaves free (TrainingScreen: data-player). */
+.ride {
+  position: fixed;
+  left: 15px;
+  top: calc(4.4 * var(--u, 8px));
+  z-index: 19;
+}
+
+.ride[data-visible='false'] {
+  left: -10000px;
+}
+
+/* A phone in portrait has no column to spare: the player overlays the lower screen, above the controls. */
+@media (max-width: 760px) and (orientation: portrait) {
+  .ride {
+    left: 50%;
+    top: auto;
+    bottom: 150px;
+    transform: translateX(-50%);
+  }
+
+  .ride[data-visible='false'] {
+    left: -10000px;
+    transform: none;
+  }
+}
+
+.inline {
+  position: relative;
+}
+
+.inline[data-visible='false'] {
+  position: fixed;
+}
+
+.slot {
+  width: 200px;
+  height: 200px;
+  background: #000;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding-left: 10px;
+}
+
+.name {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.name small {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--sub, rgba(255, 255, 255, 0.6));
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hide {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--sub, rgba(255, 255, 255, 0.6));
+  cursor: pointer;
+}
+
+.hide:hover,
+.hide:focus-visible {
+  color: var(--fg, #fff);
+}

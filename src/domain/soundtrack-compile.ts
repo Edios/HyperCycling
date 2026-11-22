@@ -108,3 +108,24 @@ export function compilePlan(
     missing,
   };
 }
+
+/**
+ * The workout with the plan's music on top (spec §5.5): a cue of the plan wins over a cue of the
+ * workout at the same block and repetition, the other cues stay, and the plan's fallback songs
+ * come before the workout's own in the gaps. Never mutates the workout.
+ */
+export function withSoundtrack(
+  workout: Workout,
+  compiled: Pick<CompiledSoundtrack, 'cues' | 'fallbackPlaylist'>,
+): Workout {
+  if (compiled.cues.length === 0 && compiled.fallbackPlaylist.length === 0) return workout;
+  const own = new Set(compiled.cues.map((c) => `${c.blockId}#${c.rep}`));
+  return {
+    ...workout,
+    musicCues: [
+      ...workout.musicCues.filter((c) => !own.has(`${c.blockId}#${c.rep}`)),
+      ...compiled.cues,
+    ],
+    fallbackPlaylist: [...compiled.fallbackPlaylist, ...workout.fallbackPlaylist],
+  };
+}

@@ -217,6 +217,29 @@
   font-size: 1rem;
 }
 
+.matchRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.matchRow .note {
+  margin: 0;
+}
+
+.matchActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.matchActions > button {
+  height: 2.75rem;
+  font-size: 1.0625rem;
+  padding: 0 1rem;
+}
+
 .addForm {
   display: grid;
   grid-template-columns: 1fr 10rem;

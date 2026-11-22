@@ -12,6 +12,7 @@ import { PlayersScreen } from './players/PlayersScreen';
 import { KnobPrompt } from './settings/KnobPrompt';
 import { ResumePrompt } from './setup/ResumePrompt';
 import { SetupScreen } from './setup/SetupScreen';
+import { SoundtrackWizard } from './soundtrack/SoundtrackWizard';
 import { SummaryScreen } from './summary/SummaryScreen';
 import { PlanDetail } from './plans/PlanDetail';
 import { PlanGallery } from './plans/PlanGallery';
@@ -75,6 +76,7 @@ function routes(): RouteObject[] {
           ),
         },
         { path: '/setup/:workoutId', element: <SetupScreen /> },
+        { path: '/soundtrack/:workoutId', element: <SoundtrackWizard /> },
         { path: '/dev/world', element: <DevWorld /> },
         { path: '/train', element: <TrainingScreen /> },
         { path: '/summary', element: <SummaryScreen /> },

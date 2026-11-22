@@ -27,9 +27,12 @@ const music = vi.hoisted(() => ({
   provider: undefined as unknown as FakeMusicProvider,
   created: 0,
   disposed: 0,
+  /** The element the player was given to live in (the dock's slot). */
+  slot: undefined as HTMLElement | undefined,
 }));
 vi.mock('../music/providers', () => ({
-  createMusicProviders: () => {
+  createMusicProviders: (frame?: { parent: HTMLElement }) => {
+    music.slot = frame?.parent;
     music.created += 1;
     return {
       get: () => music.provider,
@@ -207,6 +210,36 @@ describe('now playing, mute and warnings', () => {
     await startRunning();
     await waitFor(() => expect(screen.getByTestId('now-playing')).toHaveTextContent('Looked Up'));
     expect(screen.getByTestId('now-playing')).toHaveTextContent('Resolved Band');
+  });
+
+  it('shows the music player with the title while a YouTube track plays, and can hide it', async () => {
+    load(workoutWith({ fallbackPlaylist: [titled] }), true);
+    await renderScreen();
+    // The dock is always there when the ride has music (the player lives in it), parked until
+    // something plays.
+    expect(screen.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
+    await startRunning();
+    const dock = screen.getByTestId('music-dock');
+    expect(dock).toHaveAttribute('data-visible', 'true');
+    expect(screen.getByTestId('music-player-name')).toHaveTextContent('Warm up jam');
+    // The director was started with the dock's slot, so YouTube's player is mounted in it.
+    expect(music.slot).toBe(screen.getByTestId('music-player-slot'));
+    // The HUD steps aside for the player (a column on its left) and the corner label gives way.
+    expect(screen.getByTestId('training-screen')).toHaveAttribute('data-player', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Hide the music player' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false'),
+    );
+    expect(screen.getByTestId('training-screen')).not.toHaveAttribute('data-player');
+    // Hiding is only a look: the track goes on.
+    expect(screen.getByTestId('now-playing')).toHaveTextContent('Warm up jam');
+    expect(music.provider.calls.filter((c) => c.type === 'pause')).toHaveLength(0);
+  });
+
+  it('has no player dock when the session has music off', async () => {
+    load(workoutWith({ fallbackPlaylist: [titled] }), false);
+    await renderScreen();
+    expect(screen.queryByTestId('music-dock')).not.toBeInTheDocument();
   });
 
   it('shows nothing when the session has music off', async () => {

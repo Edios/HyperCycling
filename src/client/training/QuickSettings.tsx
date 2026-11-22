@@ -32,6 +32,9 @@ export interface QuickSettingsProps {
   world: WorldSettingId;
   sounds: boolean;
   coach: boolean;
+  /** The music player on screen (YouTube's terms); only offered when the ride has music. */
+  musicPlayer?: boolean;
+  onMusicPlayer?: (on: boolean) => void;
   onBackground(b: Background): void;
   onLayout(l: LayoutKind): void;
   onRiders(on: boolean): void;
@@ -61,6 +64,18 @@ export function QuickSettings(p: QuickSettingsProps) {
     first?.focus();
   }, []);
   const backgrounds: Background[] = ['basic', 'hyperride', 'youtube'];
+  const player = p.onMusicPlayer ? (
+    <>
+      <Toggle
+        label={t('music.player.toggle')}
+        checked={p.musicPlayer ?? true}
+        onChange={p.onMusicPlayer}
+      />
+      <p className={styles.hint} data-testid="quick-player-hint">
+        {t('music.player.quickHint')}
+      </p>
+    </>
+  ) : null;
   if (p.experience) {
     return (
       <section
@@ -97,6 +112,7 @@ export function QuickSettings(p: QuickSettingsProps) {
           onChange={(on) => p.onBackground(on ? 'basic' : 'hyperride')}
         />
         <p className={styles.hint}>{t('experience.liteHint')}</p>
+        {player}
         <p className={styles.hint}>{t('training.shortcutHint')}</p>
       </section>
     );
@@ -177,6 +193,7 @@ export function QuickSettings(p: QuickSettingsProps) {
       )}
       <Toggle label={t('training.quickSounds')} checked={p.sounds} onChange={p.onSounds} />
       <Toggle label={t('training.quickCoach')} checked={p.coach} onChange={p.onCoach} />
+      {player}
       <p className={styles.hint}>{t('training.quickRideOnly')}</p>
       <p className={styles.hint}>{t('training.shortcutHint')}</p>
     </section>
