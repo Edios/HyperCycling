@@ -11,10 +11,11 @@
 // What it does to each selected entry:
 // - keeps only the fields of the production schema (drops `_proposal` and any helper field);
 // - turns the proposal's role letters into names (s steady, i intervals, w warm-up, c climb,
-//   d cool-down) and applies the owner's rule: a song ridden at 105 rpm or faster is for
-//   intervals only (`ROLE_SPRINT_RPM`, `catalogRpm`);
+//   d cool-down) and applies the owner's rules: a song ridden at 105 rpm or faster is for
+//   intervals only (`ROLE_SPRINT_RPM`, `catalogRpm`); an explicit song is never a cool-down;
 // - files dance-house ridden at half tempo (Kygo, Alan Walker...) under Pop/Electronic, not House;
 // - keeps the tempo notes in English, drops research-only notes and re-uploaders' channel names;
+// - appends the songs added after the selection (`ADDED`) and marks the fallback ones;
 // - applies the upload fixes found since the proposal (`UPLOAD_FIXES`);
 // - refuses songs the owner vetoed, then validates everything with `parseCatalog`.
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -48,12 +49,58 @@ const checkOnly = args.includes('--check');
 const VETOED = new Set(['wham-last-christmas']);
 
 /**
- * Upload fixes found after the proposal was written: dead ids to drop and checked uploads to add
- * (oEmbed 200, playable in embeds, available in PL), with the day they were checked.
+ * Songs added to the approved selection, from the same proposal (verified data, owner's decision of
+ * 2026-11-22): beatless and calm songs for the cool-down, the long fallbacks, and songs for the
+ * category tempo gaps (hip-hop 80-90 rpm, lo-fi 75-90, electronic at 80, Latino at 105).
+ */
+const ADDED = [
+  // No clear beat (cool-down), spec §12 wants 8-10.
+  'brian-eno-an-ending',
+  'ludovico-einaudi-nuvole-bianche',
+  'olafur-arnalds-near-light',
+  'stars-of-the-lid-requiem-for-dying-mothers-pt-2',
+  'sigur-ros-hoppipolla',
+  'cigarettes-after-sex-apocalypse',
+  'enrique-iglesias-hero',
+  'perfect-niewiele-ci-moge-dac',
+  // Calm cool-down songs on the beat (also electronic at 80 rpm and lo-fi at 75-85).
+  'massive-attack-teardrop',
+  'chet-faker-no-diggity',
+  // Long instrumental fallback on the beat.
+  'tycho-dive',
+  // Tempo gaps.
+  'goldie-inner-city-life',
+  'celia-cruz-la-vida-es-un-carnaval',
+  'shakira-whenever-wherever',
+  'glass-animals-heat-waves',
+  'bonobo-kong',
+  'coolio-gangsta-s-paradise',
+  'gorillaz-clint-eastwood',
+  'eminem-lose-yourself',
+  'katy-perry-dark-horse',
+];
+
+/** Day every upload of the added songs was checked again (oEmbed, embeddable, PL, not live). */
+const ADDED_VERIFIED = '2026-11-22';
+
+/** Long, calm instrumentals the ride may play wherever the songs leave silence (rule R4). */
+const FALLBACK = new Set(['stars-of-the-lid-requiem-for-dying-mothers-pt-2', 'tycho-dive']);
+
+interface Upload {
+  id: string;
+  label?: string;
+  durationSec?: number;
+  offsetSec?: number;
+}
+
+/**
+ * Upload fixes found after the proposal was written: ids to drop (dead, live, another version),
+ * checked uploads to put first or last (oEmbed 200, playable in embeds, available in PL, not live),
+ * the song's length when the main upload changes, and the day they were checked.
  */
 const UPLOAD_FIXES: Record<
   string,
-  { drop: string[]; add: { id: string; label: string; durationSec: number }[]; verified: string }
+  { drop?: string[]; first?: Upload[]; add?: Upload[]; durationSec?: number; verified: string }
 > = {
   // XoHI6Zus2UI: embedding disabled (oEmbed 401) on 2026-11-21.
   'college-a-real-hero': {
@@ -63,6 +110,29 @@ const UPLOAD_FIXES: Record<
       { id: 'BHgYtKkSEDA', label: 'official/topic (Electric Youth)', durationSec: 268 },
     ],
     verified: '2026-11-21',
+  },
+  // hu6s_t92LiA is the symphonic concert version, Yno1cBseRcc a concert, X9L4j55tdCY another
+  // arrangement; the studio recording replaces them.
+  'perfect-niewiele-ci-moge-dac': {
+    drop: ['hu6s_t92LiA', 'Yno1cBseRcc', 'X9L4j55tdCY'],
+    first: [
+      { id: 'j6IWnPHWWL8', label: 'official/topic (Perfect - Topic)', durationSec: 223 },
+      { id: 'Qj8Ins5mDaE', label: 're-upload', durationSec: 226 },
+    ],
+    durationSec: 223,
+    verified: '2026-11-22',
+  },
+  // a-Bd5PjpeDc is the Spanish version ("Héroe"); the official English video goes first.
+  'enrique-iglesias-hero': {
+    drop: ['a-Bd5PjpeDc'],
+    first: [{ id: 'koJlIGDImiU', label: 'official/topic (EnriqueIglesiasVEVO)', durationSec: 263 }],
+    verified: '2026-11-22',
+  },
+  // GjjUcuVbpwo is an unofficial "ft. Tee" upload; the official video replaces it.
+  'katy-perry-dark-horse': {
+    drop: ['GjjUcuVbpwo'],
+    add: [{ id: '0KSOMA3QBU0', label: 'official/topic (KatyPerryVEVO)', durationSec: 225 }],
+    verified: '2026-11-22',
   },
 };
 
@@ -81,7 +151,7 @@ interface ProposalTrack {
   title: string;
   bpm: number | null;
   durationSec: number;
-  youtube: { id: string; label?: string; durationSec?: number; offsetSec?: number }[];
+  youtube: Upload[];
   categories: string[];
   energy: number;
   beat: 'steady' | 'none';
@@ -101,7 +171,10 @@ function fail(message: string): never {
 function roles(t: ProposalTrack): TrackRole[] {
   if (t.bpm !== null && catalogRpm(t.bpm) >= ROLE_SPRINT_RPM) return ['intervals'];
   const named = t._proposal.roles.map((r) => ROLE_LETTERS[r] ?? fail(`${t.id}: role "${r}"?`));
-  return TRACK_ROLES.filter((r) => named.includes(r));
+  // No explicit lyrics in the cool-down (owner, 2026-11-22): such a calm song warms up instead.
+  const kept = t.clean ? named : named.filter((r) => r !== 'cooldown');
+  if (kept.length === 0) kept.push('warmup');
+  return TRACK_ROLES.filter((r) => kept.includes(r));
 }
 
 /** Dance-house at half tempo is Pop/Electronic for the rider, not House (owner, 2026-11-21). */
@@ -118,6 +191,7 @@ function bpmNote(t: ProposalTrack): string | undefined {
     const octave = /^źródła podają (\d+) \(oktawa\)$/.exec(part);
     if (octave) notes.push(`sources say ${octave[1]} (octave)`);
     else if (part === 'źródła na żywo się nie zgadzają') notes.push('live sources disagree');
+    // "bez wyraźnego beatu" (no clear beat) is what `beat: 'none'` already says.
   }
   return notes.length > 0 ? notes.join('; ') : undefined;
 }
@@ -132,28 +206,26 @@ function uploadLabel(label: string | undefined): string | undefined {
 }
 
 function toCatalog(t: ProposalTrack): CatalogTrack {
-  if (t.bpm === null) fail(`${t.id}: no BPM`);
-  const out: Record<string, unknown> = {
-    id: t.id,
-    artist: t.artist,
-    title: t.title,
-    bpm: t.bpm,
-    durationSec: t.durationSec,
-  };
+  if (t.bpm === null && t.beat !== 'none') fail(`${t.id}: no BPM`);
+  const fix = UPLOAD_FIXES[t.id];
+  const out: Record<string, unknown> = { id: t.id, artist: t.artist, title: t.title };
+  if (t.bpm !== null) out.bpm = t.bpm;
+  out.durationSec = fix?.durationSec ?? t.durationSec;
   if (t._proposal.version !== 'album') out.version = t._proposal.version;
   out.categories = categories(t);
   out.roles = roles(t);
   out.energy = t.energy;
   out.beat = t.beat;
   out.clean = t.clean;
-  if (t.traits && t.traits.length > 0) out.traits = t.traits;
+  const traits = [...(t.traits ?? []), ...(FALLBACK.has(t.id) ? ['fallback'] : [])];
+  if (traits.length > 0) out.traits = traits;
   const note = bpmNote(t);
   if (note !== undefined) out.bpmNote = note;
   if (t.gem === true) out.gem = true;
   if (t._proposal.pl) out.pl = true;
-  const fix = UPLOAD_FIXES[t.id];
-  out.verified = fix?.verified ?? t.verified;
-  const uploads: ProposalTrack['youtube'] = [
+  out.verified = fix?.verified ?? (ADDED.includes(t.id) ? ADDED_VERIFIED : t.verified);
+  const uploads: Upload[] = [
+    ...(fix?.first ?? []),
     ...t.youtube.filter((y) => !(fix?.drop ?? []).includes(y.id)),
     ...(fix?.add ?? []),
   ];
@@ -169,7 +241,10 @@ function toCatalog(t: ProposalTrack): CatalogTrack {
 }
 
 const proposal = JSON.parse(readFileSync(proposalPath, 'utf8')) as { tracks: ProposalTrack[] };
-const selection = JSON.parse(readFileSync(selectionPath, 'utf8')) as string[];
+const approved = JSON.parse(readFileSync(selectionPath, 'utf8')) as string[];
+const twice = ADDED.filter((id) => approved.includes(id));
+if (twice.length > 0) fail(`Added songs already in the selection: ${twice.join(', ')}`);
+const selection = [...approved, ...ADDED];
 const byId = new Map(proposal.tracks.map((t) => [t.id, t]));
 const vetoed = selection.filter((id) => VETOED.has(id));
 if (vetoed.length > 0) fail(`Vetoed songs in the selection: ${vetoed.join(', ')}`);

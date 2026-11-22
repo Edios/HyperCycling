@@ -2207,7 +2207,7 @@
       "bpm": 82,
       "durationSec": 260,
       "categories": ["hiphop"],
-      "roles": ["cooldown"],
+      "roles": ["warmup"],
       "energy": 2,
       "beat": "steady",
       "clean": false,
@@ -3025,6 +3025,383 @@
         { "id": "Mjpu0-o9iek", "label": "official/topic (Daft Punk)", "durationSec": 213 },
         { "id": "DxFzX2N7_kQ", "label": "re-upload", "durationSec": 213 },
         { "id": "EaKlExHC4H0", "label": "re-upload", "durationSec": 208 }
+      ]
+    },
+    {
+      "id": "brian-eno-an-ending",
+      "artist": "Brian Eno",
+      "title": "An Ending (Ascent)",
+      "durationSec": 261,
+      "categories": ["lofi"],
+      "roles": ["cooldown"],
+      "energy": 1,
+      "beat": "none",
+      "clean": true,
+      "traits": ["instrumental"],
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "OlaTeXX3uH8", "label": "official/topic (Brian Eno)", "durationSec": 261 },
+        { "id": "It4WxQ6dnn0", "label": "re-upload", "durationSec": 271 },
+        { "id": "D2tEMRqkCXw", "label": "re-upload", "durationSec": 266 }
+      ]
+    },
+    {
+      "id": "ludovico-einaudi-nuvole-bianche",
+      "artist": "Ludovico Einaudi",
+      "title": "Nuvole Bianche",
+      "durationSec": 358,
+      "categories": ["lofi"],
+      "roles": ["cooldown"],
+      "energy": 1,
+      "beat": "none",
+      "clean": true,
+      "traits": ["instrumental"],
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "CQ8zglIXZi8", "label": "official/topic (Ludovico Einaudi)", "durationSec": 358 },
+        { "id": "fEOJQawykD0", "label": "re-upload", "durationSec": 365 },
+        { "id": "xyY4IZ3JDFE", "label": "re-upload", "durationSec": 372 }
+      ]
+    },
+    {
+      "id": "olafur-arnalds-near-light",
+      "artist": "Ólafur Arnalds",
+      "title": "Near Light",
+      "durationSec": 209,
+      "categories": ["lofi"],
+      "roles": ["cooldown"],
+      "energy": 1,
+      "beat": "none",
+      "clean": true,
+      "traits": ["instrumental"],
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "0kYc55bXJFI", "label": "official/topic (Ólafur Arnalds)", "durationSec": 209 },
+        {
+          "id": "ejaaxLeUQd4",
+          "label": "official/topic (Erased Tapes i Ólafur Arnalds)",
+          "durationSec": 210
+        },
+        { "id": "oULgsaJBTOo", "label": "re-upload", "durationSec": 209 }
+      ]
+    },
+    {
+      "id": "stars-of-the-lid-requiem-for-dying-mothers-pt-2",
+      "artist": "Stars of the Lid",
+      "title": "Requiem for Dying Mothers, Pt. 2",
+      "durationSec": 457,
+      "categories": ["lofi"],
+      "roles": ["cooldown"],
+      "energy": 1,
+      "beat": "none",
+      "clean": true,
+      "traits": ["instrumental", "fallback"],
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "_8aYF9PtQjA", "label": "official/topic (STARS OF THE LID)", "durationSec": 457 },
+        { "id": "WsMFAbMBRfA", "label": "re-upload", "durationSec": 457 },
+        { "id": "CZPMQvGoHYw", "label": "re-upload", "durationSec": 457 }
+      ]
+    },
+    {
+      "id": "sigur-ros-hoppipolla",
+      "artist": "Sigur Rós",
+      "title": "Hoppípolla",
+      "durationSec": 267,
+      "categories": ["lofi", "rock"],
+      "roles": ["cooldown"],
+      "energy": 2,
+      "beat": "none",
+      "clean": true,
+      "traits": ["instrumental"],
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "JAYb8ZyjzD0", "label": "official/topic (Sigur Rós)", "durationSec": 267 },
+        { "id": "PFofOcuNNBk", "label": "re-upload", "durationSec": 257 },
+        { "id": "nf2VhqaBIys", "label": "re-upload", "durationSec": 270 }
+      ]
+    },
+    {
+      "id": "cigarettes-after-sex-apocalypse",
+      "artist": "Cigarettes After Sex",
+      "title": "Apocalypse",
+      "durationSec": 290,
+      "categories": ["lofi", "pop"],
+      "roles": ["cooldown"],
+      "energy": 1,
+      "beat": "none",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        {
+          "id": "sElE_BfQ67s",
+          "label": "official/topic (Cigarettes After Sex)",
+          "durationSec": 290
+        },
+        { "id": "4lbMT-bGGSs", "label": "re-upload", "durationSec": 295 },
+        { "id": "eb95U1jzT4Y", "label": "re-upload", "durationSec": 290 }
+      ]
+    },
+    {
+      "id": "enrique-iglesias-hero",
+      "artist": "Enrique Iglesias",
+      "title": "Hero",
+      "durationSec": 263,
+      "categories": ["latino", "pop", "classics"],
+      "roles": ["cooldown"],
+      "energy": 2,
+      "beat": "none",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        {
+          "id": "koJlIGDImiU",
+          "label": "official/topic (EnriqueIglesiasVEVO)",
+          "durationSec": 263
+        },
+        { "id": "N-LM8PdVYM4", "label": "re-upload", "durationSec": 265 },
+        { "id": "3gAJWGYRHVU", "label": "re-upload", "durationSec": 250 }
+      ]
+    },
+    {
+      "id": "perfect-niewiele-ci-moge-dac",
+      "artist": "Perfect",
+      "title": "Niewiele ci mogę dać",
+      "durationSec": 223,
+      "categories": ["classics", "rock"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "none",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "j6IWnPHWWL8", "label": "official/topic (Perfect - Topic)", "durationSec": 223 },
+        { "id": "Qj8Ins5mDaE", "label": "re-upload", "durationSec": 226 }
+      ]
+    },
+    {
+      "id": "massive-attack-teardrop",
+      "artist": "Massive Attack",
+      "title": "Teardrop",
+      "bpm": 77,
+      "durationSec": 331,
+      "categories": ["electronic", "lofi"],
+      "roles": ["cooldown"],
+      "energy": 1,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "3h-JYx76QNM", "label": "official/topic (Massive Attack)", "durationSec": 331 },
+        { "id": "yftOy8kz7aE", "label": "re-upload", "durationSec": 339 },
+        { "id": "jpLt4LB2pVU", "label": "re-upload", "durationSec": 326 }
+      ]
+    },
+    {
+      "id": "chet-faker-no-diggity",
+      "artist": "Chet Faker",
+      "title": "No Diggity",
+      "bpm": 80,
+      "durationSec": 225,
+      "categories": ["lofi", "electronic"],
+      "roles": ["cooldown"],
+      "energy": 1,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "HIfFA8-RaHQ", "label": "official/topic (Chet Faker)", "durationSec": 225 },
+        { "id": "Tb2XjnlhEAQ", "label": "re-upload", "durationSec": 240 },
+        { "id": "b-edoet4RwY", "label": "re-upload", "durationSec": 223 }
+      ]
+    },
+    {
+      "id": "tycho-dive",
+      "artist": "Tycho",
+      "title": "Dive",
+      "bpm": 140,
+      "durationSec": 500,
+      "categories": ["electronic", "lofi"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["instrumental", "fallback"],
+      "gem": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "vck8CETtLro", "label": "official/topic (Tycho)", "durationSec": 500 },
+        { "id": "m94Dhu8gUDw", "label": "re-upload", "durationSec": 495 },
+        { "id": "CyuxPdHumLA", "label": "re-upload", "durationSec": 500 }
+      ]
+    },
+    {
+      "id": "goldie-inner-city-life",
+      "artist": "Goldie",
+      "title": "Inner City Life",
+      "bpm": 155,
+      "durationSec": 422,
+      "categories": ["electronic"],
+      "roles": ["steady"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "fRzjfOtsUcQ", "label": "official/topic (GOLDIE)", "durationSec": 422 },
+        { "id": "yYA4DoZOiD8", "label": "re-upload", "durationSec": 427 },
+        { "id": "eciSy24V120", "label": "re-upload", "durationSec": 423 }
+      ]
+    },
+    {
+      "id": "celia-cruz-la-vida-es-un-carnaval",
+      "artist": "Celia Cruz",
+      "title": "La Vida Es un Carnaval",
+      "bpm": 104,
+      "durationSec": 279,
+      "categories": ["latino", "classics"],
+      "roles": ["steady"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "7Ho86ggAVrY", "label": "official/topic (Celia Cruz)", "durationSec": 279 },
+        { "id": "YnGZwcbfu28", "label": "official/topic (EVRgreenhitsVEVO)", "durationSec": 277 },
+        {
+          "id": "-ZmW1CzYWcY",
+          "label": "official/topic (SalsaInolvidableVEVO)",
+          "durationSec": 277
+        }
+      ]
+    },
+    {
+      "id": "shakira-whenever-wherever",
+      "artist": "Shakira",
+      "title": "Whenever, Wherever",
+      "bpm": 108,
+      "durationSec": 196,
+      "categories": ["latino", "pop"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "weRHyjj34ZE", "label": "official/topic (Shakira)", "durationSec": 196 },
+        { "id": "Z8kkn13XCTQ", "label": "re-upload", "durationSec": 196 },
+        { "id": "ZE2r97xRzHg", "label": "re-upload", "durationSec": 197 }
+      ]
+    },
+    {
+      "id": "glass-animals-heat-waves",
+      "artist": "Glass Animals",
+      "title": "Heat Waves",
+      "bpm": 81,
+      "durationSec": 235,
+      "categories": ["pop", "lofi"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "mRD0-GxqHVo", "label": "official/topic (Glass Animals)", "durationSec": 235 },
+        { "id": "rfTgO9rpqck", "label": "re-upload", "durationSec": 239 }
+      ]
+    },
+    {
+      "id": "bonobo-kong",
+      "artist": "Bonobo",
+      "title": "Kong",
+      "bpm": 94,
+      "durationSec": 238,
+      "categories": ["electronic", "lofi"],
+      "roles": ["steady"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "KMKeBpySf78", "label": "re-upload", "durationSec": 238 },
+        { "id": "lZbgyKJkHxQ", "label": "re-upload", "durationSec": 240 },
+        { "id": "g5ps2JUxKps", "label": "re-upload", "durationSec": 238 }
+      ]
+    },
+    {
+      "id": "coolio-gangsta-s-paradise",
+      "artist": "Coolio",
+      "title": "Gangsta's Paradise",
+      "bpm": 80,
+      "durationSec": 255,
+      "categories": ["hiphop"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "SQCSxqScSVQ", "label": "official/topic (Coolio)", "durationSec": 255 },
+        { "id": "fPO76Jlnz6c", "label": "re-upload", "durationSec": 256 },
+        { "id": "lkAzqLBGOi8", "label": "re-upload", "durationSec": 241 }
+      ]
+    },
+    {
+      "id": "gorillaz-clint-eastwood",
+      "artist": "Gorillaz",
+      "title": "Clint Eastwood",
+      "bpm": 168,
+      "durationSec": 341,
+      "categories": ["electronic", "hiphop"],
+      "roles": ["steady"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-22",
+      "youtube": [
+        {
+          "id": "hu-JryC9aC0",
+          "label": "official/topic (Gorillaz Official Music)",
+          "durationSec": 341
+        },
+        { "id": "K8jl7hBeYto", "label": "re-upload", "durationSec": 357 }
+      ]
+    },
+    {
+      "id": "eminem-lose-yourself",
+      "artist": "Eminem",
+      "title": "Lose Yourself",
+      "bpm": 171,
+      "durationSec": 328,
+      "categories": ["hiphop"],
+      "roles": ["steady", "intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "7YuAzR2XVAM", "label": "official/topic (EminemExplicit)", "durationSec": 328 },
+        { "id": "xFYQQPAOz7Y", "label": "official/topic (EminemMusic)", "durationSec": 328 },
+        { "id": "8_uUQxC5X-c", "label": "re-upload", "durationSec": 323 }
+      ]
+    },
+    {
+      "id": "katy-perry-dark-horse",
+      "artist": "Katy Perry",
+      "title": "Dark Horse",
+      "bpm": 132,
+      "durationSec": 216,
+      "categories": ["pop", "hiphop"],
+      "roles": ["steady"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-22",
+      "youtube": [
+        { "id": "ONb4aTtG6Ps", "label": "official/topic (Katy Perry)", "durationSec": 216 },
+        { "id": "mMv4RuoqEbo", "label": "re-upload", "durationSec": 224 },
+        { "id": "0KSOMA3QBU0", "label": "official/topic (KatyPerryVEVO)", "durationSec": 225 }
       ]
     }
   ]

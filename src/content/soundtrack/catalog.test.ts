@@ -24,20 +24,25 @@ const tracks: CatalogTrack[] = parseCatalog(raw).tracks;
 
 const inCategory = (c: MusicCategoryId) => tracks.filter((t) => t.categories.includes(c));
 const byArtist = (re: RegExp) => tracks.filter((t) => re.test(t.artist));
-const fits = (t: CatalogTrack, rpm: number) => matchBpm(t.bpm, rpm, { tolerance: BPM_CLOSE });
+/** Songs on the beat (a song without a clear beat has no tempo). */
+const onBeat = tracks.filter((t): t is CatalogTrack & { bpm: number } => t.bpm !== undefined);
+const fits = (t: CatalogTrack, rpm: number) =>
+  t.bpm !== undefined && matchBpm(t.bpm, rpm, { tolerance: BPM_CLOSE }) !== undefined;
 
-/** Fewest songs per category. The spec aims at 12; lo-fi (9), hip-hop and Latino (10) are short. */
-const MIN_PER_CATEGORY = 8;
-/** Polish songs are a fixed part of the mix. The approved list has 17 (the brief said 20). */
-const MIN_PL = 17;
+/** Fewest songs per category (spec §12). */
+const MIN_PER_CATEGORY = 12;
+/** Polish songs are a fixed part of the mix (18 today; the first brief said 20). */
+const MIN_PL = 18;
+/** Songs without a clear beat for the cool-down (spec §12: 8-10). */
+const MIN_BEATLESS = 8;
 /** Cadences the wizard plans for, every 5 rpm. */
 const RPMS = Array.from({ length: 14 }, (_, i) => 60 + i * 5); // 60..125
 /** Songs that fit each cadence across the catalog (exact, half or double time, 6% window). */
 const MIN_FITS_PER_RPM = 8;
 
 describe('soundtrack catalog: contract', () => {
-  it('is the approved selection: about 150 valid songs with no cross-entry problems', () => {
-    expect(tracks.length).toBeGreaterThanOrEqual(150);
+  it('is the approved selection and its additions: valid songs, no cross-entry problems', () => {
+    expect(tracks.length).toBeGreaterThanOrEqual(175);
     expect(catalogProblems(tracks)).toEqual([]);
   });
 
@@ -54,9 +59,11 @@ describe('soundtrack catalog: contract', () => {
   });
 
   it('keeps tempo and length plausible for a ride', () => {
-    for (const t of tracks) {
+    for (const t of onBeat) {
       expect(t.bpm, t.id).toBeGreaterThanOrEqual(50);
       expect(t.bpm, t.id).toBeLessThanOrEqual(200);
+    }
+    for (const t of tracks) {
       expect(t.durationSec, t.id).toBeGreaterThanOrEqual(120);
       expect(t.durationSec, t.id).toBeLessThanOrEqual(600);
     }
@@ -99,7 +106,7 @@ describe("soundtrack catalog: owner's rules", () => {
   });
 
   it('gives a song ridden at 105 rpm or faster only the intervals role', () => {
-    const fast = tracks.filter((t) => catalogRpm(t.bpm) >= ROLE_SPRINT_RPM);
+    const fast = onBeat.filter((t) => catalogRpm(t.bpm) >= ROLE_SPRINT_RPM);
     expect(fast.length).toBeGreaterThan(0);
     for (const t of fast) expect(t.roles, t.id).toEqual(['intervals']);
   });
@@ -111,7 +118,38 @@ describe("soundtrack catalog: owner's rules", () => {
       expect(t?.categories, id).toContain('electronic');
     }
     // House is four-on-the-floor at full speed: nothing slow under it.
-    for (const t of inCategory('house')) expect(t.bpm, t.id).toBeGreaterThanOrEqual(105);
+    for (const t of inCategory('house')) expect(t.bpm ?? 0, t.id).toBeGreaterThanOrEqual(105);
+  });
+
+  it(`has at least ${MIN_BEATLESS} clean songs without a clear beat for the cool-down`, () => {
+    const beatless = tracks.filter((t) => t.beat === 'none');
+    expect(beatless.length).toBeGreaterThanOrEqual(MIN_BEATLESS);
+    for (const t of beatless) {
+      expect(t.bpm, t.id).toBeUndefined();
+      expect(t.clean, t.id).toBe(true);
+      expect(t.energy, t.id).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it('keeps every cool-down song clean and calm', () => {
+    const cooldown = tracks.filter((t) => t.roles.includes('cooldown'));
+    expect(cooldown.length).toBeGreaterThanOrEqual(12);
+    for (const t of cooldown) {
+      expect(t.clean, t.id).toBe(true);
+      expect(t.energy, t.id).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it('has one or two long, calm, clean instrumental fallbacks (gap rule R4)', () => {
+    const fallback = tracks.filter((t) => t.traits?.includes('fallback'));
+    expect(fallback.length).toBeGreaterThanOrEqual(1);
+    expect(fallback.length).toBeLessThanOrEqual(2);
+    for (const t of fallback) {
+      expect(t.traits, t.id).toContain('instrumental');
+      expect(t.durationSec, t.id).toBeGreaterThanOrEqual(420);
+      expect(t.energy, t.id).toBeLessThanOrEqual(3);
+      expect(t.clean, t.id).toBe(true);
+    }
   });
 });
 
@@ -125,7 +163,7 @@ describe('soundtrack catalog: tempo coverage (spec §12)', () => {
 
   it('spreads the songs over the riding cadences, 60 to 129 rpm in steps of 10', () => {
     for (let lo = 60; lo < 130; lo += 10) {
-      const n = tracks.filter((t) => catalogRpm(t.bpm) >= lo && catalogRpm(t.bpm) < lo + 10).length;
+      const n = onBeat.filter((t) => catalogRpm(t.bpm) >= lo && catalogRpm(t.bpm) < lo + 10).length;
       expect(n, `${lo}-${lo + 9} rpm`).toBeGreaterThanOrEqual(20);
     }
   });
@@ -149,24 +187,11 @@ describe('soundtrack catalog: tempo coverage (spec §12)', () => {
 });
 
 /**
- * Category and cadence pairs with fewer than three fitting songs (see the test above). Hip-hop and
- * lo-fi are small and slow, nothing electronic sits at 160 or 80 BPM, Latino has few fast songs.
- * Adding songs should shrink this list; a new entry means a song that held a cadence was removed.
+ * Category and cadence pairs with fewer than three fitting songs (see the test above): hip-hop for
+ * slow climbs (130-150 BPM). Adding songs should shrink this list; a new entry means a song that
+ * held a cadence was removed.
  */
-const KNOWN_TEMPO_GAPS: string[] = [
-  'hiphop@65',
-  'hiphop@70',
-  'hiphop@75',
-  'lofi@75',
-  'electronic@80',
-  'hiphop@80',
-  'lofi@80',
-  'hiphop@85',
-  'lofi@85',
-  'hiphop@90',
-  'lofi@90',
-  'latino@105',
-];
+const KNOWN_TEMPO_GAPS: string[] = ['hiphop@65', 'hiphop@70', 'hiphop@75'];
 
 describe('soundtrack catalog with coverage() on built-in workouts', () => {
   const workout = (id: string) => {
@@ -187,8 +212,8 @@ describe('soundtrack catalog with coverage() on built-in workouts', () => {
 
   it('suggests the categories that fit the workout best', () => {
     const best = (id: string) => bestCategories(coverage(sectionsOf(workout(id)), tracks));
-    expect(best('high-cadence-drills')[0]).toBe('pop');
-    expect(best('music-climbs')).toEqual(['rock', 'classics']);
+    expect(best('high-cadence-drills')).toContain('pop');
+    expect(best('music-climbs')[0]).toBe('rock');
     expect(best('class-endurance-45')).toContain('electronic');
     expect(count('standing-climbs', 'electronic')).toBeGreaterThanOrEqual(5);
   });
@@ -207,13 +232,21 @@ describe('soundtrack catalog with coverage() on built-in workouts', () => {
     }
   });
 
-  it('leaves no built-in workout without a category, except the known mixed-cadence ones', () => {
-    // coverage() asks one song to fit 60% of the time; these alternate ~65 rpm climbs with
-    // ~87 rpm flats, so no single song does. The planner (PR 3) picks per section instead.
+  it('leaves no built-in workout without a category, mixed cadences included', () => {
     const none = builtinWorkouts
       .filter((w) => coverage(sectionsOf(w), tracks).every((c) => c.tracks === 0))
       .map((w) => w.id);
-    expect(none).toEqual(['big-gear-ladder', 'class-neon-grid-45', 'demo-mixed']);
+    expect(none).toEqual([]);
+    // These alternate ~65 rpm climbs with ~87 rpm flats: no song fits 60% of them, half does.
+    for (const id of ['class-neon-grid-45', 'big-gear-ladder', 'demo-mixed']) {
+      const s = sectionsOf(workout(id));
+      expect(bestCategories(coverage(s, tracks)).length, id).toBeGreaterThan(0);
+      const strict = coverage(s, tracks, MUSIC_CATEGORIES, { share: 0.6 });
+      expect(
+        strict.every((c) => c.tracks === 0),
+        id,
+      ).toBe(true);
+    }
   });
 
   it('has songs for every open section of every built-in workout', () => {
