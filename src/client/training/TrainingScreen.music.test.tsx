@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flattenWorkout } from '../../domain/segments';
-import type { SessionConfig } from '../../domain/settings';
+import { DEFAULT_SETTINGS, type SessionConfig, type Settings } from '../../domain/settings';
 import type { TrackRef, Workout } from '../../domain/workout';
 import { resetSettingsForTests } from '../data/useSettings';
 import { SpotifyError } from '../music/spotify/errors';
@@ -16,10 +16,11 @@ import {
 } from './session-store';
 import { TrainingScreen } from './TrainingScreen';
 
+const repoSettings = vi.hoisted(() => ({ value: undefined as Settings | undefined }));
 vi.mock('../data/repositories', () => ({
   getRepositories: () =>
     Promise.resolve({
-      settings: { get: () => Promise.resolve(undefined), put: () => Promise.resolve() },
+      settings: { get: () => Promise.resolve(repoSettings.value), put: () => Promise.resolve() },
     }),
 }));
 
@@ -103,6 +104,7 @@ beforeEach(() => {
   music.provider = createFakeMusicProvider({ kind: 'youtube' });
   music.created = 0;
   music.disposed = 0;
+  repoSettings.value = undefined;
   resetSettingsForTests();
   useLastResult.getState().clear();
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
@@ -234,6 +236,39 @@ describe('now playing, mute and warnings', () => {
     // Hiding is only a look: the track goes on.
     expect(screen.getByTestId('now-playing')).toHaveTextContent('Warm up jam');
     expect(music.provider.calls.filter((c) => c.type === 'pause')).toHaveLength(0);
+  });
+
+  describe('on a phone in portrait', () => {
+    const portrait = (on: boolean) =>
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        matches: on && query.includes('orientation: portrait'),
+        media: query,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }));
+
+    it('does not show the player until the rider switched it on', async () => {
+      portrait(true);
+      load(workoutWith({ fallbackPlaylist: [titled] }), true);
+      await renderScreen();
+      await startRunning();
+      expect(screen.getByTestId('music-dock')).toHaveAttribute('data-visible', 'false');
+      expect(screen.getByTestId('training-screen')).not.toHaveAttribute('data-player');
+      expect(screen.getByTestId('now-playing')).toBeInTheDocument();
+    });
+
+    it('shows it, with the HUD above it and without the corner label, when the setting says so', async () => {
+      portrait(true);
+      repoSettings.value = { ...DEFAULT_SETTINGS, showMusicPlayer: true };
+      resetSettingsForTests();
+      load(workoutWith({ fallbackPlaylist: [titled] }), true);
+      await renderScreen();
+      await startRunning();
+      await waitFor(() =>
+        expect(screen.getByTestId('music-dock')).toHaveAttribute('data-visible', 'true'),
+      );
+      expect(screen.getByTestId('training-screen')).toHaveAttribute('data-player', 'true');
+    });
   });
 
   it('has no player dock when the session has music off', async () => {

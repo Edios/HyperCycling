@@ -1,6 +1,14 @@
 import path from 'node:path';
 import type { Page, Route } from '@playwright/test';
 import { expect, test } from './fixtures';
+import {
+  matchMusicInSetup,
+  playerProblems,
+  showPlayer,
+  startRunningWithMusic,
+  stubYoutube,
+  wakeControls,
+} from './music-player';
 
 // Training screen geometry on phones and wide screens, with the now-playing chip on screen:
 // the chip is visible in every layout (portrait too), the control buttons are 1:1 circles of a
@@ -448,6 +456,103 @@ test('live sensors on overlay layouts (World): rows fit in every layout, also wi
       // Focus fades the HUD out between inputs; its corner HUD is Immersive, checked first.
       if ((await page.getByTestId('focus-layer').count()) === 0)
         bad.push(...(await sensorProblems(page, `${size.name} ${id}`)));
+      await page.keyboard.press('KeyH');
+    }
+  }
+  expect(bad).toEqual([]);
+});
+
+// ---- the YouTube music player on screen (Soundtrack Match): the HUD keeps its geometry ----
+
+/** Sizes with the player: the HUD gives way beside it (wide) or above it (portrait). */
+const PLAYER_VIEWPORTS = [
+  { width: 390, height: 844, name: 'phone-portrait' },
+  { width: 390, height: 734, name: 'phone-portrait-bar' },
+  { width: 360, height: 740, name: 'small-portrait' },
+  { width: 844, height: 390, name: 'phone-landscape' },
+  { width: 1280, height: 800, name: 'laptop' },
+];
+
+/** Basic or World ride of "Climbs to Music" with matched songs (YouTube, stubbed). */
+async function playerRide(
+  page: Page,
+  world: boolean,
+  beforeStart?: (page: Page) => Promise<void>,
+): Promise<void> {
+  await stubYoutube(page);
+  await matchMusicInSetup(page, 'tempo-30');
+  if (world) await page.getByRole('button', { name: /^World/ }).click();
+  if (beforeStart) await beforeStart(page);
+  await startRunningWithMusic(page);
+}
+
+async function playerSizes(
+  page: Page,
+  sizes: typeof PLAYER_VIEWPORTS,
+  label: string,
+  more?: (page: Page, size: (typeof PLAYER_VIEWPORTS)[number]) => Promise<string[]>,
+): Promise<string[]> {
+  const bad: string[] = [];
+  for (const size of sizes) {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await wakeControls(page);
+    await showPlayer(page);
+    await wakeControls(page);
+    await shot(page, `${size.name}-${label}-player`);
+    for (const p of await playerProblems(page)) bad.push(`${size.name} ${label}: ${p}`);
+    if (more) bad.push(...(await more(page, size)));
+  }
+  return bad;
+}
+
+test('music player on plain tiles (Basic): tiles, controls and timeline stay whole beside or above it', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+  test.setTimeout(180_000);
+  await playerRide(page, false);
+  expect(await playerSizes(page, PLAYER_VIEWPORTS, 'tiles')).toEqual([]);
+});
+
+test('music player with live sensors on plain tiles (Basic): power, cadence and HR rows stay whole', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+  test.setTimeout(240_000);
+  await installSensors(page);
+  await playerRide(page, false, connectSensorsAndRider);
+  await sensorsOn(page);
+  await expect(page.getByTestId('rpm-value')).toHaveAttribute('data-signal', 'live');
+  expect(await playerSizes(page, PLAYER_VIEWPORTS, 'tiles-sensors')).toEqual([]);
+});
+
+test('music player on overlay layouts (World): the controls and the timeline are never under it', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'pages', 'runs on the pages build only');
+  test.setTimeout(300_000);
+  await page.goto('about:blank');
+  const webgl = await page.evaluate(() => {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') ?? c.getContext('webgl'));
+  });
+  test.skip(!webgl, 'WebGL is not available in this headless browser');
+  await playerRide(page, true);
+  const bad: string[] = [];
+  for (const size of PLAYER_VIEWPORTS) {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    // Before the first layout: a Focus layout leaves the HUD inert, the switch needs a live one.
+    await showPlayer(page);
+    // H cycles the layouts (Corners, Column, Cockpit, Minimal, Focus).
+    for (let i = 0; i < 5; i += 1) {
+      await page.waitForTimeout(350);
+      const id = await page.locator('[data-testid^="layout-"]').first().getAttribute('data-testid');
+      await wakeControls(page);
+      await shot(page, `${size.name}-${id}-player`);
+      // Focus fades the HUD out between inputs; its corner HUD is Immersive, checked first.
+      if ((await page.getByTestId('focus-layer').count()) === 0) {
+        for (const p of await playerProblems(page)) bad.push(`${size.name} ${id}: ${p}`);
+      }
       await page.keyboard.press('KeyH');
     }
   }
