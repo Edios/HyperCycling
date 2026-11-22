@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { RideRecord } from '../../domain/ride';
 import { triggerDownload } from '../data/import-export';
 import { useT } from '../i18n';
@@ -6,6 +6,7 @@ import { formatClock } from '../training/format';
 import { rideFileName } from '../training/ride-recorder';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { Toggle } from '../ui/Toggle';
 import styles from './RideCard.module.css';
 
 const CHART_W = 600;
@@ -72,6 +73,23 @@ export function RideCard({ ride }: { ride: RideRecord }) {
   const download = () => {
     const blob = new Blob([JSON.stringify(ride, null, 2)], { type: 'application/json' });
     triggerDownload(blob, rideFileName(ride));
+  };
+  // The FIT file for Strava, Garmin Connect, intervals.icu...: built only when asked for, so the
+  // encoder is a separate chunk that does not weigh on the start of the app.
+  const [fitHr, setFitHr] = useState(true);
+  const hasHr = ride.samples.heartRate.some((v) => v !== null);
+  const downloadFit = async () => {
+    const { encodeRideToFit } = await import('../../domain/fit/encode-ride');
+    const start = new Date(ride.startedAt);
+    const bytes = encodeRideToFit(ride, {
+      includeHeartRate: hasHr && fitHr,
+      // Local time minus UTC at the start of the ride, in seconds.
+      utcOffsetSec: Number.isNaN(start.getTime()) ? 0 : -start.getTimezoneOffset() * 60,
+    });
+    triggerDownload(
+      new Blob([bytes as BlobPart], { type: 'application/vnd.ant.fit' }),
+      rideFileName(ride, 'fit'),
+    );
   };
   const dash = '—';
   return (
@@ -148,7 +166,19 @@ export function RideCard({ ride }: { ride: RideRecord }) {
         <Button onClick={download} data-testid="ride-download">
           {t('summary.ride.download')}
         </Button>
+        <Button onClick={() => void downloadFit()} data-testid="ride-download-fit">
+          {t('summary.ride.downloadFit')}
+        </Button>
         <span className={styles.privacy}>{t('summary.ride.privacy')}</span>
+      </div>
+      <div className={styles.fit} data-testid="ride-fit">
+        {hasHr && <Toggle label={t('summary.ride.fitHr')} checked={fitHr} onChange={setFitHr} />}
+        <p className={styles.fitHint}>
+          {t('summary.ride.fitHint')}{' '}
+          <a href="https://www.strava.com/upload/select" target="_blank" rel="noopener noreferrer">
+            {t('summary.ride.fitStrava')}
+          </a>
+        </p>
       </div>
     </Card>
   );

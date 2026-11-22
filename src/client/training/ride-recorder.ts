@@ -244,12 +244,15 @@ export function clearRideBuffer(): void {
   }
 }
 
-/** File name for one ride's JSON export, from its start time (local clock). */
-export function rideFileName(ride: Pick<RideRecord, 'startedAt'>): string {
+/** File name for one ride's export (JSON or FIT), from its start time (local clock). */
+export function rideFileName(
+  ride: Pick<RideRecord, 'startedAt'>,
+  extension: 'json' | 'fit' = 'json',
+): string {
   const d = new Date(ride.startedAt);
   const pad = (n: number) => String(n).padStart(2, '0');
   const stamp = Number.isNaN(d.getTime())
     ? 'ride'
     : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
-  return `hypercycling-ride-${stamp}.json`;
+  return `hypercycling-ride-${stamp}.${extension}`;
 }

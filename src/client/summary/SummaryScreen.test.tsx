@@ -342,6 +342,57 @@ describe('SummaryScreen', () => {
       expect(card).toHaveTextContent('Saved on this device only.');
     });
 
+    it('downloads the ride as a FIT file, with or without the heart rate', async () => {
+      useLastResult.getState().set(result({ logId: 'log-8', ride: recordedRide('log-8') }));
+      renderSummary();
+      await screen.findByTestId('summary-ride');
+      const create = vi.fn(() => 'blob:fit');
+      const urlBefore = {
+        createObjectURL: URL.createObjectURL,
+        revokeObjectURL: URL.revokeObjectURL,
+      };
+      Object.assign(URL, { createObjectURL: create, revokeObjectURL: vi.fn() });
+      const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+      const names: string[] = [];
+      const create2 = create as unknown as { mock: { calls: [Blob][] } };
+      const read = (blob: Blob) =>
+        new Promise<Uint8Array>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
+          reader.readAsArrayBuffer(blob);
+        });
+      const anchors = vi.spyOn(document, 'createElement').mockImplementation(((tag: string) => {
+        const el = Document.prototype.createElement.call(document, tag) as HTMLElement;
+        if (tag === 'a') {
+          Object.defineProperty(el, 'download', {
+            set: (v: string) => names.push(v),
+            get: () => '',
+          });
+        }
+        return el;
+      }) as typeof document.createElement);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Download FIT' }));
+      await waitFor(() => expect(click).toHaveBeenCalledTimes(1));
+      const withHr = await read(create2.mock.calls[0]![0]);
+      expect(String.fromCharCode(...withHr.slice(8, 12))).toBe('.FIT');
+      expect(names[0]).toMatch(/^hypercycling-ride-.*\.fit$/);
+
+      fireEvent.click(screen.getByRole('switch', { name: 'Heart rate in the FIT file' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Download FIT' }));
+      await waitFor(() => expect(click).toHaveBeenCalledTimes(2));
+      const withoutHr = await read(create2.mock.calls[1]![0]);
+      // One byte less per record (and in the laps and session): the heart rate is really gone.
+      expect(withoutHr.length).toBeLessThan(withHr.length);
+      expect(screen.getByRole('link', { name: 'Open the Strava upload page' })).toHaveAttribute(
+        'href',
+        'https://www.strava.com/upload/select',
+      );
+      anchors.mockRestore();
+      click.mockRestore();
+      Object.assign(URL, urlBefore);
+    });
+
     it('a ride without sensors shows no card and saves no ride', async () => {
       useLastResult.getState().set(result());
       renderSummary();

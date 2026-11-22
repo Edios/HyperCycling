@@ -84,6 +84,16 @@
   margin-top: 1rem;
 }
 
+.fit {
+  margin-top: 0.75rem;
+}
+
+.fitHint {
+  margin: 0.5rem 0 0;
+  color: var(--mut);
+  font-size: 0.8125rem;
+}
+
 .privacy {
   color: var(--mut);
   font-size: 0.8125rem;

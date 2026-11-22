@@ -164,6 +164,11 @@ export const pl: Messages = {
       zones: 'Czas w strefach tętna',
       zone: 'Strefa {n}',
       download: 'Pobierz jazdę (JSON)',
+      downloadFit: 'Pobierz FIT',
+      fitHr: 'Tętno w pliku FIT',
+      fitHint:
+        'Plik .fit wgrasz do Stravy, Garmin Connect (Importuj dane), intervals.icu i większości aplikacji treningowych.',
+      fitStrava: 'Otwórz stronę wgrywania na Stravie',
       privacy: 'Zapisane tylko na tym urządzeniu.',
     },
     experienceChapters: 'Przejechane części: {reached} z {total}',

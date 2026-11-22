@@ -195,6 +195,17 @@ test('ride recording: the summary shows the ride and downloads it as JSON (T6)',
   expect(ride.samples.timeMs).toHaveLength(ride.samples.power.length);
   expect(ride.samples.timeMs.every((t, i, all) => i === 0 || t > all[i - 1]!)).toBe(true);
   expect(ride.events.map((e) => e.kind)).toEqual(expect.arrayContaining(['pause', 'resume']));
+  // The same ride as a FIT file (Strava, Garmin Connect, intervals.icu).
+  const [fitDownload] = await Promise.all([
+    page.waitForEvent('download'),
+    card.getByRole('button', { name: 'Download FIT' }).click(),
+  ]);
+  expect(fitDownload.suggestedFilename()).toMatch(
+    /^hypercycling-ride-\d{4}-\d{2}-\d{2}-\d{4}\.fit$/,
+  );
+  const fit = readFileSync(await fitDownload.path());
+  expect(fit.subarray(8, 12).toString('ascii')).toBe('.FIT');
+  expect(fit.readUInt32LE(4) + 16).toBe(fit.length); // header 14 + data + CRC 2
   // Kept on the device: the IndexedDB store holds it under the session log id.
   const stored = await page.evaluate(
     () =>
