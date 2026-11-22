@@ -21,6 +21,7 @@ const ROUTES = [
   '#/settings',
   '#/how-it-works',
   '#/setup/demo-mixed',
+  '#/soundtrack/class-endurance-45',
   '#/editor/demo-mixed',
   '#/summary',
   '#/no-such-page',

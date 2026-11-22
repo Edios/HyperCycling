@@ -1,4 +1,5 @@
-import { effectiveMusicCues } from '../../domain/workout';
+import { effectiveMusicCues, totalDurationSec } from '../../domain/workout';
+import { MIN_WIZARD_SEC } from '../../domain/soundtrack-wizard';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { newId } from '../../domain/ids';
@@ -25,6 +26,8 @@ import { deadRecordings, type ResultMap } from '../music/preflight';
 import { useSpotifyConnected } from '../music/spotify/useSpotify';
 import { WORLD_CHOICES } from '../world/world-options';
 import { useSessionStore } from '../training/session-store';
+import { useSoundtrackSession } from '../soundtrack/session';
+import { useSoundtrackOverlay } from '../soundtrack/useSoundtrackOverlay';
 import { formatClock } from '../training/format';
 import { AppBar } from '../ui/AppBar';
 import { Button } from '../ui/Button';
@@ -164,7 +167,10 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   const [beeps, setBeeps] = useState(settings.sounds);
   const [coach, setCoach] = useState(settings.coach);
   // An Experience is built around its music, so it starts on; the rider can switch it off here.
-  const [music, setMusic] = useState(init.music);
+  // Music matched in this visit switches the ride's music on.
+  const [music, setMusic] = useState(
+    () => init.music || useSoundtrackSession.getState().plans[workout.id] !== undefined,
+  );
   const [world, setWorld] = useState<WorldSettingId>(init.world);
   const [adding, setAdding] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(readAdvancedOpen);
@@ -201,10 +207,17 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   );
 
   // The plan's session length and difficulty apply to what is shown and to what is ridden.
-  const scaled = useMemo(() => {
-    const base = plan ? applyPlanSettings(workout, planSettings) : workout;
-    return experience ? withUserMusic(base, experience, matched, chainOpts) : base;
-  }, [workout, plan, planSettings, experience, matched, chainOpts]);
+  const scaledBase = useMemo(
+    () => (plan ? applyPlanSettings(workout, planSettings) : workout),
+    [workout, plan, planSettings],
+  );
+  // The music matched in this visit ("Match music") goes on top; an Experience has its own.
+  const soundtrack = useSoundtrackOverlay(scaledBase, chainOpts);
+  const scaled = useMemo(
+    () =>
+      experience ? withUserMusic(scaledBase, experience, matched, chainOpts) : soundtrack.workout,
+    [scaledBase, experience, matched, chainOpts, soundtrack.workout],
+  );
   // The queue of every slot in the scenario's own order (main upload first): what the music check
   // judges, so a dead main upload shows as "backup only" and is not hidden by the re-ordering the
   // ride itself does with the known-dead recordings.
@@ -325,6 +338,12 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
       : t('setup.musicStatusOff');
   const bikeName = t(BIKE_LABEL[bikeKind]);
 
+  /** Opens the wizard on the ride as it is shown here (a plan's length and difficulty included). */
+  const openSoundtrack = (): void => {
+    useSoundtrackSession.getState().setWorkout(workout.id, scaledBase);
+    navigate(`/soundtrack/${encodeURIComponent(workout.id)}?from=setup`);
+  };
+
   const musicGroup = (
     <Group title={t('setup.group.music')} id="setup-music">
       <SettingRow>
@@ -335,6 +354,38 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
           disabled={!hasCues}
         />
       </SettingRow>
+      {!experience && totalDurationSec(scaledBase) >= MIN_WIZARD_SEC && (
+        <div
+          className={styles.matchRow}
+          data-testid="setup-soundtrack"
+          data-state={soundtrack.state}
+        >
+          <p className={styles.note}>
+            {soundtrack.state === 'ready'
+              ? t('soundtrack.setup.on', { songs: soundtrack.songs })
+              : soundtrack.state === 'stale'
+                ? t('soundtrack.setup.stale')
+                : soundtrack.state === 'loading'
+                  ? t('soundtrack.setup.loading')
+                  : soundtrack.state === 'error'
+                    ? t('soundtrack.setup.error')
+                    : t('soundtrack.setup.none')}
+          </p>
+          <div className={styles.matchActions}>
+            <Button onClick={openSoundtrack} data-testid="setup-match-music">
+              {soundtrack.state === 'none' ? t('soundtrack.entry') : t('soundtrack.setup.change')}
+            </Button>
+            {soundtrack.state !== 'none' && (
+              <Button
+                onClick={() => useSoundtrackSession.getState().clearPlan(workout.id)}
+                data-testid="setup-match-remove"
+              >
+                {t('soundtrack.setup.remove')}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
       {!hasCues && (
         <p className={styles.note} data-testid="music-hint">
           {t('setup.musicDisabled')}

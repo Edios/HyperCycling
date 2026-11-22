@@ -1,0 +1,431 @@
+/*
+ * "Match music" wizard. Light and calm, one accent (the Freestyle colour, on the main button only):
+ * no boxes around things, thin lines between stretches of the ride. Phone portrait is one column
+ * with a bar at the bottom; from 760 px wide (phone landscape, computer) the profile and the
+ * stretches sit in a left column and the steps in the right one.
+ */
+.page {
+  --acc: var(--free);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding-bottom: 5rem;
+  background: radial-gradient(ellipse at 70% -20%, #13203a 0%, var(--bg) 55%);
+  color: var(--fg);
+}
+
+[data-theme='light'] .page {
+  background: var(--bg);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 56px;
+  padding: 0 0.75rem;
+}
+
+.close {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--mut);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus-visible {
+  color: var(--fg);
+}
+
+.title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.375rem;
+  letter-spacing: 0.01em;
+}
+
+.stepNo {
+  color: var(--mut);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.layout {
+  flex: 1;
+  align-content: start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 62rem;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.workoutName {
+  margin: 0;
+  color: var(--mut);
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile {
+  height: 3.5rem;
+}
+
+.strip {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+}
+
+.stripPart {
+  min-width: 3px;
+  border-radius: 3px;
+  background: var(--z4);
+}
+
+.stripPart[data-role='warmup'],
+.stripPart[data-role='cooldown'] {
+  background: var(--z1);
+}
+
+.stripPart[data-role='tempo'] {
+  background: var(--z5);
+}
+
+.stripPart[data-role='hard'] {
+  background: var(--z8);
+}
+
+.stripPart[data-role='peak'] {
+  background: var(--z9);
+}
+
+.main {
+  min-width: 0;
+}
+
+.stepTitle {
+  margin: 0.25rem 0 0.75rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.75rem;
+  outline: none;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip.chip {
+  min-height: 44px;
+  padding: 0 1.125rem;
+  border-radius: 1.375rem;
+  font-size: 1.0625rem;
+}
+
+.dim {
+  opacity: 0.55;
+}
+
+.hint {
+  margin: 0.875rem 0 0;
+  color: var(--mut);
+  font-size: 1rem;
+}
+
+.continuity {
+  margin-top: 1.5rem;
+  max-width: 30rem;
+}
+
+.help {
+  margin: 0.5rem 0 0;
+  color: var(--mut);
+  font-size: 0.9375rem;
+}
+
+.notice {
+  color: var(--mut);
+  font-size: 1.0625rem;
+}
+
+.banner {
+  margin: 0 0 0.75rem;
+  color: var(--z7);
+  font-size: 1rem;
+}
+
+.parts {
+  display: flex;
+  flex-direction: column;
+}
+
+.part {
+  padding: 0.875rem 0 0.75rem;
+  border-top: 1px solid var(--line);
+  outline: none;
+}
+
+.part:first-child {
+  border-top: 0;
+}
+
+.part:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+}
+
+.partHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.partTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1875rem;
+}
+
+.lock,
+.replace {
+  flex: none;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--mut);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.lock[aria-pressed='true'] {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.lock:hover,
+.replace:hover,
+.lock:focus-visible,
+.replace:focus-visible {
+  color: var(--fg);
+}
+
+.songs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.song {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  align-items: center;
+  column-gap: 0.5rem;
+}
+
+.play {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--mut);
+  cursor: pointer;
+}
+
+.play:hover,
+.play:focus-visible,
+.play[aria-pressed='true'] {
+  color: var(--fg);
+}
+
+.songName {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.songName strong {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.songName small {
+  color: var(--mut);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.songMeta {
+  color: var(--mut);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.note {
+  margin: 0.25rem 0 0;
+  color: var(--mut);
+  font-size: 0.875rem;
+}
+
+.warn {
+  color: var(--z7);
+}
+
+.done {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.summary {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* A bar at the bottom, always in reach of a thumb. */
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  padding: 0.5rem 1rem;
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+}
+
+.bar > button {
+  height: 44px;
+  font-size: 1.125rem;
+  padding: 0 1.25rem;
+}
+
+.bar > button:first-child {
+  margin-right: auto;
+}
+
+/* The player of the preview: 200 x 200 px, above the bar on the right. */
+.dock {
+  position: fixed;
+  right: 1rem;
+  bottom: 4.25rem;
+  z-index: 24;
+}
+
+@media (min-width: 760px) {
+  .layout {
+    grid-template-columns: minmax(14rem, 20rem) minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .side {
+    position: sticky;
+    top: 0.75rem;
+  }
+
+  .profile {
+    height: 7.5rem;
+  }
+}
+
+/* A phone on its side: short, so the bar and the title are slim and the profile stays small. */
+@media (max-height: 460px) {
+  .page {
+    padding-bottom: 4rem;
+  }
+
+  .top {
+    min-height: 44px;
+  }
+
+  .profile {
+    height: 4rem;
+  }
+
+  .stepTitle {
+    font-size: 1.375rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .bar {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .dock {
+    bottom: 3.5rem;
+  }
+}
+
+/* A narrow phone: the tempo and the length go under the title. */
+@media (max-width: 480px) {
+  .song {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'play name replace'
+      '. meta meta';
+  }
+
+  .song .play {
+    grid-area: play;
+  }
+
+  .song .songName {
+    grid-area: name;
+  }
+
+  .song .songMeta {
+    grid-area: meta;
+    padding-bottom: 0.25rem;
+  }
+
+  .song .replace {
+    grid-area: replace;
+  }
+}

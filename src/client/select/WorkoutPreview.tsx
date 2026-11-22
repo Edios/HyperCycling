@@ -2,7 +2,9 @@ import { resolveResistanceMode } from '../../domain/settings';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { flattenWorkout } from '../../domain/segments';
-import type { Workout } from '../../domain/workout';
+import { MIN_WIZARD_SEC } from '../../domain/soundtrack-wizard';
+import { totalDurationSec, type Workout } from '../../domain/workout';
+import { useSoundtrackSession } from '../soundtrack/session';
 import { localizedText } from '../data/localized';
 import { useSettings } from '../data/useSettings';
 import { duplicateAndSave } from '../editor/duplicate';
@@ -102,6 +104,18 @@ export function WorkoutPreview({
         >
           {t('card.open')}
         </button>
+      )}
+      {totalDurationSec(workout) >= MIN_WIZARD_SEC && (
+        <Link
+          to={`/soundtrack/${encodeURIComponent(workout.id)}?from=select`}
+          className={styles.cardBtn}
+          data-testid="workout-match-music"
+          onClick={() => useSoundtrackSession.getState().setWorkout(workout.id, undefined)}
+        >
+          {workout.musicCues.length > 0 || workout.fallbackPlaylist.length > 0
+            ? t('soundtrack.entryChange')
+            : t('soundtrack.entry')}
+        </Link>
       )}
       {card && (
         <Modal title={t('card.title')} onClose={() => setCard(false)}>

@@ -187,3 +187,9 @@
   font: inherit;
   cursor: pointer;
 }
+
+a.cardBtn {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}

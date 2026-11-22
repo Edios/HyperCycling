@@ -134,4 +134,8 @@ Pin music to blocks in the editor (a Spotify or YouTube link, optionally with a 
 - **Spotify**: plays through the Spotify app on your device; needs Premium and an active device. See [Spotify setup](spotify-setup.md).
 - **YouTube**: no sign-in, but the video must allow embedding.
 
+**Match music** picks songs for a workout from a built-in catalog of about 180 songs (links only: no audio is bundled). Open it from a workout's preview (Freestyle) or from the music row of the ride setup. Step 1: the kinds of music and **No gaps** or **Short gaps ok**. Step 2: the songs for each stretch of the ride, each with its tempo (a song at half tempo is marked), a 15-second preview, **Replace** for one song, **Lock** to keep a stretch when you **Shuffle**. Step 3: **To the ride** opens the setup with the songs on it. The match lives only until you close the app (saving it comes later).
+
+**Music player**: YouTube asks apps to show its player (at least 200 × 200 px, with the song title), so it is shown during a ride and in the song preview. Hide it with its own button, with the **Music player** switch in the quick settings during a ride, or under Settings → Music; hiding it is your own choice and your own responsibility under YouTube's terms, and the music still plays. The choice is remembered on this device.
+
 A track that cannot play gives one warning; the workout carries on. A YouTube _track_ (audio) is not the YouTube _background_ (video).

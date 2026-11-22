@@ -302,10 +302,19 @@ export function shuffleValue(seed: number, id: string): number {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
-/** Short hash of the workout's structure (block ids, repetitions, lengths), 8 hex digits. */
+/**
+ * Short hash of what the songs were chosen for, 8 hex digits: block ids, repetitions, lengths,
+ * cadence and effort. A workout changed in any of these gets another one (a plan made before is
+ * then "stale"); the name, the description and the music cues are not part of it.
+ */
 export function soundtrackFingerprint(w: Workout): string {
   let h = 0x811c9dc5;
-  for (const s of flattenWorkout(w)) h = fnv(`${s.blockId}#${s.rep}:${s.durationSec};`, h);
+  for (const s of flattenWorkout(w)) {
+    h = fnv(
+      `${s.blockId}#${s.rep}:${s.durationSec}:${s.rpm ?? '-'}:${s.effortStart}-${s.effortEnd};`,
+      h,
+    );
+  }
   return h.toString(16).padStart(8, '0');
 }
 
@@ -832,6 +841,8 @@ function planSection(
 
 interface Draft {
   section: MusicSection;
+  /** The rider locked this section: its planned songs are kept as they are. */
+  kept?: PlannedSection;
   candidates: Candidate[];
   relaxed: Relaxation[];
   /** Picked candidates in play order (indices into `candidates` or extra Polish candidates). */
@@ -841,6 +852,25 @@ interface Draft {
 export interface PlanOptions {
   /** Sections to plan (default `sectionsOf(workout)`); the wizard passes the ones it showed. */
   sections?: readonly MusicSection[];
+  /** Catalog ids of songs the rider threw out ("Replace"): they are never planned again. */
+  exclude?: ReadonlySet<string>;
+  /**
+   * Sections the rider locked, by section id: they keep their songs and the rest of the plan is
+   * built around them (a locked song is not played twice). A lock whose section changed in length,
+   * or whose songs are no longer in the catalog, is ignored.
+   */
+  keep?: ReadonlyMap<string, PlannedSection>;
+}
+
+/** The locked section as it was planned, when it still fits this section and the catalog. */
+function keptSection(
+  s: MusicSection,
+  kept: PlannedSection | undefined,
+  byId: ReadonlyMap<string, CatalogTrack>,
+): PlannedSection | undefined {
+  if (!kept || kept.sectionId !== s.id || kept.durationSec !== s.durationSec) return undefined;
+  if (kept.picks.length === 0 || kept.picks.some((p) => !byId.has(p.ref.id))) return undefined;
+  return kept;
 }
 
 interface PolishSwap {
@@ -916,6 +946,11 @@ export function planSoundtrack(
     near: neighboursOf(chosen),
   };
   const ride: RideState = { used: new Set(), artists: new Map(), supplements: 0 };
+  const catalogById = new Map(catalog.map((t) => [t.id, t]));
+  for (const id of opts.exclude ?? []) {
+    const t = catalogById.get(id);
+    if (t) ride.used.add(songKey(t));
+  }
   const seamless = prefs.continuity === 'seamless';
   const fallbackTracks = seamless
     ? catalog.filter((t) => t.traits?.includes('fallback') && t.clean)
@@ -925,10 +960,32 @@ export function planSoundtrack(
   // 1-3. Candidates and queues, section by section (the ride's songs are never repeated).
   const drafts: Draft[] = [];
   let prevArtist: string | undefined;
+  // Locked sections come first: their songs are taken before any other section picks, so a section
+  // planned earlier in the ride never repeats a song a later locked one keeps.
+  const keptFor = new Map<string, PlannedSection>();
+  let keptPolish = false;
+  for (const s of sections) {
+    const kept = s.locked ? undefined : keptSection(s, opts.keep?.get(s.id), catalogById);
+    if (!kept) continue;
+    keptFor.set(s.id, kept);
+    for (const p of kept.picks) {
+      const t = catalogById.get(p.ref.id) as CatalogTrack;
+      ride.used.add(songKey(t));
+      ride.artists.set(t.artist, (ride.artists.get(t.artist) ?? 0) + 1);
+      if (t.supplement) ride.supplements += 1;
+      if (t.pl) keptPolish = true;
+    }
+  }
   for (const s of sections) {
     if (s.locked) {
       drafts.push({ section: s, candidates: [], relaxed: [], queue: [] });
       prevArtist = undefined;
+      continue;
+    }
+    const kept = keptFor.get(s.id);
+    if (kept) {
+      prevArtist = catalogById.get(kept.picks[kept.picks.length - 1]?.ref.id ?? '')?.artist;
+      drafts.push({ section: s, kept, candidates: [], relaxed: [], queue: [] });
       continue;
     }
     const { candidates, relaxed, queue: q } = planSection(ctx, s, ride, prevArtist);
@@ -943,7 +1000,7 @@ export function planSoundtrack(
   }
 
   // 4. A Polish song in every ride.
-  ensurePolish(drafts, ctx, ride);
+  if (!keptPolish) ensurePolish(drafts, ctx, ride);
 
   // 5. Gaps, and the picks on the section's clock.
   const fallbackSec = fallbackTracks.reduce((sum, t) => sum + lengthOf(t), 0);
@@ -959,6 +1016,7 @@ export function planSoundtrack(
       role: s.role,
       rpm: s.rpmMean,
     };
+    if (d.kept) return d.kept;
     if (s.locked) {
       return {
         ...base,
@@ -1048,7 +1106,7 @@ export function planSoundtrack(
     v: 1,
     workoutId: workout.id,
     fingerprint: soundtrackFingerprint(workout),
-    prefs,
+    prefs: { ...prefs, categories: [...prefs.categories] },
     sections: planned,
     fallback,
   };

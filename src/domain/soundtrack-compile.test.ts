@@ -3,7 +3,7 @@ import type { EffortLevel } from './effort';
 import { musicAt } from './music-schedule';
 import { flattenWorkout } from './segments';
 import type { CatalogTrack } from './soundtrack-catalog';
-import { compilePlan } from './soundtrack-compile';
+import { compilePlan, withSoundtrack } from './soundtrack-compile';
 import {
   DEFAULT_SOUNDTRACK_PREFS,
   planSoundtrack,
@@ -220,5 +220,33 @@ describe('compilePlan', () => {
     // With short gaps allowed there is no fallback, so the silence stays.
     const gaps = planSoundtrack(long, thin, prefs({ continuity: 'gapsOk' }));
     expect(holes(long, gaps, thin).length).toBeGreaterThan(0);
+  });
+});
+
+describe('withSoundtrack', () => {
+  const own: TrackRef = { provider: 'youtube', id: 'abcdefghijk', title: 'Own', startAtSec: 0 };
+
+  it("lets the plan's cues win at the same block and repetition and keeps the others", () => {
+    const plan = planSoundtrack(ride, catalog, prefs());
+    const compiled = compilePlan(plan, ride, { catalog });
+    const keep = { blockId: 'elsewhere', rep: 1, track: own };
+    const replaced = { blockId: 'a', rep: 1, track: { ...own, id: 'zzzzzzzzzzz', title: 'Old' } };
+    const w = workout([steady('a', 480, 5, 90), steady('b', 360, 8, 65)], {
+      musicCues: [replaced, keep],
+      fallbackPlaylist: [own],
+    });
+    const out = withSoundtrack(w, compiled);
+    expect(out.musicCues).toContainEqual(keep);
+    expect(out.musicCues).not.toContainEqual(replaced);
+    expect(out.musicCues.filter((c) => c.blockId === 'a')).toHaveLength(1);
+    expect(out.musicCues).toHaveLength(compiled.cues.length + 1);
+    expect(out.fallbackPlaylist.map((t) => t.title)).toEqual(['Title fb', 'Own']);
+    // The workout itself is untouched.
+    expect(w.musicCues).toEqual([replaced, keep]);
+    expect(w.fallbackPlaylist).toEqual([own]);
+  });
+
+  it('returns the workout itself when the plan has no music', () => {
+    expect(withSoundtrack(ride, { cues: [], fallbackPlaylist: [] })).toBe(ride);
   });
 });
