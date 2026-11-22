@@ -1,0 +1,3031 @@
+{
+  "v": 1,
+  "tracks": [
+    {
+      "id": "kiss-i-was-made-for-lovin-you",
+      "artist": "Kiss",
+      "title": "I Was Made for Lovin' You",
+      "bpm": 128,
+      "durationSec": 259,
+      "categories": ["rock", "classics"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "4b89j6IacN0", "label": "official/topic (KISS)", "durationSec": 259 },
+        { "id": "X8OeMk6BDak", "label": "official/topic (ILoveItLoudByKISS)", "durationSec": 282 },
+        { "id": "lxDAmRRfkAY", "label": "re-upload", "durationSec": 267 }
+      ]
+    },
+    {
+      "id": "slipknot-wait-and-bleed",
+      "artist": "Slipknot",
+      "title": "Wait and Bleed",
+      "bpm": 186,
+      "durationSec": 155,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 93 (octave)",
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Uq0fNLbrz4U", "label": "official/topic (Slipknot)", "durationSec": 155 },
+        { "id": "dPhP6t8SkYY", "label": "official/topic (TheSlipknotVEVO)", "durationSec": 178 },
+        { "id": "Dfvu-hUNAzI", "label": "re-upload", "durationSec": 148 }
+      ]
+    },
+    {
+      "id": "audioslave-be-yourself",
+      "artist": "Audioslave",
+      "title": "Be Yourself",
+      "bpm": 117,
+      "durationSec": 282,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "WC5FdFlUcl0", "label": "official/topic (Audioslave)", "durationSec": 282 },
+        { "id": "EhrWnqWBINQ", "label": "re-upload", "durationSec": 282 },
+        { "id": "EnhIIGfOw4A", "label": "re-upload", "durationSec": 279 }
+      ]
+    },
+    {
+      "id": "linkin-park-crawling",
+      "artist": "Linkin Park",
+      "title": "Crawling",
+      "bpm": 105,
+      "durationSec": 217,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Gd9OhYroLN0", "label": "official/topic (Linkin Park)", "durationSec": 217 },
+        { "id": "WHiDn-hNr54", "label": "re-upload", "durationSec": 217 },
+        { "id": "vZ7nTHxWyOk", "label": "re-upload", "durationSec": 216 }
+      ]
+    },
+    {
+      "id": "rammstein-mein-herz-brennt",
+      "artist": "Rammstein",
+      "title": "Mein Herz brennt",
+      "bpm": 83,
+      "durationSec": 302,
+      "categories": ["rock"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "WXv31OmnKqQ", "label": "official/topic (Rammstein Official)", "durationSec": 302 },
+        { "id": "LosOd65D88M", "label": "official/topic (Rammstein Polska)", "durationSec": 301 },
+        { "id": "kCuIqKqTi0Q", "label": "official/topic (Rammstein UltraHD)", "durationSec": 306 }
+      ]
+    },
+    {
+      "id": "rammstein-deutschland",
+      "artist": "Rammstein",
+      "title": "Deutschland",
+      "bpm": 120,
+      "durationSec": 325,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "lcwpSlslpqg",
+          "label": "official/topic (Rammstein & Die Rächer )",
+          "durationSec": 325
+        },
+        { "id": "GRYdtfpow20", "label": "re-upload", "durationSec": 325 },
+        { "id": "YefJB7vMQv4", "label": "re-upload", "durationSec": 322 }
+      ]
+    },
+    {
+      "id": "system-of-a-down-hypnotize",
+      "artist": "System of a Down",
+      "title": "Hypnotize",
+      "bpm": 154,
+      "durationSec": 190,
+      "categories": ["rock"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "IUWTANDaUMY", "label": "re-upload", "durationSec": 190 },
+        { "id": "x_cX9ztftyw", "label": "re-upload", "durationSec": 191 }
+      ]
+    },
+    {
+      "id": "iron-maiden-run-to-the-hills",
+      "artist": "Iron Maiden",
+      "title": "Run to the Hills",
+      "bpm": 174,
+      "durationSec": 232,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "86URGgqONvA", "label": "official/topic (Iron Maiden)", "durationSec": 232 },
+        { "id": "Q3sJlr0kw8I", "label": "re-upload", "durationSec": 234 },
+        { "id": "5Nf7M9CvFuQ", "label": "re-upload", "durationSec": 240 }
+      ]
+    },
+    {
+      "id": "metallica-the-memory-remains",
+      "artist": "Metallica",
+      "title": "The Memory Remains",
+      "bpm": 72,
+      "durationSec": 279,
+      "categories": ["rock"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 144 (octave)",
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "RDN4awrpPQQ", "label": "official/topic (Metallica)", "durationSec": 279 },
+        { "id": "0H59ZIRnhmM", "label": "re-upload", "durationSec": 278 },
+        { "id": "DnJcB2NvOYU", "label": "re-upload", "durationSec": 278 }
+      ]
+    },
+    {
+      "id": "system-of-a-down-sugar",
+      "artist": "System of a Down",
+      "title": "Sugar",
+      "bpm": 131,
+      "durationSec": 153,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "ZMN37R3Yb8c", "label": "official/topic (System Of A Down)", "durationSec": 153 },
+        { "id": "0zW_Dt-SFR8", "label": "re-upload", "durationSec": 154 },
+        { "id": "jm0wsf4rEio", "label": "re-upload", "durationSec": 154 }
+      ]
+    },
+    {
+      "id": "ac-dc-back-in-black",
+      "artist": "AC/DC",
+      "title": "Back in Black",
+      "bpm": 94,
+      "durationSec": 254,
+      "categories": ["rock"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "pAgnJDJN4VA", "label": "official/topic (AC/DC)", "durationSec": 254 },
+        { "id": "XZG8lRU73jc", "label": "re-upload", "durationSec": 264 },
+        { "id": "XgWUDbYfNe4", "label": "re-upload", "durationSec": 255 }
+      ]
+    },
+    {
+      "id": "ac-dc-hells-bells",
+      "artist": "AC/DC",
+      "title": "Hells Bells",
+      "bpm": 108,
+      "durationSec": 310,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "etAIpkdhU9Q", "label": "official/topic (AC/DC)", "durationSec": 310 },
+        {
+          "id": "eub9HsDWKXs",
+          "label": "official/topic (Hells Bells - Topic)",
+          "durationSec": 311
+        },
+        { "id": "FK1jYJsfl7c", "label": "re-upload", "durationSec": 312 }
+      ]
+    },
+    {
+      "id": "ac-dc-rock-n-roll-train",
+      "artist": "AC/DC",
+      "title": "Rock 'n' Roll Train",
+      "bpm": 118,
+      "durationSec": 265,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "FrFvNphZ5BQ", "label": "official/topic (AC/DC)", "durationSec": 265 },
+        { "id": "fzz6a86t4oI", "label": "official/topic (Acey Dcey - Topic)", "durationSec": 260 },
+        {
+          "id": "iEC5gFNkrF4",
+          "label": "official/topic (Back in Black - Topic)",
+          "durationSec": 257
+        }
+      ]
+    },
+    {
+      "id": "ac-dc-whole-lotta-rosie",
+      "artist": "AC/DC",
+      "title": "Whole Lotta Rosie",
+      "bpm": 159,
+      "durationSec": 326,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "BL58K-3XGKs", "label": "official/topic (AC/DC)", "durationSec": 326 },
+        { "id": "LJakepFG-Mw", "label": "official/topic (AC/DC - Music)", "durationSec": 290 },
+        { "id": "V5XAXzWt5wc", "label": "re-upload", "durationSec": 340 }
+      ]
+    },
+    {
+      "id": "rancid-time-bomb",
+      "artist": "Rancid",
+      "title": "Time Bomb",
+      "bpm": 165,
+      "durationSec": 144,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "LxaA9_mzOz4",
+          "label": "official/topic (Epitaph Records i Rancid)",
+          "durationSec": 144
+        },
+        { "id": "KbeIUyqRs0k", "label": "official/topic (Rancid)", "durationSec": 144 },
+        { "id": "GvIBOlyAViU", "label": "official/topic (Rancid i jeszcze 2)", "durationSec": 155 }
+      ]
+    },
+    {
+      "id": "the-hives-main-offender",
+      "artist": "The Hives",
+      "title": "Main Offender",
+      "bpm": 136,
+      "durationSec": 155,
+      "categories": ["rock"],
+      "roles": ["steady", "intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "C_Ue3PVB4tw", "label": "re-upload", "durationSec": 155 },
+        { "id": "6CgC9BaHqXg", "label": "re-upload", "durationSec": 155 },
+        { "id": "PPkRyOmi598", "label": "re-upload", "durationSec": 155 }
+      ]
+    },
+    {
+      "id": "the-offspring-self-esteem",
+      "artist": "The Offspring",
+      "title": "Self Esteem",
+      "bpm": 105,
+      "durationSec": 258,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "EtNZnhxWLHo", "label": "official/topic (The Offspring)", "durationSec": 258 },
+        { "id": "Abrn8aVQ76Q", "label": "re-upload", "durationSec": 266 },
+        { "id": "eeWjzBHUdsI", "label": "re-upload", "durationSec": 260 }
+      ]
+    },
+    {
+      "id": "rise-against-prayer-of-the-refugee",
+      "artist": "Rise Against",
+      "title": "Prayer of the Refugee",
+      "bpm": 196,
+      "durationSec": 205,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "9-SQGOYOjxs", "label": "re-upload", "durationSec": 205 },
+        { "id": "0ltWrSrVUBU", "label": "re-upload", "durationSec": 210 },
+        { "id": "pOtNqDyyX2c", "label": "re-upload", "durationSec": 209 }
+      ]
+    },
+    {
+      "id": "nirvana-come-as-you-are",
+      "artist": "Nirvana",
+      "title": "Come as You Are",
+      "bpm": 120,
+      "durationSec": 224,
+      "categories": ["rock", "classics"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "vabnZ9-ex7o", "label": "official/topic (Nirvana)", "durationSec": 224 },
+        { "id": "Oyis5ENgOiw", "label": "official/topic (EarlyNirvana)", "durationSec": 229 },
+        { "id": "wClIzxUVTXU", "label": "re-upload", "durationSec": 219 }
+      ]
+    },
+    {
+      "id": "nirvana-smells-like-teen-spirit",
+      "artist": "Nirvana",
+      "title": "Smells Like Teen Spirit",
+      "bpm": 117,
+      "durationSec": 278,
+      "categories": ["rock", "classics"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "hTWKbfoikeg", "label": "official/topic (Nirvana)", "durationSec": 278 },
+        { "id": "q8sGURLcGK4", "label": "re-upload", "durationSec": 302 },
+        { "id": "4BB4V5JXoeM", "label": "re-upload", "durationSec": 301 }
+      ]
+    },
+    {
+      "id": "foals-inhaler",
+      "artist": "Foals",
+      "title": "Inhaler",
+      "bpm": 194,
+      "durationSec": 305,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 97 (octave)",
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "qJ_PMvjmC6M", "label": "official/topic (Foals)", "durationSec": 305 },
+        { "id": "RjLmpbdNJfU", "label": "re-upload", "durationSec": 300 }
+      ]
+    },
+    {
+      "id": "guns-n-roses-welcome-to-the-jungle",
+      "artist": "Guns N' Roses",
+      "title": "Welcome to the Jungle",
+      "bpm": 123,
+      "durationSec": 279,
+      "categories": ["rock", "classics"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "o1tj2zJ2Wvg", "label": "official/topic (Guns N' Roses)", "durationSec": 279 },
+        { "id": "9erLsEHAZRI", "label": "re-upload", "durationSec": 274 },
+        { "id": "CVVRdFuveW0", "label": "re-upload", "durationSec": 272 }
+      ]
+    },
+    {
+      "id": "green-day-wake-me-up-when-september-ends",
+      "artist": "Green Day",
+      "title": "Wake Me Up When September Ends",
+      "bpm": 105,
+      "durationSec": 286,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "pGhwBFYtn1s", "label": "official/topic (Green Day)", "durationSec": 286 },
+        { "id": "19TTDKDcZsY", "label": "re-upload", "durationSec": 285 },
+        { "id": "rdpBZ5_b48g", "label": "re-upload", "durationSec": 286 }
+      ]
+    },
+    {
+      "id": "guns-n-roses-sweet-child-o-mine",
+      "artist": "Guns N' Roses",
+      "title": "Sweet Child O' Mine",
+      "bpm": 125,
+      "durationSec": 371,
+      "categories": ["rock", "classics"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "23LT0E89m1s", "label": "official/topic (Guns N' Roses)", "durationSec": 371 },
+        { "id": "aEMool3DlIU", "label": "re-upload", "durationSec": 362 },
+        { "id": "X3LFWyTAeZs", "label": "re-upload", "durationSec": 353 }
+      ]
+    },
+    {
+      "id": "arctic-monkeys-do-i-wanna-know",
+      "artist": "Arctic Monkeys",
+      "title": "Do I Wanna Know?",
+      "bpm": 85,
+      "durationSec": 266,
+      "categories": ["rock"],
+      "roles": ["warmup", "climb"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "bpOSxM0rNPM",
+          "label": "official/topic (Official Arctic Monkeys)",
+          "durationSec": 266
+        },
+        { "id": "rB6mXBWrPXY", "label": "re-upload", "durationSec": 272 },
+        { "id": "F586JktJyEg", "label": "re-upload", "durationSec": 282 }
+      ]
+    },
+    {
+      "id": "foo-fighters-everlong",
+      "artist": "Foo Fighters",
+      "title": "Everlong",
+      "bpm": 158,
+      "durationSec": 251,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "hq0rZ3IiyWw", "label": "official/topic (Foo Fighters)", "durationSec": 251 },
+        { "id": "crOZk88eCcg", "label": "re-upload", "durationSec": 250 },
+        { "id": "5j4an9FlT_c", "label": "re-upload", "durationSec": 250 }
+      ]
+    },
+    {
+      "id": "muse-starlight",
+      "artist": "Muse",
+      "title": "Starlight",
+      "bpm": 122,
+      "durationSec": 245,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Pgum6OT_VH8", "label": "official/topic (Muse)", "durationSec": 245 },
+        { "id": "AkDRwk25qfg", "label": "official/topic (MuseMusicChannel)", "durationSec": 240 },
+        { "id": "J5Upu-X4mow", "label": "re-upload", "durationSec": 235 }
+      ]
+    },
+    {
+      "id": "muse-time-is-running-out",
+      "artist": "Muse",
+      "title": "Time Is Running Out",
+      "bpm": 118,
+      "durationSec": 241,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "O2IuJPh6h_A", "label": "official/topic (Muse)", "durationSec": 241 },
+        { "id": "JUHK_g41FCY", "label": "official/topic (MrMuseLyrics)", "durationSec": 236 },
+        { "id": "URYhXY5R0rQ", "label": "official/topic (MuseMusicChannel)", "durationSec": 236 }
+      ]
+    },
+    {
+      "id": "creedence-clearwater-revival-fortunate-son",
+      "artist": "Creedence Clearwater Revival",
+      "title": "Fortunate Son",
+      "bpm": 133,
+      "durationSec": 140,
+      "categories": ["rock", "classics"],
+      "roles": ["steady", "intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "qV4Q-RSQCq0", "label": "re-upload", "durationSec": 140 },
+        { "id": "x3gRj-_kam0", "label": "re-upload", "durationSec": 142 }
+      ]
+    },
+    {
+      "id": "soft-cell-tainted-love",
+      "artist": "Soft Cell",
+      "title": "Tainted Love",
+      "bpm": 143,
+      "durationSec": 160,
+      "categories": ["classics", "electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "IV1gR0WY7wY", "label": "official/topic (Soft Cell)", "durationSec": 160 },
+        { "id": "EWZxFSo-XZY", "label": "official/topic (Soft Cell)", "durationSec": 155 },
+        { "id": "xW78U6Gh76o", "label": "re-upload", "durationSec": 167 }
+      ]
+    },
+    {
+      "id": "alphaville-forever-young",
+      "artist": "Alphaville",
+      "title": "Forever Young",
+      "bpm": 137,
+      "durationSec": 227,
+      "categories": ["classics", "pop"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "FQ5vkgYPuJY",
+          "label": "official/topic (Alphaville (official))",
+          "durationSec": 227
+        },
+        {
+          "id": "oNjQXmoxiQ8",
+          "label": "official/topic (RHINO i Alphaville (official))",
+          "durationSec": 223
+        },
+        { "id": "t1TcDHrkQYg", "label": "re-upload", "durationSec": 218 }
+      ]
+    },
+    {
+      "id": "wham-wake-me-up-before-you-go-go",
+      "artist": "Wham!",
+      "title": "Wake Me Up Before You Go-Go",
+      "bpm": 81,
+      "durationSec": 233,
+      "categories": ["classics", "pop"],
+      "roles": ["steady"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "pIgZ7gMze7A", "label": "official/topic (WHAM!)", "durationSec": 233 },
+        { "id": "VlJFVMoV3QM", "label": "re-upload", "durationSec": 233 },
+        { "id": "YfAF92Z3iFw", "label": "re-upload", "durationSec": 234 }
+      ]
+    },
+    {
+      "id": "culture-club-karma-chameleon",
+      "artist": "Culture Club",
+      "title": "Karma Chameleon",
+      "bpm": 92,
+      "durationSec": 238,
+      "categories": ["classics", "pop"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "JmcA9LIIXWw", "label": "official/topic (Culture Club)", "durationSec": 238 },
+        { "id": "prvSSuQPd-8", "label": "re-upload", "durationSec": 245 },
+        { "id": "DrD2FV53SSM", "label": "re-upload", "durationSec": 235 }
+      ]
+    },
+    {
+      "id": "jennifer-rush-the-power-of-love",
+      "artist": "Jennifer Rush",
+      "title": "The Power of Love",
+      "bpm": 70,
+      "durationSec": 288,
+      "categories": ["classics"],
+      "roles": ["cooldown"],
+      "energy": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 139 (octave)",
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "mpJHhWtrYMM", "label": "official/topic (Jennifer Rush)", "durationSec": 288 },
+        { "id": "rKDaO7_Z5uM", "label": "re-upload", "durationSec": 268 },
+        { "id": "Pj9PWtcp_1g", "label": "re-upload", "durationSec": 256 }
+      ]
+    },
+    {
+      "id": "michael-jackson-black-or-white",
+      "artist": "Michael Jackson",
+      "title": "Black or White",
+      "bpm": 115,
+      "durationSec": 255,
+      "categories": ["classics", "pop"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "oBFSc75QNxo", "label": "official/topic (Michael Jackson)", "durationSec": 255 },
+        { "id": "ap1Rw4x68U0", "label": "re-upload", "durationSec": 256 }
+      ]
+    },
+    {
+      "id": "depeche-mode-never-let-me-down-again",
+      "artist": "Depeche Mode",
+      "title": "Never Let Me Down Again",
+      "bpm": 106,
+      "durationSec": 266,
+      "categories": ["classics", "electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "snILjFUkk_A", "label": "official/topic (Depeche Mode)", "durationSec": 266 },
+        { "id": "EZMo-VCCI_s", "label": "re-upload", "durationSec": 262 },
+        { "id": "Wf8WeIxzsxg", "label": "re-upload", "durationSec": 288 }
+      ]
+    },
+    {
+      "id": "dzem-sen-o-victorii",
+      "artist": "Dżem",
+      "title": "Sen o Victorii",
+      "bpm": 57,
+      "durationSec": 344,
+      "categories": ["rock", "classics"],
+      "roles": ["climb"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 113 (octave)",
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "2xuq71bLtj8", "label": "official/topic (ZespolDzem)", "durationSec": 344 },
+        { "id": "mSjs6M1D50Y", "label": "re-upload", "durationSec": 342 }
+      ]
+    },
+    {
+      "id": "strachy-na-lachy-pila-tango",
+      "artist": "Strachy na Lachy",
+      "title": "Piła tango",
+      "bpm": 120,
+      "durationSec": 343,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "tktEGZNz7Bc",
+          "label": "official/topic (Strachy Na Lachy - Topic)",
+          "durationSec": 343
+        },
+        { "id": "cHisVqFqvIs", "label": "re-upload", "durationSec": 362 },
+        { "id": "b6cmVwcKQ7E", "label": "re-upload", "durationSec": 373 }
+      ]
+    },
+    {
+      "id": "hey-moja-i-twoja-nadzieja",
+      "artist": "Hey",
+      "title": "Moja i twoja nadzieja",
+      "bpm": 109,
+      "durationSec": 295,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "f5hooj3qKM4", "label": "official/topic (HEY)", "durationSec": 295 },
+        { "id": "evAGkIlBdq8", "label": "re-upload", "durationSec": 306 },
+        { "id": "Z83C8NKry9Q", "label": "re-upload", "durationSec": 295 }
+      ]
+    },
+    {
+      "id": "behemoth-ora-pro-nobis-lucifer",
+      "artist": "Behemoth",
+      "title": "Ora Pro Nobis Lucifer",
+      "bpm": 176,
+      "durationSec": 335,
+      "categories": ["rock"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": false,
+      "traits": ["long-intro"],
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "CQj7Omlqdi8", "label": "official/topic (Behemoth)", "durationSec": 335 },
+        {
+          "id": "nPjhYJ6PfIw",
+          "label": "official/topic (Behemoth Lyric Video)",
+          "durationSec": 336
+        },
+        { "id": "yosDDDAmE2g", "label": "re-upload", "durationSec": 335 }
+      ]
+    },
+    {
+      "id": "kult-polska",
+      "artist": "Kult",
+      "title": "Polska",
+      "bpm": 92,
+      "durationSec": 324,
+      "categories": ["rock", "classics"],
+      "roles": ["steady"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "7OqvMqKrbiQ", "label": "official/topic (Kult - Topic)", "durationSec": 324 },
+        { "id": "K0NHY7wNDuM", "label": "re-upload", "durationSec": 317 },
+        { "id": "180Mgpr8CfU", "label": "re-upload", "durationSec": 318 }
+      ]
+    },
+    {
+      "id": "republika-mamona",
+      "artist": "Republika",
+      "title": "Mamona",
+      "bpm": 113,
+      "durationSec": 212,
+      "categories": ["rock", "classics"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "-R7qqsT6-T8", "label": "official/topic (Republika)", "durationSec": 212 },
+        { "id": "7qa-A_o5NTY", "label": "re-upload", "durationSec": 219 },
+        { "id": "Ag8XdcITvuA", "label": "re-upload", "durationSec": 203 }
+      ]
+    },
+    {
+      "id": "happysad-zanim-pojde",
+      "artist": "Happysad",
+      "title": "Zanim pójdę",
+      "bpm": 140,
+      "durationSec": 249,
+      "categories": ["rock"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "tx4Dwj98KKI", "label": "official/topic (happysad)", "durationSec": 249 },
+        { "id": "iv9Z0dnjMzE", "label": "re-upload", "durationSec": 253 },
+        { "id": "RwqMTX-MK18", "label": "re-upload", "durationSec": 263 }
+      ]
+    },
+    {
+      "id": "myslovitz-miec-czy-byc",
+      "artist": "Myslovitz",
+      "title": "Mieć czy być",
+      "bpm": 138,
+      "durationSec": 197,
+      "categories": ["rock"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "5qmVoTcAAGc",
+          "label": "official/topic (Męskie Granie Orkiestra 2023 - Topic)",
+          "durationSec": 197
+        },
+        { "id": "NOMk4KwgYA8", "label": "official/topic (MyslovitzOfficial)", "durationSec": 192 },
+        { "id": "VCnPe5bBnAU", "label": "official/topic (Myslovitz Brasil)", "durationSec": 184 }
+      ]
+    },
+    {
+      "id": "maanam-kocham-cie-kochanie-moje",
+      "artist": "Maanam",
+      "title": "Kocham cię, kochanie moje",
+      "bpm": 174,
+      "durationSec": 294,
+      "categories": ["rock", "classics"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 87 (octave)",
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "9qRbjK4KPFc", "label": "official/topic (Maanam)", "durationSec": 294 },
+        { "id": "t-UZWWENs5A", "label": "official/topic (FanMaanam)", "durationSec": 291 },
+        {
+          "id": "1txu9gMbAck",
+          "label": "official/topic (Męskie Granie Orkiestra 2023 - Topic)",
+          "durationSec": 260
+        }
+      ]
+    },
+    {
+      "id": "wilki-baska",
+      "artist": "Wilki",
+      "title": "Baśka",
+      "bpm": 101,
+      "durationSec": 220,
+      "categories": ["rock"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "SCIvOsw0O-M", "label": "official/topic (Wilki)", "durationSec": 220 },
+        { "id": "6y_56-NzdEM", "label": "re-upload", "durationSec": 221 },
+        { "id": "Ys4yiMgfAUo", "label": "re-upload", "durationSec": 218 }
+      ]
+    },
+    {
+      "id": "bajm-biala-armia",
+      "artist": "Bajm",
+      "title": "Biała armia",
+      "bpm": 99,
+      "durationSec": 275,
+      "categories": ["pop", "classics"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "y2p2glq7dz0", "label": "official/topic (Bajm)", "durationSec": 275 },
+        { "id": "JflC-FfXX_k", "label": "re-upload", "durationSec": 254 },
+        { "id": "AAqRF5F2Kq0", "label": "re-upload", "durationSec": 274 }
+      ]
+    },
+    {
+      "id": "feel-jak-aniola-glos",
+      "artist": "Feel",
+      "title": "Jak anioła głos",
+      "bpm": 94,
+      "durationSec": 215,
+      "categories": ["pop"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "sF-Xpfno5Jo", "label": "official/topic (Feel)", "durationSec": 215 },
+        { "id": "k0hGYDD0KTI", "label": "re-upload", "durationSec": 206 },
+        { "id": "XGgfNFxbCWQ", "label": "re-upload", "durationSec": 213 }
+      ]
+    },
+    {
+      "id": "sylwia-grzeszczak-ksiezniczka",
+      "artist": "Sylwia Grzeszczak",
+      "title": "Księżniczka",
+      "bpm": 80,
+      "durationSec": 194,
+      "categories": ["pop"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "r_ADtyQqTSc", "label": "re-upload", "durationSec": 194 },
+        { "id": "EYKwNxN8X74", "label": "re-upload", "durationSec": 194 },
+        { "id": "qidKxqJHkms", "label": "re-upload", "durationSec": 182 }
+      ]
+    },
+    {
+      "id": "maryla-rodowicz-malgoska",
+      "artist": "Maryla Rodowicz",
+      "title": "Małgośka",
+      "bpm": 108,
+      "durationSec": 265,
+      "categories": ["pop", "classics"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "n6PKw9WYWhE", "label": "official/topic (Maryla Rodowicz)", "durationSec": 265 },
+        { "id": "4Ly2n4SwsQ8", "label": "re-upload", "durationSec": 261 },
+        { "id": "TjRpORufCpg", "label": "re-upload", "durationSec": 268 }
+      ]
+    },
+    {
+      "id": "doda-nie-daj-sie",
+      "artist": "Doda",
+      "title": "Nie daj się",
+      "bpm": 129,
+      "durationSec": 182,
+      "categories": ["pop"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "msgVMqjAU3c", "label": "official/topic (DodaMusic)", "durationSec": 182 },
+        { "id": "r6y1INYz7HE", "label": "official/topic (Doda)", "durationSec": 202 },
+        { "id": "g92IXeKaZ3I", "label": "re-upload", "durationSec": 186 }
+      ]
+    },
+    {
+      "id": "kaliber-44-konfrontacje",
+      "artist": "Kaliber 44",
+      "title": "Konfrontacje",
+      "bpm": 95,
+      "durationSec": 157,
+      "categories": ["hiphop"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "9Jiu6oJo2r8", "label": "re-upload", "durationSec": 157 },
+        { "id": "JKEXoY5iErk", "label": "re-upload", "durationSec": 157 },
+        { "id": "DQw-nbobZWE", "label": "re-upload", "durationSec": 174 }
+      ]
+    },
+    {
+      "id": "margaret-what-you-do",
+      "artist": "Margaret",
+      "title": "What You Do",
+      "bpm": 97,
+      "durationSec": 202,
+      "categories": ["pop", "electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "oHfKURVUCnc", "label": "official/topic (Margaret)", "durationSec": 202 },
+        { "id": "DiWasoZd5dk", "label": "re-upload", "durationSec": 185 },
+        { "id": "dakrbDYsO8U", "label": "re-upload", "durationSec": 177 }
+      ]
+    },
+    {
+      "id": "justice-alakazam",
+      "artist": "Justice",
+      "title": "Alakazam!",
+      "bpm": 119,
+      "durationSec": 312,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "JKPW_7hb2ek", "label": "official/topic (Justice)", "durationSec": 312 },
+        { "id": "voCZSVljCLU", "label": "re-upload", "durationSec": 312 }
+      ]
+    },
+    {
+      "id": "the-chemical-brothers-go",
+      "artist": "The Chemical Brothers",
+      "title": "Go",
+      "bpm": 120,
+      "durationSec": 261,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "AKZ1oa-LbjQ",
+          "label": "official/topic (The Chemical Brothers)",
+          "durationSec": 261
+        },
+        { "id": "FUA5MSIyUBk", "label": "re-upload", "durationSec": 254 },
+        { "id": "Q-RV06wt2-s", "label": "re-upload", "durationSec": 261 }
+      ]
+    },
+    {
+      "id": "justice-dvno",
+      "artist": "Justice",
+      "title": "DVNO",
+      "bpm": 120,
+      "durationSec": 236,
+      "categories": ["house", "electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "eLOtl3nLR7Q", "label": "official/topic (Justice)", "durationSec": 236 },
+        { "id": "KnhdGhxT3mg", "label": "official/topic (OfficielJustice)", "durationSec": 236 },
+        { "id": "7nWnLxYzuBE", "label": "re-upload", "durationSec": 236 }
+      ]
+    },
+    {
+      "id": "underworld-born-slippy-nuxx",
+      "artist": "Underworld",
+      "title": "Born Slippy .NUXX",
+      "bpm": 140,
+      "durationSec": 456,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "CkHdBf-8PZE", "label": "official/topic (Underworld)", "durationSec": 456 },
+        { "id": "ZpWIIyYFlEA", "label": "re-upload", "durationSec": 422 }
+      ]
+    },
+    {
+      "id": "justice-genesis",
+      "artist": "Justice",
+      "title": "Genesis",
+      "bpm": 117,
+      "durationSec": 235,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "VKzWLUQizz8", "label": "official/topic (Justice)", "durationSec": 235 },
+        { "id": "ThKNt-GY1ww", "label": "re-upload", "durationSec": 235 },
+        { "id": "y6iHYTjEyKU", "label": "re-upload", "durationSec": 235 }
+      ]
+    },
+    {
+      "id": "the-chemical-brothers-hey-boy-hey-girl",
+      "artist": "The Chemical Brothers",
+      "title": "Hey Boy Hey Girl",
+      "bpm": 127,
+      "durationSec": 291,
+      "categories": ["electronic"],
+      "roles": ["steady", "climb"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "lKVTVdK7SZA",
+          "label": "official/topic (The Chemical Brothers)",
+          "durationSec": 291
+        },
+        { "id": "u54YG1iOkKQ", "label": "re-upload", "durationSec": 291 },
+        { "id": "UBKiL1hCoWc", "label": "re-upload", "durationSec": 289 }
+      ]
+    },
+    {
+      "id": "the-prodigy-mindfields",
+      "artist": "The Prodigy",
+      "title": "Mindfields",
+      "bpm": 120,
+      "durationSec": 340,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "mbcVm8iepQE", "label": "official/topic (The Prodigy)", "durationSec": 340 },
+        { "id": "7lEB7V-KIb0", "label": "re-upload", "durationSec": 341 },
+        { "id": "pmmetRAmtRU", "label": "re-upload", "durationSec": 341 }
+      ]
+    },
+    {
+      "id": "fatboy-slim-gangster-trippin",
+      "artist": "Fatboy Slim",
+      "title": "Gangster Trippin",
+      "bpm": 102,
+      "durationSec": 320,
+      "categories": ["electronic"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "nH3vpEqYNI0", "label": "official/topic (Fatboy Slim)", "durationSec": 320 },
+        { "id": "xsNfb5z3P98", "label": "re-upload", "durationSec": 320 },
+        { "id": "b06cBKUSC8E", "label": "re-upload", "durationSec": 320 }
+      ]
+    },
+    {
+      "id": "the-prodigy-out-of-space",
+      "artist": "The Prodigy",
+      "title": "Out of Space",
+      "bpm": 146,
+      "durationSec": 299,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "RiF6KE455Ts", "label": "official/topic (The Prodigy)", "durationSec": 299 },
+        { "id": "kkjr3ug5zno", "label": "re-upload", "durationSec": 296 },
+        { "id": "AzGkiamRfso", "label": "re-upload", "durationSec": 298 }
+      ]
+    },
+    {
+      "id": "justice-phantom-pt-ii",
+      "artist": "Justice",
+      "title": "Phantom Pt II",
+      "bpm": 117,
+      "durationSec": 201,
+      "categories": ["house", "electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "5QCBkwmsOk0", "label": "official/topic (Justice)", "durationSec": 201 },
+        { "id": "ZR035Mhd58o", "label": "re-upload", "durationSec": 201 },
+        { "id": "Zxsu2-xcvNs", "label": "re-upload", "durationSec": 201 }
+      ]
+    },
+    {
+      "id": "the-chemical-brothers-star-guitar",
+      "artist": "The Chemical Brothers",
+      "title": "Star Guitar",
+      "bpm": 127,
+      "durationSec": 370,
+      "categories": ["electronic"],
+      "roles": ["climb"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "EJjr4x2HQOM",
+          "label": "official/topic (The Chemical Brothers)",
+          "durationSec": 370
+        },
+        { "id": "QrfGGdLDwYo", "label": "re-upload", "durationSec": 388 },
+        { "id": "kojgXjVPkLY", "label": "re-upload", "durationSec": 388 }
+      ]
+    },
+    {
+      "id": "the-chemical-brothers-do-it-again",
+      "artist": "The Chemical Brothers",
+      "title": "Do It Again",
+      "bpm": 124,
+      "durationSec": 323,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "47Ix20EWvm4", "label": "re-upload", "durationSec": 323 },
+        { "id": "fpNrYyGdi84", "label": "re-upload", "durationSec": 337 }
+      ]
+    },
+    {
+      "id": "the-prodigy-invaders-must-die",
+      "artist": "The Prodigy",
+      "title": "Invaders Must Die",
+      "bpm": 140,
+      "durationSec": 295,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "1T-sGC37XHE", "label": "re-upload", "durationSec": 295 },
+        { "id": "hGcF16G66RU", "label": "re-upload", "durationSec": 292 },
+        { "id": "FVGOXer7XbM", "label": "re-upload", "durationSec": 295 }
+      ]
+    },
+    {
+      "id": "the-chemical-brothers-galvanize",
+      "artist": "The Chemical Brothers",
+      "title": "Galvanize",
+      "bpm": 104,
+      "durationSec": 394,
+      "categories": ["electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "6b9ci_z4v7M", "label": "re-upload", "durationSec": 394 },
+        { "id": "IoLHNMgzWYA", "label": "re-upload", "durationSec": 394 }
+      ]
+    },
+    {
+      "id": "netsky-come-alive",
+      "artist": "Netsky",
+      "title": "Come Alive",
+      "bpm": 173,
+      "durationSec": 259,
+      "categories": ["electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "IS2zUCgaVbg", "label": "re-upload", "durationSec": 259 },
+        { "id": "2RjuSCBnVUs", "label": "re-upload", "durationSec": 250 },
+        { "id": "hxWhAsPDapI", "label": "re-upload", "durationSec": 250 }
+      ]
+    },
+    {
+      "id": "netsky-your-way",
+      "artist": "Netsky",
+      "title": "Your Way",
+      "bpm": 88,
+      "durationSec": 360,
+      "categories": ["electronic"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 176 (octave)",
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "rHpquZpx57A", "label": "official/topic (Netsky)", "durationSec": 360 },
+        { "id": "8JyY9WT4Mzk", "label": "official/topic (TnCVEVO)", "durationSec": 366 },
+        { "id": "U0azxS5FTpY", "label": "re-upload", "durationSec": 361 }
+      ]
+    },
+    {
+      "id": "metrik-freefall",
+      "artist": "Metrik",
+      "title": "Freefall",
+      "bpm": 174,
+      "durationSec": 240,
+      "version": "extended",
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "zbKnJSo_0sk", "label": "re-upload", "durationSec": 240 },
+        { "id": "mgUaxPv9Hv0", "label": "re-upload", "durationSec": 240 }
+      ]
+    },
+    {
+      "id": "sub-focus-close",
+      "artist": "Sub Focus",
+      "title": "Close",
+      "bpm": 125,
+      "durationSec": 233,
+      "categories": ["electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "_b4QiB0u-kw", "label": "official/topic (Sub Focus)", "durationSec": 233 },
+        { "id": "VPcYhxbJ8F0", "label": "official/topic (Sub Focus)", "durationSec": 246 }
+      ]
+    },
+    {
+      "id": "noisia-stigma",
+      "artist": "Noisia",
+      "title": "Stigma",
+      "bpm": 172,
+      "durationSec": 207,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "onLIQrJ7gMQ", "label": "re-upload", "durationSec": 207 },
+        { "id": "hq0uzbZtJvI", "label": "re-upload", "durationSec": 210 },
+        { "id": "UCHyzWshXS0", "label": "re-upload", "durationSec": 205 }
+      ]
+    },
+    {
+      "id": "sigma-glitterball",
+      "artist": "Sigma",
+      "title": "Glitterball",
+      "bpm": 140,
+      "durationSec": 231,
+      "categories": ["electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "DQF5aHVOW5s", "label": "re-upload", "durationSec": 231 },
+        { "id": "MoITo7Lwnq0", "label": "re-upload", "durationSec": 225 },
+        { "id": "BZt1yJXo7vU", "label": "re-upload", "durationSec": 226 }
+      ]
+    },
+    {
+      "id": "sub-focus-out-the-blue",
+      "artist": "Sub Focus",
+      "title": "Out the Blue",
+      "bpm": 174,
+      "durationSec": 266,
+      "categories": ["electronic"],
+      "roles": ["steady", "intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "M94oYsbBtx4", "label": "official/topic (Sub Focus)", "durationSec": 266 },
+        { "id": "ngTTh-Q6Bd0", "label": "re-upload", "durationSec": 256 },
+        { "id": "10VSC5hGbGM", "label": "re-upload", "durationSec": 276 }
+      ]
+    },
+    {
+      "id": "pendulum-visions",
+      "artist": "Pendulum",
+      "title": "Visions",
+      "bpm": 138,
+      "durationSec": 336,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": false,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "uluzEwwYOwg", "label": "official/topic (pendulumlive)", "durationSec": 336 },
+        { "id": "DUlcolMcRbU", "label": "official/topic (pendulumfanmusic)", "durationSec": 338 },
+        { "id": "jT5t-_gJ1Ic", "label": "re-upload", "durationSec": 336 }
+      ]
+    },
+    {
+      "id": "perturbator-humans-are-such-easy-prey",
+      "artist": "Perturbator",
+      "title": "Humans Are Such Easy Prey",
+      "bpm": 121,
+      "durationSec": 263,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Y8DekFFCE5c", "label": "re-upload", "durationSec": 263 },
+        { "id": "ouy1Y9XnP38", "label": "re-upload", "durationSec": 280 }
+      ]
+    },
+    {
+      "id": "lazerhawk-redline",
+      "artist": "Lazerhawk",
+      "title": "Redline",
+      "bpm": 115,
+      "durationSec": 244,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "1Ml3S48SBpg", "label": "official/topic (Lazerhawk - Topic)", "durationSec": 244 },
+        { "id": "-PKV79lug54", "label": "re-upload", "durationSec": 244 },
+        { "id": "MHaxiOzLams", "label": "re-upload", "durationSec": 244 }
+      ]
+    },
+    {
+      "id": "perturbator-miami-disco",
+      "artist": "Perturbator",
+      "title": "Miami Disco",
+      "bpm": 120,
+      "durationSec": 271,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "m1pveAcFv1Y", "label": "official/topic (Perturbator)", "durationSec": 271 },
+        { "id": "17Wmb823Mgc", "label": "re-upload", "durationSec": 271 },
+        { "id": "zbb-TGpJhKo", "label": "re-upload", "durationSec": 271 }
+      ]
+    },
+    {
+      "id": "college-a-real-hero",
+      "artist": "College & Electric Youth",
+      "title": "A Real Hero",
+      "bpm": 112,
+      "durationSec": 268,
+      "categories": ["electronic", "pop"],
+      "roles": ["intervals"],
+      "energy": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-21",
+      "youtube": [
+        { "id": "ucwSKBBFL8c", "label": "official/topic (College - Topic)", "durationSec": 268 },
+        { "id": "-DSVDcw6iW8", "label": "official/topic (Valerie Records)", "durationSec": 268 },
+        { "id": "BHgYtKkSEDA", "label": "official/topic (Electric Youth)", "durationSec": 268 }
+      ]
+    },
+    {
+      "id": "carpenter-brut-sunday-lunch",
+      "artist": "Carpenter Brut",
+      "title": "Sunday Lunch",
+      "bpm": 188,
+      "durationSec": 195,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 94 (octave)",
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "cCQa0MGQL5E", "label": "official/topic (Carpenter Brut)", "durationSec": 195 },
+        { "id": "asC30IXD_dM", "label": "re-upload", "durationSec": 196 },
+        { "id": "qSUGju6Yq34", "label": "re-upload", "durationSec": 196 }
+      ]
+    },
+    {
+      "id": "lazerhawk-overdrive",
+      "artist": "Lazerhawk",
+      "title": "Overdrive",
+      "bpm": 133,
+      "durationSec": 271,
+      "categories": ["electronic"],
+      "roles": ["steady", "climb"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "5dNP-a-XXx0", "label": "official/topic (Lazerhawk - Topic)", "durationSec": 271 },
+        { "id": "x1NAhlVRaZ4", "label": "re-upload", "durationSec": 274 },
+        { "id": "SG_0VX2IrNc", "label": "re-upload", "durationSec": 262 }
+      ]
+    },
+    {
+      "id": "gunship-fly-for-your-life",
+      "artist": "Gunship",
+      "title": "Fly for Your Life",
+      "bpm": 144,
+      "durationSec": 288,
+      "categories": ["electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 72 (octave)",
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Jv1ZN8c4_Gs", "label": "official/topic (GUNSHIPMUSIC)", "durationSec": 288 },
+        { "id": "A_uGDhgVTiU", "label": "re-upload", "durationSec": 280 },
+        { "id": "w4C3_vm5Q0M", "label": "re-upload", "durationSec": 276 }
+      ]
+    },
+    {
+      "id": "kavinsky-pacific-coast-highway",
+      "artist": "Kavinsky",
+      "title": "Pacific Coast Highway",
+      "bpm": 120,
+      "durationSec": 378,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "-5FKNViujeM",
+          "label": "official/topic (Record Makers i KAVINSKY)",
+          "durationSec": 378
+        },
+        { "id": "V3ORddrsX2w", "label": "re-upload", "durationSec": 348 },
+        { "id": "-rhITAtWgck", "label": "re-upload", "durationSec": 328 }
+      ]
+    },
+    {
+      "id": "cascada-everytime-we-touch",
+      "artist": "Cascada",
+      "title": "Everytime We Touch",
+      "bpm": 142,
+      "durationSec": 208,
+      "categories": ["electronic", "pop"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "LjZ2zwXbta4", "label": "official/topic (CASCADA)", "durationSec": 208 },
+        { "id": "zSkVHsOmjm4", "label": "official/topic (CASCADAmusic283)", "durationSec": 198 },
+        { "id": "4G6QDNC4jPs", "label": "re-upload", "durationSec": 215 }
+      ]
+    },
+    {
+      "id": "2-unlimited-no-limit",
+      "artist": "2 Unlimited",
+      "title": "No Limit",
+      "bpm": 141,
+      "durationSec": 224,
+      "categories": ["electronic", "classics"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "7kmEEkECFQw",
+          "label": "official/topic (2 Unlimited Official)",
+          "durationSec": 224
+        },
+        { "id": "fqa2mV6ffms", "label": "re-upload", "durationSec": 226 },
+        { "id": "jcewZ5Sk8_M", "label": "re-upload", "durationSec": 230 }
+      ]
+    },
+    {
+      "id": "gala-freed-from-desire",
+      "artist": "Gala",
+      "title": "Freed from Desire",
+      "bpm": 129,
+      "durationSec": 213,
+      "categories": ["electronic", "pop"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Qvu033SBMYU", "label": "official/topic (Gala)", "durationSec": 213 },
+        { "id": "p3l7fgvrEKM", "label": "re-upload", "durationSec": 214 },
+        { "id": "STtNdjBbN9M", "label": "re-upload", "durationSec": 212 }
+      ]
+    },
+    {
+      "id": "robert-miles-children",
+      "artist": "Robert Miles",
+      "title": "Children",
+      "bpm": 137,
+      "durationSec": 244,
+      "categories": ["electronic"],
+      "roles": ["steady", "cooldown"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "DvyCbevQbtI", "label": "official/topic (Robert Miles)", "durationSec": 244 },
+        { "id": "JQsmSx1HO-c", "label": "re-upload", "durationSec": 244 },
+        { "id": "3Gs25JNUFVs", "label": "re-upload", "durationSec": 245 }
+      ]
+    },
+    {
+      "id": "skrillex-make-it-bun-dem",
+      "artist": "Skrillex",
+      "title": "Make It Bun Dem",
+      "bpm": 105,
+      "durationSec": 218,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "BGpzGu9Yp6Y", "label": "official/topic (Skrillex)", "durationSec": 218 },
+        { "id": "CZbcsgfcvLk", "label": "re-upload", "durationSec": 215 },
+        { "id": "KhAOYTCFzDo", "label": "re-upload", "durationSec": 220 }
+      ]
+    },
+    {
+      "id": "marshmello-friends",
+      "artist": "Marshmello & Anne-Marie",
+      "title": "FRIENDS",
+      "bpm": 95,
+      "durationSec": 231,
+      "categories": ["electronic", "pop"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "jzD_yyEcp0M", "label": "official/topic (Marshmello)", "durationSec": 231 },
+        { "id": "kZHx41XPf5k", "label": "re-upload", "durationSec": 203 },
+        { "id": "ar9cTcQS2m4", "label": "re-upload", "durationSec": 205 }
+      ]
+    },
+    {
+      "id": "calvin-harris-one-kiss",
+      "artist": "Calvin Harris",
+      "title": "One Kiss",
+      "bpm": 124,
+      "durationSec": 223,
+      "categories": ["electronic", "pop"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "DkeiKbqa02g", "label": "official/topic (Calvin Harris)", "durationSec": 223 },
+        { "id": "oCab3KiXveY", "label": "re-upload", "durationSec": 214 },
+        { "id": "3VAKeNWygw8", "label": "re-upload", "durationSec": 223 }
+      ]
+    },
+    {
+      "id": "leftfield-phat-planet",
+      "artist": "Leftfield",
+      "title": "Phat Planet",
+      "bpm": 135,
+      "durationSec": 324,
+      "categories": ["electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "LDkmaNfBOtU", "label": "official/topic (Leftfield)", "durationSec": 324 },
+        { "id": "5GC_X_tI5kA", "label": "re-upload", "durationSec": 324 },
+        { "id": "UFpVTG-4jWw", "label": "re-upload", "durationSec": 323 }
+      ]
+    },
+    {
+      "id": "four-tet-angel-echoes",
+      "artist": "Four Tet",
+      "title": "Angel Echoes",
+      "bpm": 115,
+      "durationSec": 240,
+      "categories": ["electronic", "lofi"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["instrumental"],
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "FiBBcHZ84i8", "label": "official/topic (Four Tet)", "durationSec": 240 },
+        { "id": "Tpe4id7cLnU", "label": "re-upload", "durationSec": 241 },
+        { "id": "aqCbufC3Y48", "label": "re-upload", "durationSec": 241 }
+      ]
+    },
+    {
+      "id": "kygo-stole-the-show",
+      "artist": "Kygo",
+      "title": "Stole the Show",
+      "bpm": 100,
+      "durationSec": 224,
+      "categories": ["electronic", "pop"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "oNGkKNXdvHE", "label": "official/topic (100 % Kygo)", "durationSec": 224 },
+        { "id": "pTn5L44iaW0", "label": "re-upload", "durationSec": 224 },
+        { "id": "X0B7soD5mxE", "label": "re-upload", "durationSec": 224 }
+      ]
+    },
+    {
+      "id": "alan-walker-faded",
+      "artist": "Alan Walker",
+      "title": "Faded",
+      "bpm": 90,
+      "durationSec": 213,
+      "categories": ["electronic", "pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 180 (octave)",
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "psn_rs_a5O0", "label": "official/topic (Alan Walker)", "durationSec": 213 },
+        { "id": "1AtGxxIaOqM", "label": "re-upload", "durationSec": 213 },
+        { "id": "qdpXxGPqW-Y", "label": "re-upload", "durationSec": 213 }
+      ]
+    },
+    {
+      "id": "daft-punk-giorgio-by-moroder",
+      "artist": "Daft Punk",
+      "title": "Giorgio by Moroder",
+      "bpm": 113,
+      "durationSec": 554,
+      "categories": ["electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "zhl-Cs1-sG4", "label": "official/topic (Daft Punk)", "durationSec": 554 },
+        { "id": "lbwQ1ua_7Z8", "label": "re-upload", "durationSec": 545 },
+        { "id": "5m4ZkEqQrn0", "label": "re-upload", "durationSec": 545 }
+      ]
+    },
+    {
+      "id": "portishead-glory-box",
+      "artist": "Portishead",
+      "title": "Glory Box",
+      "bpm": 120,
+      "durationSec": 304,
+      "categories": ["electronic", "lofi"],
+      "roles": ["intervals"],
+      "energy": 1,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "6ylDDs3mdJE", "label": "re-upload", "durationSec": 304 },
+        { "id": "yAKX51r7erw", "label": "re-upload", "durationSec": 307 },
+        { "id": "NVuRbwnav_Y", "label": "re-upload", "durationSec": 306 }
+      ]
+    },
+    {
+      "id": "tycho-awake",
+      "artist": "Tycho",
+      "title": "Awake",
+      "bpm": 88,
+      "durationSec": 284,
+      "categories": ["electronic", "lofi"],
+      "roles": ["warmup", "cooldown"],
+      "energy": 2,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["instrumental", "loopable"],
+      "bpmNote": "sources say 176 (octave)",
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "W8VdVY8diqs", "label": "official/topic (Tycho)", "durationSec": 284 },
+        { "id": "6XJBDX3Z0BY", "label": "re-upload", "durationSec": 284 },
+        { "id": "yyhPl1o-g9E", "label": "re-upload", "durationSec": 281 }
+      ]
+    },
+    {
+      "id": "natasha-bedingfield-unwritten",
+      "artist": "Natasha Bedingfield",
+      "title": "Unwritten",
+      "bpm": 100,
+      "durationSec": 259,
+      "categories": ["pop"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "iKejQrGq04w",
+          "label": "official/topic (Natasha Bedingfield)",
+          "durationSec": 259
+        },
+        { "id": "jIpPWdAwSTw", "label": "re-upload", "durationSec": 260 },
+        { "id": "kRzI5M-AewQ", "label": "re-upload", "durationSec": 248 }
+      ]
+    },
+    {
+      "id": "carly-rae-jepsen-run-away-with-me",
+      "artist": "Carly Rae Jepsen",
+      "title": "Run Away with Me",
+      "bpm": 119,
+      "durationSec": 251,
+      "categories": ["pop", "electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "SSjS6pZ1-pI", "label": "official/topic (Carly Rae Jepsen)", "durationSec": 251 },
+        { "id": "OE2qEpkWWoQ", "label": "re-upload", "durationSec": 251 },
+        { "id": "UNT-nXCjpp4", "label": "re-upload", "durationSec": 252 }
+      ]
+    },
+    {
+      "id": "lorde-team",
+      "artist": "Lorde",
+      "title": "Team",
+      "bpm": 100,
+      "durationSec": 193,
+      "categories": ["pop"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "4g03b4U_aPk", "label": "official/topic (Lorde)", "durationSec": 193 },
+        { "id": "biUnzjsuehA", "label": "official/topic (Lorde Fan)", "durationSec": 196 },
+        { "id": "pYFNqa3f4wQ", "label": "re-upload", "durationSec": 194 }
+      ]
+    },
+    {
+      "id": "the-weeknd-blinding-lights",
+      "artist": "The Weeknd",
+      "title": "Blinding Lights",
+      "bpm": 171,
+      "durationSec": 203,
+      "categories": ["pop", "electronic"],
+      "roles": ["steady", "intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "fHI8X4OXluQ", "label": "official/topic (The Weeknd)", "durationSec": 203 },
+        { "id": "57__wGDUzig", "label": "re-upload", "durationSec": 206 },
+        { "id": "_sJcB3yKDQ0", "label": "re-upload", "durationSec": 202 }
+      ]
+    },
+    {
+      "id": "lewis-capaldi-someone-you-loved",
+      "artist": "Lewis Capaldi",
+      "title": "Someone You Loved",
+      "bpm": 110,
+      "durationSec": 183,
+      "categories": ["pop"],
+      "roles": ["intervals"],
+      "energy": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "xrcMgO2fgpA", "label": "official/topic (Lewis Capaldi)", "durationSec": 183 },
+        { "id": "lJVpE71Zwa4", "label": "re-upload", "durationSec": 180 },
+        { "id": "mWFGg2mQK8M", "label": "re-upload", "durationSec": 183 }
+      ]
+    },
+    {
+      "id": "hot-chip-over-and-over",
+      "artist": "Hot Chip",
+      "title": "Over and Over",
+      "bpm": 120,
+      "durationSec": 348,
+      "categories": ["electronic", "pop"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "E5dCourUiaY", "label": "official/topic (Hot Chip)", "durationSec": 348 },
+        { "id": "Z6GDggWPMQk", "label": "re-upload", "durationSec": 346 },
+        { "id": "RABJq4RgE6k", "label": "re-upload", "durationSec": 346 }
+      ]
+    },
+    {
+      "id": "charli-xcx-boom-clap",
+      "artist": "Charli XCX",
+      "title": "Boom Clap",
+      "bpm": 92,
+      "durationSec": 172,
+      "categories": ["pop"],
+      "roles": ["warmup"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "V5cacT50Xzs", "label": "re-upload", "durationSec": 172 },
+        { "id": "Ec5mb3KmbBI", "label": "re-upload", "durationSec": 169 }
+      ]
+    },
+    {
+      "id": "ariana-grande-7-rings",
+      "artist": "Ariana Grande",
+      "title": "7 rings",
+      "bpm": 140,
+      "durationSec": 179,
+      "categories": ["pop", "hiphop"],
+      "roles": ["steady"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "BMA8w5BHC98", "label": "official/topic (Ariana Grande)", "durationSec": 179 },
+        {
+          "id": "VUdPzrdXFIo",
+          "label": "official/topic (Ariana Grandi - Topic)",
+          "durationSec": 161
+        },
+        { "id": "WadSef4x9Vc", "label": "re-upload", "durationSec": 185 }
+      ]
+    },
+    {
+      "id": "the-weeknd-starboy",
+      "artist": "The Weeknd",
+      "title": "Starboy",
+      "bpm": 93,
+      "durationSec": 231,
+      "categories": ["pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": false,
+      "bpmNote": "sources say 186 (octave)",
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Rif-RTvmmss", "label": "official/topic (The Weeknd)", "durationSec": 231 },
+        { "id": "-rCONqo0QTs", "label": "re-upload", "durationSec": 231 },
+        { "id": "HR3NP_wxBl0", "label": "re-upload", "durationSec": 228 }
+      ]
+    },
+    {
+      "id": "rihanna-we-found-love",
+      "artist": "Rihanna",
+      "title": "We Found Love",
+      "bpm": 128,
+      "durationSec": 217,
+      "categories": ["pop", "electronic"],
+      "roles": ["steady", "climb"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "GchEVSx9XEA", "label": "official/topic (Rihanna)", "durationSec": 217 },
+        { "id": "FTGTpWH-Cq4", "label": "re-upload", "durationSec": 215 },
+        { "id": "75BT64NN4iQ", "label": "re-upload", "durationSec": 216 }
+      ]
+    },
+    {
+      "id": "passion-pit-take-a-walk",
+      "artist": "Passion Pit",
+      "title": "Take a Walk",
+      "bpm": 101,
+      "durationSec": 251,
+      "categories": ["pop", "electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "dZX6Q-Bj_xg", "label": "official/topic (Passion Pit)", "durationSec": 251 },
+        {
+          "id": "iabZLvfX5G0",
+          "label": "official/topic (AaronicStuff - Topic)",
+          "durationSec": 251
+        },
+        { "id": "0wMhhq7zwPc", "label": "re-upload", "durationSec": 263 }
+      ]
+    },
+    {
+      "id": "mark-ronson-uptown-funk",
+      "artist": "Mark Ronson",
+      "title": "Uptown Funk",
+      "bpm": 115,
+      "durationSec": 271,
+      "categories": ["pop", "classics"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "7Ya2U8XN_Zw", "label": "official/topic (Mark Ronson)", "durationSec": 271 },
+        { "id": "JZdKuz4lU14", "label": "official/topic (PEERAPAT VEVO)", "durationSec": 237 },
+        { "id": "i-FZAsWu-UI", "label": "re-upload", "durationSec": 272 }
+      ]
+    },
+    {
+      "id": "metronomy-the-look",
+      "artist": "Metronomy",
+      "title": "The Look",
+      "bpm": 85,
+      "durationSec": 278,
+      "categories": ["pop", "electronic"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "w-zgXwT8Yyo", "label": "official/topic (Metronomy)", "durationSec": 278 },
+        { "id": "iPKJUzkTt6Y", "label": "re-upload", "durationSec": 278 },
+        { "id": "0ivOmIXiu-Y", "label": "re-upload", "durationSec": 281 }
+      ]
+    },
+    {
+      "id": "carly-rae-jepsen-call-me-maybe",
+      "artist": "Carly Rae Jepsen",
+      "title": "Call Me Maybe",
+      "bpm": 120,
+      "durationSec": 199,
+      "categories": ["pop"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "fWNaR-rxAic", "label": "official/topic (Carly Rae Jepsen)", "durationSec": 199 },
+        { "id": "eHx--ZtG_Ds", "label": "re-upload", "durationSec": 195 },
+        { "id": "zZxm3zs2vrA", "label": "re-upload", "durationSec": 198 }
+      ]
+    },
+    {
+      "id": "cypress-hill-hand-on-the-pump",
+      "artist": "Cypress Hill",
+      "title": "Hand on the Pump",
+      "bpm": 98,
+      "durationSec": 237,
+      "categories": ["hiphop"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": false,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "xCENeJzJ030", "label": "official/topic (Cypress Hill)", "durationSec": 237 },
+        { "id": "WxioZi2EqUs", "label": "re-upload", "durationSec": 243 },
+        { "id": "AczqxfMLPf4", "label": "re-upload", "durationSec": 243 }
+      ]
+    },
+    {
+      "id": "house-of-pain-jump-around",
+      "artist": "House of Pain",
+      "title": "Jump Around",
+      "bpm": 107,
+      "durationSec": 216,
+      "categories": ["hiphop"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "jrL_LzX5wv4", "label": "re-upload", "durationSec": 216 },
+        { "id": "R44w-WxGDa8", "label": "re-upload", "durationSec": 216 },
+        { "id": "_Zs3PXZuZdY", "label": "re-upload", "durationSec": 214 }
+      ]
+    },
+    {
+      "id": "death-grips-get-got",
+      "artist": "Death Grips",
+      "title": "Get Got",
+      "bpm": 174,
+      "durationSec": 172,
+      "categories": ["hiphop", "electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": false,
+      "bpmNote": "sources say 87 (octave)",
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "HIrKSqb4H4A", "label": "official/topic (Death Grips)", "durationSec": 172 },
+        { "id": "K4IlWLt3758", "label": "re-upload", "durationSec": 172 },
+        { "id": "DXhUHj69VTM", "label": "re-upload", "durationSec": 172 }
+      ]
+    },
+    {
+      "id": "future-mask-off",
+      "artist": "Future",
+      "title": "Mask Off",
+      "bpm": 150,
+      "durationSec": 205,
+      "categories": ["hiphop"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "-68Y711xMGY", "label": "official/topic (Future)", "durationSec": 205 },
+        { "id": "B2RDwS9yNBE", "label": "re-upload", "durationSec": 191 },
+        { "id": "-YVlgXN7spw", "label": "re-upload", "durationSec": 201 }
+      ]
+    },
+    {
+      "id": "ice-cube-it-was-a-good-day",
+      "artist": "Ice Cube",
+      "title": "It Was a Good Day",
+      "bpm": 82,
+      "durationSec": 260,
+      "categories": ["hiphop"],
+      "roles": ["cooldown"],
+      "energy": 2,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "TdYvsN3Zn-g",
+          "label": "official/topic (Ice Cube / Cubevision)",
+          "durationSec": 260
+        },
+        { "id": "7reiN0f-Zkk", "label": "re-upload", "durationSec": 266 },
+        { "id": "X3HaZBlt7TA", "label": "re-upload", "durationSec": 260 }
+      ]
+    },
+    {
+      "id": "denzel-curry-ultimate",
+      "artist": "Denzel Curry",
+      "title": "ULTIMATE",
+      "bpm": 113,
+      "durationSec": 190,
+      "categories": ["hiphop"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "VR24Pfw7Ykw", "label": "official/topic (Denzel Curry)", "durationSec": 190 },
+        { "id": "97fFYsMbVvE", "label": "re-upload", "durationSec": 190 },
+        { "id": "dT8dmvAzIqA", "label": "re-upload", "durationSec": 188 }
+      ]
+    },
+    {
+      "id": "dj-snake-turn-down-for-what",
+      "artist": "DJ Snake",
+      "title": "Turn Down for What",
+      "bpm": 100,
+      "durationSec": 216,
+      "categories": ["hiphop", "electronic"],
+      "roles": ["steady"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "QFy0hQ3lY-w", "label": "official/topic (DJ Snake)", "durationSec": 216 },
+        { "id": "Fg7x_gA-BPk", "label": "re-upload", "durationSec": 213 },
+        { "id": "sUrIzrTRnU8", "label": "re-upload", "durationSec": 195 }
+      ]
+    },
+    {
+      "id": "lizzo-juice",
+      "artist": "Lizzo",
+      "title": "Juice",
+      "bpm": 120,
+      "durationSec": 201,
+      "categories": ["pop", "hiphop"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": false,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "XaCrQL_8eMY", "label": "official/topic (Lizzo Music)", "durationSec": 201 },
+        { "id": "R_21X8afPwk", "label": "re-upload", "durationSec": 196 },
+        { "id": "lDE10aD-Wds", "label": "re-upload", "durationSec": 207 }
+      ]
+    },
+    {
+      "id": "caribou-sun",
+      "artist": "Caribou",
+      "title": "Sun",
+      "bpm": 128,
+      "durationSec": 345,
+      "categories": ["electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "4Uez8NNFf9s", "label": "official/topic (Caribou)", "durationSec": 345 },
+        { "id": "22gZm-uWDUo", "label": "re-upload", "durationSec": 340 },
+        { "id": "Ldyt9aG5Y3c", "label": "re-upload", "durationSec": 345 }
+      ]
+    },
+    {
+      "id": "boys-noize-oh",
+      "artist": "Boys Noize",
+      "title": "Oh!",
+      "bpm": 124,
+      "durationSec": 306,
+      "categories": ["house", "electronic"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "NDlDmO9sMZM", "label": "official/topic (BOYS NOIZE)", "durationSec": 306 },
+        { "id": "wjthx1GKhUI", "label": "re-upload", "durationSec": 301 },
+        { "id": "6XXrR0n4K2A", "label": "re-upload", "durationSec": 306 }
+      ]
+    },
+    {
+      "id": "duke-dumont-ocean-drive",
+      "artist": "Duke Dumont",
+      "title": "Ocean Drive",
+      "bpm": 115,
+      "durationSec": 208,
+      "categories": ["house"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "KDxJlW6cxRk", "label": "official/topic (Duke Dumont)", "durationSec": 208 },
+        { "id": "R5QWTqWPXcA", "label": "re-upload", "durationSec": 210 },
+        { "id": "Ts2W0CkXfNQ", "label": "re-upload", "durationSec": 206 }
+      ]
+    },
+    {
+      "id": "axwell-ingrosso-more-than-you-know",
+      "artist": "Axwell Λ Ingrosso",
+      "title": "More Than You Know",
+      "bpm": 123,
+      "durationSec": 203,
+      "categories": ["house", "pop"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "jMhnv346Yb4", "label": "official/topic (Axwell Λ Ingrosso)", "durationSec": 203 },
+        { "id": "I_VhKeqDh7w", "label": "re-upload", "durationSec": 203 },
+        { "id": "9CIpDbruDzc", "label": "re-upload", "durationSec": 206 }
+      ]
+    },
+    {
+      "id": "swedish-house-mafia-save-the-world",
+      "artist": "Swedish House Mafia",
+      "title": "Save the World",
+      "bpm": 127,
+      "durationSec": 216,
+      "categories": ["house"],
+      "roles": ["climb"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "BXpdmKELE1k",
+          "label": "official/topic (Swedish House Mafia)",
+          "durationSec": 216
+        },
+        { "id": "8xPJ6dwofUw", "label": "official/topic (CheshireCatVEVO)", "durationSec": 212 },
+        { "id": "uPbEOxrnMhs", "label": "re-upload", "durationSec": 212 }
+      ]
+    },
+    {
+      "id": "disclosure-omen",
+      "artist": "Disclosure",
+      "title": "Omen",
+      "bpm": 106,
+      "durationSec": 240,
+      "categories": ["house", "electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "fB63ztKnGvo", "label": "official/topic (Disclosure)", "durationSec": 240 },
+        { "id": "g7zOn296GXo", "label": "re-upload", "durationSec": 240 }
+      ]
+    },
+    {
+      "id": "eric-prydz-opus",
+      "artist": "Eric Prydz",
+      "title": "Opus",
+      "bpm": 125,
+      "durationSec": 544,
+      "categories": ["house", "electronic"],
+      "roles": ["climb"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "iRA82xLsb_w", "label": "official/topic (Eric Prydz)", "durationSec": 544 },
+        { "id": "oo9y-ndmjrs", "label": "re-upload", "durationSec": 544 },
+        { "id": "jv18kaukcfk", "label": "re-upload", "durationSec": 547 }
+      ]
+    },
+    {
+      "id": "black-coffee-wish-you-were-here",
+      "artist": "Black Coffee",
+      "title": "Wish You Were Here",
+      "bpm": 120,
+      "durationSec": 272,
+      "categories": ["house"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "d347Ku7uOY8", "label": "official/topic (Black Coffee)", "durationSec": 272 },
+        { "id": "17zOUL27cJk", "label": "re-upload", "durationSec": 273 },
+        { "id": "N2UHZRp0uCo", "label": "re-upload", "durationSec": 273 }
+      ]
+    },
+    {
+      "id": "don-omar-dale-don-dale",
+      "artist": "Don Omar",
+      "title": "Dale Don Dale",
+      "bpm": 95,
+      "durationSec": 212,
+      "categories": ["latino"],
+      "roles": ["steady"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "0azur7j0-Ho", "label": "official/topic (Don Omar)", "durationSec": 212 },
+        { "id": "GXm-sDCY394", "label": "re-upload", "durationSec": 220 },
+        { "id": "HgCd6K8N61o", "label": "re-upload", "durationSec": 217 }
+      ]
+    },
+    {
+      "id": "becky-g-sin-pijama",
+      "artist": "Becky G",
+      "title": "Sin Pijama",
+      "bpm": 94,
+      "durationSec": 192,
+      "categories": ["latino"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "v-vEut6ksGU", "label": "official/topic (MusicVEVO)", "durationSec": 192 },
+        { "id": "zEf423kYfqk", "label": "official/topic (Becky G)", "durationSec": 216 },
+        { "id": "N6OaryDJfJE", "label": "re-upload", "durationSec": 189 }
+      ]
+    },
+    {
+      "id": "j-balvin-rojo",
+      "artist": "J Balvin",
+      "title": "Rojo",
+      "bpm": 86,
+      "durationSec": 151,
+      "categories": ["latino"],
+      "roles": ["warmup"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 172 (octave)",
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "ww0KHEDt0so", "label": "official/topic (J Balvin)", "durationSec": 151 },
+        {
+          "id": "mld2Kv1Qbvo",
+          "label": "official/topic (MusicaParaTodosVEVO)",
+          "durationSec": 151
+        },
+        { "id": "JWCp8oSvq_0", "label": "re-upload", "durationSec": 152 }
+      ]
+    },
+    {
+      "id": "anuel-aa-china",
+      "artist": "Anuel AA",
+      "title": "China",
+      "bpm": 105,
+      "durationSec": 302,
+      "categories": ["latino"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "0VR3dfZf9Yg", "label": "official/topic (Anuel AA)", "durationSec": 302 },
+        { "id": "8a9djdVlzg8", "label": "re-upload", "durationSec": 302 },
+        { "id": "kixoXCOKJFY", "label": "re-upload", "durationSec": 302 }
+      ]
+    },
+    {
+      "id": "anuel-aa-secreto",
+      "artist": "Anuel AA",
+      "title": "Secreto",
+      "bpm": 92,
+      "durationSec": 257,
+      "categories": ["latino"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "gFZfwWZV074", "label": "official/topic (Anuel AA)", "durationSec": 257 },
+        { "id": "woxNttkcj1U", "label": "re-upload", "durationSec": 272 },
+        { "id": "dnyswnBsoxA", "label": "re-upload", "durationSec": 260 }
+      ]
+    },
+    {
+      "id": "ozuna-se-preparo",
+      "artist": "Ozuna",
+      "title": "Se Preparó",
+      "bpm": 86,
+      "durationSec": 185,
+      "categories": ["latino"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 171 (octave)",
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "JSHPGB-IITc", "label": "official/topic (Ozuna)", "durationSec": 185 },
+        { "id": "G-kx4I_n8Zg", "label": "re-upload", "durationSec": 190 },
+        { "id": "BSmbhAd2JGk", "label": "re-upload", "durationSec": 188 }
+      ]
+    },
+    {
+      "id": "los-lobos-la-bamba",
+      "artist": "Los Lobos",
+      "title": "La Bamba",
+      "bpm": 157,
+      "durationSec": 175,
+      "categories": ["latino", "rock", "classics"],
+      "roles": ["intervals"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "8VB96Yl7jxk", "label": "official/topic (Los Lobos)", "durationSec": 175 },
+        { "id": "p4Uio4WlI10", "label": "re-upload", "durationSec": 174 },
+        { "id": "b2_ZPzbMvZA", "label": "re-upload", "durationSec": 173 }
+      ]
+    },
+    {
+      "id": "shakira-loca",
+      "artist": "Shakira",
+      "title": "Loca",
+      "bpm": 112,
+      "durationSec": 185,
+      "categories": ["latino", "pop"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "bdioIFdkLag", "label": "official/topic (AlexAraujoVEVO)", "durationSec": 185 },
+        { "id": "-UDdC9KZpwk", "label": "official/topic (Shakira)", "durationSec": 193 },
+        { "id": "RiJ-_LCWpyE", "label": "re-upload", "durationSec": 193 }
+      ]
+    },
+    {
+      "id": "santana-smooth",
+      "artist": "Santana",
+      "title": "Smooth",
+      "bpm": 116,
+      "durationSec": 256,
+      "categories": ["latino", "rock", "classics"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "6Whgn_iE5uc", "label": "official/topic (Santana)", "durationSec": 256 },
+        { "id": "EKtdBc-yNzE", "label": "re-upload", "durationSec": 305 },
+        { "id": "QcUxrpIwuQ4", "label": "re-upload", "durationSec": 298 }
+      ]
+    },
+    {
+      "id": "shakira-la-tortura",
+      "artist": "Shakira",
+      "title": "La Tortura",
+      "bpm": 100,
+      "durationSec": 225,
+      "categories": ["latino", "pop"],
+      "roles": ["warmup"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Dsp_8Lm1eSk", "label": "official/topic (Shakira)", "durationSec": 225 },
+        { "id": "QXx5Yf2IhRY", "label": "official/topic (AlexAraujoVEVO)", "durationSec": 213 },
+        { "id": "eBJL2Z11azM", "label": "re-upload", "durationSec": 212 }
+      ]
+    },
+    {
+      "id": "beach-house-space-song",
+      "artist": "Beach House",
+      "title": "Space Song",
+      "bpm": 74,
+      "durationSec": 290,
+      "categories": ["lofi"],
+      "roles": ["cooldown"],
+      "energy": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 147 (octave)",
+      "verified": "2026-11-19",
+      "youtube": [
+        {
+          "id": "dOBVhyIncGc",
+          "label": "official/topic (life illustrated - Topic)",
+          "durationSec": 290
+        },
+        { "id": "GAFwrXOsL68", "label": "re-upload", "durationSec": 321 },
+        { "id": "RBtlPT23PTM", "label": "re-upload", "durationSec": 321 }
+      ]
+    },
+    {
+      "id": "chet-faker-gold",
+      "artist": "Chet Faker",
+      "title": "Gold",
+      "bpm": 70,
+      "durationSec": 285,
+      "categories": ["lofi", "electronic"],
+      "roles": ["warmup"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 140 (octave)",
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "DoJtFI9R4tM", "label": "official/topic (Chet Faker)", "durationSec": 285 },
+        { "id": "yNEgfq_YlNw", "label": "re-upload", "durationSec": 267 },
+        { "id": "W66A-QsVme8", "label": "re-upload", "durationSec": 291 }
+      ]
+    },
+    {
+      "id": "tame-impala-borderline",
+      "artist": "Tame Impala",
+      "title": "Borderline",
+      "bpm": 98,
+      "durationSec": 238,
+      "categories": ["lofi", "pop"],
+      "roles": ["warmup"],
+      "energy": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "2g5xkLqIElU", "label": "official/topic (Tame Impala)", "durationSec": 238 },
+        { "id": "MXkZ-eeGs6A", "label": "re-upload", "durationSec": 274 },
+        { "id": "1_R-L6oxHvU", "label": "re-upload", "durationSec": 275 }
+      ]
+    },
+    {
+      "id": "tame-impala-let-it-happen",
+      "artist": "Tame Impala",
+      "title": "Let It Happen",
+      "bpm": 125,
+      "durationSec": 474,
+      "categories": ["lofi", "electronic"],
+      "roles": ["steady"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "-ed6UeDp1ek", "label": "official/topic (Tame Impala)", "durationSec": 474 },
+        { "id": "odeHP8N4LKc", "label": "official/topic (Tame Impala)", "durationSec": 471 },
+        { "id": "YqlLjeM0l_4", "label": "re-upload", "durationSec": 468 }
+      ]
+    },
+    {
+      "id": "beach-house-myth",
+      "artist": "Beach House",
+      "title": "Myth",
+      "bpm": 71,
+      "durationSec": 259,
+      "categories": ["lofi"],
+      "roles": ["cooldown"],
+      "energy": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 142 (octave)",
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Ciy9j_s7LfI", "label": "official/topic (beach house edits)", "durationSec": 259 },
+        { "id": "NyQ9p5S9jBk", "label": "re-upload", "durationSec": 259 },
+        { "id": "_2VoSSeas6A", "label": "re-upload", "durationSec": 259 }
+      ]
+    },
+    {
+      "id": "bonobo-black-sands",
+      "artist": "Bonobo",
+      "title": "Black Sands",
+      "bpm": 88,
+      "durationSec": 410,
+      "categories": ["lofi", "electronic"],
+      "roles": ["warmup"],
+      "energy": 2,
+      "beat": "steady",
+      "clean": true,
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "cTjF2_-bneM", "label": "re-upload", "durationSec": 410 },
+        { "id": "Ua2loiGHZ38", "label": "re-upload", "durationSec": 409 },
+        { "id": "wAel1HIdGSM", "label": "re-upload", "durationSec": 414 }
+      ]
+    },
+    {
+      "id": "michael-jackson-billie-jean",
+      "artist": "Michael Jackson",
+      "title": "Billie Jean",
+      "bpm": 117,
+      "durationSec": 296,
+      "categories": ["classics", "pop"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Zi_XLOBDo_Y", "label": "official/topic (Michael Jackson)", "durationSec": 296 },
+        { "id": "OZGtRvYF-A4", "label": "re-upload", "durationSec": 294 },
+        { "id": "K1uyJxPQNyA", "label": "re-upload", "durationSec": 294 }
+      ]
+    },
+    {
+      "id": "stevie-wonder-superstition",
+      "artist": "Stevie Wonder",
+      "title": "Superstition",
+      "bpm": 100,
+      "durationSec": 245,
+      "categories": ["classics"],
+      "roles": ["warmup"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "_O4yRbS_FoM", "label": "official/topic (Stevie Wonder)", "durationSec": 245 },
+        { "id": "7_tmeHCO1IM", "label": "re-upload", "durationSec": 240 },
+        { "id": "_zz1RzTDzoE", "label": "re-upload", "durationSec": 261 }
+      ]
+    },
+    {
+      "id": "kenny-loggins-danger-zone",
+      "artist": "Kenny Loggins",
+      "title": "Danger Zone",
+      "bpm": 157,
+      "durationSec": 213,
+      "categories": ["classics", "rock"],
+      "roles": ["climb"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "yK0P1Bk8Cx4", "label": "official/topic (Kenny Loggins)", "durationSec": 213 },
+        { "id": "E-WKakpHgAI", "label": "re-upload", "durationSec": 215 },
+        { "id": "lzXbTfgoMac", "label": "re-upload", "durationSec": 222 }
+      ]
+    },
+    {
+      "id": "cyndi-lauper-girls-just-want-to-have-fun",
+      "artist": "Cyndi Lauper",
+      "title": "Girls Just Want to Have Fun",
+      "bpm": 121,
+      "durationSec": 235,
+      "categories": ["classics", "pop"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "jRr5EasAq84", "label": "official/topic (Cyndi Lauper)", "durationSec": 235 },
+        {
+          "id": "biw4s8RQNn8",
+          "label": "official/topic (Rock & Roll Hall of Fame i Cyndi Lauper)",
+          "durationSec": 256
+        },
+        { "id": "eFVK1S0Lhf0", "label": "re-upload", "durationSec": 233 }
+      ]
+    },
+    {
+      "id": "mark-morrison-return-of-the-mack",
+      "artist": "Mark Morrison",
+      "title": "Return of the Mack",
+      "bpm": 95,
+      "durationSec": 226,
+      "categories": ["classics", "pop"],
+      "roles": ["warmup"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "uB1D9wWxd2w", "label": "official/topic (Mark Morrison)", "durationSec": 226 },
+        { "id": "r7YixhlZs4Q", "label": "re-upload", "durationSec": 210 },
+        { "id": "3jeJRUWW60o", "label": "re-upload", "durationSec": 216 }
+      ]
+    },
+    {
+      "id": "madonna-hung-up",
+      "artist": "Madonna",
+      "title": "Hung Up",
+      "bpm": 125,
+      "durationSec": 334,
+      "categories": ["classics", "pop", "electronic"],
+      "roles": ["steady", "climb"],
+      "energy": 5,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "EDwb9jOVRtU", "label": "official/topic (Madonna)", "durationSec": 334 },
+        { "id": "hv64p1E8aEk", "label": "official/topic (Madonna Music)", "durationSec": 339 },
+        { "id": "DXFGEIR1iD0", "label": "official/topic (MadonnaVal)", "durationSec": 376 }
+      ]
+    },
+    {
+      "id": "madonna-like-a-prayer",
+      "artist": "Madonna",
+      "title": "Like a Prayer",
+      "bpm": 111,
+      "durationSec": 337,
+      "categories": ["classics", "pop"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "79fzeNUqQbQ", "label": "official/topic (Madonna)", "durationSec": 337 },
+        { "id": "lPy9Jmfxe18", "label": "official/topic (Madonna CN)", "durationSec": 339 },
+        { "id": "oajPXDD0EP4", "label": "re-upload", "durationSec": 336 }
+      ]
+    },
+    {
+      "id": "a-ha-take-on-me",
+      "artist": "a-ha",
+      "title": "Take On Me",
+      "bpm": 169,
+      "durationSec": 244,
+      "categories": ["classics", "pop"],
+      "roles": ["steady", "intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "djV11Xbc914", "label": "official/topic (a-ha)", "durationSec": 244 },
+        { "id": "gRTm0Ej2mq8", "label": "re-upload", "durationSec": 228 },
+        { "id": "II4sfbrsdn4", "label": "re-upload", "durationSec": 225 }
+      ]
+    },
+    {
+      "id": "daft-punk-burnin",
+      "artist": "Daft Punk",
+      "title": "Burnin'",
+      "bpm": 124,
+      "durationSec": 414,
+      "categories": ["house", "electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "traits": ["long-intro"],
+      "gem": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "E2lGIsrhlGA", "label": "official/topic (Daft Punk)", "durationSec": 414 },
+        { "id": "YqZnGrz5h2w", "label": "re-upload", "durationSec": 414 },
+        { "id": "RFDfcnrwaPc", "label": "re-upload", "durationSec": 391 }
+      ]
+    },
+    {
+      "id": "daft-punk-get-lucky",
+      "artist": "Daft Punk",
+      "title": "Get Lucky",
+      "bpm": 116,
+      "durationSec": 372,
+      "categories": ["electronic", "pop"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "jPAt1dejQUA", "label": "official/topic (TheStruckFernVEVO)", "durationSec": 372 },
+        { "id": "DvE7O3bLQgE", "label": "re-upload", "durationSec": 368 },
+        { "id": "J1oQmd0MwgE", "label": "re-upload", "durationSec": 371 }
+      ]
+    },
+    {
+      "id": "daft-punk-around-the-world",
+      "artist": "Daft Punk",
+      "title": "Around the World",
+      "bpm": 121,
+      "durationSec": 430,
+      "categories": ["electronic", "house"],
+      "roles": ["intervals"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "dwDns8x3Jb4", "label": "official/topic (Daft Punk)", "durationSec": 430 },
+        { "id": "hQFgGvjMhcc", "label": "official/topic (Daft Punk)", "durationSec": 430 }
+      ]
+    },
+    {
+      "id": "daft-punk-da-funk",
+      "artist": "Daft Punk",
+      "title": "Da Funk",
+      "bpm": 111,
+      "durationSec": 329,
+      "categories": ["electronic", "house"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "PwILkY9gRrc", "label": "official/topic (Daft Punk)", "durationSec": 329 },
+        { "id": "JxI9xFrPtDE", "label": "official/topic (Daft Punk Stuff)", "durationSec": 328 },
+        { "id": "n1ZqN_VFhdo", "label": "re-upload", "durationSec": 330 }
+      ]
+    },
+    {
+      "id": "daft-punk-robot-rock",
+      "artist": "Daft Punk",
+      "title": "Robot Rock",
+      "bpm": 112,
+      "durationSec": 288,
+      "categories": ["electronic", "rock"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "HdeYwObD-j4", "label": "official/topic (Daft Punk)", "durationSec": 288 },
+        { "id": "giM3fpSIx7k", "label": "re-upload", "durationSec": 290 },
+        { "id": "Z-eJXne-cUs", "label": "re-upload", "durationSec": 288 }
+      ]
+    },
+    {
+      "id": "daft-punk-digital-love",
+      "artist": "Daft Punk",
+      "title": "Digital Love",
+      "bpm": 125,
+      "durationSec": 265,
+      "categories": ["electronic", "house"],
+      "roles": ["steady"],
+      "energy": 3,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "FxzBvqY5PP0", "label": "official/topic (Daft Punk)", "durationSec": 265 },
+        { "id": "4Pa0niQMJDA", "label": "official/topic (Daft Punk Stuff)", "durationSec": 298 },
+        { "id": "qt-y7-Ts-pg", "label": "re-upload", "durationSec": 240 }
+      ]
+    },
+    {
+      "id": "daft-punk-harder-better-faster-stronger",
+      "artist": "Daft Punk",
+      "title": "Harder, Better, Faster, Stronger",
+      "bpm": 123,
+      "durationSec": 225,
+      "categories": ["electronic", "house"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "yydNF8tuVmU", "label": "official/topic (Daft Punk)", "durationSec": 225 },
+        { "id": "JSXiqqsmBy4", "label": "re-upload", "durationSec": 224 },
+        { "id": "IQhOXv7Qf7A", "label": "re-upload", "durationSec": 220 }
+      ]
+    },
+    {
+      "id": "daft-punk-aerodynamic",
+      "artist": "Daft Punk",
+      "title": "Aerodynamic",
+      "bpm": 123,
+      "durationSec": 213,
+      "categories": ["house", "electronic"],
+      "roles": ["intervals"],
+      "energy": 4,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "live sources disagree",
+      "verified": "2026-11-19",
+      "youtube": [
+        { "id": "Mjpu0-o9iek", "label": "official/topic (Daft Punk)", "durationSec": 213 },
+        { "id": "DxFzX2N7_kQ", "label": "re-upload", "durationSec": 213 },
+        { "id": "EaKlExHC4H0", "label": "re-upload", "durationSec": 208 }
+      ]
+    }
+  ]
+}
