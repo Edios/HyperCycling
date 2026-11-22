@@ -82,14 +82,15 @@ import { useReducedMotion } from './useReducedMotion';
 import { useSessionLoop } from './useSessionLoop';
 import { buildTrainingView } from './view';
 import { buildLiveMeasures } from './live-measures';
-import { useLiveSnapshot } from '../devices/useDevices';
+import { useDeviceStore, useLiveSnapshot } from '../devices/useDevices';
+import { liveMetricsFor } from '../devices/live-metrics';
 import { useMePlayer } from '../settings/useMePlayer';
 import { ergTargetWatts, isSprint, powerLevel } from '../../domain/erg';
 import { useErg } from './useErg';
 import type { ExecutionTracker } from '../../domain/execution';
 import { useExecution } from './useExecution';
 import { useRideRecorder } from './useRideRecorder';
-import { buildRideRecord } from './ride-recorder';
+import { buildRideRecord, loadRideBlocks } from './ride-recorder';
 import type { RideEventKind } from '../../domain/ride';
 import { newId } from '../../domain/ids';
 import { hrTargetFor } from '../../domain/hr-zones';
@@ -326,32 +327,45 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const effortTable = settings.effortTable;
   // Execution score (D21), sampled every second (see useExecution): a block result shows when the
   // block ends, the total goes to the summary.
+  // A ride resumed after a reload or from another screen carries on with its kept recording.
+  const [resumedRide] = useState(() => state.status !== 'idle' || state.workoutElapsedSec > 0);
+  const [closedBefore] = useState(() => (resumedRide ? loadRideBlocks(runtime.workout.id) : []));
   const {
     tracker: execution,
     blockScore,
     blockResult,
     dismissBlockResult,
-  } = useExecution({
-    active: trainerMode && state.status === 'running',
-    segmentIndex: view?.index ?? -1,
-    powerW: liveSnapshot.powerW,
-    targetW,
-  });
+  } = useExecution(
+    {
+      active: trainerMode && state.status === 'running',
+      segmentIndex: view?.index ?? -1,
+      powerW: liveSnapshot.powerW,
+      targetW,
+    },
+    { closedBefore },
+  );
 
   // Ride recording (T6): power, cadence and HR every second of riding, with or without a trainer.
-  const [resumedRide] = useState(() => state.status !== 'idle' || state.workoutElapsedSec > 0);
+  // Power of each second from the raw readings (FIT / Coach), not the HUD's 3 s average.
+  const deviceStore = useDeviceStore();
+  const readPowerW = useCallback(() => liveMetricsFor(deviceStore).secondPowerW(), [deviceStore]);
   const ride = useRideRecorder(
     {
       status: state.status,
       trainerLink: liveSnapshot.trainer,
-      powerW: liveSnapshot.powerW,
+      readPowerW,
       cadenceRpm: liveSnapshot.cadenceRpm,
       hrBpm: liveSnapshot.hrBpm,
       targetW,
       segmentIndex: view?.index ?? 0,
       ergEnabled: trainerMode && ergSnap ? ergSnap.enabled : null,
     },
-    { workoutId: runtime.workout.id, resumed: resumedRide, pauseReasonRef: pauseReason },
+    {
+      workoutId: runtime.workout.id,
+      resumed: resumedRide,
+      pauseReasonRef: pauseReason,
+      blocks: () => execution.results(),
+    },
   );
 
   const trainerHud = useMemo(() => {

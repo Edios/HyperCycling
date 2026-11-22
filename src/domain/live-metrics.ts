@@ -91,3 +91,46 @@ export function judgeCadence(
   if (rpm > target + tolerance) return 'high';
   return 'ok';
 }
+
+/** A one-second power reading for the ride record: the time-weighted average of that second. */
+export const SECOND_POWER_WINDOW_MS = 1000;
+/** With no reading in the last second, the last reading still counts for this long. */
+export const SECOND_POWER_HOLD_MS = 2000;
+
+export interface SecondPower {
+  push(watts: number, atMs: number): void;
+  /**
+   * Power of the second ending at `nowMs` (not the 3 s HUD average, so a 1 s peak stays a peak);
+   * the last raw reading when a slow trainer sent nothing in that second; null after a longer gap.
+   */
+  value(nowMs: number): number | null;
+  reset(): void;
+}
+
+export function createSecondPower(): SecondPower {
+  const second = createPowerSmoother({ windowMs: SECOND_POWER_WINDOW_MS });
+  let last: { watts: number; atMs: number } | null = null;
+  return {
+    push(watts, atMs) {
+      second.push(watts, atMs);
+      if (
+        Number.isFinite(watts) &&
+        watts >= 0 &&
+        watts <= MAX_VALID_WATTS &&
+        Number.isFinite(atMs)
+      ) {
+        if (!last || atMs >= last.atMs) last = { watts, atMs };
+      }
+    },
+    value(nowMs) {
+      const v = second.value(nowMs);
+      if (v !== null) return Math.round(v);
+      if (last && nowMs - last.atMs <= SECOND_POWER_HOLD_MS) return Math.round(last.watts);
+      return null;
+    },
+    reset() {
+      second.reset();
+      last = null;
+    },
+  };
+}

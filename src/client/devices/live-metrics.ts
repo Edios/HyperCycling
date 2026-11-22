@@ -5,7 +5,7 @@
  */
 
 import type { SensorContact } from '../../domain/ble/hrs';
-import { createPowerSmoother, STALE_MS } from '../../domain/live-metrics';
+import { createPowerSmoother, createSecondPower, STALE_MS } from '../../domain/live-metrics';
 import type { DeviceKind, DeviceSlot, DeviceStore } from './device-store';
 
 /**
@@ -29,6 +29,8 @@ export interface LiveSnapshot {
 
 export interface LiveMetrics {
   getSnapshot(): LiveSnapshot;
+  /** Power of the last second (raw readings, not the 3 s average) for the ride record; null = none. */
+  secondPowerW(): number | null;
   subscribe(listener: () => void): () => void;
   dispose(): void;
 }
@@ -70,6 +72,7 @@ export function createLiveMetrics(
 ): LiveMetrics {
   const listeners = new Set<() => void>();
   const smoother = createPowerSmoother();
+  const secondPower = createSecondPower();
   let snapshot: LiveSnapshot = OFF_SNAPSHOT;
   let trainerAt: number | null = null;
   let hrAt: number | null = null;
@@ -118,6 +121,7 @@ export function createLiveMetrics(
       unsubscribe.trainer?.();
       watched.trainer = trainer;
       smoother.reset();
+      secondPower.reset();
       trainerAt = null;
       cadence = null;
       cadenceAt = null;
@@ -126,7 +130,10 @@ export function createLiveMetrics(
           trainerAt = reading.atMs;
           // This notification's own fields: a merged value may be old (split packets).
           const { powerW, cadenceRpm } = reading.packet;
-          if (powerW !== undefined) smoother.push(powerW, reading.atMs);
+          if (powerW !== undefined) {
+            smoother.push(powerW, reading.atMs);
+            secondPower.push(powerW, reading.atMs);
+          }
           if (cadenceRpm !== undefined) {
             cadence = cadenceRpm;
             cadenceAt = reading.atMs;
@@ -160,6 +167,12 @@ export function createLiveMetrics(
 
   return {
     getSnapshot: () => snapshot,
+    secondPowerW() {
+      if (watched.trainer === null) return null;
+      // Standing cranks are 0 W, as in the HUD.
+      if (cadence === 0 && cadenceAt !== null && now() - cadenceAt <= STALE_MS) return 0;
+      return secondPower.value(now());
+    },
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);

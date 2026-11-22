@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
-import type { RideEventKind } from '../../domain/ride';
+import type { RideBlock, RideEventKind } from '../../domain/ride';
 import type { EngineStatus } from '../../domain/session-engine';
 import type { LinkState } from '../devices/live-metrics';
 import {
@@ -8,6 +8,7 @@ import {
   loadRideBuffer,
   saveRideBuffer,
   type RideRecorder,
+  type RideSampleInput,
 } from './ride-recorder';
 
 /** How often the riding clock is checked; samples follow the clock, not this timer. */
@@ -21,7 +22,8 @@ export interface RideRecorderInput {
   status: EngineStatus;
   /** The trainer link: 'off' when there is no trainer. */
   trainerLink: LinkState;
-  powerW: number | null;
+  /** Power of the second just ended (raw readings, not the HUD's 3 s average); null = none. */
+  readPowerW: () => number | null;
   cadenceRpm: number | null;
   hrBpm: number | null;
   targetW: number | null;
@@ -39,12 +41,16 @@ export interface RideRecorderOptions {
    * cleared when the pause is recorded. Unset means the rider paused.
    */
   pauseReasonRef: MutableRefObject<RideEventKind | null>;
+  /** D21 results of the closed blocks, kept with the buffer for a reload. */
+  blocks?: () => readonly RideBlock[];
   sampleMs?: number;
   flushMs?: number;
 }
 
 export interface RideRecorderHandle {
   recorder: RideRecorder;
+  /** Where the D21 results of the closed blocks come from (kept with the buffer). */
+  setBlocks(read: () => readonly RideBlock[]): void;
   /** Copies the recording to session storage (nothing once finished). */
   flush(): void;
   /** The ride ended (or was left without saving): drop the reload buffer and stop keeping it. */
@@ -52,7 +58,12 @@ export interface RideRecorderHandle {
 }
 
 /** A resumed ride carries on with the kept buffer; a new one starts empty and drops it. */
-export function createRideSession(workoutId: string, resumed: boolean): RideRecorderHandle {
+export function createRideSession(
+  workoutId: string,
+  resumed: boolean,
+  initialBlocks: () => readonly RideBlock[] = () => [],
+): RideRecorderHandle {
+  let blocks = initialBlocks;
   const kept = resumed ? loadRideBuffer(workoutId) : undefined;
   if (!resumed) clearRideBuffer();
   const recorder = createRideRecorder(kept);
@@ -65,8 +76,11 @@ export function createRideSession(workoutId: string, resumed: boolean): RideReco
   let finished = false;
   return {
     recorder,
+    setBlocks(read) {
+      blocks = read;
+    },
     flush() {
-      if (!finished) saveRideBuffer(workoutId, recorder.data());
+      if (!finished) saveRideBuffer(workoutId, recorder.data(), blocks());
     },
     finish() {
       finished = true;
@@ -88,10 +102,19 @@ export function useRideRecorder(
   const sampleMs = options.sampleMs ?? RIDE_SAMPLE_MS;
   const flushMs = options.flushMs ?? RIDE_FLUSH_MS;
   const [handle] = useState(() => createRideSession(workoutId, resumed));
+  const { blocks } = options;
+  useEffect(() => {
+    if (blocks) handle.setBlocks(blocks);
+  });
   const { recorder } = handle;
   const latest = useRef(input);
   useEffect(() => {
     latest.current = input;
+  });
+  /** The live values at the moment a sample is taken. */
+  const [read] = useState(() => (): RideSampleInput => {
+    const { readPowerW, cadenceRpm, hrBpm, targetW, segmentIndex } = latest.current;
+    return { powerW: readPowerW(), cadenceRpm, hrBpm, targetW, segmentIndex };
   });
 
   // The riding clock runs with the ride; samples are added as it says they are due.
@@ -101,7 +124,7 @@ export function useRideRecorder(
     recorder.run();
     let savedAt = Date.now();
     const id = setInterval(() => {
-      recorder.catchUp(latest.current);
+      recorder.catchUp(read);
       if (Date.now() - savedAt >= flushMs) {
         savedAt = Date.now();
         handle.flush();
@@ -109,9 +132,9 @@ export function useRideRecorder(
     }, sampleMs);
     return () => {
       clearInterval(id);
-      recorder.halt(latest.current);
+      recorder.halt(read);
     };
-  }, [running, recorder, handle, sampleMs, flushMs]);
+  }, [running, recorder, handle, read, sampleMs, flushMs]);
 
   // Pause / resume (the riding clock has already stopped when this runs).
   const prevStatus = useRef<EngineStatus>(input.status);
@@ -140,9 +163,9 @@ export function useRideRecorder(
     const prev = prevLive.current;
     prevLive.current = live;
     if (prev === null || prev === live) return;
-    recorder.catchUp(latest.current);
+    recorder.catchUp(read);
     recorder.event(live ? 'signalBack' : 'signalLost');
-  }, [input.trainerLink, live, started, recorder]);
+  }, [input.trainerLink, live, started, recorder, read]);
 
   const prevErg = useRef<boolean | null>(null);
   useEffect(() => {
@@ -150,9 +173,9 @@ export function useRideRecorder(
     const prev = prevErg.current;
     prevErg.current = on;
     if (!started || on === null || prev === null || prev === on) return;
-    recorder.catchUp(latest.current);
+    recorder.catchUp(read);
     recorder.event(on ? 'ergOn' : 'ergOff');
-  }, [input.ergEnabled, started, recorder]);
+  }, [input.ergEnabled, started, recorder, read]);
 
   // Leaving the screen without ending (the ride can be resumed): keep what was recorded.
   useEffect(() => () => handle.flush(), [handle]);

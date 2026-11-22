@@ -28,17 +28,20 @@ export interface RideSampleInput {
   segmentIndex: number;
 }
 
+/** The live values, or a reader called only when a sample is due (a second's power is taken then). */
+export type LiveInput = RideSampleInput | (() => RideSampleInput);
+
 export interface RideRecorder {
   /** The ride runs (start or resume) from now on the riding clock. */
   run(): void;
   /** The ride stops running (pause, end, leaving): catch up first, then stop the riding clock. */
-  halt(input: RideSampleInput): void;
+  halt(input: LiveInput): void;
   /**
    * Adds every sample the riding clock says is due: the live values for the latest second and
    * null for seconds a late or throttled timer missed (a hidden tab), so the record keeps one
    * sample per real second of riding.
    */
-  catchUp(input: RideSampleInput): void;
+  catchUp(input: LiveInput): void;
   /** Something happened at the current second of riding (now, or at a known earlier time). */
   event(kind: RideEventKind, atMs?: number): void;
   data(): RideBuffer;
@@ -82,7 +85,7 @@ export function createRideRecorder(
     samples.targetW.push(input ? value(input.targetW) : null);
     samples.segmentIndex.push(Math.max(0, input?.segmentIndex ?? samples.segmentIndex.at(-1) ?? 0));
   };
-  const catchUp = (input: RideSampleInput): void => {
+  const catchUp = (live: LiveInput): void => {
     if (runStart === null) return;
     const t = now();
     const due = Math.floor((accMs + Math.max(0, t - runStart)) / SAMPLE_MS);
@@ -90,7 +93,7 @@ export function createRideRecorder(
     if (missing <= 0) return;
     // Seconds nobody sampled: no data (null), each at its own second of wall-clock time.
     for (let k = missing - 1; k >= 1; k--) push(stamp(t - k * SAMPLE_MS), null);
-    push(stamp(t), input);
+    push(stamp(t), typeof live === 'function' ? live() : live);
   };
   return {
     run() {
@@ -166,6 +169,8 @@ const BUFFER_KEY = 'hypercycling.rideBuffer';
 
 interface StoredBuffer extends RideBuffer {
   workoutId: string;
+  /** D21 results of the blocks closed so far, restored into the tracker after a reload. */
+  blocks?: RideBlock[];
 }
 
 function isBuffer(v: unknown): v is StoredBuffer {
@@ -182,9 +187,13 @@ function isBuffer(v: unknown): v is StoredBuffer {
 }
 
 /** Keeps the recording so a reload in the middle of a ride does not lose it. */
-export function saveRideBuffer(workoutId: string, buffer: RideBuffer): void {
+export function saveRideBuffer(
+  workoutId: string,
+  buffer: RideBuffer,
+  blocks: readonly RideBlock[] = [],
+): void {
   try {
-    const stored: StoredBuffer = { workoutId, ...buffer };
+    const stored: StoredBuffer = { workoutId, ...buffer, blocks: [...blocks] };
     sessionStorage.setItem(BUFFER_KEY, JSON.stringify(stored));
   } catch {
     // Storage full or blocked: the ride is still recorded in memory.
@@ -201,6 +210,29 @@ export function loadRideBuffer(workoutId: string): RideBuffer | undefined {
     return { originMs: parsed.originMs, samples: parsed.samples, events: parsed.events };
   } catch {
     return undefined;
+  }
+}
+
+/** The D21 block results kept with the buffer (empty when none or not valid). */
+export function loadRideBlocks(workoutId: string): RideBlock[] {
+  try {
+    const raw = readCompat(sessionStorage, BUFFER_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!isBuffer(parsed) || parsed.workoutId !== workoutId || !Array.isArray(parsed.blocks)) {
+      return [];
+    }
+    return parsed.blocks.filter(
+      (b): b is RideBlock =>
+        typeof b === 'object' &&
+        b !== null &&
+        Number.isInteger(b.segmentIndex) &&
+        typeof b.score === 'number' &&
+        typeof b.met === 'boolean' &&
+        typeof b.measuredSec === 'number',
+    );
+  } catch {
+    return [];
   }
 }
 

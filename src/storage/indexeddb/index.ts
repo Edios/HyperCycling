@@ -9,7 +9,14 @@ import type { Settings } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
 import { byId, schemas, validate, validateBundle } from '../validation';
 
-/** 1: first schema. 2: `rides` store (T6). */
+/**
+ * 1: first schema. 2: `rides` store (T6).
+ *
+ * Upgrades are one way: a browser that opened version 2 cannot be opened by an older build
+ * (VersionError). If a change is ever rolled back, never lower this number or remove an upgrade
+ * step; ship the rollback as a new, higher version instead. The same holds for the SQLite
+ * migrations (an older server refuses a newer database).
+ */
 const DB_VERSION = 2;
 const COLLECTIONS = ['workouts', 'players', 'planProgress', 'sessionLogs'] as const;
 type CollectionName = (typeof COLLECTIONS)[number] | 'rides';
