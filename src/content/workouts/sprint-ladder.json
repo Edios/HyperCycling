@@ -1,15 +1,15 @@
 {
   "id": "sprint-ladder",
   "name": "Sprint Ladder",
-  "description": "Sprints of 10, 15, 20, 25 and 30 seconds with full recovery in between.",
+  "description": "Sprints of 10, 15, 20, 25 and 30 seconds with full recovery in between. The 20 and 25-second sprints are ridden standing.",
   "localized": {
     "en": {
       "name": "Sprint Ladder",
-      "description": "Sprints of 10, 15, 20, 25 and 30 seconds with full recovery in between."
+      "description": "Sprints of 10, 15, 20, 25 and 30 seconds with full recovery in between. The 20 and 25-second sprints are ridden standing."
     },
     "pl": {
       "name": "Sprinterska drabinka",
-      "description": "Sprinty 10, 15, 20, 25 i 30 sekund z pełnym odpoczynkiem między nimi."
+      "description": "Sprinty 10, 15, 20, 25 i 30 sekund z pełnym odpoczynkiem między nimi. Sprinty 20 i 25 s jedziesz na stojąco."
     }
   },
   "category": "freestyle",
@@ -147,8 +147,8 @@
           "intensity": {
             "ftpPct": 160
           },
-          "rpm": 108,
-          "position": "seated"
+          "rpm": 100,
+          "position": "standing"
         },
         {
           "kind": "steady",
@@ -167,8 +167,8 @@
           "intensity": {
             "ftpPct": 165
           },
-          "rpm": 108,
-          "position": "seated"
+          "rpm": 100,
+          "position": "standing"
         },
         {
           "kind": "steady",

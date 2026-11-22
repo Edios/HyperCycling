@@ -422,6 +422,18 @@ describe('built-in workouts', () => {
     }
   });
 
+  // Known, deliberate or pending content findings (see the research notes). Remove an entry once fixed.
+  const KNOWN: Record<string, DoseCode[]> = {
+    // Long standing climbs are the point of these workouts.
+    'the-wall': ['standing-bout'],
+    'music-wall': ['standing-bout', 'standing-total'],
+    'standing-climbs': ['standing-total'],
+    // Hand-made demo predates the content design.
+    'demo-mixed': ['standing-bout', 'cooldown-short'],
+    // 30-minute class: 2.5 min cool-down, short by design.
+    'class-hiit-30': ['cooldown-short'],
+  };
+
   it('respects the dosing rules: cadence, sprints, standing (single source: domain/dose-rules)', () => {
     const codes: DoseCode[] = [
       'rpm-low',
@@ -437,17 +449,6 @@ describe('built-in workouts', () => {
   });
 
   it('has no dosing warnings beyond the documented exceptions', () => {
-    // Known, deliberate or pending content findings (see the research notes). Remove an entry once fixed.
-    const KNOWN: Record<string, DoseCode[]> = {
-      // Long standing climbs are the point of these workouts.
-      'the-wall': ['standing-bout'],
-      'music-wall': ['standing-bout', 'standing-total'],
-      'standing-climbs': ['standing-total'],
-      // Hand-made demo predates the content design.
-      'demo-mixed': ['standing-bout', 'cooldown-short'],
-      // 30-minute class: 2.5 min cool-down, short by design.
-      'class-hiit-30': ['cooldown-short'],
-    };
     for (const w of builtinWorkouts) {
       const found = [
         ...new Set(
@@ -469,6 +470,36 @@ describe('built-in workouts', () => {
         }
       }
     }
+  });
+
+  it('respects the dosing rules in every length and difficulty the app offers', () => {
+    // Scaling moves %FTP (difficulty) and repeat counts (length) but not cadence or position, so a
+    // standing sprint must keep its margin over the sprint threshold at -5 %.
+    const RULES: DoseCode[] = [
+      'rpm-low',
+      'rpm-high',
+      'standing-rpm',
+      'standing-light',
+      'standing-bout',
+      'standing-total',
+      'sprint-long',
+    ];
+    // Only in a stretched version: at 60 min the wall gets more standing repeats (before this rule).
+    const KNOWN_SCALED: Record<string, DoseCode[]> = { 'the-wall': ['standing-total'] };
+    const bad: string[] = [];
+    for (const w of builtinWorkouts) {
+      for (const targetMinutes of [30, 45, 60] as const) {
+        for (const difficultyPct of [-5, 0, 5] as const) {
+          const scaled = scaleWorkout(w, { targetMinutes, difficultyPct });
+          for (const x of doseWarnings(scaled)) {
+            if (x.level !== 'warn' || !RULES.includes(x.code)) continue;
+            if ([...(KNOWN[w.id] ?? []), ...(KNOWN_SCALED[w.id] ?? [])].includes(x.code)) continue;
+            bad.push(`${w.id} ${targetMinutes}min ${difficultyPct}% ${x.blockId} ${x.code}`);
+          }
+        }
+      }
+    }
+    expect([...new Set(bad)]).toEqual([]);
   });
 
   it('scaling reaches near the 45 minute target for plan sessions with a flex repeat', () => {

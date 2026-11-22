@@ -1,15 +1,15 @@
 {
   "id": "endurance-bursts",
   "name": "Endurance with Bursts",
-  "description": "Easy endurance riding with a short burst every seven minutes to keep things interesting.",
+  "description": "Easy endurance riding with a short burst every seven minutes to keep things interesting. Every burst is ridden standing, a change of position in the long steady ride.",
   "localized": {
     "en": {
       "name": "Endurance with Bursts",
-      "description": "Easy endurance riding with a short burst every seven minutes to keep things interesting."
+      "description": "Easy endurance riding with a short burst every seven minutes to keep things interesting. Every burst is ridden standing, a change of position in the long steady ride."
     },
     "pl": {
       "name": "Wytrzymałość z wyskokami",
-      "description": "Spokojna jazda wytrzymałościowa z krótkim wyskokiem co siedem minut, żeby się nie nudzić."
+      "description": "Spokojna jazda wytrzymałościowa z krótkim wyskokiem co siedem minut, żeby się nie nudzić. Każdy zryw jedziesz na stojąco: zmiana pozycji w długiej, równej jeździe."
     }
   },
   "category": "freestyle",
@@ -117,7 +117,7 @@
             "ftpPct": 140
           },
           "rpm": 105,
-          "position": "seated",
+          "position": "standing",
           "label": "@sprint",
           "cue": "@sprint"
         }

@@ -1,15 +1,15 @@
 {
   "id": "climb-and-attack",
   "name": "Climb and Attack",
-  "description": "Five songs: three with a climb and a growing sprint, one with chorus surges and one with surprise sprints.",
+  "description": "Five songs: three with a climb and a growing sprint, one with chorus surges and one with surprise sprints. Two of the sprints are ridden standing.",
   "localized": {
     "en": {
       "name": "Climb and Attack",
-      "description": "Five songs: three with a climb and a growing sprint, one with chorus surges and one with surprise sprints."
+      "description": "Five songs: three with a climb and a growing sprint, one with chorus surges and one with surprise sprints. Two of the sprints are ridden standing."
     },
     "pl": {
       "name": "Podjazd i atak",
-      "description": "Pięć piosenek: trzy z podjazdem i coraz dłuższym sprintem, jedna z atakami w refrenach i jedna z niespodziewanymi sprintami."
+      "description": "Pięć piosenek: trzy z podjazdem i coraz dłuższym sprintem, jedna z atakami w refrenach i jedna z niespodziewanymi sprintami. Dwa sprinty jedziesz na stojąco."
     }
   },
   "category": "freestyle",
@@ -155,8 +155,8 @@
       "intensity": {
         "ftpPct": 150
       },
-      "rpm": 108,
-      "position": "seated",
+      "rpm": 100,
+      "position": "standing",
       "label": "@sprint",
       "cue": "@sprint"
     },
@@ -328,8 +328,8 @@
       "intensity": {
         "ftpPct": 150
       },
-      "rpm": 108,
-      "position": "seated",
+      "rpm": 100,
+      "position": "standing",
       "cue": "@sprint"
     },
     {

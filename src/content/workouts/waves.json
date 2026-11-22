@@ -1,15 +1,15 @@
 {
   "id": "waves",
   "name": "Waves",
-  "description": "Five five-minute tempo waves, each with three 15-second bursts inside.",
+  "description": "Five five-minute tempo waves, each with three 15-second bursts inside. The middle sprint of each wave is ridden standing.",
   "localized": {
     "en": {
       "name": "Waves",
-      "description": "Five five-minute tempo waves, each with three 15-second bursts inside."
+      "description": "Five five-minute tempo waves, each with three 15-second bursts inside. The middle sprint of each wave is ridden standing."
     },
     "pl": {
       "name": "Fale",
-      "description": "Pięć pięciominutowych fal w tempie z trzema zrywami po 15 sekund w każdej."
+      "description": "Pięć pięciominutowych fal w tempie z trzema zrywami po 15 sekund w każdej. Środkowy sprint każdej fali jedziesz na stojąco."
     }
   },
   "category": "freestyle",
@@ -136,8 +136,8 @@
           "intensity": {
             "ftpPct": 150
           },
-          "rpm": 106,
-          "position": "seated"
+          "rpm": 100,
+          "position": "standing"
         },
         {
           "kind": "steady",

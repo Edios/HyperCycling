@@ -1,15 +1,15 @@
 {
   "id": "ladder-10-20-30",
   "name": "Ladder 10-20-30",
-  "description": "Eight rounds of short bursts of 10, 20 and 30 seconds with equal rest.",
+  "description": "Eight rounds of short bursts of 10, 20 and 30 seconds with equal rest. The 10-second sprint is ridden standing.",
   "localized": {
     "en": {
       "name": "Ladder 10-20-30",
-      "description": "Eight rounds of short bursts of 10, 20 and 30 seconds with equal rest."
+      "description": "Eight rounds of short bursts of 10, 20 and 30 seconds with equal rest. The 10-second sprint is ridden standing."
     },
     "pl": {
       "name": "Drabinka 10-20-30",
-      "description": "Osiem rund krótkich zrywów 10, 20 i 30 sekund z równą przerwą."
+      "description": "Osiem rund krótkich zrywów 10, 20 i 30 sekund z równą przerwą. Sprint 10 s jedziesz na stojąco."
     }
   },
   "category": "freestyle",
@@ -105,8 +105,8 @@
           "intensity": {
             "ftpPct": 150
           },
-          "rpm": 108,
-          "position": "seated",
+          "rpm": 100,
+          "position": "standing",
           "cue": "@sprint"
         },
         {

@@ -1,15 +1,15 @@
 {
   "id": "sprints-6x15",
   "name": "Six Fifteens",
-  "description": "Six all-out fifteen-second sprints with long recoveries. Quality over quantity: go full gas, then rest fully.",
+  "description": "Six all-out fifteen-second sprints with long recoveries. Quality over quantity: go full gas, then rest fully. Every sprint is ridden standing, out of the saddle.",
   "localized": {
     "en": {
       "name": "Six Fifteens",
-      "description": "Six all-out fifteen-second sprints with long recoveries. Quality over quantity: go full gas, then rest fully."
+      "description": "Six all-out fifteen-second sprints with long recoveries. Quality over quantity: go full gas, then rest fully. Every sprint is ridden standing, out of the saddle."
     },
     "pl": {
       "name": "Sześć piętnastek",
-      "description": "Sześć piętnastosekundowych sprintów na maksa z długimi przerwami. Jakość, nie ilość: pełny gaz, potem pełny odpoczynek."
+      "description": "Sześć piętnastosekundowych sprintów na maksa z długimi przerwami. Jakość, nie ilość: pełny gaz, potem pełny odpoczynek. Każdy sprint jedziesz na stojąco."
     }
   },
   "category": "freestyle",
@@ -105,8 +105,8 @@
           "intensity": {
             "ftpPct": 170
           },
-          "rpm": 108,
-          "position": "seated",
+          "rpm": 100,
+          "position": "standing",
           "label": "@sprint",
           "cue": "@sprint"
         },
