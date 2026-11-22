@@ -61,7 +61,10 @@ function pickRecordings(
       ? t
       : { ...t, startAtSec: Math.max(0, (t.durationSec ?? track.durationSec) - playSec) },
   );
-  const [first, ...rest] = refs;
+  // The tempo is the catalog's own, checked by hand (spec §5.7).
+  const [first, ...rest] = refs.map((t) =>
+    t.bpm === undefined ? t : { ...t, bpmSource: 'catalog' as const },
+  );
   if (!first) return undefined;
   return rest.length > 0 ? { ...first, alternates: rest } : first;
 }

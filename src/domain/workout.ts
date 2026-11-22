@@ -48,6 +48,9 @@ export type Block = SteadyBlock | RampBlock | RepeatBlock;
 /** Where a looked-up tempo came from. */
 export type BpmSource = 'getsongbpm' | 'deezer';
 
+/** Where a track's tempo came from: a lookup, or the song catalog (verified by hand, Soundtrack Match). */
+export type TrackBpmSource = BpmSource | 'catalog';
+
 export interface TrackRef {
   provider: 'spotify' | 'youtube';
   id: string;
@@ -63,7 +66,7 @@ export interface TrackRef {
   /** Tempo typed or tapped by the user (no audio analysis); used to match the block's RPM. */
   bpm?: number;
   /** Where `bpm` came from when it was looked up (absent = typed or tapped by the user). */
-  bpmSource?: BpmSource;
+  bpmSource?: TrackBpmSource;
   /** Set by the editor when YouTube reports that the video cannot be embedded. */
   notEmbeddable?: boolean;
   /**
@@ -186,7 +189,8 @@ const plainTrackSchema = z.object({
   // Lenient on purpose: an end at or before the start is ignored (see trackEndSec), not rejected.
   endAtSec: z.number().min(0).optional(),
   bpm: z.number().min(BPM_MIN).max(BPM_MAX).optional(),
-  bpmSource: z.enum(['getsongbpm', 'deezer']).optional(),
+  // An unknown source (from a newer build) is dropped, not a reason to refuse the whole workout.
+  bpmSource: z.enum(['getsongbpm', 'deezer', 'catalog']).optional().catch(undefined),
   notEmbeddable: z.boolean().optional(),
 });
 
@@ -509,14 +513,18 @@ export function compileSongCues(w: Workout): MusicCue[] {
  * after the start (and before the recording's end), else the recording's length. Undefined when
  * neither is known.
  */
-export function trackEndSec(t: Pick<TrackRef, 'startAtSec' | 'endAtSec' | 'durationSec'>): number | undefined {
+export function trackEndSec(
+  t: Pick<TrackRef, 'startAtSec' | 'endAtSec' | 'durationSec'>,
+): number | undefined {
   const end = t.endAtSec !== undefined && t.endAtSec > t.startAtSec ? t.endAtSec : undefined;
   if (end === undefined) return t.durationSec;
   return t.durationSec === undefined ? end : Math.min(end, t.durationSec);
 }
 
 /** How long a track plays (from `startAtSec` to its end); undefined when its length is unknown. */
-export function trackPlaySec(t: Pick<TrackRef, 'startAtSec' | 'endAtSec' | 'durationSec'>): number | undefined {
+export function trackPlaySec(
+  t: Pick<TrackRef, 'startAtSec' | 'endAtSec' | 'durationSec'>,
+): number | undefined {
   const end = trackEndSec(t);
   return end === undefined ? undefined : Math.max(0, end - t.startAtSec);
 }

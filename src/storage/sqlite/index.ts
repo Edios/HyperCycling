@@ -9,9 +9,11 @@ import { migrate } from './migrations';
 // Server-only module: never import it from client code (native addon).
 
 const TABLES = ['workouts', 'players', 'planProgress', 'sessionLogs'] as const;
+/** Exported and replaced only when the bundle has them (a backup of an older build does not). */
+const PLAN_TABLE = 'soundtrackPlans' as const;
 /** Kept out of export and replace (health data, see Repositories.rides). */
 const PRIVATE_TABLES = ['rides'] as const;
-type Table = (typeof TABLES)[number] | (typeof PRIVATE_TABLES)[number];
+type Table = (typeof TABLES)[number] | (typeof PRIVATE_TABLES)[number] | typeof PLAN_TABLE;
 
 export type SqliteRepositories = Repositories & {
   close(): void;
@@ -30,7 +32,7 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
   }
 
   const stmts = Object.fromEntries(
-    [...TABLES, ...PRIVATE_TABLES].map((t) => [
+    [...TABLES, ...PRIVATE_TABLES, PLAN_TABLE].map((t) => [
       t,
       {
         all: db.prepare(`SELECT json FROM ${t} ORDER BY id`),
@@ -116,12 +118,22 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
     validate('session log', schemas.sessionLogs, v),
   );
   const rides = collection('rides', (v) => validate('ride', schemas.rides, v));
+  const soundtrackPlans = collection(PLAN_TABLE, (v) =>
+    validate('soundtrack plan', schemas.soundtrackPlans, v),
+  );
   const settings = singleton('settings', (v) => validate('settings', schemas.settings, v));
 
   const replace = db.transaction((b: ReturnType<typeof validateBundle>) => {
     for (const t of TABLES) {
       stmts[t].clear.run();
       for (const item of b[t]) stmts[t].upsert.run(item.id, JSON.stringify(item), now());
+    }
+    // Plans: a backup of an older build has none, and then the plans stay as they are.
+    if (b.soundtrackPlans) {
+      stmts[PLAN_TABLE].clear.run();
+      for (const item of b.soundtrackPlans) {
+        stmts[PLAN_TABLE].upsert.run(item.id, JSON.stringify(item), now());
+      }
     }
     if (b.settings) singletonPut.run('settings', JSON.stringify(b.settings));
     else singletonDel.run('settings');
@@ -135,6 +147,7 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
     planProgress,
     sessionLogs,
     rides,
+    soundtrackPlans,
     settings,
     activeSession: singleton('activeSession', (v) =>
       validate('active session', schemas.activeSession, v),
@@ -146,6 +159,7 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
         players: db.prepare('SELECT json FROM players').all(),
         planProgress: db.prepare('SELECT json FROM planProgress').all(),
         sessionLogs: db.prepare('SELECT json FROM sessionLogs').all(),
+        soundtrackPlans: db.prepare('SELECT json FROM soundtrackPlans').all(),
         settings: singletonGet.get('settings'),
       }));
       const r = read();
@@ -159,6 +173,7 @@ export function createSqliteRepositories(dbPath: string): SqliteRepositories {
         players: rows(r.players),
         planProgress: rows(r.planProgress),
         sessionLogs: rows(r.sessionLogs),
+        soundtrackPlans: rows(r.soundtrackPlans),
         settings: r.settings === undefined ? null : parseRow<Settings>(r.settings),
       };
     },

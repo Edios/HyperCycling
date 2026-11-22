@@ -29,7 +29,7 @@ import { ProfileChart } from '../ui/ProfileChart';
 import { Segmented } from '../ui/Segmented';
 import { PartCard } from './PartCard';
 import { loadSoundtrackPrefs, saveSoundtrackPrefs } from './prefs';
-import { useSoundtrackSession } from './session';
+import { confirmPlan, useSoundtrackSession } from './session';
 import { useSoundtrackCatalog } from './useCatalog';
 import { usePreview } from './usePreview';
 import styles from './SoundtrackWizard.module.css';
@@ -56,7 +56,6 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
   const { settings, updateSettings } = useSettings();
   const catalogState = useSoundtrackCatalog();
   const preview = usePreview();
-  const savePlan = useSoundtrackSession((s) => s.setPlan);
 
   const totalSec = totalDurationSec(workout);
   const tooShort = totalSec < MIN_WIZARD_SEC;
@@ -184,7 +183,9 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
   const finish = (): void => {
     if (!plan) return;
     preview.stop();
-    savePlan(workout.id, plan);
+    // Taken over at once and written to the device meanwhile; the ride setup says if the write
+    // failed (a slow or blocked storage never holds the button).
+    void confirmPlan(plan);
     navigate(`/setup/${encodeURIComponent(workout.id)}`);
   };
 

@@ -3,6 +3,7 @@ import { planProgressSchema, type PlanProgress } from './plan';
 import { atMostOneMe, playerSchema, type Player } from './player';
 import { sessionLogSchema, type SessionLog } from './session-log';
 import { settingsSchema, type Settings } from './settings';
+import { soundtrackPlanRecordSchema, type SoundtrackPlanRecord } from './soundtrack-store';
 import { workoutSchema, type Workout } from './workout';
 
 /** Id written into new exports. */
@@ -19,6 +20,8 @@ export interface ExportBundle {
   players: Player[];
   planProgress: PlanProgress[];
   sessionLogs: SessionLog[];
+  /** Absent in a backup made before the music plans were stored (and in what such a build exports). */
+  soundtrackPlans?: SoundtrackPlanRecord[];
   settings: Settings | null;
 }
 
@@ -39,6 +42,7 @@ export const exportBundleSchema: z.ZodType<ExportBundle> = z
     players: z.array(playerSchema),
     planProgress: z.array(planProgressSchema),
     sessionLogs: z.array(sessionLogSchema),
+    soundtrackPlans: z.array(soundtrackPlanRecordSchema).optional(),
     settings: settingsSchema.nullable(),
   })
   .superRefine((b, ctx) => {
@@ -49,9 +53,15 @@ export const exportBundleSchema: z.ZodType<ExportBundle> = z
         path: ['players'],
       });
     }
-    for (const key of ['workouts', 'players', 'planProgress', 'sessionLogs'] as const) {
+    for (const key of [
+      'workouts',
+      'players',
+      'planProgress',
+      'sessionLogs',
+      'soundtrackPlans',
+    ] as const) {
       const seen = new Set<string>();
-      b[key].forEach((item, i) => {
+      (b[key] ?? []).forEach((item, i) => {
         if (seen.has(item.id)) {
           ctx.addIssue({
             code: 'custom',

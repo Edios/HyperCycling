@@ -6,6 +6,7 @@ import { summarizeRide, type RideRecord } from '../domain/ride';
 import type { CollectionRepo, Repositories } from '../domain/repositories';
 import type { ActiveSession, SessionLog } from '../domain/session-log';
 import { DEFAULT_SETTINGS, type SessionConfig, type Settings } from '../domain/settings';
+import type { SoundtrackPlanRecord } from '../domain/soundtrack-store';
 import type { Workout } from '../domain/workout';
 
 const session: SessionConfig = {
@@ -116,6 +117,51 @@ const active = (): ActiveSession => ({
   plan: { planId: 'plan1', week: 2, slot: 'freestyle' },
 });
 
+/** A saved music plan for the workout `id`: one stretch with one song. */
+export function planRecord(id: string, seed = 1): SoundtrackPlanRecord {
+  return {
+    id,
+    schemaVersion: 1,
+    createdAt: '2026-11-23T10:00:00.000Z',
+    plan: {
+      v: 1,
+      workoutId: id,
+      fingerprint: 'a1b2c3d4',
+      prefs: {
+        v: 1,
+        categories: ['electronic', 'pop'],
+        includeLibrary: false,
+        continuity: 'seamless',
+        explicit: false,
+        allowHalfDouble: true,
+        seed,
+      },
+      sections: [
+        {
+          sectionId: 's1',
+          anchor: { blockId: `${id}-warm`, rep: 1 },
+          startSec: 0,
+          durationSec: 300,
+          role: 'warmup',
+          rpm: 90,
+          picks: [
+            {
+              ref: { kind: 'catalog', id: 'kavinsky-nightcall' },
+              upload: 'OSW2zeM3yLU',
+              startAtSec: 0,
+              atSec: 0,
+              playSec: 300,
+              fit: 'half',
+            },
+          ],
+          report: { gapSec: 0, cutSec: 12, relaxed: [], warn: [], fills: [] },
+        },
+      ],
+      fallback: [],
+    },
+  };
+}
+
 export function bundle(): ExportBundle {
   return {
     app: APP_ID,
@@ -125,6 +171,7 @@ export function bundle(): ExportBundle {
     players: [player('p1', 'Ola', 200), player('p2', 'Bartek', 250)],
     planProgress: [progress('plan1')],
     sessionLogs: [log('l1')],
+    soundtrackPlans: [planRecord('w1')],
     settings: settings(),
   };
 }
@@ -179,6 +226,13 @@ const collections: CollectionCase[] = [
     make: (id) => ride(id),
     changed: (id) => ride(id, 250),
     bad: (id) => ({ ...ride(id), schemaVersion: 9 }) as unknown as RideRecord,
+  },
+  {
+    label: 'soundtrackPlans',
+    repo: (r) => r.soundtrackPlans,
+    make: (id) => planRecord(id),
+    changed: (id) => planRecord(id, 7),
+    bad: (id) => ({ ...planRecord(id), schemaVersion: 9 }) as unknown as SoundtrackPlanRecord,
   },
 ];
 
@@ -309,6 +363,7 @@ export function runRepositoryContract(name: string, makeRepos: () => Promise<Rep
         for (const p of src.players) await repos.players.put(p);
         for (const p of src.planProgress) await repos.planProgress.put(p);
         for (const l of src.sessionLogs) await repos.sessionLogs.put(l);
+        for (const p of src.soundtrackPlans ?? []) await repos.soundtrackPlans.put(p);
         await repos.settings.put(settings());
         await repos.activeSession.put(active());
         const out = await repos.exportAll();
@@ -369,6 +424,51 @@ export function runRepositoryContract(name: string, makeRepos: () => Promise<Rep
         dup.players = [player('p1', 'Ola', 200), player('p1', 'Other', 210)];
         await expect(repos.replaceAll(dup)).rejects.toThrow(/duplicate id "p1" in players/);
         expect(withoutExportedAt(await repos.exportAll())).toEqual(before);
+      });
+
+      it('exports the music plans and brings them back with replaceAll', async () => {
+        await repos.soundtrackPlans.put(planRecord('w1'));
+        await repos.soundtrackPlans.put(planRecord('w9', 5));
+        const out = await repos.exportAll();
+        expect(out.soundtrackPlans).toEqual([planRecord('w1'), planRecord('w9', 5)]);
+        const fresh = await makeRepos();
+        await fresh.replaceAll(out);
+        expect(await fresh.soundtrackPlans.list()).toEqual([planRecord('w1'), planRecord('w9', 5)]);
+      });
+
+      it("replaces the music plans with the bundle's, and removes the ones it lacks", async () => {
+        await repos.soundtrackPlans.put(planRecord('old'));
+        await repos.replaceAll({ ...bundle(), soundtrackPlans: [planRecord('w1', 3)] });
+        expect((await repos.soundtrackPlans.list()).map((p) => p.id)).toEqual(['w1']);
+        await repos.replaceAll({ ...bundle(), soundtrackPlans: [] });
+        expect(await repos.soundtrackPlans.list()).toEqual([]);
+      });
+
+      it('leaves the music plans alone when the bundle has none (a backup of an older build)', async () => {
+        await repos.soundtrackPlans.put(planRecord('keep'));
+        const old = bundle();
+        delete old.soundtrackPlans;
+        await repos.replaceAll(old);
+        expect((await repos.soundtrackPlans.list()).map((p) => p.id)).toEqual(['keep']);
+      });
+
+      it('rejects a bundle with a broken music plan and leaves everything untouched', async () => {
+        await repos.replaceAll(bundle());
+        const before = withoutExportedAt(await repos.exportAll());
+        const broken = bundle();
+        broken.soundtrackPlans = [
+          { ...planRecord('w1'), schemaVersion: 9 } as unknown as SoundtrackPlanRecord,
+        ];
+        await expect(repos.replaceAll(broken)).rejects.toThrow();
+        expect(withoutExportedAt(await repos.exportAll())).toEqual(before);
+        const dup = bundle();
+        dup.soundtrackPlans = [planRecord('w1'), planRecord('w1', 2)];
+        await expect(repos.replaceAll(dup)).rejects.toThrow(/duplicate id "w1" in soundtrackPlans/);
+      });
+
+      it('rejects a plan stored under another workout id', async () => {
+        const wrong = { ...planRecord('w1'), id: 'w2' };
+        await expect(repos.soundtrackPlans.put(wrong)).rejects.toThrow();
       });
 
       it('clears the active session when replacing data', async () => {

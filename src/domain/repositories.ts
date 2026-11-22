@@ -4,6 +4,7 @@ import type { Player } from './player';
 import type { RideRecord } from './ride';
 import type { ActiveSession, SessionLog } from './session-log';
 import type { Settings } from './settings';
+import type { SoundtrackPlanRecord } from './soundtrack-store';
 import type { Workout } from './workout';
 
 export interface CollectionRepo<T extends { id: string }> {
@@ -29,6 +30,12 @@ export interface Repositories {
    * data, so it never travels in the general backup (a ride is exported on its own).
    */
   rides: CollectionRepo<RideRecord>;
+  /**
+   * The music plan the rider confirmed, one per workout (id = workout id). Unlike rides it is not
+   * health data, so it travels in exportAll / replaceAll (a backup of an older build has none:
+   * replaceAll then leaves the plans alone).
+   */
+  soundtrackPlans: CollectionRepo<SoundtrackPlanRecord>;
   settings: SingletonRepo<Settings>;
   activeSession: SingletonRepo<ActiveSession>;
   exportAll(): Promise<ExportBundle>;

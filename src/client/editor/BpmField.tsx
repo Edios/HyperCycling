@@ -265,7 +265,10 @@ export function BpmField({
       )}
       {track && track.bpmSource !== undefined && track.bpm !== undefined && (
         <small className={styles.caption} data-testid="bpm-source">
-          {t('editor.bpm.source', { source: BRAND[track.bpmSource] })}
+          {t('editor.bpm.source', {
+            source:
+              track.bpmSource === 'catalog' ? t('editor.bpm.catalog') : BRAND[track.bpmSource],
+          })}
         </small>
       )}
       {track && match && (
@@ -348,7 +351,9 @@ export function BpmField({
           {t('editor.bpm.needKey')} <Link to="/settings">{t('editor.bpm.needKeyLink')}</Link>
         </small>
       )}
-      {track?.bpmSource !== undefined && attribution(track.bpmSource)}
+      {track?.bpmSource !== undefined &&
+        track.bpmSource !== 'catalog' &&
+        attribution(track.bpmSource)}
       {client &&
         suggest.status === 'done' &&
         track?.bpmSource !== 'getsongbpm' &&

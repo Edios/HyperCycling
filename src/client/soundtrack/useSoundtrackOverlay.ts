@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { ChainOptions } from '../../domain/music-chain';
 import { compilePlan, withSoundtrack } from '../../domain/soundtrack-compile';
 import type { Workout } from '../../domain/workout';
-import { useSoundtrackSession } from './session';
+import { loadSavedPlan, useSoundtrackSession } from './session';
 import { useSoundtrackCatalog } from './useCatalog';
 
 export interface SoundtrackOverlay {
@@ -25,6 +25,10 @@ export function useSoundtrackOverlay(
   chain: Pick<ChainOptions, 'source' | 'spotifyUsable' | 'dead'>,
 ): SoundtrackOverlay {
   const plan = useSoundtrackSession((s) => s.plans[base.id]);
+  // The plan saved on this device comes into the session the first time the workout is looked at.
+  useEffect(() => {
+    void loadSavedPlan(base.id);
+  }, [base.id]);
   const catalog = useSoundtrackCatalog(plan !== undefined);
   return useMemo((): SoundtrackOverlay => {
     if (!plan) return { workout: base, state: 'none', songs: 0 };
