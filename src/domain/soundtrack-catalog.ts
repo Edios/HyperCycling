@@ -61,6 +61,11 @@ export interface CatalogTrack extends QueueItem {
   gem?: true;
   /** A Polish artist (Polish songs are a fixed part of the mix, owner's rule). */
   pl?: true;
+  /**
+   * An add-on style (synthwave, drum and bass): the owner wants a song of it here and there, never
+   * the backbone of a ride, so the planner uses at most one per section.
+   */
+  supplement?: true;
   /** Day the uploads were last checked, ISO date. */
   verified: string;
 }
@@ -125,6 +130,7 @@ export const catalogTrackSchema = z
     bpmNote: z.string().min(1).max(160).optional(),
     gem: z.literal(true).optional(),
     pl: z.literal(true).optional(),
+    supplement: z.literal(true).optional(),
     verified: z.string().regex(ISO_DATE),
     youtube: z
       .array(uploadSchema)
