@@ -3,11 +3,22 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SETTINGS, type Settings } from '../../domain/settings';
 
-const db = vi.hoisted(() => ({ settings: undefined as Settings | undefined }));
+const db = vi.hoisted(() => ({
+  settings: undefined as Settings | undefined,
+  saved: new Map<string, { id: string; createdAt: string; plan: { workoutId: string } }>(),
+}));
 vi.mock('../data/repositories', () => ({
   getRepositories: () =>
     Promise.resolve({
       workouts: { list: () => Promise.resolve([]) },
+      soundtrackPlans: {
+        get: (id: string) => Promise.resolve(db.saved.get(id)),
+        put: (r: { id: string; createdAt: string; plan: { workoutId: string } }) => {
+          db.saved.set(r.id, r);
+          return Promise.resolve();
+        },
+        remove: () => Promise.resolve(),
+      },
       settings: {
         get: () => Promise.resolve(db.settings),
         put: (s: Settings) => {
@@ -57,6 +68,7 @@ async function toStep2(id?: string) {
 
 beforeEach(() => {
   db.settings = { ...DEFAULT_SETTINGS };
+  db.saved.clear();
   resetSettingsForTests();
   resetSoundtrackSessionForTests();
   localStorage.removeItem(SOUNDTRACK_PREFS_KEY);
@@ -270,11 +282,19 @@ describe('step 3 and leaving', () => {
     expect(done).toHaveTextContent('No silence longer than the seam between songs.');
     expect(screen.getByText('3/3')).toBeInTheDocument();
     expect(useSoundtrackSession.getState().plans['class-endurance-45']).toBeUndefined();
+    expect(db.saved.size).toBe(0); // nothing is saved before the rider confirms
+    expect(done).toHaveTextContent('saved on this device when you press “To the ride”');
     fireEvent.click(screen.getByRole('button', { name: 'To the ride' }));
     const plan = useSoundtrackSession.getState().plans['class-endurance-45'];
     expect(plan?.workoutId).toBe('class-endurance-45');
     expect(plan?.sections.length).toBeGreaterThan(0);
     expect(await screen.findByTestId('where')).toHaveTextContent('/setup/class-endurance-45');
+    // Saved on the device, with the time of the confirmation, one record for the workout.
+    expect([...db.saved.keys()]).toEqual(['class-endurance-45']);
+    const rec = db.saved.get('class-endurance-45')!;
+    expect(rec.plan.workoutId).toBe('class-endurance-45');
+    expect(Number.isNaN(Date.parse(rec.createdAt))).toBe(false);
+    expect(Date.now() - Date.parse(rec.createdAt)).toBeLessThan(60_000);
   });
 
   it('leaves with Escape or the arrow, taking nothing over', async () => {

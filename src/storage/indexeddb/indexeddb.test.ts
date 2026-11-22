@@ -1,6 +1,12 @@
 import 'fake-indexeddb/auto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { bundle as sampleBundle, ride, runRepositoryContract, workout } from '../contract';
+import {
+  bundle as sampleBundle,
+  planRecord,
+  ride,
+  runRepositoryContract,
+  workout,
+} from '../contract';
 import { createIndexedDbRepositories } from './index';
 
 let n = 0;
@@ -65,5 +71,44 @@ describe('indexeddb version 1 → 2 (rides store, T6)', () => {
     await repos.rides.put(ride('r1'));
     expect(await repos.rides.get('r1')).toEqual(ride('r1'));
     repos.close();
+  });
+});
+
+describe('indexeddb version 2 → 3 (music plans store, Soundtrack Match)', () => {
+  it('adds the plans store and keeps the data of a version 2 database', async () => {
+    const name = `upgrade-db-${++n}`;
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open(name, 2);
+      req.onupgradeneeded = () => {
+        const d = req.result;
+        for (const s of ['workouts', 'players', 'planProgress', 'sessionLogs', 'rides']) {
+          d.createObjectStore(s, { keyPath: 'id' });
+        }
+        d.createObjectStore('singletons');
+      };
+      req.onsuccess = () => {
+        const d = req.result;
+        const tx = d.transaction(['players', 'rides'], 'readwrite');
+        tx.objectStore('players').put({ id: 'p1', name: 'Ola', ftp: 200 });
+        tx.objectStore('rides').put(ride('r1'));
+        tx.oncomplete = () => {
+          d.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error);
+      };
+      req.onerror = () => reject(req.error);
+    });
+    const repos = await createIndexedDbRepositories(name);
+    expect(await repos.players.get('p1')).toEqual({ id: 'p1', name: 'Ola', ftp: 200 });
+    expect(await repos.rides.get('r1')).toEqual(ride('r1'));
+    expect(await repos.soundtrackPlans.list()).toEqual([]);
+    await repos.soundtrackPlans.put(planRecord('w1'));
+    expect(await repos.soundtrackPlans.get('w1')).toEqual(planRecord('w1'));
+    repos.close();
+    // Opened again at the same version: the plan is still there.
+    const again = await createIndexedDbRepositories(name);
+    expect(await again.soundtrackPlans.get('w1')).toEqual(planRecord('w1'));
+    again.close();
   });
 });

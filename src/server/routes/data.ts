@@ -21,6 +21,7 @@ const COLLECTIONS = {
   'plan-progress': 'planProgress',
   'session-logs': 'sessionLogs',
   rides: 'rides',
+  'soundtrack-plans': 'soundtrackPlans',
 } as const;
 type UrlCollection = keyof typeof COLLECTIONS;
 

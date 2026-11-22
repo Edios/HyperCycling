@@ -133,6 +133,40 @@ describe('compilePlan', () => {
     });
   });
 
+  it("marks the catalog's tempo as such (bpmSource 'catalog'), on every recording", () => {
+    const { cues } = compilePlan(plan, ride, { catalog });
+    for (const cue of cues) {
+      for (const t of [cue.track, ...(cue.queue ?? [])]) {
+        expect(t.bpmSource).toBe('catalog');
+        expect(t.bpm).toBeDefined();
+        for (const alt of t.alternates ?? []) expect(alt.bpmSource).toBe('catalog');
+      }
+    }
+    // A song without a tempo (no beat) has no source to name.
+    const beatless = [{ ...catalog[0]!, id: 'nb', bpm: undefined, beat: 'none' as const }];
+    const out = compilePlan(
+      {
+        ...plan,
+        sections: [
+          {
+            ...plan.sections[0]!,
+            picks: [
+              {
+                ...plan.sections[0]!.picks[0]!,
+                ref: { kind: 'catalog' as const, id: 'nb' },
+                upload: beatless[0]!.youtube[0]!.id,
+              },
+            ],
+          },
+        ],
+      },
+      ride,
+      { catalog: beatless },
+    );
+    expect(out.cues[0]!.track.bpm).toBeUndefined();
+    expect(out.cues[0]!.track).not.toHaveProperty('bpmSource');
+  });
+
   it('keeps at most 8 backups per song and the queue within the schema', () => {
     const many = [song('m', 480, {}, 6)];
     const p = planSoundtrack(workout([steady('a', 480, 5, 90)]), many, prefs());

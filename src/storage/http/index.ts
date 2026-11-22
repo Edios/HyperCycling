@@ -73,6 +73,7 @@ export function createHttpRepositories(
     planProgress: collection('plan-progress'),
     sessionLogs: collection('session-logs'),
     rides: collection('rides'),
+    soundtrackPlans: collection('soundtrack-plans'),
     settings: singleton('settings'),
     activeSession: singleton('active-session'),
     async exportAll() {

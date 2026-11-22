@@ -181,7 +181,7 @@ const pinTrackSchema = z.object({
   durationSec: z.number().min(0).optional(),
   startAtSec: z.number().min(0),
   bpm: z.number().optional(),
-  bpmSource: z.enum(['getsongbpm', 'deezer']).optional(),
+  bpmSource: z.enum(['getsongbpm', 'deezer', 'catalog']).optional(),
   notEmbeddable: z.boolean().optional(),
 });
 

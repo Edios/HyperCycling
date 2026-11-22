@@ -26,7 +26,7 @@ import { deadRecordings, type ResultMap } from '../music/preflight';
 import { useSpotifyConnected } from '../music/spotify/useSpotify';
 import { WORLD_CHOICES } from '../world/world-options';
 import { useSessionStore } from '../training/session-store';
-import { useSoundtrackSession } from '../soundtrack/session';
+import { forgetPlan, useSoundtrackSession } from '../soundtrack/session';
 import { useSoundtrackOverlay } from '../soundtrack/useSoundtrackOverlay';
 import { formatClock } from '../training/format';
 import { AppBar } from '../ui/AppBar';
@@ -213,6 +213,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   );
   // The music matched in this visit ("Match music") goes on top; an Experience has its own.
   const soundtrack = useSoundtrackOverlay(scaledBase, chainOpts);
+  const saveFailed = useSoundtrackSession((s) => s.saveFailed);
   const scaled = useMemo(
     () =>
       experience ? withUserMusic(scaledBase, experience, matched, chainOpts) : soundtrack.workout,
@@ -371,15 +372,21 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
                     ? t('soundtrack.setup.error')
                     : t('soundtrack.setup.none')}
           </p>
+          {saveFailed && (
+            <p className={styles.note} role="status" data-testid="setup-soundtrack-unsaved">
+              {t('soundtrack.setup.unsaved')}
+            </p>
+          )}
           <div className={styles.matchActions}>
             <Button onClick={openSoundtrack} data-testid="setup-match-music">
-              {soundtrack.state === 'none' ? t('soundtrack.entry') : t('soundtrack.setup.change')}
+              {soundtrack.state === 'none'
+                ? t('soundtrack.entry')
+                : soundtrack.state === 'stale'
+                  ? t('soundtrack.setup.rematch')
+                  : t('soundtrack.setup.change')}
             </Button>
             {soundtrack.state !== 'none' && (
-              <Button
-                onClick={() => useSoundtrackSession.getState().clearPlan(workout.id)}
-                data-testid="setup-match-remove"
-              >
+              <Button onClick={() => void forgetPlan(workout.id)} data-testid="setup-match-remove">
                 {t('soundtrack.setup.remove')}
               </Button>
             )}

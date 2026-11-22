@@ -16,6 +16,10 @@ export const MIGRATIONS: readonly string[] = [
   `
   CREATE TABLE rides        (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
   `,
+  // 3: the music plan the rider confirmed, one per workout (Soundtrack Match).
+  `
+  CREATE TABLE soundtrackPlans (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
+  `,
 ];
 
 export function migrate(db: Database): void {
