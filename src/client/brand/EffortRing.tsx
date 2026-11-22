@@ -60,6 +60,9 @@ export function EffortRing({
   // Three or four digits (watts) need a smaller number than the two-digit effort.
   const textScale = text && text.length > 2 ? 2.4 / Math.max(3, text.length) : 1;
   const live = text !== undefined;
+  // A layout may ask for a bigger numeral (--num-k), but three digits of watts that big would
+  // touch the arc: the reading never grows past the default size.
+  const numK = text && text.length > 2 ? 'min(var(--num-k, 0.4), 0.4)' : 'var(--num-k, 0.4)';
 
   useLayoutEffect(() => {
     const from = shown.current;
@@ -142,7 +145,7 @@ export function EffortRing({
           fontSize:
             typeof size === 'number'
               ? size * (quiet ? 0.44 : 0.4) * textScale
-              : `calc(${box} * ${quiet ? 0.44 : 'var(--num-k, 0.4)'} * ${textScale})`,
+              : `calc(${box} * ${quiet ? 0.44 : numK} * ${textScale})`,
           color: quiet ? QUIET_TEXT : numColor,
         }}
         aria-hidden={label ? true : undefined}

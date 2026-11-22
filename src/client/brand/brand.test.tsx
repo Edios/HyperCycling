@@ -118,6 +118,12 @@ describe('EffortRing', () => {
     render(<EffortRing effort={5} size="var(--ring)" numberTestId="n" />);
     expect((screen.getByTestId('n') as HTMLElement).style.fontSize).toContain('var(--num-k, 0.4)');
   });
+  it('never lets three digits of live watts grow past the default size, whatever --num-k says', () => {
+    render(<EffortRing effort={5} size="var(--ring)" numberTestId="n" text="131" />);
+    expect((screen.getByTestId('n') as HTMLElement).style.fontSize).toContain(
+      'min(var(--num-k, 0.4), 0.4)',
+    );
+  });
   it('puts the number test id on the number', () => {
     render(<EffortRing effort={5} numberTestId="n" />);
     expect(screen.getByTestId('n')).toHaveTextContent('05');

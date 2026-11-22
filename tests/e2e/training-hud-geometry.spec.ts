@@ -381,14 +381,14 @@ async function powerNumberProblems(page: Page): Promise<string[]> {
     const cx = r.left + r.width / 2;
     const cy = r.top + r.height / 2;
     const half = r.width / 2;
-    // The arc lies between ~0.65 and 1.0 of the radius: the number's corners stay inside 0.6.
+    // The arc's inner edge lies at ~0.78 of the radius: the number's corners stay inside 0.74.
     for (const [x, y] of [
       [t.left, t.top],
       [t.right, t.top],
       [t.left, t.bottom],
       [t.right, t.bottom],
     ]) {
-      if (Math.hypot(x! - cx, y! - cy) > half * 0.6) {
+      if (Math.hypot(x! - cx, y! - cy) > half * 0.74) {
         out.push(`the watts number "${num.textContent}" reaches the arc`);
         break;
       }
