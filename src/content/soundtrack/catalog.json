@@ -1300,6 +1300,7 @@
       "beat": "steady",
       "clean": true,
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "IS2zUCgaVbg", "label": "re-upload", "durationSec": 259 },
@@ -1320,6 +1321,7 @@
       "clean": true,
       "bpmNote": "sources say 176 (octave)",
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "rHpquZpx57A", "label": "official/topic (Netsky)", "durationSec": 360 },
@@ -1340,6 +1342,7 @@
       "beat": "steady",
       "clean": true,
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "zbKnJSo_0sk", "label": "re-upload", "durationSec": 240 },
@@ -1358,6 +1361,7 @@
       "beat": "steady",
       "clean": true,
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "_b4QiB0u-kw", "label": "official/topic (Sub Focus)", "durationSec": 233 },
@@ -1376,6 +1380,7 @@
       "beat": "steady",
       "clean": true,
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "onLIQrJ7gMQ", "label": "re-upload", "durationSec": 207 },
@@ -1394,6 +1399,7 @@
       "energy": 4,
       "beat": "steady",
       "clean": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "DQF5aHVOW5s", "label": "re-upload", "durationSec": 231 },
@@ -1413,6 +1419,7 @@
       "beat": "steady",
       "clean": true,
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "M94oYsbBtx4", "label": "official/topic (Sub Focus)", "durationSec": 266 },
@@ -1432,6 +1439,7 @@
       "beat": "steady",
       "clean": false,
       "traits": ["long-intro"],
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "uluzEwwYOwg", "label": "official/topic (pendulumlive)", "durationSec": 336 },
@@ -1451,6 +1459,7 @@
       "beat": "steady",
       "clean": true,
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "Y8DekFFCE5c", "label": "re-upload", "durationSec": 263 },
@@ -1469,6 +1478,7 @@
       "beat": "steady",
       "clean": true,
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "1Ml3S48SBpg", "label": "official/topic (Lazerhawk - Topic)", "durationSec": 244 },
@@ -1488,6 +1498,7 @@
       "beat": "steady",
       "clean": true,
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "m1pveAcFv1Y", "label": "official/topic (Perturbator)", "durationSec": 271 },
@@ -1506,6 +1517,7 @@
       "energy": 2,
       "beat": "steady",
       "clean": true,
+      "supplement": true,
       "verified": "2026-11-21",
       "youtube": [
         { "id": "ucwSKBBFL8c", "label": "official/topic (College - Topic)", "durationSec": 268 },
@@ -1526,6 +1538,7 @@
       "clean": true,
       "bpmNote": "sources say 94 (octave)",
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "cCQa0MGQL5E", "label": "official/topic (Carpenter Brut)", "durationSec": 195 },
@@ -1545,6 +1558,7 @@
       "beat": "steady",
       "clean": true,
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "5dNP-a-XXx0", "label": "official/topic (Lazerhawk - Topic)", "durationSec": 271 },
@@ -1565,6 +1579,7 @@
       "clean": true,
       "bpmNote": "sources say 72 (octave)",
       "gem": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         { "id": "Jv1ZN8c4_Gs", "label": "official/topic (GUNSHIPMUSIC)", "durationSec": 288 },
@@ -1583,6 +1598,7 @@
       "energy": 3,
       "beat": "steady",
       "clean": true,
+      "supplement": true,
       "verified": "2026-11-19",
       "youtube": [
         {
@@ -3247,6 +3263,7 @@
       "energy": 3,
       "beat": "steady",
       "clean": true,
+      "supplement": true,
       "verified": "2026-11-22",
       "youtube": [
         { "id": "fRzjfOtsUcQ", "label": "official/topic (GOLDIE)", "durationSec": 422 },

@@ -13,6 +13,7 @@
 // - turns the proposal's role letters into names (s steady, i intervals, w warm-up, c climb,
 //   d cool-down) and applies the owner's rules: a song ridden at 105 rpm or faster is for
 //   intervals only (`ROLE_SPRINT_RPM`, `catalogRpm`); an explicit song is never a cool-down;
+// - marks synthwave and drum and bass as `supplement` (an add-on style, owner's rule);
 // - files dance-house ridden at half tempo (Kygo, Alan Walker...) under Pop/Electronic, not House;
 // - keeps the tempo notes in English, drops research-only notes and re-uploaders' channel names;
 // - appends the songs added after the selection (`ADDED`) and marks the fallback ones;
@@ -44,6 +45,9 @@ const proposalPath = arg('--proposal', join(research, 'catalog-proposal-v2.json'
 const selectionPath = arg('--selection', join(research, 'catalog-selection-150.json'));
 const outPath = arg('--out', join(root, 'src', 'content', 'soundtrack', 'catalog.json'));
 const checkOnly = args.includes('--check');
+
+/** Styles the owner wants as an add-on, never the backbone of a ride (2026-11-19). */
+const SUPPLEMENT_STYLES = new Set(['synthwave', 'dnb']);
 
 /** Songs the owner vetoed; the build fails if the selection lists one. */
 const VETOED = new Set(['wham-last-christmas']);
@@ -160,7 +164,7 @@ interface ProposalTrack {
   bpmNote?: string;
   gem?: boolean;
   verified: string;
-  _proposal: { version: string; roles: string[]; pl: boolean };
+  _proposal: { version: string; roles: string[]; pl: boolean; sub?: string };
 }
 
 function fail(message: string): never {
@@ -222,6 +226,7 @@ function toCatalog(t: ProposalTrack): CatalogTrack {
   const note = bpmNote(t);
   if (note !== undefined) out.bpmNote = note;
   if (t.gem === true) out.gem = true;
+  if (SUPPLEMENT_STYLES.has(t._proposal.sub ?? '')) out.supplement = true;
   if (t._proposal.pl) out.pl = true;
   out.verified = fix?.verified ?? (ADDED.includes(t.id) ? ADDED_VERIFIED : t.verified);
   const uploads: Upload[] = [

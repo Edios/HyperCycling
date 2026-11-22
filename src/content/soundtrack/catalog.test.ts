@@ -140,6 +140,14 @@ describe("soundtrack catalog: owner's rules", () => {
     }
   });
 
+  it('marks synthwave and drum and bass as add-on styles (a supplement, never the backbone)', () => {
+    const addOns = tracks.filter((t) => t.supplement);
+    expect(addOns.length).toBeGreaterThanOrEqual(10);
+    expect(addOns.length / tracks.length).toBeLessThan(0.15);
+    for (const t of addOns) expect(t.categories, t.id).toContain('electronic');
+    expect(byArtist(/^(Gunship|Netsky)$/).every((t) => t.supplement)).toBe(true);
+  });
+
   it('has one or two long, calm, clean instrumental fallbacks (gap rule R4)', () => {
     const fallback = tracks.filter((t) => t.traits?.includes('fallback'));
     expect(fallback.length).toBeGreaterThanOrEqual(1);
