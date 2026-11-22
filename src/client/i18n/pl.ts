@@ -82,6 +82,11 @@ export const pl: Messages = {
     pause: 'Pauza',
     resume: 'Wznów',
     paused: 'Pauza',
+    hiddenPause: {
+      title: 'Jazda wstrzymana',
+      body: 'HyperCycling zszedł w tło, więc jazda i muzyka zatrzymały się w miejscu, w którym były.',
+      resume: 'Wznów',
+    },
     pressToStart: 'Naciśnij spację lub kliknij Start',
     tapToStart: 'Dotknij Start',
     previous: 'Poprzedni blok',

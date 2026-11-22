@@ -331,3 +331,115 @@ describe('TrainingScreen', () => {
     expect(screen.getByTestId('controls').dataset['hidden']).toBe('false');
   }, 8000);
 });
+
+describe('TrainingScreen: auto-pause when the app leaves the screen (bug #17)', () => {
+  let visibility: DocumentVisibilityState = 'visible';
+
+  beforeEach(() => {
+    visibility = 'visible';
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => visibility,
+    });
+  });
+
+  afterEach(() => {
+    // Back to jsdom's own getter on the prototype.
+    delete (document as { visibilityState?: unknown }).visibilityState;
+  });
+
+  function phone(coarse: boolean): void {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: coarse && query === '(pointer: coarse)',
+      media: query,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+    }));
+  }
+
+  function setVisibility(v: DocumentVisibilityState): void {
+    visibility = v;
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+  }
+
+  async function rideRunning(): Promise<void> {
+    load();
+    await renderScreen();
+    await screen.findByTestId('layout-solo');
+    key('Space');
+    advance(3100);
+    advance(2000);
+    expect(screen.getByTestId('training-screen').dataset['status']).toBe('running');
+  }
+
+  it('on a phone: pauses when hidden, shows Resume on return, and the clock does not move', async () => {
+    phone(true);
+    await rideRunning();
+    const before = screen.getByTestId('block-timer').textContent;
+
+    setVisibility('hidden');
+    expect(screen.getByTestId('training-screen').dataset['status']).toBe('paused');
+    advance(60_000); // a minute in another app
+    setVisibility('visible');
+
+    const card = screen.getByTestId('hidden-pause');
+    expect(within(card).getByText('Ride paused')).toBeInTheDocument();
+    expect(screen.queryByText('Paused')).not.toBeInTheDocument();
+    expect(screen.getByTestId('block-timer').textContent).toBe(before);
+
+    fireEvent.click(within(card).getByRole('button', { name: 'Resume' }));
+    expect(screen.getByTestId('training-screen').dataset['status']).toBe('running');
+    expect(screen.queryByTestId('hidden-pause')).not.toBeInTheDocument();
+    expect(screen.getByTestId('block-timer').textContent).toBe(before);
+    advance(1000);
+    expect(screen.getByTestId('block-timer').textContent).not.toBe(before);
+  });
+
+  it('on a phone: pagehide pauses the ride too', async () => {
+    phone(true);
+    await rideRunning();
+    act(() => {
+      window.dispatchEvent(new Event('pagehide'));
+    });
+    expect(screen.getByTestId('training-screen').dataset['status']).toBe('paused');
+    expect(screen.getByTestId('hidden-pause')).toBeInTheDocument();
+  });
+
+  it('on a phone: resuming another way (Space) takes the card away', async () => {
+    phone(true);
+    await rideRunning();
+    setVisibility('hidden');
+    setVisibility('visible');
+    expect(screen.getByTestId('hidden-pause')).toBeInTheDocument();
+    key('Space');
+    expect(screen.getByTestId('training-screen').dataset['status']).toBe('running');
+    expect(screen.queryByTestId('hidden-pause')).not.toBeInTheDocument();
+    // A later pause by the rider is the ordinary one, not the Resume card.
+    key('Space');
+    expect(screen.getByTestId('training-screen').dataset['status']).toBe('paused');
+    expect(screen.queryByTestId('hidden-pause')).not.toBeInTheDocument();
+  });
+
+  it('on a phone: a pause made by the rider stays an ordinary pause when hidden', async () => {
+    phone(true);
+    await rideRunning();
+    key('Space');
+    setVisibility('hidden');
+    setVisibility('visible');
+    expect(screen.getByTestId('training-screen').dataset['status']).toBe('paused');
+    expect(screen.queryByTestId('hidden-pause')).not.toBeInTheDocument();
+  });
+
+  it('on a computer: hiding the tab does not pause the ride', async () => {
+    phone(false);
+    await rideRunning();
+    setVisibility('hidden');
+    expect(screen.getByTestId('training-screen').dataset['status']).toBe('running');
+    setVisibility('visible');
+    expect(screen.queryByTestId('hidden-pause')).not.toBeInTheDocument();
+  });
+});

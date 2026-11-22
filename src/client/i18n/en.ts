@@ -78,6 +78,11 @@ export const en = {
     pause: 'Pause',
     resume: 'Resume',
     paused: 'Paused',
+    hiddenPause: {
+      title: 'Ride paused',
+      body: 'HyperCycling went to the background, so the ride and the music stopped where they were.',
+      resume: 'Resume',
+    },
     pressToStart: 'Press Space or click Start',
     tapToStart: 'Tap Start',
     previous: 'Previous block',

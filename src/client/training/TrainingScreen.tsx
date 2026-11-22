@@ -83,6 +83,7 @@ import { createSound, type Sound } from './sound';
 import { useIdleHide } from './useIdleHide';
 import { useReducedMotion } from './useReducedMotion';
 import { useSessionLoop } from './useSessionLoop';
+import { hiddenPauseAction, isMobileDevice, watchPageHidden } from './hidden-pause';
 import { buildTrainingView } from './view';
 import { buildLiveMeasures } from './live-measures';
 import { useDeviceStore, useLiveSnapshot } from '../devices/useDevices';
@@ -428,6 +429,45 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     }, AUTO_PAUSE_AFTER_STALE_MS);
     return () => clearTimeout(id);
   }, [signalBad, engineStatus]);
+
+  // On a phone the ride pauses when the app leaves the screen (bug #17): the phone silences the
+  // music then and only a tap plays it again, so the "Resume" card waits for that tap.
+  const [hiddenPaused, setHiddenPausedState] = useState(false);
+  const hiddenPausedRef = useRef(false);
+  // The store changes every frame while riding: React is told only when the flag flips.
+  const setHiddenPaused = useCallback((on: boolean) => {
+    if (hiddenPausedRef.current === on) return;
+    hiddenPausedRef.current = on;
+    setHiddenPausedState(on);
+  }, []);
+  useEffect(() => {
+    const offHidden = watchPageHidden(document, window, () => {
+      const session = useSessionStore.getState();
+      const action = hiddenPauseAction({
+        mobile: isMobileDevice(),
+        status: session.state.status,
+        trainerAutoPaused: autoPausedRef.current,
+      });
+      if (action === 'none') return;
+      if (action === 'pause') session.pause();
+      autoPausedRef.current = false;
+      setHiddenPaused(true);
+    });
+    // Resumed some other way (controls, Space, the end dialog): the card goes away.
+    const offStore = useSessionStore.subscribe((s) => {
+      if (s.state.status !== 'paused') setHiddenPaused(false);
+    });
+    return () => {
+      offHidden();
+      offStore();
+    };
+  }, [setHiddenPaused]);
+  const resumeFromHidden = useCallback(() => {
+    sound.unlock();
+    setHiddenPaused(false);
+    const session = useSessionStore.getState();
+    if (session.state.status === 'paused') session.resume();
+  }, [sound, setHiddenPaused]);
 
   // Pre-cue for the next step of a stepped ramp ("In 5 s: add resistance"), once per step.
   const lastStepCue = useRef<string | undefined>(undefined);
@@ -941,7 +981,28 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           </div>
         </div>
       )}
-      {status === 'paused' && !confirmEnd && (
+      {status === 'paused' && hiddenPaused && !confirmEnd && (
+        <div className={`${styles.promptSlot} ${styles.promptOverlay}`} data-testid="hidden-pause">
+          <div className={styles.prompt} role="dialog" aria-labelledby="hidden-pause-title">
+            <strong id="hidden-pause-title" className={styles.hiddenTitle}>
+              {t('training.hiddenPause.title')}
+            </strong>
+            <span className={styles.hiddenBody}>{t('training.hiddenPause.body')}</span>
+            <button
+              type="button"
+              className={styles.startButton}
+              autoFocus
+              onClick={(e) => {
+                e.currentTarget.blur();
+                resumeFromHidden();
+              }}
+            >
+              {t('training.hiddenPause.resume')}
+            </button>
+          </div>
+        </div>
+      )}
+      {status === 'paused' && !hiddenPaused && !confirmEnd && (
         <div role="status" className={styles.paused}>
           {t('training.paused')}
           {/* The quick settings carry the same hint: show it in one place only. */}
