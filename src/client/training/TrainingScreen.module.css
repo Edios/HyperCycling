@@ -273,6 +273,32 @@
   }
 }
 
+/* The "Resume" card after the app went to the background on a phone (bug #17). */
+.hiddenTitle {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: calc(3 * var(--vh));
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+.hiddenBody {
+  max-width: min(36em, 80vw);
+  text-align: center;
+  line-height: 1.35;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .hiddenTitle {
+    font-size: 5.5vw;
+  }
+
+  .hiddenBody {
+    font-size: 4vw;
+  }
+}
+
 /* Corner layouts on the plain background: the 7% tint of the root plus the 8px bar on top. */
 .zoneBackdrop {
   position: absolute;
