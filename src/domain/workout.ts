@@ -173,8 +173,8 @@ const repeatSchema = z.object({
 
 const blockSchema = z.discriminatedUnion('kind', [steadySchema, rampSchema, repeatSchema]);
 
-/** Most tracks queued behind the first one in a slot. */
-const MAX_QUEUE = 12;
+/** Most tracks queued behind the first one in a slot (or a cue). */
+export const MAX_QUEUE = 12;
 
 const plainTrackSchema = z.object({
   provider: z.enum(['spotify', 'youtube']),
