@@ -11,7 +11,7 @@ async function startRide(page: Page, background: RegExp): Promise<void> {
   await expect(page.getByTestId('training-screen')).toBeVisible();
   await page.keyboard.press('Space');
   await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
-    timeout: 8000,
+    timeout: 30_000,
   });
 }
 

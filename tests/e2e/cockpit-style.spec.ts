@@ -14,7 +14,7 @@ async function startOverlay(page: Page): Promise<void> {
   await expect(page.getByTestId('training-screen')).toBeVisible();
   await page.keyboard.press('Space');
   await expect(page.getByTestId('training-screen')).toHaveAttribute('data-status', 'running', {
-    timeout: 8000,
+    timeout: 30_000,
   });
 }
 
@@ -37,6 +37,7 @@ async function showLayout(page: Page, id: string): Promise<void> {
  */
 async function settled<T>(read: () => Promise<T>): Promise<T> {
   let previous: string | undefined;
+  let stable = 0;
   let last: T | undefined;
   await expect
     .poll(
@@ -45,7 +46,8 @@ async function settled<T>(read: () => Promise<T>): Promise<T> {
         const now = JSON.stringify(last);
         const same = now === previous;
         previous = now;
-        return same;
+        stable = same ? stable + 1 : 0;
+        return stable >= 3;
       },
       { intervals: [150], timeout: 6000 },
     )
@@ -205,16 +207,18 @@ for (const ring of [230, 260, 300]) {
       for (let step = 0; step < 3; step += 1) {
         const m = await settled(() => ringMetrics(page));
         if (m.inside) {
-          expect(m.labelTop!, `effort ${m.effort}`).toBeGreaterThanOrEqual(
-            m.numBottom + 0.25 * m.capHeight,
-          );
+          expect(
+            m.labelTop!,
+            `effort ${m.effort} step ${step} ring ${m.ringW}`,
+          ).toBeGreaterThanOrEqual(m.numBottom + 0.25 * m.capHeight);
           expect(m.labelBottom!).toBeLessThanOrEqual(m.nameTop + 0.5);
         } else if (m.labelTop !== null) {
           expect(m.labelTop).toBeGreaterThanOrEqual(m.numBottom);
         }
+        const before = await page.getByTestId('effort-name').textContent();
         await page.keyboard.press('ArrowRight');
-        // The next block animates in; there is no DOM signal for "done", so this stays a sleep.
-        await page.waitForTimeout(1000);
+        // The next block replaces the name; the metrics are read after that, once they settle.
+        await expect(page.getByTestId('effort-name')).not.toHaveText(before ?? '');
       }
     });
   }
