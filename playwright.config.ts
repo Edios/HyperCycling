@@ -10,7 +10,14 @@ export default defineConfig({
   globalSetup: './tests/e2e/global-setup.ts',
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
+  // On CI the json report feeds scripts/e2e-timing.mjs (slowest specs, per shard).
+  reporter: process.env.CI
+    ? [
+        ['github'],
+        ['html', { open: 'never' }],
+        ['json', { outputFile: 'test-results/results.json' }],
+      ]
+    : 'list',
   projects: [
     { name: 'local', use: browser },
     { name: 'pages', use: { ...browser, baseURL: 'http://127.0.0.1:5176/' } },

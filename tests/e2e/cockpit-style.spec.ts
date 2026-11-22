@@ -3,6 +3,10 @@ import { expect, test } from './fixtures';
 
 // Overlay HUD style checks (pages build only: sessions autosave to the shared local database).
 
+// Every test starts its own World scene (software WebGL in CI: ~20 s each) and shares nothing, so
+// they run in parallel workers (and spread over the CI shards) instead of one after another.
+test.describe.configure({ mode: 'parallel' });
+
 async function startOverlay(page: Page): Promise<void> {
   await page.goto('./#/setup/demo-mixed');
   await page.getByRole('button', { name: /^World/ }).click();
@@ -17,9 +21,37 @@ async function startOverlay(page: Page): Promise<void> {
 async function showLayout(page: Page, id: string): Promise<void> {
   for (let i = 0; i < 6 && (await page.getByTestId(id).count()) === 0; i += 1) {
     await page.keyboard.press('KeyH');
-    await page.waitForTimeout(100);
+    // The layout switches on the next render: return as soon as it is the one asked for.
+    await page
+      .getByTestId(id)
+      .waitFor({ state: 'attached', timeout: 150 })
+      .catch(() => undefined);
   }
   await expect(page.getByTestId(id)).toBeVisible();
+}
+
+/**
+ * Reads until two reads 150 ms apart agree and returns the last one. If it never settles (an
+ * animation that keeps running) it gives up after 6 s and returns what it has, as the sleep loops
+ * it replaces did. The budget is generous on purpose: under load a single read can take a while.
+ */
+async function settled<T>(read: () => Promise<T>): Promise<T> {
+  let previous: string | undefined;
+  let last: T | undefined;
+  await expect
+    .poll(
+      async () => {
+        last = await read();
+        const now = JSON.stringify(last);
+        const same = now === previous;
+        previous = now;
+        return same;
+      },
+      { intervals: [150], timeout: 6000 },
+    )
+    .toBe(true)
+    .catch(() => undefined);
+  return last ?? (await read());
 }
 
 /** Ink box of the effort numeral and the vertical extent of the 'Effort' word / caption. */
@@ -72,15 +104,23 @@ for (const size of [
     await page.setViewportSize(size);
     await startOverlay(page);
     await showLayout(page, 'layout-cockpit');
-    await page.waitForTimeout(300);
-    const boxes = await page.evaluate(() => {
-      const out: { id: string; x: number; y: number; w: number; h: number }[] = [];
-      document.querySelectorAll('[data-testid="layout-cockpit"] > [data-g]').forEach((el) => {
-        const r = el.getBoundingClientRect();
-        out.push({ id: el.getAttribute('data-g') ?? '', x: r.x, y: r.y, w: r.width, h: r.height });
-      });
-      return out;
-    });
+    // The panels settle after the viewport change and the layout switch: measure once they do.
+    const boxes = await settled(() =>
+      page.evaluate(() => {
+        const out: { id: string; x: number; y: number; w: number; h: number }[] = [];
+        document.querySelectorAll('[data-testid="layout-cockpit"] > [data-g]').forEach((el) => {
+          const r = el.getBoundingClientRect();
+          out.push({
+            id: el.getAttribute('data-g') ?? '',
+            x: r.x,
+            y: r.y,
+            w: r.width,
+            h: r.height,
+          });
+        });
+        return out;
+      }),
+    );
     expect(boxes.length).toBeGreaterThanOrEqual(3);
     for (const b of boxes) {
       expect(b.x).toBeGreaterThanOrEqual(-0.5);
@@ -163,14 +203,7 @@ for (const ring of [230, 260, 300]) {
       });
       await page.evaluate(() => document.fonts.ready);
       for (let step = 0; step < 3; step += 1) {
-        let m = await ringMetrics(page);
-        for (let k = 0; k < 10; k += 1) {
-          await page.waitForTimeout(150);
-          const again = await ringMetrics(page);
-          const settled = JSON.stringify(again) === JSON.stringify(m);
-          m = again;
-          if (settled) break;
-        }
+        const m = await settled(() => ringMetrics(page));
         if (m.inside) {
           expect(m.labelTop!, `effort ${m.effort}`).toBeGreaterThanOrEqual(
             m.numBottom + 0.25 * m.capHeight,
@@ -180,6 +213,7 @@ for (const ring of [230, 260, 300]) {
           expect(m.labelTop).toBeGreaterThanOrEqual(m.numBottom);
         }
         await page.keyboard.press('ArrowRight');
+        // The next block animates in; there is no DOM signal for "done", so this stays a sleep.
         await page.waitForTimeout(1000);
       }
     });

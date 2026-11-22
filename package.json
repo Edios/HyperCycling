@@ -15,6 +15,8 @@
     "build:pages:e2e": "cross-env VITE_STORAGE=indexeddb VITE_BASE=/ VITE_E2E=1 vite build --outDir dist/e2e-pages --emptyOutDir",
     "start": "tsx scripts/start.ts",
     "test": "vitest run --coverage",
+    "test:client": "vitest run --project client",
+    "test:node": "vitest run --project node --coverage",
     "test:e2e": "playwright test",
     "lint": "eslint .",
     "format:check": "prettier --check src tests scripts .github *.ts *.js *.json *.md",
