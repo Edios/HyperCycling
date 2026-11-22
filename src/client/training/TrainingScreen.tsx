@@ -13,6 +13,8 @@ import { resolveWorld } from '../world/world-options';
 import type { FrameInput, WorldTheme } from '../world/world';
 import { getExperience } from '../data/builtin';
 import { resolveChapters } from '../../domain/experience';
+import { MusicPlayerDock } from '../music/MusicPlayerDock';
+import { useMediaQuery } from './useMediaQuery';
 import { useMusicDirector } from '../music/useMusicDirector';
 import { Toast, ToastStack } from '../ui/Toast';
 import { getSettingsSnapshot } from '../data/useSettings';
@@ -41,6 +43,7 @@ import { FOCUS_IN_MS, FOCUS_OUT_MS, fadeStyle } from './hud/motion';
 import { monotonicNowMs, useLastInput } from './useLastInput';
 import { bikeKindOf, bikeShowsWatts, hasKnob } from '../../domain/bike';
 import {
+  musicPlayerShownOnRide,
   resolveResistanceMode,
   resolveTrainerSettings,
   type SessionConfig,
@@ -157,7 +160,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const t = useT();
   const [lang] = useLang();
   const navigate = useNavigate();
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const state = useSessionStore((s) => s.state);
   const muted = useSessionStore((s) => s.muted);
   const reducedMotion = useReducedMotion() || settings.effectsIntensity === 0;
@@ -229,9 +232,22 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   const coachOn = runtime.options?.coach ?? settings.coach;
   const worldId = runtime.options?.world ?? settings.hyperrideWorld;
   const musicAudible = soundsOn && !muted;
+  const playerSlot = useRef<HTMLDivElement>(null);
+  // A phone in portrait has no room beside the HUD: there the player is only on by the rider's word.
+  const portraitPhone = useMediaQuery('(max-width: 760px) and (orientation: portrait)');
+  const playerShown = musicPlayerShownOnRide(settings, portraitPhone);
+  const setPlayerShown = useCallback(
+    (on: boolean): void => {
+      void updateSettings({ showMusicPlayer: on }).catch((err) =>
+        console.warn('Saving the music player choice failed', err),
+      );
+    },
+    [updateSettings],
+  );
   useMusicDirector(runtime, onMusicWarning, {
     volume: musicAudible ? 1 : 0,
     onPlaying: setNowPlaying,
+    getPlayerSlot: () => playerSlot.current,
   });
   const rootRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef(settings);
@@ -784,6 +800,11 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       data-material={overlay ? 'glass' : 'solid'}
       data-cursor-hidden={hideControls}
       data-chip={runtime.config.music && nowPlaying !== null ? 'true' : undefined}
+      // The HUD steps aside for the music player (a column on its left); on a phone in portrait
+      // the player overlays instead, so nothing moves.
+      data-player={
+        playerShown && !portraitPhone && nowPlaying?.provider === 'youtube' ? 'true' : undefined
+      }
       className={`${styles.root} ${hideControls ? styles.noCursor : ''}`}
       style={rootStyle}
     >
@@ -875,6 +896,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       {runtime.config.music && nowPlaying && (
         <NowPlaying track={nowPlaying} muted={!musicAudible} />
       )}
+      {runtime.config.music && (
+        <MusicPlayerDock
+          track={nowPlaying}
+          shown={playerShown}
+          slotRef={playerSlot}
+          onHide={() => setPlayerShown(false)}
+        />
+      )}
       {settings.diagnostics === true && (
         <DiagnosticsOverlay
           scene={
@@ -929,6 +958,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           onWorld={(w) => useSessionStore.getState().setOptions({ world: w })}
           sounds={soundsOn}
           coach={coachOn}
+          {...(runtime.config.music
+            ? { musicPlayer: playerShown, onMusicPlayer: setPlayerShown }
+            : {})}
           onBackground={changeBackground}
           onLayout={changeLayout}
           onSounds={(on) => useSessionStore.getState().setOptions({ sounds: on })}

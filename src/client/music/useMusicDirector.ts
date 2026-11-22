@@ -20,16 +20,24 @@ export function useMusicDirector(
     /** 0..1; 0 while the session is muted. Changes are applied to the running director. */
     volume?: number;
     onPlaying?: (track: TrackRef | null) => void;
+    /**
+     * The element that holds YouTube's player (the music player dock). Without it the player is
+     * kept off screen. It is asked for once, when the director starts: the dock only shows or
+     * hides what it holds.
+     */
+    getPlayerSlot?: () => HTMLElement | null;
   } = {},
 ): void {
   const volume = options.volume ?? 1;
   const warningRef = useRef(onWarning);
   const playingRef = useRef(options.onPlaying);
   const volumeRef = useRef(volume);
+  const slotRef = useRef(options.getPlayerSlot);
   const directorRef = useRef<MusicDirector | undefined>(undefined);
   useEffect(() => {
     warningRef.current = onWarning;
     playingRef.current = options.onPlaying;
+    slotRef.current = options.getPlayerSlot;
     volumeRef.current = volume;
     directorRef.current?.setVolume(volume);
   });
@@ -42,7 +50,8 @@ export function useMusicDirector(
 
   useEffect(() => {
     if (!enabled || (cues.length === 0 && fallback.length === 0)) return undefined;
-    const providers = createMusicProviders();
+    const slot = slotRef.current?.();
+    const providers = createMusicProviders(slot ? { parent: slot, visible: true } : undefined);
     const director = createMusicDirector({
       segments,
       cues,

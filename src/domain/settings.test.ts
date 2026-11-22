@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS, sessionConfigSchema, settingsSchema } from './settings';
+import {
+  DEFAULT_SETTINGS,
+  musicPlayerShown,
+  musicPlayerShownOnRide,
+  sessionConfigSchema,
+  settingsSchema,
+} from './settings';
 
 describe('DEFAULT_SETTINGS', () => {
   it('has no watts (a plain knob bike), cadence on, RPM tile shown', () => {
@@ -60,6 +66,32 @@ describe('settingsSchema', () => {
       lastSession: { background: 'basic', hud: 'solo', playerIds: [], music: false },
     });
     expect(r.success).toBe(true);
+  });
+});
+
+describe('the music player setting', () => {
+  it('is shown unless the rider turned it off', () => {
+    expect(DEFAULT_SETTINGS.showMusicPlayer).toBeUndefined();
+    expect(musicPlayerShown(DEFAULT_SETTINGS)).toBe(true);
+    expect(musicPlayerShown({ showMusicPlayer: true })).toBe(true);
+    expect(musicPlayerShown({ showMusicPlayer: false })).toBe(false);
+  });
+
+  it('on a phone in portrait it is shown only when the rider switched it on', () => {
+    expect(musicPlayerShownOnRide({}, false)).toBe(true);
+    expect(musicPlayerShownOnRide({ showMusicPlayer: false }, false)).toBe(false);
+    expect(musicPlayerShownOnRide({}, true)).toBe(false);
+    expect(musicPlayerShownOnRide({ showMusicPlayer: false }, true)).toBe(false);
+    expect(musicPlayerShownOnRide({ showMusicPlayer: true }, true)).toBe(true);
+  });
+
+  it('is stored as a boolean and loads from settings saved before it existed', () => {
+    expect(settingsSchema.safeParse(DEFAULT_SETTINGS).success).toBe(true);
+    const off = settingsSchema.parse({ ...DEFAULT_SETTINGS, showMusicPlayer: false });
+    expect(off.showMusicPlayer).toBe(false);
+    expect(settingsSchema.safeParse({ ...DEFAULT_SETTINGS, showMusicPlayer: 'no' }).success).toBe(
+      false,
+    );
   });
 });
 

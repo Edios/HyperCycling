@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useState } from 'react';
-import type { SpotifySettings } from '../../domain/settings';
+import { musicPlayerShown, type SpotifySettings } from '../../domain/settings';
 import { useSettings } from '../data/useSettings';
 import { useT } from '../i18n';
 import { closeDeezerBridge } from '../music/deezer/client';
@@ -346,6 +346,22 @@ export function MusicSection() {
         <p className={styles.note} data-testid="deezer-lookup-hint">
           {t('settings.music.deezer.hint')}
         </p>
+      </div>
+
+      <div className={styles.field}>
+        <Toggle
+          label={t('settings.music.player.label')}
+          checked={musicPlayerShown(settings)}
+          onChange={(on) => void save_({ showMusicPlayer: on })}
+        />
+        <p className={styles.note} data-testid="music-player-hint">
+          {t('settings.music.player.hint')}
+        </p>
+        {!musicPlayerShown(settings) && (
+          <p className={styles.note} role="status" data-testid="music-player-off-note">
+            {t('settings.music.player.offNote')}
+          </p>
+        )}
       </div>
 
       <SongLibraryCard />

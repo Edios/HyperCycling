@@ -605,6 +605,13 @@ export const en = {
   music: {
     nowPlaying: 'Now playing',
     nowPlayingMuted: 'muted',
+    player: {
+      label: 'Music player',
+      hide: 'Hide the music player',
+      toggle: 'Music player',
+      quickHint:
+        'Remembered on this device. YouTube asks for a visible player; hiding it is at your own risk under its terms.',
+    },
     unknownTrack: 'Track',
     error: {
       generic: 'Cannot play “{title}”. The workout goes on without it.',
@@ -855,6 +862,12 @@ export const en = {
         placeholder: 'Paste the API key',
         get: 'Get a free key',
         link: 'Data: GetSongBPM',
+      },
+      player: {
+        label: 'Show the music player',
+        hint: 'YouTube’s terms ask for a visible player (at least 200 × 200 px, with the song title). It is shown during a ride and in the music preview.',
+        offNote:
+          'The player is hidden. That is your own choice and your own responsibility under YouTube’s terms; the music still plays.',
       },
       deezer: {
         label: 'Deezer tempo lookup (no key)',

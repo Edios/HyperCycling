@@ -113,6 +113,31 @@ describe('YouTube music provider', () => {
     expect(broken.isReady()).toBe(false);
   });
 
+  it('keeps the frame where its parent puts it, 200 x 200, when it is visible', async () => {
+    const slot = document.createElement('div');
+    document.body.appendChild(slot);
+    const seen = createYoutubeMusicProvider({
+      loadApi: () => Promise.resolve(makeApi()),
+      parent: slot,
+      visible: true,
+    });
+    await seen.connect();
+    await seen.play(track('abc'), 0);
+    const frame = slot.querySelector<HTMLElement>('[data-testid="music-player-frame"]');
+    expect(frame).not.toBeNull();
+    expect(frame?.style.width).toBe('200px');
+    expect(frame?.style.height).toBe('200px');
+    expect(frame?.style.left).toBe('');
+    expect(frame?.getAttribute('aria-hidden')).toBeNull();
+    expect(players[0]?.opts).toMatchObject({ width: 200, height: 200 });
+    // The next track reuses the player (an iframe is never moved or reloaded).
+    await seen.play(track('def'), 0);
+    expect(players).toHaveLength(1);
+    expect(slot.querySelectorAll('[data-testid="music-player-frame"]')).toHaveLength(1);
+    seen.dispose();
+    expect(slot.querySelector('[data-testid="music-player-frame"]')).toBeNull();
+  });
+
   it('creates one hidden, off-screen player for the first track and starts at the offset', async () => {
     await provider.connect();
     await provider.play(track('abc'), 42.9);

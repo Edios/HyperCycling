@@ -28,8 +28,14 @@ export const STALL_TIMEOUT_MS = 8_000;
 export interface YoutubeMusicProviderOptions {
   /** Test seam. Defaults to the shared IFrame API loader. */
   loadApi?: () => Promise<YTNamespace>;
-  /** Where the hidden player is mounted. Defaults to `document.body`. */
+  /** Where the player is mounted. Defaults to `document.body`. */
   parent?: HTMLElement;
+  /**
+   * False (default): the frame is kept off screen (audio only). True: it stays where `parent`
+   * puts it, 200 x 200 px, and the parent decides whether it is seen: the player is not moved
+   * between elements, because moving an iframe reloads it and the music would stop.
+   */
+  visible?: boolean;
   /** Test seam for the wait between fade steps. */
   sleep?: (ms: number) => Promise<void>;
   /** Test seam for the clock the fade follows (milliseconds, monotonic). */
@@ -121,9 +127,15 @@ export function createYoutubeMusicProvider(
   ): Promise<YTMusicPlayer> {
     const parent = options.parent ?? document.body;
     const frame = document.createElement('div');
-    frame.setAttribute('aria-hidden', 'true');
-    frame.style.cssText =
-      'position:fixed;left:-10000px;top:0;width:200px;height:200px;opacity:0;pointer-events:none;';
+    if (options.visible) {
+      // YouTube's terms: a player of at least 200 x 200 px that the rider can see.
+      frame.dataset.testid = 'music-player-frame';
+      frame.style.cssText = 'width:200px;height:200px;';
+    } else {
+      frame.setAttribute('aria-hidden', 'true');
+      frame.style.cssText =
+        'position:fixed;left:-10000px;top:0;width:200px;height:200px;opacity:0;pointer-events:none;';
+    }
     const target = document.createElement('div');
     frame.appendChild(target);
     parent.appendChild(frame);

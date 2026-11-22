@@ -131,6 +131,25 @@ describe('Settings, Deezer lookup', () => {
   });
 });
 
+describe('Settings, music player', () => {
+  it('is shown by default, explains why, and a rider can turn it off on their own risk', async () => {
+    renderScreen();
+    const toggle = (await screen.findByRole('switch', {
+      name: 'Show the music player',
+    })) as HTMLInputElement;
+    expect(toggle.checked).toBe(true);
+    expect(screen.getByTestId('music-player-hint')).toHaveTextContent('200 × 200');
+    expect(screen.queryByTestId('music-player-off-note')).not.toBeInTheDocument();
+    fireEvent.click(toggle);
+    await waitFor(() => expect(repo.settings?.showMusicPlayer).toBe(false));
+    expect(await screen.findByTestId('music-player-off-note')).toHaveTextContent(
+      'your own responsibility',
+    );
+    fireEvent.click(toggle);
+    await waitFor(() => expect(repo.settings?.showMusicPlayer).toBe(true));
+  });
+});
+
 describe('Settings, GetSongBPM key', () => {
   it('saves the key on blur, hides it, credits the service, and clears it when emptied', async () => {
     renderScreen();

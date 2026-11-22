@@ -16,11 +16,14 @@ export interface MusicProviders {
  * Spotify joins when a Client ID resolves and tokens are stored (otherwise its tracks count as
  * unplayable and the director warns once per track).
  */
-export function createMusicProviders(): MusicProviders {
+export function createMusicProviders(
+  /** Where YouTube's player lives and whether it is seen there (the music player dock). */
+  youtubeFrame?: { parent: HTMLElement; visible: boolean },
+): MusicProviders {
   let youtube: YoutubeMusicProvider | undefined;
   return {
     get(kind) {
-      if (kind === 'youtube') return (youtube ??= createYoutubeMusicProvider());
+      if (kind === 'youtube') return (youtube ??= createYoutubeMusicProvider(youtubeFrame));
       return isSpotifyUsable(settingsSpotifyStore.read()) ? getSharedSpotifyProvider() : undefined;
     },
     dispose() {

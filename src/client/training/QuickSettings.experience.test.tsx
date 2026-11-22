@@ -28,6 +28,28 @@ function props(over: Partial<QuickSettingsProps> = {}): QuickSettingsProps {
   };
 }
 
+describe('QuickSettings, music player switch', () => {
+  it('is offered only when the ride has music, in the normal and the Experience panel', () => {
+    const { rerender } = render(<QuickSettings {...props()} />);
+    expect(screen.queryByRole('switch', { name: 'Music player' })).toBeNull();
+    const onMusicPlayer = vi.fn();
+    rerender(<QuickSettings {...props({ musicPlayer: true, onMusicPlayer })} />);
+    const toggle = screen.getByRole('switch', { name: 'Music player' });
+    expect(toggle).toBeChecked();
+    expect(screen.getByTestId('quick-player-hint')).toHaveTextContent('own risk');
+    fireEvent.click(toggle);
+    expect(onMusicPlayer).toHaveBeenLastCalledWith(false);
+    rerender(<QuickSettings {...props({ experience: true, musicPlayer: false, onMusicPlayer })} />);
+    expect(screen.getByRole('switch', { name: 'Music player' })).not.toBeChecked();
+  });
+
+  it('speaks Polish', () => {
+    setLang('pl');
+    render(<QuickSettings {...props({ musicPlayer: true, onMusicPlayer: vi.fn() })} />);
+    expect(screen.getByRole('switch', { name: 'Odtwarzacz muzyki' })).toBeChecked();
+  });
+});
+
 describe('QuickSettings in an Experience', () => {
   it('offers only the HUD layout and the Lite switch', () => {
     render(<QuickSettings {...props({ experience: true })} />);

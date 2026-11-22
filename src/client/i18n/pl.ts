@@ -611,6 +611,13 @@ export const pl: Messages = {
   music: {
     nowPlaying: 'Teraz gra',
     nowPlayingMuted: 'wyciszone',
+    player: {
+      label: 'Odtwarzacz muzyki',
+      hide: 'Ukryj odtwarzacz muzyki',
+      toggle: 'Odtwarzacz muzyki',
+      quickHint:
+        'Zapamiętane na tym urządzeniu. YouTube wymaga widocznego odtwarzacza; ukrycie jest na własną odpowiedzialność wobec jego regulaminu.',
+    },
     unknownTrack: 'Utwór',
     error: {
       generic: 'Nie można odtworzyć „{title}”. Trening trwa dalej bez muzyki.',
@@ -861,6 +868,12 @@ export const pl: Messages = {
         placeholder: 'Wklej klucz API',
         get: 'Weź darmowy klucz',
         link: 'Dane: GetSongBPM',
+      },
+      player: {
+        label: 'Pokaż odtwarzacz muzyki',
+        hint: 'Regulamin YouTube wymaga widocznego odtwarzacza (co najmniej 200 × 200 px, z tytułem utworu). Pokazujemy go podczas jazdy i w podglądzie muzyki.',
+        offNote:
+          'Odtwarzacz jest ukryty. To Twój wybór i Twoja odpowiedzialność wobec regulaminu YouTube; muzyka nadal gra.',
       },
       deezer: {
         label: 'Wyszukiwanie tempa w Deezer (bez klucza)',
