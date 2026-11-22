@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { bikeKindOf } from '../../domain/bike';
 import { BikeWizard } from '../bike/BikeWizard';
 import { DevicesPanel } from '../devices/DevicesPanel';
+import { useDeviceStore, useDevicesState } from '../devices/useDevices';
 import { Button } from '../ui/Button';
 import { resolveResistanceMode, type ResistanceMode } from '../../domain/settings';
 import { useSettings } from '../data/useSettings';
@@ -17,6 +17,8 @@ export function EquipmentSection() {
   const t = useT();
   const save = useSave();
   const { settings } = useSettings();
+  // A connected trainer measures power, whatever the bike setting says.
+  const trainerConnected = useDevicesState(useDeviceStore()).trainer.status === 'connected';
   const mePlayer = useMePlayer();
   const [wizard, setWizard] = useState(false);
   const eq = settings.equipment;
@@ -28,11 +30,7 @@ export function EquipmentSection() {
         <h3 id="equipment-devices" className={styles.subTitle}>
           {t('devices.title')}
         </h3>
-        <DevicesPanel
-          variant="full"
-          showTrainer={bikeKindOf(resolveResistanceMode(settings), eq) !== 'knob'}
-          showWatts={eq.showsWatts}
-        />
+        <DevicesPanel variant="full" showTrainer showWatts={eq.showsWatts || trainerConnected} />
       </section>
       <div className={styles.toggles}>
         <Toggle

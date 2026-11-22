@@ -9,7 +9,8 @@ import {
   type ProgressEntry,
 } from '../../domain/plan';
 import type { SessionLog } from '../../domain/session-log';
-import { DEFAULT_SETTINGS, type Settings } from '../../domain/settings';
+import { type Settings } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 
 interface Db {
   settings?: Settings;
@@ -80,7 +81,7 @@ function renderTab() {
 }
 
 beforeEach(() => {
-  db.settings = undefined;
+  db.settings = METERED_SETTINGS;
   db.progress = [];
   db.logs = [];
   resetSettingsForTests();
@@ -101,7 +102,7 @@ describe('PlanTab', () => {
   });
 
   it('in progress shows header, counts, next session and weeks list', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: plan.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: plan.id };
     db.progress = [progressFor([entry(1, 'progres'), entry(1, 'freestyle', 'skipped')])];
     renderTab();
 
@@ -119,14 +120,14 @@ describe('PlanTab', () => {
   });
 
   it('a fresh plan without stored progress starts at week 1', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: plan.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: plan.id };
     renderTab();
     expect(await screen.findByText(/Next session · week 1/)).toBeInTheDocument();
     expect(screen.getByTestId('plan-done')).toHaveTextContent(/^0 of \d+ sessions$/);
   });
 
   it('Ride opens setup with the plan, week and slot in the query', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: plan.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: plan.id };
     renderTab();
     fireEvent.click(await screen.findByRole('button', { name: 'Ride' }));
     const where = (await screen.findByTestId('where')).textContent ?? '';
@@ -134,7 +135,7 @@ describe('PlanTab', () => {
   });
 
   it('a finished plan says so and offers to choose another', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: plan.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: plan.id };
     const entries: ProgressEntry[] = [];
     plan.weeks.forEach((w, i) => w.sessions.forEach((s) => entries.push(entry(i + 1, s.slot))));
     db.progress = [progressFor(entries)];
@@ -145,7 +146,7 @@ describe('PlanTab', () => {
   });
 
   it('Swap on a freestyle slot lists freestyle workouts and rides the chosen one', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: plan.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: plan.id };
     db.progress = [progressFor([entry(1, 'progres')])];
     renderTab();
     fireEvent.click(await screen.findByRole('button', { name: 'Swap' }));
@@ -160,7 +161,7 @@ describe('PlanTab', () => {
   });
 
   it('Swap on a progres slot is disabled when the week has no alternative', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: plan.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: plan.id };
     renderTab();
     const swap = await screen.findByRole('button', { name: 'Swap' });
     const week = plan.weeks[0];
@@ -177,7 +178,7 @@ describe('PlanTab', () => {
   });
 
   it('shows the last ridden session', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: plan.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: plan.id };
     const w = builtinWorkouts[0];
     if (!w) throw new Error('no workouts');
     db.logs = [
@@ -197,7 +198,7 @@ describe('PlanTab', () => {
   });
 
   it('badge follows the slot, not the workout category', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: plan.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: plan.id };
     db.progress = [progressFor([entry(1, 'progres')])];
     renderTab();
     const card = await screen.findByTestId('next-session');
@@ -208,7 +209,7 @@ describe('PlanTab', () => {
   it('Swap on a progres slot offers the week alternative when there is one', async () => {
     const bf = builtinPlans.find((p) => p.id === 'build-form') as Plan;
     const alt = bf.weeks[0]?.progresAlt as string;
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: bf.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: bf.id };
     db.progress = [progressFor([], bf)];
     renderTab();
     const swap = await screen.findByRole('button', { name: 'Swap' });
@@ -226,7 +227,7 @@ describe('PlanTab', () => {
   it('doubleProgres layout serves the progres alternative in the second slot', async () => {
     const bf = builtinPlans.find((p) => p.id === 'build-form') as Plan;
     const alt = bf.weeks[0]?.progresAlt as string;
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: bf.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: bf.id };
     db.progress = [
       progressFor([entry(1, 'progres', 'done', bf)], bf, {
         ...DEFAULT_PLAN_SETTINGS,
@@ -242,7 +243,7 @@ describe('PlanTab', () => {
 
   it('a looping plan starts its next cycle after a full pass', async () => {
     const loop = builtinPlans.find((p) => p.loop) as Plan;
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: loop.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: loop.id };
     const entries: ProgressEntry[] = [];
     loop.weeks.forEach((w, i) =>
       w.sessions.forEach((s) => entries.push(entry(i + 1, s.slot, 'done', loop))),

@@ -2,7 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_PLAN_SETTINGS, type Plan, type PlanProgress } from '../../domain/plan';
-import { DEFAULT_SETTINGS, type Settings } from '../../domain/settings';
+import { type Settings } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 
 interface Db {
   settings?: Settings;
@@ -65,7 +66,7 @@ describe('PlanTab and the FTP test', () => {
   });
 
   it('with watts the next session is the FTP test', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: bf.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: bf.id };
     renderTab();
     fireEvent.click(await screen.findByRole('button', { name: 'Ride' }));
     expect((await screen.findByTestId('where')).textContent).toBe(
@@ -75,9 +76,9 @@ describe('PlanTab and the FTP test', () => {
 
   it('without watts the next session and the weeks list use the alternative', async () => {
     db.settings = {
-      ...DEFAULT_SETTINGS,
+      ...METERED_SETTINGS,
       activePlanId: bf.id,
-      equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
+      equipment: { ...METERED_SETTINGS.equipment, showsWatts: false },
     };
     renderTab();
     const week1 = await screen.findByTestId('week-1-progres');

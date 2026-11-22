@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { nextSession } from '../../domain/plan';
 import { type Mode } from '../brand';
-import { useLibrary } from '../data/useLibrary';
 import { useT, type MessageKey } from '../i18n';
 import { useActivePlan } from '../select/useActivePlan';
 import { ModeIcon } from '../brand';
@@ -20,7 +19,6 @@ const TILES: readonly { id: 'plan' | 'free' | 'experience'; mode: TileMode; to: 
 /** Start page: a short introduction and three big, differently coloured ways to ride. */
 export function Home() {
   const t = useT();
-  const { workouts } = useLibrary();
   const active = useActivePlan();
   const next = useMemo(
     () => (active.state === 'ready' ? nextSession(active.plan, active.progress) : null),
@@ -51,11 +49,7 @@ export function Home() {
               {id === 'experience' && (
                 <span className={styles.tagline}>{t('experience.tagline')}</span>
               )}
-              <span className={styles.body}>
-                {id === 'free'
-                  ? t('home.freeBody', { count: workouts.length })
-                  : t(`home.${id}Body` as MessageKey)}
-              </span>
+              <span className={styles.body}>{t(`home.${id}Body` as MessageKey)}</span>
             </span>
           </Link>
         ))}

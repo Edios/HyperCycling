@@ -113,3 +113,10 @@
     transition: none;
   }
 }
+
+/* Phone: the Start bar's "More" chip opens this panel, so the closed line would be a second way in. */
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) {
+  .panel[data-chip-bar='true'][data-open='false'] {
+    display: none;
+  }
+}

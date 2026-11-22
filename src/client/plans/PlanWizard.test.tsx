@@ -3,7 +3,8 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Plan, PlanProgress, PlanSettings } from '../../domain/plan';
 import type { Player } from '../../domain/player';
-import { DEFAULT_SETTINGS, type Settings } from '../../domain/settings';
+import { type Settings } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 
 interface Db {
   settings?: Settings;
@@ -95,7 +96,7 @@ async function toFtpStep(goal = 'Build Form') {
 }
 
 beforeEach(() => {
-  db.settings = undefined;
+  db.settings = METERED_SETTINGS;
   db.progress = [];
   db.players = [];
   db.puts = { progress: [], players: [], settings: [] };
@@ -145,8 +146,8 @@ describe('PlanWizard steps', () => {
 
   it('offers a bike without watts and selects it when the setting says no watts', async () => {
     db.settings = {
-      ...DEFAULT_SETTINGS,
-      equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
+      ...METERED_SETTINGS,
+      equipment: { ...METERED_SETTINGS.equipment, showsWatts: false },
     };
     renderWizard();
     await toFtpStep();
@@ -278,7 +279,7 @@ describe('PlanWizard recommendation', () => {
 
   it('asks before replacing another active plan that has progress', async () => {
     const other = builtinPlans.find((p) => p.id === 'keep-fit') as Plan;
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: other.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: other.id };
     db.progress = [progressFor(other, SETTINGS)];
     renderWizard();
     await toFtpStep();
@@ -346,7 +347,7 @@ describe('PlanWizard recommendation', () => {
   });
 
   it('asks before changing the settings of the active plan that already has entries', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: buildForm.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: buildForm.id };
     db.progress = [progressFor(buildForm, SETTINGS)];
     renderWizard();
     await toFtpStep();
@@ -359,7 +360,7 @@ describe('PlanWizard recommendation', () => {
   });
 
   it('starts the active plan without asking while it has no entries', async () => {
-    db.settings = { ...DEFAULT_SETTINGS, activePlanId: buildForm.id };
+    db.settings = { ...METERED_SETTINGS, activePlanId: buildForm.id };
     db.progress = [{ ...progressFor(buildForm, SETTINGS), entries: [] }];
     renderWizard();
     await toFtpStep();

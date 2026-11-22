@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Plan } from '../../domain/plan';
-import { DEFAULT_SETTINGS } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 import { builtinPlans } from '../data/builtin';
 import {
   hoursPerWeek,
@@ -48,19 +48,19 @@ describe('plans model', () => {
   });
 
   it('finds the ramp-test weeks and drops them without watts', () => {
-    const weeks = testWeeks(buildForm, DEFAULT_SETTINGS.equipment, 'progresFreestyle');
+    const weeks = testWeeks(buildForm, METERED_SETTINGS.equipment, 'progresFreestyle');
     expect(weeks).toContain(1);
     expect(weeks).toContain(buildForm.weeks.length);
     const none = testWeeks(
       buildForm,
-      { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
+      { ...METERED_SETTINGS.equipment, showsWatts: false },
       'progresFreestyle',
     );
     expect(none).toEqual([]);
   });
 
   it('does not count week 1 as a test week when the first test is skipped', () => {
-    const weeks = testWeeks(buildForm, DEFAULT_SETTINGS.equipment, 'progresFreestyle', true);
+    const weeks = testWeeks(buildForm, METERED_SETTINGS.equipment, 'progresFreestyle', true);
     expect(weeks).not.toContain(1);
     expect(weeks).toContain(buildForm.weeks.length);
   });

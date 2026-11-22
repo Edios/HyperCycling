@@ -3,7 +3,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Player } from '../../domain/player';
 import { flattenWorkout } from '../../domain/segments';
-import { DEFAULT_SETTINGS, type Settings, type SessionConfig } from '../../domain/settings';
+import { type Settings, type SessionConfig } from '../../domain/settings';
+import { METERED_SETTINGS } from '../test-settings';
 import type { Workout } from '../../domain/workout';
 import { resetSettingsForTests } from '../data/useSettings';
 import { useLastResult } from './last-result';
@@ -156,7 +157,7 @@ describe('TrainingScreen', () => {
   });
 
   it('does not show cues when coach is off', async () => {
-    stored = { ...DEFAULT_SETTINGS, coach: false };
+    stored = { ...METERED_SETTINGS, coach: false };
     load();
     await renderScreen();
     await screen.findByTestId('layout-solo');
@@ -261,8 +262,8 @@ describe('TrainingScreen', () => {
 
   it('hideRpmTile gives two tiles', async () => {
     stored = {
-      ...DEFAULT_SETTINGS,
-      equipment: { ...DEFAULT_SETTINGS.equipment, hideRpmTile: true },
+      ...METERED_SETTINGS,
+      equipment: { ...METERED_SETTINGS.equipment, hideRpmTile: true },
     };
     load();
     await renderScreen();
@@ -271,6 +272,7 @@ describe('TrainingScreen', () => {
   });
 
   it('players layout lists watts for each player, and G toggles it', async () => {
+    stored = METERED_SETTINGS;
     load('players', true);
     await renderScreen();
     await screen.findByTestId('layout-players');
@@ -287,8 +289,8 @@ describe('TrainingScreen', () => {
 
   it('players layout shows names only when the bike has no power', async () => {
     stored = {
-      ...DEFAULT_SETTINGS,
-      equipment: { ...DEFAULT_SETTINGS.equipment, showsWatts: false },
+      ...METERED_SETTINGS,
+      equipment: { ...METERED_SETTINGS.equipment, showsWatts: false },
     };
     load('players', true);
     await renderScreen();
@@ -305,7 +307,7 @@ describe('TrainingScreen', () => {
   });
 
   it('applies the light theme from settings', async () => {
-    stored = { ...DEFAULT_SETTINGS, basicTheme: 'light' };
+    stored = { ...METERED_SETTINGS, basicTheme: 'light' };
     load();
     await renderScreen();
     await screen.findByTestId('layout-solo');

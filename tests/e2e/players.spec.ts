@@ -4,7 +4,7 @@ import { expect, test } from './fixtures';
 async function add(page: Page, name: string, ftp: string): Promise<void> {
   const form = page.getByTestId('add-player-form');
   await form.getByLabel('Name').fill(name);
-  await form.getByLabel('FTP (W)').fill(ftp);
+  await form.getByLabel('FTP (W)', { exact: true }).fill(ftp);
   await form.getByRole('button', { name: 'Add', exact: true }).click();
   await expect(page.getByTestId('player-row').filter({ hasText: name })).toBeVisible();
 }
@@ -39,10 +39,10 @@ test('players: add two, mark me, edit, delete; everything survives a reload', as
 
   await page.getByRole('button', { name: `Edit ${a}` }).click();
   const edit = page.getByTestId('player-edit');
-  await edit.getByLabel('FTP (W)').fill('20');
+  await edit.getByLabel('FTP (W)', { exact: true }).fill('20');
   await edit.getByRole('button', { name: 'Save' }).click();
   await expect(edit.getByText('FTP must be a whole number from 50 to 600')).toBeVisible();
-  await edit.getByLabel('FTP (W)').fill('230');
+  await edit.getByLabel('FTP (W)', { exact: true }).fill('230');
   await edit.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByTestId('player-row').filter({ hasText: a })).toContainText('230');
 

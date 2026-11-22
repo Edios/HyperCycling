@@ -28,6 +28,15 @@ export function bikeKindOf(mode: ResistanceMode, eq: Pick<Equipment, 'showsWatts
   return eq.showsWatts ? 'knobPower' : 'knob';
 }
 
+/**
+ * Whether the bike counts as one that shows watts: the switch in Settings, or a Bluetooth trainer
+ * that is connected (it measures power whatever the switch says). One answer for the setup and
+ * the whole ride, so a fresh profile with a trainer rides in trainer mode.
+ */
+export function bikeShowsWatts(eq: Pick<Equipment, 'showsWatts'>, trainerPresent: boolean): boolean {
+  return eq.showsWatts || trainerPresent;
+}
+
 /** Whether this bike has a manual resistance knob (no per-rider calibration; effort is 1-10). */
 export function hasKnob(kind: BikeKind): boolean {
   return kind !== 'smart';
