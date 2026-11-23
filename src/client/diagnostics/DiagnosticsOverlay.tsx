@@ -32,7 +32,11 @@ export function DiagnosticsOverlay({ scene, quality }: DiagnosticsOverlayProps) 
       <div>
         {size ?? dash} | {quality ?? dash} | {scene}
       </div>
-      {webglIssue && <div data-testid="diagnostics-webgl">WebGL: {webglIssue}</div>}
+      {webglIssue && (
+        <div data-testid="diagnostics-webgl">
+          {t('diagnostics.overlay.webgl', { reason: webglIssue })}
+        </div>
+      )}
       {rs && (
         <div data-testid="diagnostics-gpu">
           {t('diagnostics.overlay.gpu', {

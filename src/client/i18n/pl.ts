@@ -1309,6 +1309,7 @@ export const pl: Messages = {
       size: 'canvas',
       quality: 'jakość',
       scene: 'scena',
+      webgl: 'WebGL: {reason}',
     },
     autoLowered: 'Obniżono jakość dla płynności',
   },
