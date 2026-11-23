@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
 import type { Segment } from '../../domain/segments';
 import { WorldCanvas } from './WorldCanvas';
+import { readWebglIssue } from './webgl-log';
 import type { FrameInput } from './world';
 
 /** Minimal stand-in for the parts of three the Neon Tunnel touches; records disposal. */
@@ -255,11 +256,90 @@ function mockWebgl(): void {
 }
 
 describe('WorldCanvas', () => {
+  it('retries after a refused context and starts the world when the second try works', async () => {
+    const gl = { getExtension: () => ({ loseContext: vi.fn() }) };
+    const getContext = vi
+      .spyOn(HTMLCanvasElement.prototype, 'getContext')
+      .mockReturnValueOnce(null)
+      .mockReturnValueOnce(null) // webgl2 and webgl of the first probe
+      .mockReturnValue(gl as unknown as RenderingContext);
+    const onUnavailable = vi.fn();
+    render(
+      <WorldCanvas
+        getFrameInput={() => input}
+        quality="high"
+        onUnavailable={onUnavailable}
+        retryDelaysMs={[10, 10]}
+      />,
+    );
+    await waitFor(() => expect(fake.log.renderers.length).toBeGreaterThan(0));
+    expect(getContext.mock.calls.length).toBeGreaterThan(2);
+    expect(onUnavailable).not.toHaveBeenCalled();
+    expect(readWebglIssue()).toBeNull();
+  });
+
+  it('gives up only after the last retry and says why', async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const onUnavailable = vi.fn();
+    render(
+      <WorldCanvas
+        getFrameInput={() => input}
+        quality="high"
+        onUnavailable={onUnavailable}
+        retryDelaysMs={[5, 5]}
+      />,
+    );
+    await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
+    expect(readWebglIssue()).toBe('getContext returned null');
+  });
+
+  it('retries a failed world start on a fresh canvas', async () => {
+    mockWebgl();
+    fake.log.failRenderer = true;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const onUnavailable = vi.fn();
+    const { getByTestId } = render(
+      <WorldCanvas
+        getFrameInput={() => input}
+        quality="high"
+        onUnavailable={onUnavailable}
+        retryDelaysMs={[300]}
+      />,
+    );
+    const first = getByTestId('world-canvas');
+    await waitFor(() => expect(warn).toHaveBeenCalled());
+    fake.log.failRenderer = false;
+    await waitFor(() => expect(getByTestId('world-canvas')).not.toBe(first));
+    await waitFor(() => expect(fake.log.renderers.length).toBeGreaterThan(0));
+    expect(onUnavailable).not.toHaveBeenCalled();
+  });
+
+  it('keeps a lost context restorable and starts again when it comes back', async () => {
+    mockWebgl();
+    const { getByTestId } = render(
+      <WorldCanvas getFrameInput={() => input} quality="high" retryDelaysMs={[]} />,
+    );
+    await waitFor(() => expect(fake.log.renderers).toHaveLength(1));
+    const canvas = getByTestId('world-canvas');
+    const lost = new Event('webglcontextlost', { cancelable: true });
+    canvas.dispatchEvent(lost);
+    expect(lost.defaultPrevented).toBe(true);
+    expect(readWebglIssue()).toBe('context lost');
+    canvas.dispatchEvent(new Event('webglcontextrestored'));
+    await waitFor(() => expect(fake.log.renderers).toHaveLength(2));
+    expect(readWebglIssue()).toBeNull();
+  });
+
   it('reports unavailable when WebGL context creation fails', async () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     const onUnavailable = vi.fn();
     render(
-      <WorldCanvas getFrameInput={() => input} quality="high" onUnavailable={onUnavailable} />,
+      <WorldCanvas
+        getFrameInput={() => input}
+        quality="high"
+        onUnavailable={onUnavailable}
+        retryDelaysMs={[]}
+      />,
     );
     await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
     expect(fake.log.renderers).toHaveLength(0);
@@ -271,7 +351,12 @@ describe('WorldCanvas', () => {
     const onUnavailable = vi.fn();
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     render(
-      <WorldCanvas getFrameInput={() => input} quality="high" onUnavailable={onUnavailable} />,
+      <WorldCanvas
+        getFrameInput={() => input}
+        quality="high"
+        onUnavailable={onUnavailable}
+        retryDelaysMs={[]}
+      />,
     );
     await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
     expect(fake.log.disposed).toEqual([]);
@@ -283,7 +368,12 @@ describe('WorldCanvas', () => {
     const onUnavailable = vi.fn();
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     render(
-      <WorldCanvas getFrameInput={() => input} quality="high" onUnavailable={onUnavailable} />,
+      <WorldCanvas
+        getFrameInput={() => input}
+        quality="high"
+        onUnavailable={onUnavailable}
+        retryDelaysMs={[]}
+      />,
     );
     await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
     expect(fake.log.disposed).toEqual(
