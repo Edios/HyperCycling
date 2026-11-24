@@ -148,7 +148,13 @@ describe("soundtrack catalog: owner's rules", () => {
   it('gives a song ridden at 105 rpm or faster only the intervals role', () => {
     const fast = onBeat.filter((t) => catalogRpm(t.bpm) >= ROLE_SPRINT_RPM);
     expect(fast.length).toBeGreaterThan(0);
-    for (const t of fast) expect(t.roles, t.id).toEqual(['intervals']);
+    // The finisher role is a mark on top of the real ones (R1d-2).
+    for (const t of fast) {
+      expect(
+        t.roles.filter((r) => r !== 'finisher'),
+        t.id,
+      ).toEqual(['intervals']);
+    }
   });
 
   it('files dance-house at half tempo under Pop/Electronic, not House', () => {

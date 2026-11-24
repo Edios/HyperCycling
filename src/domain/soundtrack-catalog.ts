@@ -19,8 +19,32 @@ import { MUSIC_CATEGORIES, type MusicCategoryId } from './soundtrack';
  * What a song is for in a ride. `climb` = slow, heavy cadence (seated or standing climbs);
  * `intervals` = sprints and hard intervals. A song may have several.
  */
-export const TRACK_ROLES = ['warmup', 'steady', 'climb', 'intervals', 'cooldown'] as const;
+export const TRACK_ROLES = [
+  'warmup',
+  'steady',
+  'climb',
+  'intervals',
+  'cooldown',
+  'finisher',
+] as const;
 export type TrackRole = (typeof TRACK_ROLES)[number];
+
+/**
+ * `finisher` is a mark on top of the other roles (the song also has one of them): the last part of
+ * a ride, high energy and a euphoric mood (energy-matching spec, section 8). The planner does not
+ * read it yet.
+ */
+export const FINISHER_ROLE: TrackRole = 'finisher';
+
+/**
+ * The feel of a song, apart from its energy (spec section 8): the finisher is the euphoric ones.
+ * Heard by ear, one per song.
+ */
+export const TRACK_MOODS = ['mellow', 'warm', 'euphoric', 'dark', 'aggressive', 'playful'] as const;
+export type TrackMood = (typeof TRACK_MOODS)[number];
+
+/** How steady the beat is to hold a cadence to: 1 loose or syncopated, 3 locked (spec section 8). */
+export type TrackGroove = 1 | 2 | 3;
 
 /**
  * `fallback` = a long, calm instrumental the ride may play wherever the songs leave silence (gap
@@ -53,6 +77,13 @@ export interface CatalogTrack extends QueueItem {
    * independent of the BPM and of the tempo the song is ridden at (energy-matching spec, section 2).
    */
   energy: TrackEnergy;
+  /**
+   * Predictability of the beat, 1 = loose, shifting or syncopated, 3 = locked and even; a
+   * tie-breaker for steady parts and climbs. Absent for a song without a beat.
+   */
+  groove?: TrackGroove;
+  /** The feel of the song; `finisher` songs are `euphoric`. */
+  mood?: TrackMood;
   /** Revision of the energy tagging this song went through (absent = the first, rough one). */
   tagged?: 2;
   /**
@@ -137,6 +168,8 @@ export const catalogTrackSchema = z
     categories: z.array(z.enum(MUSIC_CATEGORIES)).min(1).refine(distinct, 'duplicate category'),
     roles: z.array(z.enum(TRACK_ROLES)).min(1).refine(distinct, 'duplicate role'),
     energy: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
+    groove: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+    mood: z.enum(TRACK_MOODS).optional(),
     tagged: z.literal(2).optional(),
     energyNote: z.string().trim().min(1).max(ENERGY_NOTE_MAX).optional(),
     beat: z.enum(['steady', 'none']),
@@ -195,12 +228,22 @@ export function catalogProblems(tracks: readonly CatalogTrack[]): string[] {
       } else uploads.set(u.id, t.id);
     }
     const rpm = t.bpm === undefined ? undefined : catalogRpm(t.bpm);
+    // The finisher role is a mark on top of the real ones, so it does not count here.
+    const real = t.roles.filter((r) => r !== FINISHER_ROLE);
     if (
       rpm !== undefined &&
       rpm >= ROLE_SPRINT_RPM &&
-      (t.roles.length !== 1 || t.roles[0] !== 'intervals')
+      (real.length !== 1 || real[0] !== 'intervals')
     ) {
       problems.push(`${t.id}: ridden at ${rpm} rpm, so its only role is intervals`);
+    }
+    if (t.beat === 'none' && t.groove !== undefined) {
+      problems.push(`${t.id}: a song without a beat has no groove`);
+    }
+    if (t.roles.includes(FINISHER_ROLE)) {
+      if (real.length === 0) problems.push(`${t.id}: a finisher also needs another role`);
+      if (t.energy < 4) problems.push(`${t.id}: a finisher needs energy 4 or 5`);
+      if (t.mood !== 'euphoric') problems.push(`${t.id}: a finisher needs the euphoric mood`);
     }
     // Sprint = intervals + energy 4-5 + no long intro. A song that has the intervals role without
     // being one (a ballad ridden at 105 rpm), or a peak song for a warm-up or cool-down, is kept
