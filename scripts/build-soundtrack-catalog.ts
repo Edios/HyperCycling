@@ -18,6 +18,8 @@
 // - keeps the tempo notes in English, drops research-only notes and re-uploaders' channel names;
 // - appends the songs added after the selection (`ADDED`) and marks the fallback ones;
 // - applies the upload fixes found since the proposal (`UPLOAD_FIXES`);
+// - appends the finished entries of `soundtrack-catalog-additions.json` (songs added by data PRs
+//   after the proposal, with their own tagging and uploads);
 // - refuses songs the owner vetoed, then validates everything with `parseCatalog`.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -285,9 +287,20 @@ if (longNotes.length > 0)
 const missing = selection.filter((id) => !byId.has(id));
 if (missing.length > 0) fail(`Selected ids missing from the proposal: ${missing.join(', ')}`);
 
+// Finished entries of the data PRs after the proposal (the same schema as the catalog itself).
+const additions = JSON.parse(
+  readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), 'soundtrack-catalog-additions.json'),
+    'utf8',
+  ),
+) as CatalogTrack[];
+const clash = additions.filter((t) => selection.includes(t.id));
+if (clash.length > 0)
+  fail(`Additions already in the selection: ${clash.map((t) => t.id).join(', ')}`);
+
 const catalog: SoundtrackCatalog = {
   v: 1,
-  tracks: selection.map((id) => toCatalog(byId.get(id) as ProposalTrack)),
+  tracks: [...selection.map((id) => toCatalog(byId.get(id) as ProposalTrack)), ...additions],
 };
 parseCatalog(catalog); // throws with every problem listed
 
