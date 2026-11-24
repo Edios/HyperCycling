@@ -9,6 +9,7 @@ import {
   DEFAULT_SOUNDTRACK_PREFS,
   MAX_PICKS,
   planSoundtrack,
+  ROTATION_REF_SEC,
   scoreTrack,
   shuffleValue,
   soundtrackFingerprint,
@@ -265,6 +266,20 @@ describe('buildQueue', () => {
     expect(new Set(q.picks).size).toBe(q.picks.length);
   });
 
+  it('charges a short song its rotation cost as if it lasted ROTATION_REF_SEC (R1f)', () => {
+    // A 150 s song of the last ride (rotation 0.3 already in its score) used to pay that cost only
+    // for its 150 s, so it stayed the handy filler of every ride. Now it pays for 240 s.
+    const x = cand(song('x', { sec: 300 }), 0.8);
+    const repeated = { ...cand(song('s', { sec: 150 }), 0.6), rotation: 0.3 };
+    const fresh = cand(song('y', { sec: 150 }), 0.55);
+    const q = buildQueue([x, repeated, fresh], 450);
+    expect(q.picks.map((i) => [x, repeated, fresh][i]!.track.id)).toEqual(['x', 'y']);
+    // Without a rotation cost the better score wins, as before.
+    const plain = buildQueue([x, { ...repeated, rotation: 0 }, fresh], 450);
+    expect(plain.picks.map((i) => [x, repeated, fresh][i]!.track.id)).toEqual(['x', 's']);
+    expect(ROTATION_REF_SEC).toBe(240);
+  });
+
   it('returns the longest queue when the music cannot fill the section', () => {
     const cands = [cand(song('a', { sec: 120 })), cand(song('b', { sec: 100 }))];
     const q = buildQueue(cands, 600);
@@ -384,6 +399,18 @@ describe('planSoundtrack', () => {
     }
     const cool = plan.sections.find((s) => s.role === 'cooldown')!;
     expect(cool.picks.some((p) => byId(catalog).get(p.ref.id)!.beat === 'none')).toBe(true);
+  });
+
+  it('breaks near-ties per workout: one seed does not shuffle every workout alike (R1f)', () => {
+    const p = prefs({ categories: ['electronic', 'rock'] });
+    const ids = (w: Workout, seed: number) =>
+      allPicks(planSoundtrack(w, catalog, { ...p, seed })).map((x) => x.ref.id);
+    const a = { ...ride, id: 'ride-a' };
+    const b = { ...ride, id: 'ride-b' };
+    const seeds = [1, 2, 3, 4, 5, 6, 7, 8];
+    expect(seeds.some((seed) => ids(a, seed).join() !== ids(b, seed).join())).toBe(true);
+    // Still deterministic for a workout and a seed.
+    expect(ids(a, 3)).toEqual(ids(a, 3));
   });
 
   it('is deterministic for a seed; another seed shuffles near-equal songs', () => {

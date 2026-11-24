@@ -21,6 +21,7 @@ import rawCatalog from './soundtrack/catalog.json';
 const catalog: CatalogTrack[] = parseCatalog(rawCatalog).tracks;
 const byId = new Map(catalog.map((t) => [t.id, t]));
 const MAANAM = 'maanam-kocham-cie-kochanie-moje';
+const FEEL = 'feel-jak-aniola-glos';
 
 const steady = (id: string, sec: number, effort: number, rpm?: number): SteadyBlock => ({
   kind: 'steady',
@@ -266,15 +267,76 @@ describe('what a first visit gets on every built-in workout (no history yet)', (
         if (byId.get(id)?.pl) counts.set(id, (counts.get(id) ?? 0) + 1);
       }
     }
-    // Packing artifact of the 2026-11-24 data PR (50 songs): the plan fills a part with the songs
-    // whose lengths end closest to its end, and Flume - Holdin On (2:35) now pairs with Feel -
-    // Jak anioła głos (3:35) in the 17-minute steady parts of most workouts. Feel's share swings
-    // between 14% and 62% when Flume is a few seconds shorter or longer, so this is the planner's
-    // length sensitivity, not a song that fits too well. Only Feel may go up to 100 plans (86%);
-    // every other song keeps the 30%. Margaret fell to 17 plans, so her old exception is gone.
-    const limit = (id: string) => (id === 'feel-jak-aniola-glos' ? 100 : 0.3 * plans.length);
+    // Feel - Jak anioła głos is a pop song that fits the easy 90 rpm parts most workouts open with,
+    // and the first-visit categories (electronic + pop) have few of them. Before R1f every workout
+    // broke the same near-tie the same way (one seed for all), so Feel was in 96 of 116 plans or in
+    // 16, depending on the seed or a few seconds of another song. The shuffle now breaks ties per
+    // workout (see the next test): 72 plans at seed 1, 72-85 over seeds 1-5. Only Feel may go up
+    // to 80 plans (69%); every other song keeps the 30%.
+    const limit = (id: string) => (id === FEEL ? 80 : 0.3 * plans.length);
     const crowded = [...counts].filter(([id, n]) => n > limit(id)).map(([id]) => id);
     expect(crowded).toEqual([]);
+  });
+
+  it('breaks near-ties per workout: the seed moves a song by a few plans, not all of them (R1f)', () => {
+    // One seed used to break the same tie the same way in every workout, so a song was in nearly
+    // all first-visit plans or in few (Feel: 16 to 104 over seeds 1-5).
+    const feel = (seed: number) =>
+      builtinWorkouts.filter((w) =>
+        allIds(planSoundtrack(w, catalog, { ...FIRST_VISIT_PREFS, seed })).includes(FEEL),
+      ).length;
+    const counts = [1, 2, 3, 4, 5].map(feel);
+    expect(Math.max(...counts) - Math.min(...counts), counts.join(' ')).toBeLessThanOrEqual(20);
+  });
+});
+
+describe('rotation over ten rides of every built-in workout (R1f)', () => {
+  // Ten rides of each workout, each with the earlier ones as history (newest first, at most 8),
+  // as the app keeps it. Counted over the first five rides (580) and over all ten.
+  const rides = builtinWorkouts.map((w) => {
+    const history: string[][] = [];
+    const out: SoundtrackPlan[] = [];
+    for (let r = 0; r < 10; r++) {
+      const plan = planSoundtrack(
+        w,
+        catalog,
+        { ...FIRST_VISIT_PREFS, seed: 1000 + r * 7919 },
+        { history },
+      );
+      out.push(plan);
+      history.unshift(allIds(plan));
+      history.length = Math.min(history.length, 8);
+    }
+    return out;
+  });
+
+  it('puts no song in more than 75% of the rides (Flume - Holdin On was in 464 of 580)', () => {
+    const counts = new Map<string, number>();
+    for (const plans of rides) {
+      for (const plan of plans.slice(0, 5)) {
+        for (const id of new Set(allIds(plan))) counts.set(id, (counts.get(id) ?? 0) + 1);
+      }
+    }
+    const limit = 0.75 * 5 * rides.length;
+    const top = [...counts].sort((a, b) => b[1] - a[1])[0]!;
+    expect(top[1], top[0]).toBeLessThanOrEqual(limit);
+  });
+
+  it('keeps fewer songs in all ten rides of a workout (294 such pairs before R1f)', () => {
+    let pairs = 0;
+    for (const plans of rides) {
+      const counts = new Map<string, number>();
+      for (const plan of plans) {
+        for (const id of new Set(allIds(plan))) counts.set(id, (counts.get(id) ?? 0) + 1);
+      }
+      for (const n of counts.values()) if (n === 10) pairs += 1;
+    }
+    expect(pairs).toBeLessThanOrEqual(280);
+  });
+
+  it('leaves no gap over 30 s in any ride', () => {
+    const gaps = rides.flat().flatMap((p) => p.sections.filter((s) => s.report.gapSec > 30));
+    expect(gaps).toEqual([]);
   });
 });
 

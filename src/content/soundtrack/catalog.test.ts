@@ -200,6 +200,45 @@ describe("soundtrack catalog: owner's rules", () => {
   });
 });
 
+describe('the batch of 2026-11-24 after its review (R1f)', () => {
+  const batch = tracks.slice(179);
+  const get = (id: string) => {
+    const t = tracks.find((x) => x.id === id);
+    if (!t) throw new Error(id);
+    return t;
+  };
+
+  it('is the 50 songs of the data PR', () => {
+    expect(batch).toHaveLength(50);
+    expect(batch[0]!.id).toBe('jikay-take-me-not-your-dope-remix');
+  });
+
+  it('marks the songs whose album versions have explicit lyrics', () => {
+    for (const id of ['slowthai-doorman', 'nas-bridging-the-gap', 'flo-rida-gdfr']) {
+      expect(get(id).clean, id).toBe(false);
+    }
+  });
+
+  it("hears Moby's Flower as a driving breakbeat: energy 3, not a cool-down song", () => {
+    expect(get('moby-flower').energy).toBe(3);
+    expect(get('moby-flower').roles).not.toContain('cooldown');
+  });
+
+  it('gives every steady song at 125-150 BPM and energy 3-4 the climb role too (one rule)', () => {
+    const missing = batch.filter(
+      (t) =>
+        t.bpm !== undefined &&
+        t.bpm >= 125 &&
+        t.bpm <= 150 &&
+        t.energy >= 3 &&
+        t.energy <= 4 &&
+        t.roles.includes('steady') &&
+        !t.roles.includes('climb'),
+    );
+    expect(missing.map((t) => t.id)).toEqual([]);
+  });
+});
+
 describe('soundtrack catalog: tempo coverage (spec §12)', () => {
   it(`fits every cadence from 60 to 125 rpm with at least ${MIN_FITS_PER_RPM} songs`, () => {
     for (const rpm of RPMS) {
