@@ -108,6 +108,25 @@ export const INTERVAL_MAX_WORK_SEC = 60;
 /** Why a section keeps the music it already has: the cooldown track, or a cue already placed. */
 export type SectionLock = 'cooldownTrack' | 'userCue';
 
+/**
+ * A part whose effort rises, falls, or rises and falls (a ramp, a pyramid, climbing steps): the
+ * songs follow it (music energy spec section 8). Soft: the planner only prefers songs on the curve.
+ */
+export type TrendKind = 'up' | 'down' | 'pyramid';
+
+export interface SectionTrend {
+  kind: TrendKind;
+  /** Effort 1-10 of `TREND_SLICES` equal slices of the part's time, in order. */
+  curve: number[];
+}
+
+/** Slices of a part the trend curve is read at. */
+export const TREND_SLICES = 12;
+/** A part shorter than this holds too few songs to follow a trend. */
+export const TREND_MIN_SEC = 360;
+/** The effort a trend must rise or fall by (the ends of the part against its top). */
+export const TREND_MIN_EFFORT = 1.5;
+
 export interface BlockRef {
   blockId: string;
   rep: number;
@@ -154,6 +173,8 @@ export interface MusicSection {
    * of the effort range) for an `intervals` section, `effort.mean` otherwise.
    */
   workEffort: number;
+  /** Present when the effort rises and/or falls inside the part (`detectTrend`). */
+  trend?: SectionTrend;
   locked?: SectionLock;
 }
 
@@ -517,6 +538,73 @@ function intervalProfile(segments: readonly Segment[], p: Piece, st: Stats): Int
   };
 }
 
+/** Effort at `frac` (0..1) of a run of segments lasting `total` seconds, ramps interpolated. */
+function effortAtFrac(segments: readonly Segment[], p: Piece, total: number, frac: number): number {
+  let t = frac * total;
+  for (let i = p.first; i <= p.last; i++) {
+    const s = segments[i] as Segment;
+    if (t <= s.durationSec || i === p.last) {
+      const x = Math.min(1, Math.max(0, t / s.durationSec));
+      return s.effortStart + (s.effortEnd - s.effortStart) * x;
+    }
+    t -= s.durationSec;
+  }
+  return 0;
+}
+
+/**
+ * The effort trend of a run: its effort in `TREND_SLICES` slices, read as 'up' (the end is
+ * `TREND_MIN_EFFORT` above the start, the top near the end), 'down' (the mirror) or 'pyramid' (the
+ * middle is that far above both ends). Undefined for a flat run, a run too short for two songs, or
+ * a trend that does not change the energy asked for by at least one step.
+ */
+function detectTrend(segments: readonly Segment[], p: Piece, st: Stats): SectionTrend | undefined {
+  if (st.durationSec < TREND_MIN_SEC || st.effortMax - st.effortMin < TREND_MIN_EFFORT)
+    return undefined;
+  const curve: number[] = [];
+  for (let i = 0; i < TREND_SLICES; i++) {
+    let sum = 0;
+    for (let k = 0; k < 4; k++)
+      sum += effortAtFrac(segments, p, st.durationSec, (i + (k + 0.5) / 4) / TREND_SLICES);
+    curve.push(sum / 4);
+  }
+  const mean = (a: number[]): number => a.reduce((x, y) => x + y, 0) / a.length;
+  const first = mean(curve.slice(0, 2));
+  const last = mean(curve.slice(-2));
+  const top = Math.max(...curve);
+  const peakAt = curve.indexOf(top);
+  let kind: TrendKind | undefined;
+  if (
+    top - first >= TREND_MIN_EFFORT &&
+    top - last >= TREND_MIN_EFFORT &&
+    peakAt >= 3 &&
+    peakAt <= 8
+  )
+    kind = 'pyramid';
+  else if (last - first >= TREND_MIN_EFFORT && top - last < TREND_MIN_EFFORT) kind = 'up';
+  else if (first - last >= TREND_MIN_EFFORT && top - first < TREND_MIN_EFFORT) kind = 'down';
+  if (!kind) return undefined;
+  const energies = curve.map(energyOf);
+  if (Math.max(...energies) - Math.min(...energies) < 1) return undefined;
+  return { kind, curve };
+}
+
+/** The energy a trend asks for between `from` and `to` (fractions 0..1 of the part). */
+export function trendEnergyAt(trend: SectionTrend, from: number, to: number): SectionEnergy {
+  const n = trend.curve.length;
+  const a = Math.min(1, Math.max(0, from)) * n;
+  const b = Math.max(a + 1e-9, Math.min(1, Math.max(0, to)) * n);
+  let sum = 0;
+  let w = 0;
+  for (let i = Math.floor(a); i < Math.min(n, Math.ceil(b)); i++) {
+    const overlap = Math.min(b, i + 1) - Math.max(a, i);
+    if (overlap <= 0) continue;
+    sum += (trend.curve[i] as number) * overlap;
+    w += overlap;
+  }
+  return energyOf(w > 0 ? sum / w : (trend.curve[n - 1] as number));
+}
+
 /**
  * The workout's music sections, in time order, covering the whole workout without gaps.
  * Empty for a workout without blocks.
@@ -579,6 +667,10 @@ export function sectionsOf(w: Workout, opts: SectionOptions = {}): MusicSection[
       profile: prof.profile,
       workEffort: prof.workEffort,
     };
+    if (!calm && prof.profile === 'steady') {
+      const trend = detectTrend(segments, p, st);
+      if (trend) section.trend = trend;
+    }
     if (p.locked) section.locked = p.locked;
     return section;
   });

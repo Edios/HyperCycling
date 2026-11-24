@@ -41,6 +41,8 @@ import { SLOT_TOLERANCE_SEC, songKey } from './slot-plan';
 import {
   MUSIC_CATEGORIES,
   sectionsOf,
+  trendEnergyAt,
+  type SectionTrend,
   type BlockRef,
   type MusicCategoryId,
   type MusicSection,
@@ -653,6 +655,10 @@ interface BeamState {
 }
 
 export interface QueueOptions {
+  /** The part's effort trend: a song whose energy is off the curve at its place scores less. */
+  trend?: SectionTrend;
+  /** The lowest energy the trend may ask for (3 in the work: a falling trend never asks for a slow song). */
+  trendFloor?: number;
   /** Artist of the song before the section (no artist twice in a row across the boundary). */
   prevArtist?: string;
 }
@@ -667,6 +673,24 @@ const CUT_COST = 1.5;
 /** A small cost for any cut, so a song ending at the boundary wins over a cut one. */
 const ANY_CUT_COST = 0.02;
 const SEAM_COST = 0.15;
+/** Trend (spec section 8): per step a song's energy is off the curve at its place, score x time. */
+export const TREND_STEP_COST = 0.15;
+
+/** A song's score at its place in a part with a trend (the plain score without one). */
+function placedScore(
+  cand: Candidate,
+  atSec: number,
+  durationSec: number,
+  trend: SectionTrend | undefined,
+  floor = 1,
+): number {
+  if (!trend || durationSec <= 0) return cand.score;
+  const want = Math.max(
+    floor,
+    trendEnergyAt(trend, atSec / durationSec, (atSec + cand.lenSec) / durationSec),
+  );
+  return cand.score - TREND_STEP_COST * Math.abs(cand.track.energy - want);
+}
 const SAME_ARTIST_COST = 0.25;
 
 function objective(sec: number, weighted: number, penalty: number, durationSec: number): number {
@@ -684,6 +708,7 @@ function objective(sec: number, weighted: number, penalty: number, durationSec: 
 /** Penalty of adding `cand` after the queue `st`: same artist twice in a row, a jump of cadence. */
 function addPenalty(st: BeamState, cand: Candidate): number {
   let penalty = st.penalty;
+
   if (st.lastArtist === cand.track.artist) penalty += SAME_ARTIST_COST;
   if (
     st.lastRpm !== undefined &&
@@ -695,12 +720,19 @@ function addPenalty(st: BeamState, cand: Candidate): number {
   return penalty;
 }
 
-function grow(st: BeamState, c: number, cand: Candidate, durationSec: number): BeamState {
+function grow(
+  st: BeamState,
+  c: number,
+  cand: Candidate,
+  durationSec: number,
+  trend?: SectionTrend,
+  floor?: number,
+): BeamState {
   const played = Math.min(cand.lenSec, Math.max(0, durationSec - st.sec));
   return {
     picks: [...st.picks, c],
     sec: st.sec + cand.lenSec,
-    weighted: st.weighted + cand.score * played,
+    weighted: st.weighted + placedScore(cand, st.sec, durationSec, trend, floor) * played,
     penalty: addPenalty(st, cand),
     supplement: st.supplement || cand.track.supplement === true,
     lastArtist: cand.track.artist,
@@ -762,12 +794,14 @@ export function buildQueue(
         if (cand.track.supplement === true && st.supplement) continue; // one add-on per section
         const played = Math.min(cand.lenSec, left);
         const sec = st.sec + cand.lenSec;
-        const weighted = st.weighted + cand.score * played;
+        const weighted =
+          st.weighted +
+          placedScore(cand, st.sec, durationSec, opts.trend, opts.trendFloor) * played;
         const penalty = addPenalty(st, cand);
         if (sec >= durationSec - SLOT_TOLERANCE_SEC) {
           const obj = objective(sec, weighted, penalty, durationSec);
           if (!bestComplete || obj > bestObjective) {
-            best = grow(st, c, cand, durationSec);
+            best = grow(st, c, cand, durationSec, opts.trend, opts.trendFloor);
             bestObjective = obj;
             bestComplete = true;
           }
@@ -810,6 +844,8 @@ export function buildQueue(
         c,
         candidates[c] as Candidate,
         durationSec,
+        opts.trend,
+        opts.trendFloor,
       );
       next.push(grown);
       if (!bestComplete && grown.sec > best.sec) {
@@ -849,7 +885,8 @@ function evaluate(
     lastArtist: opts.prevArtist,
     lastRpm: undefined,
   };
-  for (const c of picks) st = grow(st, c, candidates[c] as Candidate, durationSec);
+  for (const c of picks)
+    st = grow(st, c, candidates[c] as Candidate, durationSec, opts.trend, opts.trendFloor);
   return {
     picks: st.picks,
     sec: st.sec,
@@ -994,7 +1031,10 @@ function planSection(
 ): SectionQueue {
   let best: SectionQueue | undefined;
   let bestValue = -Infinity;
-  const opts = prevArtist !== undefined ? { prevArtist } : {};
+  const opts: QueueOptions = {
+    ...(prevArtist !== undefined ? { prevArtist } : {}),
+    ...(s.trend ? { trend: s.trend, trendFloor: workPart(s) ? 3 : 1 } : {}),
+  };
   for (let i = 0; i < LADDER.length; i++) {
     const step = LADDER[i] as LadderStep;
     if (step.ignoreBpm && best) break;
