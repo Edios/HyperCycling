@@ -242,6 +242,19 @@ describe('sortByCadence', () => {
   });
 });
 
+describe('sortByCadence inside a verdict', () => {
+  it('puts tempos on the beat before close ones', () => {
+    const items = [
+      { id: 'close', bpm: 188 },
+      { id: 'exact', bpm: 180 },
+    ];
+    expect(sortByCadence(items, (i) => cadenceFit(i.bpm, 90)).map((i) => i.id)).toEqual([
+      'exact',
+      'close',
+    ]);
+  });
+});
+
 describe('cadenceHints is the exact inverse of matchBpm (review B1)', () => {
   it('every whole cadence inside a hint window matches that tempo', () => {
     for (let bpm = BPM_MIN; bpm <= BPM_MAX; bpm++) {

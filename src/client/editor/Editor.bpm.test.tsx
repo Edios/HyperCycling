@@ -144,7 +144,7 @@ describe('BPM matching hint', () => {
     expect(screen.getByTestId('track-cadence')).toHaveTextContent('half time ≈ 85–95 rpm');
     expect(screen.getByTestId('bpm-match')).toHaveAttribute('data-verdict', 'alt');
     fireEvent.change(bpm, { target: { value: '128' } });
-    expect(screen.getByTestId('track-cadence')).toHaveTextContent('≈ 60–68 rpm');
+    expect(screen.getByTestId('track-cadence')).toHaveTextContent('≈ 61–68 rpm');
     expect(screen.getByTestId('bpm-nomatch')).toHaveAttribute('data-verdict', 'miss');
   });
 

@@ -18,7 +18,7 @@ import { type BpmHit } from '../music/getsongbpm/client';
 import { BRAND, errorInfo, errorText, SITE, type ErrorInfo } from '../music/provider-labels';
 import { trackQuery } from '../music/getsongbpm/query';
 import { Button } from '../ui/Button';
-import { cadenceText, MARK } from './Cadence';
+import { cadenceText, verdictMark } from './Cadence';
 import cadence from './Cadence.module.css';
 import styles from './Inspector.module.css';
 
@@ -163,7 +163,8 @@ export function BpmField({
   };
 
   const match = value !== undefined && rpm !== undefined ? matchBpm(value, rpm) : undefined;
-  const verdict = cadenceFit(value, rpm)?.verdict;
+  const fitInfo = cadenceFit(value, rpm);
+  const verdict = fitInfo?.verdict;
   const trackCadence = cadenceText(t, value);
   const targets = rpm === undefined ? [] : targetBpms(rpm);
   const exact = targets.find((x) => x.kind === 'exact')?.bpm;
@@ -288,7 +289,7 @@ export function BpmField({
           data-fit={match.fit}
           data-verdict={verdict}
         >
-          <span aria-hidden="true">{MARK[verdict ?? 'fit']}</span>{' '}
+          <span aria-hidden="true">{fitInfo ? verdictMark(fitInfo) : ''}</span>{' '}
           {t(`editor.bpm.match.${match.kind}`)}
           {match.fit === 'close' ? ` · ${t('editor.bpm.close')}` : ''}
         </small>
@@ -299,7 +300,8 @@ export function BpmField({
           data-testid="bpm-nomatch"
           data-verdict="miss"
         >
-          <span aria-hidden="true">{MARK.miss}</span> {t('editor.bpm.noMatch')}
+          <span aria-hidden="true">{verdictMark({ verdict: 'miss' })}</span>{' '}
+          {t('editor.bpm.noMatch')}
         </small>
       )}
 

@@ -34,7 +34,7 @@ describe('SuggestedChips', () => {
     expect(chips.map((c) => c.textContent)).toEqual([
       'Fast one · A180 BPM · GetSongBPM · fits≈ 85–95 rpm',
       'Slow one · B90 BPM · Deezer · half timehalf time ≈ 85–95 rpm',
-      'Close one186 BPM · typed · fits (close)≈ 87–99 rpm',
+      'Close one186 BPM · typed · fits (close)≈ 88–98 rpm',
     ]);
     fireEvent.click(chips[0] as HTMLElement);
     expect(onPick).toHaveBeenCalledWith(expect.objectContaining({ id: 'exact', bpm: 180 }));

@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { cadenceFitToRange, sortByCadence } from '../../domain/bpm-match';
+import { cadenceFit, sortByCadence } from '../../domain/bpm-match';
 import { useT } from '../i18n';
 import { useBpmLookup, type SongCandidate, type SongProvider } from '../music/bpmLookup';
 import { BRAND, errorInfo, errorText, SITE, type ErrorInfo } from '../music/provider-labels';
@@ -16,13 +16,14 @@ type State =
 /**
  * Search a song by artist and/or title (M19d): GetSongBPM with the rider's key, Deezer (no key)
  * when the rider turned it on in Settings. Only numbers and links are kept; the tempo can be corrected by hand after
- * picking. `range` is the slot's wanted BPM range, used to mark which hits fit it.
+ * picking. `rpm` is the cadence the slot asks for (its tempo range or its block's cadence), the
+ * same one the suggestion chips judge by, used to mark and sort the hits.
  */
 export function SongFinder({
-  range,
+  rpm,
   onPick,
 }: {
-  range: [number, number] | undefined;
+  rpm: number | undefined;
   onPick: (hit: SongCandidate) => void;
 }) {
   const t = useT();
@@ -66,12 +67,12 @@ export function SongFinder({
     }
   };
 
-  // Best fit first (stable inside a group); the filter drops what does not fit the slot's range.
+  // Best fit first (stable inside a group); the filter drops what does not fit the cadence.
   const hits = state.status === 'done' ? state.hits : [];
-  const ordered = range ? sortByCadence(hits, (h) => cadenceFitToRange(h.bpm, range)) : hits;
+  const ordered = rpm === undefined ? hits : sortByCadence(hits, (h) => cadenceFit(h.bpm, rpm));
   const shown =
-    range && onlyFitting
-      ? ordered.filter((h) => cadenceFitToRange(h.bpm, range)?.verdict !== 'miss')
+    rpm !== undefined && onlyFitting
+      ? ordered.filter((h) => cadenceFit(h.bpm, rpm)?.verdict !== 'miss')
       : ordered;
   const hidden = hits.length - shown.length;
 
@@ -135,8 +136,8 @@ export function SongFinder({
           {t('editor.songs.finder.none')}
         </small>
       )}
-      {state.status === 'done' && state.hits.length > 0 && range && (
-        <label className={styles.inline} data-testid="finder-filter">
+      {state.status === 'done' && state.hits.length > 0 && rpm !== undefined && (
+        <label className={styles.check} data-testid="finder-filter">
           <input
             type="checkbox"
             checked={onlyFitting}
@@ -145,15 +146,15 @@ export function SongFinder({
           <span>{t('editor.cadence.filter')}</span>
         </label>
       )}
-      {state.status === 'done' && state.hits.length > 0 && hidden > 0 && (
+      {state.status === 'done' && state.hits.length > 0 && rpm !== undefined && (
         <small role="status" className={styles.cap} data-testid="finder-hidden">
-          {t('editor.cadence.filterHidden', { n: hidden })}
+          {hidden > 0 ? t('editor.cadence.filterHidden', { n: hidden }) : ''}
         </small>
       )}
       {state.status === 'done' && shown.length > 0 && (
         <ul className={styles.hits} data-testid="finder-results">
           {shown.map((h) => {
-            const fit = range ? cadenceFitToRange(h.bpm, range) : undefined;
+            const fit = cadenceFit(h.bpm, rpm);
             const rpmText = cadenceText(t, h.bpm);
             const name = h.artist ? `${h.artist} – ${h.title}` : h.title;
             return (

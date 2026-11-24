@@ -103,29 +103,55 @@ export interface CadenceHint {
 }
 
 /**
- * The rpm a song tempo suits, by the same rule as `matchBpm` (2 BPM = 1 RPM, half time BPM = RPM,
- * double time 4 BPM = 1 RPM), each as a window of +- `tolerance` (default `BPM_CLOSE`). Cadences
- * nobody rides at (outside 50-130 rpm) are left out; exact first. Empty for an invalid tempo.
+ * The whole rpm a song tempo suits, as the exact inverse of `matchBpm`: a cadence is in the window
+ * of a kind when its target tempo (rpm x 2, x 1 or x 4) is within `tolerance` (default `BPM_CLOSE`)
+ * of the song's, so lo = ceil(c / (1 + tol)) and hi = floor(c / (1 - tol)) with c = bpm / multiplier.
+ * Windows are cut to the cadences nobody is warned about (50-130 rpm) and to the tempo range
+ * `targetBpms` knows; empty ones are left out. Exact first. Empty for an invalid tempo.
  */
 export function cadenceHints(bpm: number, tolerance: number = BPM_CLOSE): CadenceHint[] {
   if (!validNumber(bpm)) return [];
   const kinds: MatchKind[] = ['exact', 'half', 'double'];
   const out: CadenceHint[] = [];
   for (const kind of kinds) {
-    const centre = bpm / MULTIPLIER[kind];
-    if (centre < CADENCE_HINT_MIN || centre > CADENCE_HINT_MAX) continue;
-    out.push({
-      kind,
-      lo: Math.round(centre * (1 - tolerance)),
-      hi: Math.round(centre * (1 + tolerance)),
-    });
+    const mult = MULTIPLIER[kind];
+    const centre = bpm / mult;
+    // A hair of slack keeps 1 +- tolerance products from losing a whole cadence to rounding.
+    const lo = Math.max(
+      Math.ceil(centre / (1 + tolerance) - 1e-9),
+      CADENCE_HINT_MIN,
+      Math.ceil(BPM_MIN / mult),
+    );
+    const hi = Math.min(
+      Math.floor(centre / (1 - tolerance) + 1e-9),
+      CADENCE_HINT_MAX,
+      Math.floor(BPM_MAX / mult),
+    );
+    if (lo <= hi) out.push({ kind, lo, hi });
   }
   return out;
 }
 
-/** The rpm window of a wanted BPM range (a song slot's): 2 BPM = 1 RPM on the beat. */
-export function cadenceOfBpmRange(range: readonly [number, number]): [number, number] {
+/**
+ * The rpm window of a wanted BPM range (a song slot's): 2 BPM = 1 RPM on the beat. Undefined when
+ * that is no cadence anybody rides (e.g. a range that is a single slow song tempo, 86 BPM = 43 rpm).
+ */
+export function cadenceOfBpmRange(range: readonly [number, number]): [number, number] | undefined {
+  const mid = (range[0] + range[1]) / 4;
+  if (!(mid >= CADENCE_HINT_MIN && mid <= CADENCE_HINT_MAX)) return undefined;
   return [Math.round(range[0] / 2), Math.round(range[1] / 2)];
+}
+
+/**
+ * The cadence a song slot asks for: its tempo range read as rpm when that is a rideable cadence,
+ * else the block's own cadence (`blockRpm`). One cadence for everything the slot judges.
+ */
+export function slotCadence(
+  range: readonly [number, number] | null | undefined,
+  blockRpm: number | undefined,
+): number | undefined {
+  if (range && cadenceOfBpmRange(range)) return (range[0] + range[1]) / 4;
+  return blockRpm;
 }
 
 /**
@@ -165,21 +191,12 @@ export function cadenceFit(
   };
 }
 
-/** A song tempo against a slot's wanted BPM range (inclusive); undefined for an invalid tempo. */
-export function cadenceFitToRange(
-  bpm: number | undefined,
-  range: readonly [number, number],
-): CadenceFit | undefined {
-  if (bpm === undefined || !validNumber(bpm)) return undefined;
-  const kind = fitToRange(bpm, range);
-  return kind ? { verdict: VERDICT_OF_KIND[kind], kind } : { verdict: 'miss' };
-}
-
 const VERDICT_RANK: Record<CadenceVerdict, number> = { fit: 0, alt: 1, miss: 2 };
 
 /**
- * Items best-fitting first (on the beat, then half/double time, then misses), stable inside a
- * group. Items whose tempo is unknown (undefined verdict) go last.
+
+ * Items best-fitting first (on the beat, then half/double time, then misses; inside each, exact
+ * tempos before close ones), stable inside a group. Items whose tempo is unknown (undefined verdict) go last.
  */
 export function sortByCadence<T>(
   items: readonly T[],
@@ -187,7 +204,7 @@ export function sortByCadence<T>(
 ): T[] {
   const rank = (item: T): number => {
     const v = verdictOf(item);
-    return v ? VERDICT_RANK[v.verdict] : 3;
+    return v ? VERDICT_RANK[v.verdict] * 2 + (v.close ? 1 : 0) : 6;
   };
   return items
     .map((item, i) => ({ item, i, r: rank(item) }))

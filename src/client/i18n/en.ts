@@ -1654,6 +1654,7 @@ export const en = {
       filter: 'Only songs that fit the cadence',
       filterHidden: '{n} hidden: they do not fit the cadence.',
       slotRange: 'Cadence for this range: ≈ {lo}–{hi} rpm',
+      slotOne: 'Cadence for this tempo: ≈ {rpm} rpm',
     },
     songs: {
       title: 'Songs',

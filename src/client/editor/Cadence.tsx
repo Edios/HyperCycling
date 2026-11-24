@@ -1,10 +1,15 @@
-import { cadenceHints, type CadenceFit, type CadenceVerdict } from '../../domain/bpm-match';
+import { cadenceHints, type CadenceFit } from '../../domain/bpm-match';
 import { useT } from '../i18n';
 import styles from './Cadence.module.css';
 
 type T = ReturnType<typeof useT>;
 
-export const MARK: Record<CadenceVerdict, string> = { fit: '✓', alt: '≈', miss: '✕' };
+/** The glyph of a verdict. Half and double time get their own (not the ≈ of the rpm range). */
+export function verdictMark(fit: CadenceFit): string {
+  if (fit.verdict === 'fit') return '✓';
+  if (fit.verdict === 'miss') return '✕';
+  return fit.kind === 'double' ? '×2' : '½';
+}
 
 /**
  * The rpm a song tempo suits ("≈ 85–95 rpm"; also half or double time when that cadence is
@@ -47,7 +52,7 @@ export function CadenceBadge({ fit, testId }: { fit: CadenceFit; testId?: string
       data-testid={testId ?? 'cadence-badge'}
       data-verdict={fit.verdict}
     >
-      <span aria-hidden="true">{MARK[fit.verdict]}</span> {verdictText(t, fit)}
+      <span aria-hidden="true">{verdictMark(fit)}</span> {verdictText(t, fit)}
     </span>
   );
 }

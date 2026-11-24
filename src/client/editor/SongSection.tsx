@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type Dispatch } from 'react';
-import { BPM_MAX, BPM_MIN, cadenceOfBpmRange } from '../../domain/bpm-match';
+import { BPM_MAX, BPM_MIN, cadenceOfBpmRange, slotCadence } from '../../domain/bpm-match';
 import type { Lang } from '../../domain/lang';
 import {
   cooldownBlockOf,
@@ -177,9 +177,13 @@ function TrackPin({
   );
 }
 
-/** Cadence a slot calls for: its wanted tempo range (2 BPM = 1 RPM), else its first block's RPM. */
+/** Cadence a slot calls for: its wanted tempo range (2 BPM = 1 RPM) when that is a rideable
+ * cadence, else its first block's RPM. */
 function slotRpm(w: Workout, song: SongSlot): number | undefined {
-  if (song.bpm) return (song.bpm[0] + song.bpm[1]) / 4;
+  return slotCadence(song.bpm, blockRpm(w, song));
+}
+
+function blockRpm(w: Workout, song: SongSlot): number | undefined {
   const a = w.blocks.findIndex((b) => b.id === song.firstBlockId);
   const z = w.blocks.findIndex((b) => b.id === song.lastBlockId);
   const find = (bs: Workout['blocks']): number | undefined => {
@@ -226,6 +230,7 @@ function SongPanel({
   const hiV = parseBpm(hi);
   const bad =
     (lo.trim() !== '' || hi.trim() !== '') && (loV === undefined || hiV === undefined || loV > hiV);
+  const slotWindow = song.bpm ? cadenceOfBpmRange(song.bpm) : undefined;
   const commitBpm = (): void => {
     if (lo.trim() === '' && hi.trim() === '') {
       if (song.bpm) dispatch({ type: 'updateSong', id: song.id, patch: { bpm: null } });
@@ -342,17 +347,16 @@ function SongPanel({
             {t('editor.songs.bpmError', { min: BPM_MIN, max: BPM_MAX })}
           </small>
         )}
-        {!bad && song.bpm && (
+        {!bad && slotWindow && (
           <small className={styles.cap} data-testid="song-cadence">
-            {t('editor.cadence.slotRange', {
-              lo: cadenceOfBpmRange(song.bpm)[0],
-              hi: cadenceOfBpmRange(song.bpm)[1],
-            })}
+            {slotWindow[0] === slotWindow[1]
+              ? t('editor.cadence.slotOne', { rpm: slotWindow[0] })
+              : t('editor.cadence.slotRange', { lo: slotWindow[0], hi: slotWindow[1] })}
           </small>
         )}
       </div>
       {!readOnly && <SuggestedChips rpm={slotRpm(workout, song)} onPick={pickSuggested} />}
-      {!readOnly && <SongFinder range={song.bpm} onPick={pick} />}
+      {!readOnly && <SongFinder rpm={slotRpm(workout, song)} onPick={pick} />}
       <TrackPin
         key={queue[0] ? `${queue[0].id}:${queue[0].title}` : 'none'}
         track={queue[0]}

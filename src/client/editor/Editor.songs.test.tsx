@@ -200,7 +200,7 @@ describe('song finder (M19d)', () => {
     const list = await within(panel).findByTestId('finder-results');
     expect(list).toHaveTextContent('fits the cadence');
     expect(list).toHaveTextContent('fits in half time');
-    expect(list).toHaveTextContent('≈ 81–91 rpm');
+    expect(list).toHaveTextContent('≈ 82–91 rpm');
     fireEvent.click(within(panel).getAllByTestId('finder-pick')[1] as HTMLElement);
     expect(within(panel).getByTestId('song-bpm-min')).toHaveValue('170');
     expect(within(panel).getByTestId('song-hint')).toHaveValue('Band – Slow One');
