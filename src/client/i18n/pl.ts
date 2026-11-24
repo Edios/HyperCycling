@@ -638,6 +638,8 @@ export const pl: Messages = {
       classics: 'Klasyki',
     },
     categoryDim: 'mało utworów w tym tempie',
+    polish: 'Polskie',
+    polishHint: 'Polskie utwory dowolnego rodzaju dołączają do miksu',
     bestHint: 'Do tego treningu najlepiej pasują: {list}.',
     noBestHint: 'Żaden rodzaj nie ma utworów w tym tempie. Dobierzemy najbliższe.',
     continuityLabel: 'Ciągłość',

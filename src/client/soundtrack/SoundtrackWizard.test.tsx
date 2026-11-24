@@ -116,6 +116,21 @@ describe('step 1: what music', () => {
     expect(screen.getByTestId('soundtrack-hint')).toHaveTextContent(/Best for this ride/);
   });
 
+  it('has a "Polish" chip, on the first time, that is remembered and is not a kind of music', async () => {
+    renderWizard();
+    await waitFor(() => expect(next()).toBeEnabled());
+    expect(chip('polish')).toHaveTextContent('Polish');
+    expect(chip('polish')).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(chip('polish'));
+    expect(chip('polish')).toHaveAttribute('aria-pressed', 'false');
+    // Switching it off leaves the kinds as they are.
+    expect(chip('electronic')).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(next());
+    await screen.findByRole('heading', { name: 'We suggest these songs' });
+    const stored = JSON.parse(localStorage.getItem(SOUNDTRACK_PREFS_KEY) ?? '{}');
+    expect(stored).toMatchObject({ categories: ['electronic', 'pop'], polish: false });
+  });
+
   it('keeps at least one kind chosen', async () => {
     renderWizard();
     await waitFor(() => expect(next()).toBeEnabled());

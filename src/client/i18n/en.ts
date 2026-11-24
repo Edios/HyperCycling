@@ -632,6 +632,8 @@ export const en = {
       classics: 'Classics',
     },
     categoryDim: 'few songs at this tempo',
+    polish: 'Polish',
+    polishHint: 'Polish songs of any kind join the mix',
     bestHint: 'Best for this ride: {list}.',
     noBestHint: 'No kind has songs at this tempo. We will pick the closest ones.',
     continuityLabel: 'Continuity',

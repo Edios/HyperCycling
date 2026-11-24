@@ -10,9 +10,9 @@ import {
   categoryChips,
   makePlan,
   MIN_WIZARD_SEC,
-  nextSeed,
   planSummary,
   replaceSong,
+  shufflePlan,
   toggleCategory,
 } from '../../domain/soundtrack-wizard';
 import { totalDurationSec, type Workout } from '../../domain/workout';
@@ -124,7 +124,8 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
     setPrefs((p) => ({ ...p, ...patch }));
   };
 
-  const planKey = (p: SoundtrackPrefs): string => `${p.categories.join(',')}|${p.continuity}`;
+  const planKey = (p: SoundtrackPrefs): string =>
+    `${p.categories.join(',')}|${p.polish === true ? 'pl' : ''}|${p.continuity}`;
 
   const goPlan = (): void => {
     saveSoundtrackPrefs(prefs);
@@ -144,10 +145,10 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
   const shuffle = (): void => {
     if (!plan) return;
     preview.stop();
-    const next = { ...prefs, seed: nextSeed(prefs.seed) };
-    setPrefs(next);
-    saveSoundtrackPrefs(next);
-    setPlan(makePlan(workout, catalog, next, { locked, excluded }, plan, sections));
+    const out = shufflePlan(workout, catalog, prefs, { locked, excluded }, plan, sections);
+    setPrefs(out.prefs);
+    saveSoundtrackPrefs(out.prefs);
+    setPlan(out.plan);
   };
 
   const replace = (sectionId: string, songId: string): void => {
@@ -243,6 +244,15 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
               </Chip>
             );
           })}
+          <Chip
+            on={prefs.polish === true}
+            className={styles.chip}
+            data-testid="soundtrack-chip-polish"
+            title={t('soundtrack.polishHint')}
+            onClick={() => changePrefs({ polish: prefs.polish !== true })}
+          >
+            {t('soundtrack.polish')}
+          </Chip>
         </div>
         <p className={styles.hint} data-testid="soundtrack-hint">
           {best.length > 0
