@@ -8,7 +8,10 @@
  * 1. Candidates (`scoreTrack`): tempo fit, energy fit, role fit, category fit. Hard rules: a song
  *    without a beat only in the cool-down; a sprint song (ridden at 105 rpm or faster) only in hard
  *    and peak sections; nothing explicit in the cool-down, nor anywhere unless the rider allows it;
- *    no song twice in a ride. A small seeded jitter reorders near-equal songs ("Shuffle").
+ *    no song twice in a ride; no energy 5 in the warm-up, nothing 3 steps calmer than a hard part
+ *    asks for or 3 steps stronger than a calm one, nothing light (energy 1-2) on a climb (music
+ *    energy spec §2b). Songs of the last rides cost a little (`history`, spec §3a), and a small
+ *    seeded jitter reorders near-equal songs ("Shuffle").
  * 2. Relaxation ladder, when the songs cannot fill a section (too few, or no queue that ends
  *    within the tolerances): a wider tempo window, the neighbour categories, any category (the
  *    owner accepts stretching the categories for a mixed cadence), and at last any tempo (with a
@@ -18,8 +21,9 @@
  *    repaired by an exact length search when the beam misses. A long section simply gets more
  *    songs (a block is never split). Synthwave and drum and bass are an add-on: one per section
  *    at most, and each one in the ride makes the next one less likely.
- * 4. A Polish song in every ride (owner's rule): when the plan has none, the best Polish song that
- *    fits replaces a pick of similar length.
+ * 4. Polish songs are a chip of their own ("Polish", `prefs.polish`): with it on they count as one
+ *    of the chosen kinds of music and get a small lift (the old rule of one Polish song in every
+ *    ride is gone, owner's decision of 2026-11-22).
  * 5. Gaps (`fillSlotGap`, rules R1-R4): a longer upload, a reserve song, the instrumental ending
  *    again, then the long fallback songs (only with "no gaps").
  *
@@ -68,6 +72,11 @@ export interface SoundtrackPrefs {
   allowHalfDouble: boolean;
   /** "Shuffle": another seed gives another order of near-equal songs. */
   seed: number;
+  /**
+   * The "Polish" chip: Polish songs count as one of the chosen kinds of music, whatever their
+   * category, and get a small lift (`POLISH_LIFT`). Absent = off (plans saved before the chip).
+   */
+  polish?: boolean;
 }
 
 export const DEFAULT_SOUNDTRACK_PREFS: SoundtrackPrefs = {
@@ -97,7 +106,10 @@ export interface PlanPick {
   fit: PickFit;
 }
 
-/** A step of the relaxation ladder (or 'polish': the ride's Polish song is outside the categories). */
+/**
+ * A step of the relaxation ladder. 'polish' (a Polish song outside the categories) is no longer
+ * planned; it stays readable in plans saved before the "Polish" chip.
+ */
 export type Relaxation = 'tolerance' | 'category' | 'anyCategory' | 'bpm' | 'polish';
 
 /** 'none' = no song at all; 'bpm' = songs off the tempo; 'gap' = silence left; 'cut' = cut > 45 s. */
@@ -148,9 +160,9 @@ export interface SoundtrackPlan {
  * order of preference, not these numbers.
  */
 export const WEIGHTS = {
-  bpm: 0.45,
-  energy: 0.2,
-  role: 0.2,
+  bpm: 0.4,
+  energy: 0.3,
+  role: 0.15,
   category: 0.1,
   trust: 0.05,
 } as const;
@@ -158,8 +170,26 @@ export const WEIGHTS = {
 /** Category fit of a song from a neighbour category, and from any category (relaxed). */
 export const NEIGHBOUR_FIT = 0.7;
 export const ANY_CATEGORY_FIT = 0.5;
-/** Seeded jitter added to every score: reorders near-equal songs, never a clearly better one. */
-export const SHUFFLE_JITTER = 0.15;
+/**
+ * Seeded jitter added to every score: reorders near-equal songs, never a clearly better one (small
+ * enough not to cover one step of energy, spec §2b).
+ */
+export const SHUFFLE_JITTER = 0.08;
+/** Lift of a Polish song with the "Polish" chip on. */
+export const POLISH_LIFT = 0.06;
+/**
+ * In a part of short hard intervals, a song without the intervals role or with a long intro (the
+ * drop must come with the first repetition) costs this much (spec §2a).
+ */
+export const INTERVAL_MISFIT = 0.3;
+/**
+ * Energy fit per step of difference (song minus section, spec §2b). A hard part: a calmer song
+ * costs `ENERGY_STEP_WRONG` a step, a stronger one `ENERGY_STEP_RIGHT`; a calm part the other way
+ * round; any other part `ENERGY_STEP` either way, with no free window.
+ */
+export const ENERGY_STEP_WRONG = 0.35;
+export const ENERGY_STEP_RIGHT = 0.1;
+export const ENERGY_STEP = 0.2;
 /** A section is a climb when its cadence is this low (a slow, heavy gear). */
 export const CLIMB_RPM = 75;
 /** A ladder step needs at least this many candidates to stop the walk (spec §7.2: "< 3"). */
@@ -236,6 +266,41 @@ function sprintSong(t: CatalogTrack): boolean {
   return t.bpm !== undefined && catalogRpm(t.bpm) >= ROLE_SPRINT_RPM;
 }
 
+/** A part that wants drive: short hard intervals, a hard or a peak part. */
+function hardPart(s: MusicSection): boolean {
+  return s.profile === 'intervals' || s.role === 'hard' || s.role === 'peak';
+}
+
+/** A part that wants calm: the warm-up, the cool-down, or a part asking for energy 1-2. */
+function calmPart(s: MusicSection): boolean {
+  return s.role === 'warmup' || s.role === 'cooldown' || s.energy <= 2;
+}
+
+/** A seated or standing climb: a slow, heavy cadence at a real effort (not the warm-up). */
+function climbPart(s: MusicSection): boolean {
+  return !calmPart(s) && s.rpmMean <= CLIMB_RPM && s.workEffort >= 5;
+}
+
+/**
+ * Energy fit 0..1 of a song for a part, or undefined when the song may not play there (spec §2b):
+ * a hard part never takes a song 3 steps calmer, a calm part never one 3 steps stronger, the
+ * warm-up never an energy 5 song and a climb never a light one (energy 1-2).
+ */
+export function energyFit(t: Pick<CatalogTrack, 'energy'>, s: MusicSection): number | undefined {
+  const d = t.energy - s.energy;
+  if (hardPart(s)) {
+    // Short hard intervals take sprint songs only: at most one step calmer (spec §2a).
+    if (d <= -3 || (s.profile === 'intervals' && d <= -2)) return undefined;
+    return Math.max(0, 1 - (d < 0 ? -d * ENERGY_STEP_WRONG : d * ENERGY_STEP_RIGHT));
+  }
+  if (calmPart(s)) {
+    if (d >= 3 || (s.role === 'warmup' && t.energy === 5)) return undefined;
+    return Math.max(0, 1 - (d > 0 ? d * ENERGY_STEP_WRONG : -d * ENERGY_STEP_RIGHT));
+  }
+  if (climbPart(s) && t.energy <= 2) return undefined;
+  return Math.max(0, 1 - Math.abs(d) * ENERGY_STEP);
+}
+
 /**
  * How well a catalog song suits a section, or undefined when it may not play there at all (see the
  * hard rules at the top). Explicit songs are filtered by the caller (a preference), except in the
@@ -250,6 +315,8 @@ export function scoreTrack(
   if (t.beat === 'none' && !cooldown) return undefined;
   if (cooldown && !t.clean) return undefined;
   if (sprintSong(t) && s.role !== 'hard' && s.role !== 'peak') return undefined;
+  const eFit = energyFit(t, s);
+  if (eFit === undefined) return undefined;
   let bpmFit: number;
   let fit: PickFit;
   let rideRpm: number | undefined;
@@ -270,13 +337,18 @@ export function scoreTrack(
     bpmFit = 0;
     fit = 'off';
   } else return undefined;
-  const energyFit = Math.max(0, 1 - 0.25 * Math.max(0, Math.abs(t.energy - s.energy) - 1));
+  const misfit =
+    s.profile === 'intervals' &&
+    (!t.roles.includes('intervals') || t.traits?.includes('long-intro') === true)
+      ? INTERVAL_MISFIT
+      : 0;
   const score =
     WEIGHTS.bpm * bpmFit +
-    WEIGHTS.energy * energyFit +
+    WEIGHTS.energy * eFit +
     WEIGHTS.role * roleFit(t, s) +
     WEIGHTS.category * (opts.categoryFit ?? 1) +
-    WEIGHTS.trust;
+    WEIGHTS.trust -
+    misfit;
   return rideRpm === undefined ? { score, fit } : { score, fit, rideRpm };
 }
 
@@ -350,6 +422,17 @@ interface RideState {
 /** Penalty per earlier song of the same artist in the ride (spreads big catalogs of one artist). */
 const ARTIST_REPEAT_PENALTY = 0.1;
 /**
+ * Rotation between rides (spec §3a): a song played in the k-th most recent ride costs
+ * `HISTORY_SONG_PENALTY` x `HISTORY_DECAY`^(k-1) (0.30, 0.21, 0.15...); an artist costs
+ * `HISTORY_ARTIST_PENALTY` for each of their songs in the last `HISTORY_ARTIST_RIDES` rides, at most
+ * `HISTORY_ARTIST_MAX`.
+ */
+export const HISTORY_SONG_PENALTY = 0.3;
+export const HISTORY_DECAY = 0.7;
+export const HISTORY_ARTIST_PENALTY = 0.08;
+export const HISTORY_ARTIST_RIDES = 3;
+export const HISTORY_ARTIST_MAX = 0.2;
+/**
  * An add-on style (synthwave, drum and bass) is a supplement, never the backbone: each such song
  * costs this much, plus as much again for every one already in the ride.
  */
@@ -377,8 +460,9 @@ function categoryFit(
   chosen: ReadonlySet<MusicCategoryId>,
   near: ReadonlySet<MusicCategoryId>,
   step: LadderStep,
+  polish: boolean,
 ): number | undefined {
-  if (chosen.size === 0) return 1;
+  if (chosen.size === 0 || (polish && t.pl === true)) return 1;
   let fit: number | undefined;
   for (const c of t.categories) {
     if (chosen.has(c)) return 1;
@@ -399,6 +483,31 @@ interface PlanContext {
   prefs: SoundtrackPrefs;
   chosen: ReadonlySet<MusicCategoryId>;
   near: ReadonlySet<MusicCategoryId>;
+  /** What the last rides cost a song (by song key) and an artist (`historyPenalties`). */
+  historySong: ReadonlyMap<string, number>;
+  historyArtist: ReadonlyMap<string, number>;
+}
+
+/** The rotation penalties of the last rides (newest first, catalog ids; unknown ids are skipped). */
+function historyPenalties(
+  history: readonly (readonly string[])[],
+  byId: ReadonlyMap<string, CatalogTrack>,
+): { song: Map<string, number>; artist: Map<string, number> } {
+  const song = new Map<string, number>();
+  const artist = new Map<string, number>();
+  history.forEach((ride, k) => {
+    for (const id of new Set(ride)) {
+      const t = byId.get(id);
+      if (!t) continue;
+      const key = songKey(t);
+      if (!song.has(key)) song.set(key, HISTORY_SONG_PENALTY * HISTORY_DECAY ** k);
+      if (k < HISTORY_ARTIST_RIDES) {
+        const p = (artist.get(t.artist) ?? 0) + HISTORY_ARTIST_PENALTY;
+        artist.set(t.artist, Math.min(HISTORY_ARTIST_MAX, p));
+      }
+    }
+  });
+  return { song, artist };
 }
 
 function scoredAt(
@@ -414,7 +523,8 @@ function scoredAt(
     const key = keys[i] as string;
     if (ride.used.has(key)) continue;
     if (!t.clean && !prefs.explicit) continue;
-    const cat = categoryFit(t, ctx.chosen, ctx.near, step);
+    const polish = prefs.polish === true && t.pl === true;
+    const cat = categoryFit(t, ctx.chosen, ctx.near, step, prefs.polish === true);
     if (cat === undefined) continue;
     const sc = scoreTrack(t, s, {
       tolerance: step.tolerance,
@@ -429,9 +539,12 @@ function scoredAt(
     const addOn = t.supplement ? SUPPLEMENT_PENALTY * (1 + ride.supplements) : 0;
     const score =
       sc.score +
-      SHUFFLE_JITTER * shuffleValue(prefs.seed, t.id) -
+      SHUFFLE_JITTER * shuffleValue(prefs.seed, t.id) +
+      (polish ? POLISH_LIFT : 0) -
       ARTIST_REPEAT_PENALTY * plays -
-      addOn;
+      addOn -
+      (ctx.historySong.get(key) ?? 0) -
+      (ctx.historyArtist.get(t.artist) ?? 0);
     out.push({ track: t, key, score, fit: sc.fit, rideRpm: sc.rideRpm, lenSec });
   }
   // Best first; ties by catalog id (deterministic whatever the catalog order).
@@ -845,7 +958,7 @@ interface Draft {
   kept?: PlannedSection;
   candidates: Candidate[];
   relaxed: Relaxation[];
-  /** Picked candidates in play order (indices into `candidates` or extra Polish candidates). */
+  /** Picked candidates in play order. */
   queue: Candidate[];
 }
 
@@ -860,6 +973,11 @@ export interface PlanOptions {
    * or whose songs are no longer in the catalog, is ignored.
    */
   keep?: ReadonlyMap<string, PlannedSection>;
+  /**
+   * Catalog ids played in the last rides, newest ride first (spec §3a): a song of a recent ride
+   * and an artist played often lately cost a little, so the plans rotate between rides.
+   */
+  history?: readonly (readonly string[])[];
 }
 
 /** The locked section as it was planned, when it still fits this section and the catalog. */
@@ -871,55 +989,6 @@ function keptSection(
   if (!kept || kept.sectionId !== s.id || kept.durationSec !== s.durationSec) return undefined;
   if (kept.picks.length === 0 || kept.picks.some((p) => !byId.has(p.ref.id))) return undefined;
   return kept;
-}
-
-interface PolishSwap {
-  draft: Draft;
-  at: number;
-  cand: Candidate;
-  loss: number;
-  stretched: boolean;
-}
-
-/**
- * A Polish song in every ride (owner's rule): when no pick is Polish, the Polish song that loses
- * the least fit replaces one pick, provided the section stays filled (or no worse). First from the
- * section's own candidates; when none fits, from any category ('polish' in the report).
- */
-function ensurePolish(drafts: readonly Draft[], ctx: PlanContext, ride: RideState): void {
-  const open = drafts.filter((d) => d.queue.length > 0);
-  if (open.length === 0 || open.some((d) => d.queue.some((c) => c.track.pl))) return;
-  let best: PolishSwap | undefined;
-  for (const stretched of [false, true]) {
-    for (const d of open) {
-      const dur = d.section.durationSec;
-      const pool = stretched
-        ? scoredAt(ctx, d.section, LADDER[3] as LadderStep, ride)
-        : d.candidates;
-      let total = 0;
-      for (const c of d.queue) total += c.lenSec;
-      const before = Math.abs(total - dur);
-      for (const cand of pool) {
-        if (!cand.track.pl || ride.used.has(cand.key)) continue;
-        for (let at = 0; at < d.queue.length; at++) {
-          const old = d.queue[at] as Candidate;
-          const sec = total - old.lenSec + cand.lenSec;
-          const after = Math.abs(sec - dur);
-          const filled = sec >= dur - SLOT_TOLERANCE_SEC && sec <= dur + MAX_CUT_SEC;
-          if (!filled && after > before) continue;
-          const loss = old.score - cand.score + after / 600;
-          if (!best || loss < best.loss) best = { draft: d, at, cand, loss, stretched };
-        }
-      }
-    }
-    if (best) break;
-  }
-  if (!best) return;
-  const old = best.draft.queue[best.at] as Candidate;
-  ride.used.delete(old.key);
-  ride.used.add(best.cand.key);
-  best.draft.queue[best.at] = best.cand;
-  if (best.stretched) best.draft.relaxed.push('polish');
 }
 
 /** The TrackRef of a candidate (main upload first, the others as its backups). */
@@ -938,15 +1007,18 @@ export function planSoundtrack(
 ): SoundtrackPlan {
   const sections = opts.sections ?? sectionsOf(workout);
   const chosen = new Set(prefs.categories.filter((c) => MUSIC_CATEGORIES.includes(c)));
+  const catalogById = new Map(catalog.map((t) => [t.id, t]));
+  const past = historyPenalties(opts.history ?? [], catalogById);
   const ctx: PlanContext = {
     catalog,
     keys: catalog.map((t) => songKey(t)),
     prefs,
     chosen,
     near: neighboursOf(chosen),
+    historySong: past.song,
+    historyArtist: past.artist,
   };
   const ride: RideState = { used: new Set(), artists: new Map(), supplements: 0 };
-  const catalogById = new Map(catalog.map((t) => [t.id, t]));
   for (const id of opts.exclude ?? []) {
     const t = catalogById.get(id);
     if (t) ride.used.add(songKey(t));
@@ -963,7 +1035,6 @@ export function planSoundtrack(
   // Locked sections come first: their songs are taken before any other section picks, so a section
   // planned earlier in the ride never repeats a song a later locked one keeps.
   const keptFor = new Map<string, PlannedSection>();
-  let keptPolish = false;
   for (const s of sections) {
     const kept = s.locked ? undefined : keptSection(s, opts.keep?.get(s.id), catalogById);
     if (!kept) continue;
@@ -973,7 +1044,6 @@ export function planSoundtrack(
       ride.used.add(songKey(t));
       ride.artists.set(t.artist, (ride.artists.get(t.artist) ?? 0) + 1);
       if (t.supplement) ride.supplements += 1;
-      if (t.pl) keptPolish = true;
     }
   }
   for (const s of sections) {
@@ -998,9 +1068,6 @@ export function planSoundtrack(
     prevArtist = queue[queue.length - 1]?.track.artist ?? prevArtist;
     drafts.push({ section: s, candidates, relaxed, queue });
   }
-
-  // 4. A Polish song in every ride.
-  if (!keptPolish) ensurePolish(drafts, ctx, ride);
 
   // 5. Gaps, and the picks on the section's clock.
   const fallbackSec = fallbackTracks.reduce((sum, t) => sum + lengthOf(t), 0);

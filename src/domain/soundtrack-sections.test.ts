@@ -7,6 +7,7 @@ import {
   COVERAGE_SHARE,
   DEFAULT_RPM,
   energyOf,
+  INTERVAL_MIN_WORK_SHARE,
   isMusicCategory,
   MAX_SECTION_SEC,
   MAX_SECTIONS,
@@ -394,6 +395,20 @@ describe('sectionsOf: interval profile (music energy spec §2a)', () => {
     expect(part.workEffort).toBeCloseTo(9.5, 9);
     // The honest mean stays what it is (the profile is how the music reads it).
     expect(part.effort.mean).toBeCloseTo((15 * 9.5 + 20 * 2) / 35, 9);
+  });
+
+  it('asks for one step less energy when the work is under 20% of the part (a few sprints in long rests)', () => {
+    // 15 s at 9-10 in every 125 s: 12% work, the rest at effort 2.
+    const s = sectionsOf(sprint(ramp('on', 15, 9, 10, 105), steady('off', 110, 2, 70)));
+    const part = s.find((x) => x.anchor.blockId === 'on')!;
+    expect(part.profile).toBe('intervals');
+    expect(15 / 125).toBeLessThan(INTERVAL_MIN_WORK_SHARE);
+    expect(part.role).toBe('peak');
+    expect(part.rpmMean).toBe(105);
+    expect(part.energy).toBe(4);
+    // At 43% work (the owner's 15/20 sprint) the work phase's energy stays.
+    const full = sectionsOf(sprint()).find((x) => x.anchor.blockId === 'on')!;
+    expect(full.energy).toBe(5);
   });
 
   it('gives a work phase of 7-8.9 the hard role and energy 4', () => {

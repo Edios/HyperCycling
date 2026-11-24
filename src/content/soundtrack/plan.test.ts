@@ -59,16 +59,13 @@ describe('soundtrack planner on the built-in workouts', () => {
     }
   });
 
-  it('never plays a song twice in a ride and has a Polish song in every ride', () => {
+  it('never plays a song twice in a ride', () => {
     for (const { w, p } of plans) {
       const songs = p.sections.flatMap((s) => s.picks).map((x) => byId.get(x.ref.id)!);
       // A repeated ending (rule R3) is the same song on purpose: count songs once per section.
       const keys = p.sections.flatMap((s) => [...new Set(s.picks.map((x) => x.ref.id))]);
       expect(new Set(keys.map((id) => songKey(byId.get(id)!))).size, w.id).toBe(keys.length);
-      expect(
-        songs.some((t) => t.pl),
-        w.id,
-      ).toBe(true);
+      expect(songs.length, w.id).toBeGreaterThan(0);
     }
   });
 

@@ -211,8 +211,10 @@ describe('scoreTrack', () => {
     const climber = scoreTrack(song('a', { bpm: 130, roles: ['climb'], energy: 4 }), climb)!;
     const warm = scoreTrack(song('b', { bpm: 130, roles: ['warmup'], energy: 4 }), climb)!;
     expect(climber.score).toBeGreaterThan(warm.score);
-    const calm = scoreTrack(song('c', { bpm: 130, roles: ['climb'], energy: 1 }), climb)!;
-    expect(climber.score).toBeGreaterThan(calm.score);
+    const milder = scoreTrack(song('c', { bpm: 130, roles: ['climb'], energy: 3 }), climb)!;
+    expect(climber.score).toBeGreaterThan(milder.score);
+    // A light song (energy 1-2) never plays on a climb (music energy spec §2b).
+    expect(scoreTrack(song('f', { bpm: 130, roles: ['climb'], energy: 2 }), climb)).toBeUndefined();
     const peak = section({ role: 'peak', energy: 5 });
     const sprinter = scoreTrack(song('d', { roles: ['intervals'], energy: 5 }), peak)!;
     const cruiser = scoreTrack(song('e', { roles: ['warmup'], energy: 5 }), peak)!;
@@ -472,15 +474,28 @@ describe('planSoundtrack', () => {
     });
   });
 
-  it("puts a Polish song in every ride (owner's rule)", () => {
-    const plan = planSoundtrack(ride, catalog, prefs({ categories: ['electronic'] }));
-    const pl = allPicks(plan).filter((p) => byId(catalog).get(p.ref.id)!.pl);
-    expect(pl).toHaveLength(1);
-    // pl1 is rock: outside the chosen category, so the report says so.
-    expect(plan.sections.some((s) => s.report.relaxed.includes('polish'))).toBe(true);
-    // No Polish song that fits anywhere: nothing to do.
-    const noPl = catalog.filter((t) => !t.pl);
-    expect(allPicks(planSoundtrack(ride, noPl, prefs())).length).toBeGreaterThan(0);
+  it('plays Polish songs of any kind with the "Polish" chip on, and none for their own sake without', () => {
+    const isPl = (p: PlanPick) => byId(catalog).get(p.ref.id)!.pl === true;
+    const off = planSoundtrack(ride, catalog, prefs({ categories: ['electronic'] }));
+    // pl1 is rock: with the chip off it is just a rock song (the old "one in every ride" is gone).
+    expect(allPicks(off).filter(isPl)).toEqual([]);
+    const on = planSoundtrack(ride, catalog, prefs({ categories: ['electronic'], polish: true }));
+    expect(allPicks(on).filter(isPl)).toHaveLength(1);
+    expect(on.sections.some((s) => s.report.relaxed.includes('polish'))).toBe(false);
+  });
+
+  it('rotates with the history of the last rides: a song of the last ride steps back', () => {
+    const p = prefs({ categories: ['electronic'] });
+    const first = planSoundtrack(ride, catalog, p);
+    const again = planSoundtrack(ride, catalog, p, {
+      history: [allPicks(first).map((x) => x.ref.id)],
+    });
+    // The first song of some part is another one, and the plan as a whole changed.
+    const firsts = (pl: SoundtrackPlan) => pl.sections.map((x) => x.picks[0]?.ref.id);
+    expect(firsts(again)).not.toEqual(firsts(first));
+    expect(allPicks(again).map((x) => x.ref.id)).not.toEqual(allPicks(first).map((x) => x.ref.id));
+    // Ids that are not in the catalog are ignored.
+    expect(planSoundtrack(ride, catalog, p, { history: [['no-such-song']] })).toEqual(first);
   });
 
   it('leaves a locked section alone (the workout has its cool-down track)', () => {
