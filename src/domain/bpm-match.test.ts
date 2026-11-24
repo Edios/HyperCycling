@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  cadenceFit,
+  cadenceFitToRange,
+  cadenceHints,
+  cadenceOfBpmRange,
+  sortByCadence,
   BPM_CLOSE,
   BPM_RELAXED,
   fitToRange,
@@ -169,5 +174,77 @@ describe('fitToRange', () => {
     expect(fitToRange(250, [120, 130])).toBe('double');
     expect(fitToRange(100, [120, 130])).toBeUndefined();
     expect(fitToRange(0, [120, 130])).toBeUndefined();
+  });
+});
+
+describe('cadenceHints (a song tempo as rpm)', () => {
+  it('reads 2 BPM as 1 RPM, with a window of +-6%', () => {
+    expect(cadenceHints(180)).toEqual([{ kind: 'exact', lo: 85, hi: 95 }]);
+  });
+
+  it('adds half time (BPM = RPM) when that cadence is rideable', () => {
+    expect(cadenceHints(120)).toEqual([
+      { kind: 'exact', lo: 56, hi: 64 },
+      { kind: 'half', lo: 113, hi: 127 },
+    ]);
+  });
+
+  it('leaves out cadences nobody rides at and invalid tempos', () => {
+    expect(cadenceHints(90).map((h) => h.kind)).toEqual(['half']);
+    expect(cadenceHints(0)).toEqual([]);
+    expect(cadenceHints(Number.NaN)).toEqual([]);
+  });
+
+  it('agrees with matchBpm: a cadence in a window matches the tempo', () => {
+    for (const bpm of [100, 120, 140, 172]) {
+      for (const h of cadenceHints(bpm)) {
+        expect(matchBpm(bpm, (h.lo + h.hi) / 2)?.kind).toBe(h.kind);
+      }
+    }
+  });
+});
+
+describe('cadenceFit', () => {
+  it('is fit on the beat, alt in half or double time, miss otherwise', () => {
+    expect(cadenceFit(180, 90)).toEqual({ verdict: 'fit', kind: 'exact' });
+    expect(cadenceFit(90, 90)).toEqual({ verdict: 'alt', kind: 'half' });
+    expect(cadenceFit(200, 50)).toEqual({ verdict: 'alt', kind: 'double' });
+    expect(cadenceFit(150, 90)).toEqual({ verdict: 'miss' });
+  });
+
+  it('marks a close fit', () => {
+    expect(cadenceFit(188, 90)).toEqual({ verdict: 'fit', kind: 'exact', close: true });
+  });
+
+  it('is undefined without a tempo or a cadence', () => {
+    expect(cadenceFit(undefined, 90)).toBeUndefined();
+    expect(cadenceFit(180, undefined)).toBeUndefined();
+    expect(cadenceFit(0, 90)).toBeUndefined();
+  });
+
+  it('judges a tempo against a slot range the same way', () => {
+    expect(cadenceFitToRange(150, [140, 160])).toEqual({ verdict: 'fit', kind: 'exact' });
+    expect(cadenceFitToRange(75, [140, 160])).toEqual({ verdict: 'alt', kind: 'half' });
+    expect(cadenceFitToRange(100, [140, 160])).toEqual({ verdict: 'miss' });
+    expect(cadenceFitToRange(undefined, [140, 160])).toBeUndefined();
+  });
+
+  it('turns a BPM range into the rpm it asks for', () => {
+    expect(cadenceOfBpmRange([140, 160])).toEqual([70, 80]);
+  });
+});
+
+describe('sortByCadence', () => {
+  it('puts fits first, then half/double time, then misses, then unknown, keeping order inside', () => {
+    const items = [
+      { id: 'miss1', bpm: 100 },
+      { id: 'alt1', bpm: 75 },
+      { id: 'unknown', bpm: undefined },
+      { id: 'fit1', bpm: 150 },
+      { id: 'miss2', bpm: 110 },
+      { id: 'fit2', bpm: 145 },
+    ];
+    const sorted = sortByCadence(items, (i) => cadenceFitToRange(i.bpm, [140, 160]));
+    expect(sorted.map((i) => i.id)).toEqual(['fit1', 'fit2', 'alt1', 'miss1', 'miss2', 'unknown']);
   });
 });

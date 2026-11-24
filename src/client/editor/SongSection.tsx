@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type Dispatch } from 'react';
-import { BPM_MAX, BPM_MIN } from '../../domain/bpm-match';
+import { BPM_MAX, BPM_MIN, cadenceOfBpmRange } from '../../domain/bpm-match';
 import type { Lang } from '../../domain/lang';
 import {
   cooldownBlockOf,
@@ -340,6 +340,14 @@ function SongPanel({
         {bad && (
           <small role="alert" className={styles.err}>
             {t('editor.songs.bpmError', { min: BPM_MIN, max: BPM_MAX })}
+          </small>
+        )}
+        {!bad && song.bpm && (
+          <small className={styles.cap} data-testid="song-cadence">
+            {t('editor.cadence.slotRange', {
+              lo: cadenceOfBpmRange(song.bpm)[0],
+              hi: cadenceOfBpmRange(song.bpm)[1],
+            })}
           </small>
         )}
       </div>

@@ -1,0 +1,29 @@
+/* No animation here, so reduced motion needs no override. Colour is never the only signal:
+   every badge carries a glyph and words. */
+.badge {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line2);
+  background: var(--s2);
+  color: var(--fg);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.fit {
+  border-color: var(--z3);
+}
+
+.alt {
+  border-color: var(--z7);
+}
+
+.miss {
+  border-color: var(--z9);
+}

@@ -1,9 +1,10 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { fitToRange, type MatchKind } from '../../domain/bpm-match';
+import { cadenceFitToRange, sortByCadence } from '../../domain/bpm-match';
 import { useT } from '../i18n';
 import { useBpmLookup, type SongCandidate, type SongProvider } from '../music/bpmLookup';
 import { BRAND, errorInfo, errorText, SITE, type ErrorInfo } from '../music/provider-labels';
 import { Button } from '../ui/Button';
+import { CadenceBadge, cadenceText } from './Cadence';
 import styles from './SongSection.module.css';
 
 type State =
@@ -11,12 +12,6 @@ type State =
   | { status: 'loading' }
   | { status: 'done'; hits: SongCandidate[]; failed: ErrorInfo[] }
   | ({ status: 'error' } & ErrorInfo);
-
-const FIT_KEY = {
-  exact: 'editor.songs.finder.fitIn',
-  half: 'editor.songs.finder.fitHalf',
-  double: 'editor.songs.finder.fitDouble',
-} as const satisfies Record<MatchKind, string>;
 
 /**
  * Search a song by artist and/or title (M19d): GetSongBPM with the rider's key, Deezer (no key)
@@ -38,6 +33,7 @@ export function SongFinder({
   const [title, setTitle] = useState('');
   const [provider, setProvider] = useState<SongProvider>('auto');
   const [state, setState] = useState<State>({ status: 'idle' });
+  const [onlyFitting, setOnlyFitting] = useState(false);
   const alive = useRef(true);
   const run = useRef(0);
   useEffect(() => {
@@ -69,6 +65,15 @@ export function SongFinder({
       if (alive.current && mine === run.current) setState({ status: 'error', ...errorInfo(err) });
     }
   };
+
+  // Best fit first (stable inside a group); the filter drops what does not fit the slot's range.
+  const hits = state.status === 'done' ? state.hits : [];
+  const ordered = range ? sortByCadence(hits, (h) => cadenceFitToRange(h.bpm, range)) : hits;
+  const shown =
+    range && onlyFitting
+      ? ordered.filter((h) => cadenceFitToRange(h.bpm, range)?.verdict !== 'miss')
+      : ordered;
+  const hidden = hits.length - shown.length;
 
   return (
     <div className={styles.group} data-testid="song-finder">
@@ -130,10 +135,26 @@ export function SongFinder({
           {t('editor.songs.finder.none')}
         </small>
       )}
-      {state.status === 'done' && state.hits.length > 0 && (
+      {state.status === 'done' && state.hits.length > 0 && range && (
+        <label className={styles.inline} data-testid="finder-filter">
+          <input
+            type="checkbox"
+            checked={onlyFitting}
+            onChange={(e) => setOnlyFitting(e.target.checked)}
+          />
+          <span>{t('editor.cadence.filter')}</span>
+        </label>
+      )}
+      {state.status === 'done' && state.hits.length > 0 && hidden > 0 && (
+        <small role="status" className={styles.cap} data-testid="finder-hidden">
+          {t('editor.cadence.filterHidden', { n: hidden })}
+        </small>
+      )}
+      {state.status === 'done' && shown.length > 0 && (
         <ul className={styles.hits} data-testid="finder-results">
-          {state.hits.map((h) => {
-            const fit = range ? fitToRange(h.bpm, range) : undefined;
+          {shown.map((h) => {
+            const fit = range ? cadenceFitToRange(h.bpm, range) : undefined;
+            const rpmText = cadenceText(t, h.bpm);
             const name = h.artist ? `${h.artist} – ${h.title}` : h.title;
             return (
               <li key={`${h.source}:${h.url}`} className={styles.hit}>
@@ -148,8 +169,9 @@ export function SongFinder({
                   </a>
                   <small className={styles.cap}>
                     {t('editor.songs.finder.hitInfo', { bpm: h.bpm, source: BRAND[h.source] })}
-                    {fit && ` · ${t(FIT_KEY[fit])}`}
+                    {rpmText && ` · ${rpmText}`}
                   </small>
+                  {fit && <CadenceBadge fit={fit} testId="finder-fit" />}
                 </span>
                 <Button onClick={() => onPick(h)} data-testid="finder-pick">
                   {t('editor.songs.finder.use')}

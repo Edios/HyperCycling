@@ -41,6 +41,14 @@
   cursor: pointer;
 }
 
+.chip[data-verdict='fit'] {
+  border-color: var(--z3);
+}
+
+.chip[data-verdict='alt'] {
+  border-color: var(--z7);
+}
+
 .chip:hover {
   border-color: var(--act);
 }
