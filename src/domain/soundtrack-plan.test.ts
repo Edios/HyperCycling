@@ -211,8 +211,10 @@ describe('scoreTrack', () => {
     const climber = scoreTrack(song('a', { bpm: 130, roles: ['climb'], energy: 4 }), climb)!;
     const warm = scoreTrack(song('b', { bpm: 130, roles: ['warmup'], energy: 4 }), climb)!;
     expect(climber.score).toBeGreaterThan(warm.score);
-    const calm = scoreTrack(song('c', { bpm: 130, roles: ['climb'], energy: 1 }), climb)!;
-    expect(climber.score).toBeGreaterThan(calm.score);
+    const milder = scoreTrack(song('c', { bpm: 130, roles: ['climb'], energy: 3 }), climb)!;
+    expect(climber.score).toBeGreaterThan(milder.score);
+    // A light song (energy 1-2) never plays on a climb (music energy spec §2b).
+    expect(scoreTrack(song('f', { bpm: 130, roles: ['climb'], energy: 2 }), climb)).toBeUndefined();
     const peak = section({ role: 'peak', energy: 5 });
     const sprinter = scoreTrack(song('d', { roles: ['intervals'], energy: 5 }), peak)!;
     const cruiser = scoreTrack(song('e', { roles: ['warmup'], energy: 5 }), peak)!;
@@ -472,15 +474,41 @@ describe('planSoundtrack', () => {
     });
   });
 
-  it("puts a Polish song in every ride (owner's rule)", () => {
-    const plan = planSoundtrack(ride, catalog, prefs({ categories: ['electronic'] }));
-    const pl = allPicks(plan).filter((p) => byId(catalog).get(p.ref.id)!.pl);
-    expect(pl).toHaveLength(1);
-    // pl1 is rock: outside the chosen category, so the report says so.
-    expect(plan.sections.some((s) => s.report.relaxed.includes('polish'))).toBe(true);
-    // No Polish song that fits anywhere: nothing to do.
-    const noPl = catalog.filter((t) => !t.pl);
-    expect(allPicks(planSoundtrack(ride, noPl, prefs())).length).toBeGreaterThan(0);
+  it('takes a Polish song of another kind like a neighbour category with the "Polish" chip on', () => {
+    // 10 minutes at 89 rpm; Electronic has two songs (not enough), House (its neighbour) none.
+    const part = workout([steady('a', 600, 5, 89)]);
+    const songs = [
+      song('e1', { bpm: 178, sec: 200, categories: ['electronic'] }),
+      song('e2', { bpm: 178, sec: 200, categories: ['electronic'] }),
+      song('r1', { bpm: 178, sec: 200, categories: ['rock'] }),
+      song('pl1', { bpm: 178, sec: 200, categories: ['rock'], over: { pl: true } }),
+    ];
+    const off = planSoundtrack(part, songs, prefs({ categories: ['electronic'] }));
+    // Without the chip a rock song only comes with "any category", Polish or not.
+    expect(off.sections[0]!.report.relaxed).toContain('anyCategory');
+    const on = planSoundtrack(part, songs, prefs({ categories: ['electronic'], polish: true }));
+    // With it, the Polish rock song is a neighbour: one step earlier, and it is taken.
+    expect(on.sections[0]!.report.relaxed).toEqual(['tolerance', 'category']);
+    expect(on.sections[0]!.picks.map((p) => p.ref.id).sort()).toEqual(['e1', 'e2', 'pl1']);
+    // Where the chosen kinds fill the part, the chip changes nothing (no full fit, no lift).
+    const full = [...songs, song('e3', { bpm: 178, sec: 200, categories: ['electronic'] })];
+    expect(
+      planSoundtrack(part, full, prefs({ categories: ['electronic'], polish: true })).sections,
+    ).toEqual(planSoundtrack(part, full, prefs({ categories: ['electronic'] })).sections);
+  });
+
+  it('rotates with the history of the last rides: a song of the last ride steps back', () => {
+    const p = prefs({ categories: ['electronic'] });
+    const first = planSoundtrack(ride, catalog, p);
+    const again = planSoundtrack(ride, catalog, p, {
+      history: [allPicks(first).map((x) => x.ref.id)],
+    });
+    // The first song of some part is another one, and the plan as a whole changed.
+    const firsts = (pl: SoundtrackPlan) => pl.sections.map((x) => x.picks[0]?.ref.id);
+    expect(firsts(again)).not.toEqual(firsts(first));
+    expect(allPicks(again).map((x) => x.ref.id)).not.toEqual(allPicks(first).map((x) => x.ref.id));
+    // Ids that are not in the catalog are ignored.
+    expect(planSoundtrack(ride, catalog, p, { history: [['no-such-song']] })).toEqual(first);
   });
 
   it('leaves a locked section alone (the workout has its cool-down track)', () => {

@@ -33,6 +33,7 @@ vi.mock('../data/repositories', () => ({
 }));
 
 import { builtinWorkouts } from '../data/builtin';
+import { loadSoundtrackHistory, SOUNDTRACK_HISTORY_KEY } from './history';
 import {
   confirmPlan,
   forgetPlan,
@@ -50,6 +51,7 @@ const NOW = new Date('2026-11-23T11:00:00.000Z');
 const plans = () => useSoundtrackSession.getState().plans;
 
 beforeEach(() => {
+  localStorage.removeItem(SOUNDTRACK_HISTORY_KEY);
   db.records.clear();
   db.fail = false;
   db.gets = 0;
@@ -66,6 +68,24 @@ describe('confirmPlan', () => {
     expect(rec).toEqual(planRecord(plan, NOW));
     expect(rec.createdAt).toBe('2026-11-23T11:00:00.000Z');
     expect(useSoundtrackSession.getState().saveFailed).toBe(false);
+  });
+
+  it('makes its songs the newest ride of the history (the next plans rotate away from them)', async () => {
+    await confirmPlan(plan, NOW);
+    const rides = loadSoundtrackHistory();
+    expect(rides).toHaveLength(1);
+    expect(rides[0]).toEqual({
+      at: '2026-11-23T11:00:00.000Z',
+      workoutId: workout.id,
+      ids: plan.sections.flatMap((s) => s.picks.map((p) => p.ref.id)),
+    });
+    // The history is a device choice: also kept when the plan store fails.
+    localStorage.removeItem(SOUNDTRACK_HISTORY_KEY);
+    db.fail = true;
+    await confirmPlan(other, NOW);
+    expect(loadSoundtrackHistory()[0]?.ids).toEqual(
+      other.sections.flatMap((s) => s.picks.map((p) => p.ref.id)),
+    );
   });
 
   it('replaces the earlier plan of the workout', async () => {

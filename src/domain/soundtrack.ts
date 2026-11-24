@@ -139,7 +139,10 @@ export interface MusicSection {
   rpmKnown: boolean;
   /** Wanted song tempo on the beat: 2 x `rpmMean` (half/double via `targetBpms`). */
   targetBpm: number;
-  /** Energy 1-5 wanted from the songs: `energyOf(workEffort)` (see `profile`). */
+  /**
+   * Energy 1-5 wanted from the songs: `energyOf(workEffort)` (see `profile`); one step less for an
+   * `intervals` part with under `INTERVAL_MIN_WORK_SHARE` of work (`intervalEnergy`).
+   */
   energy: SectionEnergy;
   /**
    * 'intervals' = short hard efforts with rests in between (see `intervalProfile`): the music
@@ -443,6 +446,22 @@ interface IntervalProfile {
   profile: SectionProfile;
   workEffort: number;
   rpm: number;
+  /** Share of the run's time in the work phase, 0..1 (1 for a steady run). */
+  workShare: number;
+}
+
+/**
+ * Below this share of work in an `intervals` part (a few short sprints in long rests), the music
+ * asks for one step less energy than the work phase: a peak song for 5 minutes of mostly rest is
+ * too much (review of #133, owner's default 2026-11-22).
+ */
+export const INTERVAL_MIN_WORK_SHARE = 0.2;
+
+/** Energy an `intervals` part asks for: the work phase's, one step less when the work is short. */
+export function intervalEnergy(workEffort: number, workShare: number, mean: number): SectionEnergy {
+  const work = energyOf(workEffort);
+  if (workShare >= INTERVAL_MIN_WORK_SHARE) return work;
+  return Math.max(energyOf(mean), work - 1) as SectionEnergy;
 }
 
 /**
@@ -459,6 +478,7 @@ function intervalProfile(segments: readonly Segment[], p: Piece, st: Stats): Int
     profile: 'steady',
     workEffort: st.effortMean,
     rpm: st.rpmMean,
+    workShare: 1,
   };
   if (st.effortMax - st.effortMin < INTERVAL_MIN_RANGE) return steadyProfile;
   const mid = (st.effortMin + st.effortMax) / 2;
@@ -493,6 +513,7 @@ function intervalProfile(segments: readonly Segment[], p: Piece, st: Stats): Int
     profile: 'intervals',
     workEffort: workEffortSum / workSec,
     rpm: rpmSec > 0 ? rpmSum / rpmSec : st.rpmMean,
+    workShare: workSec / st.durationSec,
   };
 }
 
@@ -536,7 +557,7 @@ export function sectionsOf(w: Workout, opts: SectionOptions = {}): MusicSection[
     // how the music reads the work in between (music energy spec §2a).
     const calm = role === 'warmup' || role === 'cooldown';
     const prof = calm
-      ? { profile: 'steady' as const, workEffort: st.effortMean, rpm: st.rpmMean }
+      ? { profile: 'steady' as const, workEffort: st.effortMean, rpm: st.rpmMean, workShare: 1 }
       : intervalProfile(segments, p, st);
     if (prof.profile === 'intervals') role = roleOfWork(prof.workEffort);
 
@@ -551,7 +572,10 @@ export function sectionsOf(w: Workout, opts: SectionOptions = {}): MusicSection[
       rpmMean: prof.rpm,
       rpmKnown: st.rpmKnown,
       targetBpm: 2 * prof.rpm,
-      energy: energyOf(prof.workEffort),
+      energy:
+        prof.profile === 'intervals'
+          ? intervalEnergy(prof.workEffort, prof.workShare, st.effortMean)
+          : energyOf(prof.workEffort),
       profile: prof.profile,
       workEffort: prof.workEffort,
     };

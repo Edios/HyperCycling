@@ -14,6 +14,7 @@ import {
   parseSoundtrackPrefs,
   planSummary,
   replaceSong,
+  shufflePlan,
   toggleCategory,
 } from './soundtrack-wizard';
 import raw from '../content/soundtrack/catalog.json';
@@ -34,7 +35,15 @@ describe('parseSoundtrackPrefs', () => {
       continuity: 'seamless',
       explicit: false,
       allowHalfDouble: true,
+      polish: true,
     });
+  });
+
+  it('keeps the "Polish" chip as stored, and turns it on for an entry saved before the chip', () => {
+    expect(parseSoundtrackPrefs({ categories: ['rock'], polish: false }).polish).toBe(false);
+    expect(parseSoundtrackPrefs({ categories: ['rock'], polish: true }).polish).toBe(true);
+    expect(parseSoundtrackPrefs({ categories: ['rock'] }).polish).toBe(true);
+    expect(parseSoundtrackPrefs({ categories: ['rock'], polish: 'yes' }).polish).toBe(true);
   });
 
   it('keeps what a good entry says', () => {
@@ -192,13 +201,9 @@ describe('makePlan and replaceSong', () => {
 
   it('shuffles with another seed and keeps the locked parts as they are', () => {
     const locked = new Set([first.sections[1]!.sectionId, first.sections[3]!.sectionId]);
-    const shuffled = makePlan(
-      w,
-      catalog,
-      { ...prefs, seed: nextSeed(prefs.seed) },
-      { locked, excluded: new Set() },
-      first,
-    );
+    const out = shufflePlan(w, catalog, prefs, { locked, excluded: new Set() }, first);
+    expect(out.prefs.seed).toBe(nextSeed(prefs.seed));
+    const shuffled = out.plan;
     expect(shuffled.sections[1]).toEqual(first.sections[1]);
     expect(shuffled.sections[3]).toEqual(first.sections[3]);
     expect(ids(shuffled)).not.toEqual(ids(first));
@@ -291,8 +296,9 @@ describe('the wizard on the built-in workouts', () => {
 
   it('default preferences plan the same as the first-visit ones with no category chosen', () => {
     const w = workout('music-climbs');
-    expect(makePlan(w, catalog, { ...FIRST_VISIT_PREFS, categories: [] })).toEqual(
-      planSoundtrack(w, catalog, { ...DEFAULT_SOUNDTRACK_PREFS, categories: [] }),
-    );
+    // The same songs; the plan keeps its own copy of the chip (off).
+    expect(
+      makePlan(w, catalog, { ...FIRST_VISIT_PREFS, categories: [], polish: false }).sections,
+    ).toEqual(planSoundtrack(w, catalog, { ...DEFAULT_SOUNDTRACK_PREFS, categories: [] }).sections);
   });
 });

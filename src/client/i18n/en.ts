@@ -632,6 +632,10 @@ export const en = {
       classics: 'Classics',
     },
     categoryDim: 'few songs at this tempo',
+    polish: 'Polish',
+    polishHint: 'Polish songs of other kinds join when the chosen kinds run short',
+    rotation:
+      'Songs of your last matched rides ({n}) step back, so the music changes from ride to ride.',
     bestHint: 'Best for this ride: {list}.',
     noBestHint: 'No kind has songs at this tempo. We will pick the closest ones.',
     continuityLabel: 'Continuity',

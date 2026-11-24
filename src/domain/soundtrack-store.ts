@@ -67,6 +67,7 @@ const prefsSchema = z.object({
     .int()
     .min(0)
     .max(2 ** 31),
+  polish: z.boolean().optional(),
 });
 
 export const soundtrackPlanSchema = z.object({

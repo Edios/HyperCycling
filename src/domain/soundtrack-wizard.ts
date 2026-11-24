@@ -26,10 +26,14 @@ import type { Workout } from './workout';
 // Preferences
 // ---------------------------------------------------------------------------------------------
 
-/** What a first visit starts with (spec §4, step 1): Electronic and Pop, "no gaps". */
+/**
+ * What a first visit starts with (spec §4, step 1): Electronic and Pop, "no gaps", and the
+ * "Polish" chip on (the owner's mix always had Polish songs; open question, 2026-11-24).
+ */
 export const FIRST_VISIT_PREFS: SoundtrackPrefs = {
   ...DEFAULT_SOUNDTRACK_PREFS,
   categories: ['electronic', 'pop'],
+  polish: true,
 };
 
 /** A workout shorter than this has nothing to plan (spec §7.7). */
@@ -57,6 +61,7 @@ export function parseSoundtrackPrefs(raw: unknown): SoundtrackPrefs {
     explicit: bool(o.explicit, FIRST_VISIT_PREFS.explicit),
     allowHalfDouble: bool(o.allowHalfDouble, FIRST_VISIT_PREFS.allowHalfDouble),
     seed,
+    polish: bool(o.polish, FIRST_VISIT_PREFS.polish === true),
   };
 }
 
@@ -207,12 +212,39 @@ export function makePlan(
   choices: WizardChoices = NO_CHOICES,
   previous?: SoundtrackPlan,
   sections?: readonly MusicSection[],
+  history?: readonly (readonly string[])[],
 ): SoundtrackPlan {
   return planSoundtrack(workout, catalog, prefs, {
     ...(sections ? { sections } : {}),
+    ...(history ? { history } : {}),
     exclude: choices.excluded,
     keep: lockedSections(previous, choices.locked),
   });
+}
+
+/**
+ * "Shuffle": another seed, and the songs of the plan on screen count as the newest ride before
+ * the remembered ones (`history`, spec §3a), so the unlocked parts get other songs while each
+ * still asks for its energy. A small seeded jitter alone rarely changes a plan whose songs fit
+ * clearly better than the rest.
+ */
+export function shufflePlan(
+  workout: Workout,
+  catalog: readonly CatalogTrack[],
+  prefs: SoundtrackPrefs,
+  choices: WizardChoices,
+  plan: SoundtrackPlan,
+  sections?: readonly MusicSection[],
+  history: readonly (readonly string[])[] = [],
+): { plan: SoundtrackPlan; prefs: SoundtrackPrefs } {
+  const next = { ...prefs, seed: nextSeed(prefs.seed) };
+  const shown = plan.sections
+    .filter((s) => !choices.locked.has(s.sectionId))
+    .flatMap((s) => s.picks.map((p) => p.ref.id));
+  return {
+    plan: makePlan(workout, catalog, next, choices, plan, sections, [shown, ...history]),
+    prefs: next,
+  };
 }
 
 /**
@@ -228,6 +260,7 @@ export function replaceSong(
   sectionId: string,
   songId: string,
   sections?: readonly MusicSection[],
+  history?: readonly (readonly string[])[],
 ): { plan: SoundtrackPlan; excluded: Set<string> } {
   const excluded = new Set(choices.excluded).add(songId);
   const keepAllButOne = new Set(
@@ -240,6 +273,7 @@ export function replaceSong(
     { locked: keepAllButOne, excluded },
     plan,
     sections,
+    history,
   );
   return { plan: next, excluded };
 }

@@ -638,6 +638,10 @@ export const pl: Messages = {
       classics: 'Klasyki',
     },
     categoryDim: 'mało utworów w tym tempie',
+    polish: 'Polskie',
+    polishHint: 'Polskie utwory innych rodzajów dołączają, gdy wybranych brakuje',
+    rotation:
+      'Utwory z ostatnich dopasowanych jazd ({n}) ustępują miejsca, żeby muzyka zmieniała się z jazdy na jazdę.',
     bestHint: 'Do tego treningu najlepiej pasują: {list}.',
     noBestHint: 'Żaden rodzaj nie ma utworów w tym tempie. Dobierzemy najbliższe.',
     continuityLabel: 'Ciągłość',
