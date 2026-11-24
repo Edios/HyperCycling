@@ -223,9 +223,10 @@ export function makePlan(
 }
 
 /**
- * "Shuffle": another seed, and the songs of the plan on screen count as the last ride (spec §3a),
- * so the unlocked parts get other songs while each still asks for its energy. A small seeded
- * jitter alone rarely changes a plan whose songs fit clearly better than the rest.
+ * "Shuffle": another seed, and the songs of the plan on screen count as the newest ride before
+ * the remembered ones (`history`, spec §3a), so the unlocked parts get other songs while each
+ * still asks for its energy. A small seeded jitter alone rarely changes a plan whose songs fit
+ * clearly better than the rest.
  */
 export function shufflePlan(
   workout: Workout,
@@ -234,13 +235,14 @@ export function shufflePlan(
   choices: WizardChoices,
   plan: SoundtrackPlan,
   sections?: readonly MusicSection[],
+  history: readonly (readonly string[])[] = [],
 ): { plan: SoundtrackPlan; prefs: SoundtrackPrefs } {
   const next = { ...prefs, seed: nextSeed(prefs.seed) };
   const shown = plan.sections
     .filter((s) => !choices.locked.has(s.sectionId))
     .flatMap((s) => s.picks.map((p) => p.ref.id));
   return {
-    plan: makePlan(workout, catalog, next, choices, plan, sections, [shown]),
+    plan: makePlan(workout, catalog, next, choices, plan, sections, [shown, ...history]),
     prefs: next,
   };
 }
@@ -258,6 +260,7 @@ export function replaceSong(
   sectionId: string,
   songId: string,
   sections?: readonly MusicSection[],
+  history?: readonly (readonly string[])[],
 ): { plan: SoundtrackPlan; excluded: Set<string> } {
   const excluded = new Set(choices.excluded).add(songId);
   const keepAllButOne = new Set(
@@ -270,6 +273,7 @@ export function replaceSong(
     { locked: keepAllButOne, excluded },
     plan,
     sections,
+    history,
   );
   return { plan: next, excluded };
 }

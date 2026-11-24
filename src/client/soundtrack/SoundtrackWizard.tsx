@@ -28,6 +28,7 @@ import { Chip } from '../ui/Chip';
 import { ProfileChart } from '../ui/ProfileChart';
 import { Segmented } from '../ui/Segmented';
 import { PartCard } from './PartCard';
+import { freshSeed, historyIds, loadSoundtrackHistory } from './history';
 import { loadSoundtrackPrefs, saveSoundtrackPrefs } from './prefs';
 import { confirmPlan, useSoundtrackSession } from './session';
 import { useSoundtrackCatalog } from './useCatalog';
@@ -71,7 +72,15 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
   const sectionById = useMemo(() => new Map(sections.map((s) => [s.id, s])), [sections]);
 
   const [step, setStep] = useState<Step>(1);
-  const [prefs, setPrefs] = useState<SoundtrackPrefs>(() => loadSoundtrackPrefs());
+  // A new opening draws a new seed (spec §3b); a workout with a saved plan keeps that plan's seed,
+  // so the same choices give the same songs again.
+  const savedSeed = useSoundtrackSession((s) => s.plans[workout.id]?.prefs.seed);
+  const [prefs, setPrefs] = useState<SoundtrackPrefs>(() => ({
+    ...loadSoundtrackPrefs(),
+    seed: savedSeed ?? freshSeed(),
+  }));
+  // The songs of the last confirmed rides (newest first): they step back in the new plans.
+  const history = useMemo(() => historyIds(loadSoundtrackHistory()), []);
   const [plan, setPlan] = useState<SoundtrackPlan | undefined>();
   const [locked, setLocked] = useState<ReadonlySet<string>>(() => new Set());
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(() => new Set());
@@ -135,7 +144,15 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
       setLocked(fresh);
       setExcluded(fresh);
       setPlan(
-        makePlan(workout, catalog, prefs, { locked: fresh, excluded: fresh }, undefined, sections),
+        makePlan(
+          workout,
+          catalog,
+          prefs,
+          { locked: fresh, excluded: fresh },
+          undefined,
+          sections,
+          history,
+        ),
       );
       plannedFor.current = key;
     }
@@ -145,7 +162,7 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
   const shuffle = (): void => {
     if (!plan) return;
     preview.stop();
-    const out = shufflePlan(workout, catalog, prefs, { locked, excluded }, plan, sections);
+    const out = shufflePlan(workout, catalog, prefs, { locked, excluded }, plan, sections, history);
     setPrefs(out.prefs);
     saveSoundtrackPrefs(out.prefs);
     setPlan(out.plan);
@@ -163,6 +180,7 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
       sectionId,
       songId,
       sections,
+      history,
     );
     setExcluded(out.excluded);
     setPlan(out.plan);
@@ -310,6 +328,11 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
           })}
         </div>
         <p className={styles.help}>{t('soundtrack.previewNote')}</p>
+        {history.length > 0 && (
+          <p className={styles.help} data-testid="soundtrack-rotation">
+            {t('soundtrack.rotation', { n: history.length })}
+          </p>
+        )}
         {preview.failed && (
           <p className={`${styles.note} ${styles.warn}`} role="status">
             {t('soundtrack.previewFailed')}

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SETTINGS, type Settings } from '../../domain/settings';
@@ -31,9 +31,14 @@ vi.mock('../data/repositories', () => ({
 
 vi.setConfig({ testTimeout: 30_000 });
 
+import raw from '../../content/soundtrack/catalog.json';
+import { parseCatalog } from '../../domain/soundtrack-catalog';
+import { planSoundtrack } from '../../domain/soundtrack-plan';
+import { FIRST_VISIT_PREFS } from '../../domain/soundtrack-wizard';
 import { builtinWorkouts } from '../data/builtin';
 import { resetSettingsForTests } from '../data/useSettings';
 import { setLang } from '../i18n';
+import { SOUNDTRACK_HISTORY_KEY } from './history';
 import { SOUNDTRACK_PREFS_KEY } from './prefs';
 import { resetSoundtrackSessionForTests, useSoundtrackSession } from './session';
 import { SoundtrackWizard } from './SoundtrackWizard';
@@ -54,6 +59,7 @@ function renderWizard(id = 'class-endurance-45', from = 'setup') {
   );
 }
 
+const catalog = parseCatalog(raw).tracks;
 const chip = (c: string) => screen.getByTestId(`soundtrack-chip-${c}`);
 const next = () => screen.getByTestId('soundtrack-next');
 const songIds = () =>
@@ -72,6 +78,7 @@ beforeEach(() => {
   resetSettingsForTests();
   resetSoundtrackSessionForTests();
   localStorage.removeItem(SOUNDTRACK_PREFS_KEY);
+  localStorage.removeItem(SOUNDTRACK_HISTORY_KEY);
   setLang('en');
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 });
@@ -305,6 +312,42 @@ describe('step 2: the songs', () => {
     fireEvent.click(next());
     await screen.findByRole('heading', { name: 'We suggest these songs' });
     expect(songIds()).not.toEqual(before);
+  });
+});
+
+describe('rotation between rides', () => {
+  it('draws a new seed on a new opening, and keeps the seed of a saved plan', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(1_700_000_000_123);
+    await toStep2();
+    expect(JSON.parse(localStorage.getItem(SOUNDTRACK_PREFS_KEY) ?? '{}').seed).toBe(
+      1_700_000_000_123 % 2 ** 31,
+    );
+    cleanup();
+    const saved = planSoundtrack(
+      builtinWorkouts.find((w) => w.id === 'class-endurance-45')!,
+      catalog,
+      { ...FIRST_VISIT_PREFS, seed: 4242 },
+    );
+    useSoundtrackSession.getState().setPlan('class-endurance-45', saved);
+    await toStep2();
+    expect(JSON.parse(localStorage.getItem(SOUNDTRACK_PREFS_KEY) ?? '{}').seed).toBe(4242);
+  });
+
+  it('says that songs of the last rides step back, and plans around them', async () => {
+    await toStep2();
+    expect(screen.queryByTestId('soundtrack-rotation')).not.toBeInTheDocument();
+    const first = songIds();
+    fireEvent.click(next());
+    fireEvent.click(await screen.findByRole('button', { name: 'To the ride' }));
+    await screen.findByTestId('where');
+    cleanup();
+    resetSoundtrackSessionForTests();
+    await toStep2();
+    expect(screen.getByTestId('soundtrack-rotation')).toHaveTextContent(
+      'Songs of your last matched rides (1) step back',
+    );
+    const again = songIds();
+    expect(again.filter((id) => first.includes(id)).length).toBeLessThan(again.length);
   });
 });
 

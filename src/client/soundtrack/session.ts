@@ -3,6 +3,7 @@ import type { SoundtrackPlan } from '../../domain/soundtrack-plan';
 import { planRecord } from '../../domain/soundtrack-store';
 import type { Workout } from '../../domain/workout';
 import { getRepositories } from '../data/repositories';
+import { recordSoundtrackRide } from './history';
 
 /**
  * The music matched for a workout, by workout id: what the screens read. The confirmed plan is
@@ -69,10 +70,13 @@ export async function loadSavedPlan(workoutId: string): Promise<void> {
 
 /**
  * Confirms a plan: it is taken over at once and written to the device with the time of the
- * confirmation. Returns false when the write failed (the plan then lasts for this visit only).
+ * confirmation, and its songs become the newest ride of the history (the next plans rotate away
+ * from them, music energy spec §3a). Returns false when the write failed (the plan then lasts for
+ * this visit only).
  */
 export async function confirmPlan(plan: SoundtrackPlan, now = new Date()): Promise<boolean> {
   useSoundtrackSession.getState().setPlan(plan.workoutId, plan);
+  recordSoundtrackRide(plan, now);
   try {
     const repos = await getRepositories();
     await repos.soundtrackPlans.put(planRecord(plan, now));
