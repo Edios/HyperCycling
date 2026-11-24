@@ -478,6 +478,11 @@ export interface Candidate {
   rideRpm: number | undefined;
   /** Playable length of the main upload from the song's start offset, seconds. */
   lenSec: number;
+  /**
+   * Rotation cost of the song (history of the last rides), already taken off `score`. The queue
+   * charges a song shorter than `ROTATION_REF_SEC` the rest of it (see there).
+   */
+  rotation?: number;
 }
 
 /** Playable length of a song from its start offset (main upload), seconds. */
@@ -507,6 +512,14 @@ export const HISTORY_DECAY = 0.7;
 export const HISTORY_ARTIST_PENALTY = 0.08;
 export const HISTORY_ARTIST_RIDES = 3;
 export const HISTORY_ARTIST_MAX = 0.2;
+/**
+ * A queue weighs a song's score by the seconds it plays, so a short song paid its rotation cost
+ * only for its own length: a 2:35 song of the last ride cost a 17-minute part half of what a 4:00
+ * one did, and stayed the handy filler of every ride (R1f: Flume in 464 of 580 rides). A song
+ * shorter than this pays its rotation cost as if it lasted this long; fit and length rules as
+ * before.
+ */
+export const ROTATION_REF_SEC = 240;
 /**
  * An add-on style (synthwave, drum and bass) is a supplement, never the backbone: each such song
  * costs this much, plus as much again for every one already in the ride.
@@ -564,6 +577,12 @@ interface PlanContext {
   /** What the last rides cost a song (by song key) and an artist (`historyPenalties`). */
   historySong: ReadonlyMap<string, number>;
   historyArtist: ReadonlyMap<string, number>;
+  /**
+   * Mixed into the shuffle with the seed: the workout id, so one seed breaks the near-ties of
+   * every workout its own way (R1f: with one seed for all, a song was in nearly every first-visit
+   * plan or in few, depending on a few seconds of another song).
+   */
+  shuffleSalt: string;
 }
 
 /** The rotation penalties of the last rides (newest first, catalog ids; unknown ids are skipped). */
@@ -614,14 +633,14 @@ function scoredAt(
     if (lenSec <= 0) continue;
     const plays = ride.artists.get(t.artist) ?? 0;
     const addOn = t.supplement ? SUPPLEMENT_PENALTY * (1 + ride.supplements) : 0;
+    const rotation = (ctx.historySong.get(key) ?? 0) + (ctx.historyArtist.get(t.artist) ?? 0);
     const score =
       sc.score +
-      SHUFFLE_JITTER * shuffleValue(prefs.seed, t.id) -
+      SHUFFLE_JITTER * shuffleValue(prefs.seed, ctx.shuffleSalt + t.id) -
       ARTIST_REPEAT_PENALTY * plays -
       addOn -
-      (ctx.historySong.get(key) ?? 0) -
-      (ctx.historyArtist.get(t.artist) ?? 0);
-    out.push({ track: t, key, score, fit: sc.fit, rideRpm: sc.rideRpm, lenSec });
+      rotation;
+    out.push({ track: t, key, score, fit: sc.fit, rideRpm: sc.rideRpm, lenSec, rotation });
   }
   // Best first; ties by catalog id (deterministic whatever the catalog order).
   out.sort((a, b) => b.score - a.score || (a.track.id < b.track.id ? -1 : 1));
@@ -675,6 +694,14 @@ const ANY_CUT_COST = 0.02;
 const SEAM_COST = 0.15;
 /** Trend (spec section 8): per step a song's energy is off the curve at its place, score x time. */
 export const TREND_STEP_COST = 0.15;
+
+/**
+ * The rotation cost a short song's length hides, in score x seconds: its rotation cost for the
+ * seconds it falls short of `ROTATION_REF_SEC`.
+ */
+function rotationShortfall(cand: Candidate): number {
+  return (cand.rotation ?? 0) * Math.max(0, ROTATION_REF_SEC - cand.lenSec);
+}
 
 /** A song's score at its place in a part with a trend (the plain score without one). */
 function placedScore(
@@ -732,7 +759,10 @@ function grow(
   return {
     picks: [...st.picks, c],
     sec: st.sec + cand.lenSec,
-    weighted: st.weighted + placedScore(cand, st.sec, durationSec, trend, floor) * played,
+    weighted:
+      st.weighted +
+      placedScore(cand, st.sec, durationSec, trend, floor) * played -
+      rotationShortfall(cand),
     penalty: addPenalty(st, cand),
     supplement: st.supplement || cand.track.supplement === true,
     lastArtist: cand.track.artist,
@@ -796,7 +826,8 @@ export function buildQueue(
         const sec = st.sec + cand.lenSec;
         const weighted =
           st.weighted +
-          placedScore(cand, st.sec, durationSec, opts.trend, opts.trendFloor) * played;
+          placedScore(cand, st.sec, durationSec, opts.trend, opts.trendFloor) * played -
+          rotationShortfall(cand);
         const penalty = addPenalty(st, cand);
         if (sec >= durationSec - SLOT_TOLERANCE_SEC) {
           const obj = objective(sec, weighted, penalty, durationSec);
@@ -919,7 +950,7 @@ function knapsackFill(
     const cand = candidates[i] as Candidate;
     const len = Math.max(1, Math.round(cand.lenSec));
     lens.push(len);
-    const w = cand.score * Math.min(cand.lenSec, durationSec);
+    const w = cand.score * Math.min(cand.lenSec, durationSec) - rotationShortfall(cand);
     for (let sec = hi; sec >= len; sec--) {
       const from = best[sec - len] as number;
       if (from < 0) continue;
@@ -1131,6 +1162,7 @@ export function planSoundtrack(
     near: neighboursOf(chosen),
     historySong: past.song,
     historyArtist: past.artist,
+    shuffleSalt: `${workout.id}/`,
   };
   const ride: RideState = { used: new Set(), artists: new Map(), supplements: 0 };
   for (const id of opts.exclude ?? []) {

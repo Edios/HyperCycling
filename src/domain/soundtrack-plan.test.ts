@@ -730,17 +730,21 @@ describe('planSoundtrack', () => {
     });
 
     it('does not add a second Polish song when a locked section has one', () => {
-      // The Polish song made a clear fit for the 65 rpm climb (2x = 130 BPM, in the band), so the
-      // first plan surely has it (spec §9 B/E moved it out of the 88 rpm parts).
+      // The Polish song made a good fit for the 65 rpm climb (2x = 130 BPM, in the band; spec §9 B/E
+      // moved it out of the 88 rpm parts). Many fixture songs tie with it there, so whether a plan
+      // takes it depends on the shuffle.
       const catalog = fixture().map((t) =>
         t.id === 'pl1'
           ? { ...t, bpm: 130, energy: 4 as const, roles: ['climb' as const, 'steady' as const] }
           : t,
       );
-      const first = planSoundtrack(ride, catalog, prefs());
-      const withPl = first.sections.find((s) =>
-        s.picks.some((x) => byId(catalog).get(x.ref.id)!.pl),
+      // The first seed whose plan has it.
+      const hasPl = (p: SoundtrackPlan) =>
+        p.sections.find((s) => s.picks.some((x) => byId(catalog).get(x.ref.id)!.pl));
+      const seed = Array.from({ length: 60 }, (_, i) => i + 1).find((n) =>
+        hasPl(planSoundtrack(ride, catalog, prefs({ seed: n }))),
       )!;
+      const withPl = hasPl(planSoundtrack(ride, catalog, prefs({ seed })))!;
       const keep = new Map([[withPl.sectionId, withPl]]);
       const next = planSoundtrack(ride, catalog, prefs({ seed: 3 }), { keep });
       const pl = all(next).filter((id) => byId(catalog).get(id)!.pl);
