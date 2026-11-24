@@ -198,11 +198,92 @@ describe('song finder (M19d)', () => {
     fireEvent.blur(within(panel).getByTestId('song-bpm-max'));
     fireEvent.click(within(panel).getByTestId('finder-search'));
     const list = await within(panel).findByTestId('finder-results');
-    expect(list).toHaveTextContent('fits your range');
-    expect(list).toHaveTextContent('fits as half time');
+    expect(list).toHaveTextContent('fits the cadence');
+    expect(list).toHaveTextContent('fits in half time');
+    expect(list).toHaveTextContent('≈ 82–91 rpm');
     fireEvent.click(within(panel).getAllByTestId('finder-pick')[1] as HTMLElement);
     expect(within(panel).getByTestId('song-bpm-min')).toHaveValue('170');
     expect(within(panel).getByTestId('song-hint')).toHaveValue('Band – Slow One');
+  });
+
+  it('sorts the hits that fit the range first, marks the rest and can hide them', async () => {
+    const panel = await find(() =>
+      Promise.resolve([hit('Off One', 120), hit('Slow One', 86), hit('Fast One', 172)]),
+    );
+    fireEvent.change(within(panel).getByTestId('song-bpm-min'), { target: { value: '170' } });
+    fireEvent.change(within(panel).getByTestId('song-bpm-max'), { target: { value: '176' } });
+    fireEvent.blur(within(panel).getByTestId('song-bpm-max'));
+    fireEvent.click(within(panel).getByTestId('finder-search'));
+    const list = await within(panel).findByTestId('finder-results');
+    const rows = () =>
+      within(list)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent ?? '');
+    expect(rows().map((r) => r.match(/(Fast|Slow|Off) One/)?.[1])).toEqual(['Fast', 'Slow', 'Off']);
+    expect(
+      within(list)
+        .getAllByTestId('finder-fit')
+        .map((b) => b.getAttribute('data-verdict')),
+    ).toEqual(['fit', 'alt', 'miss']);
+    expect(within(list).getAllByTestId('finder-fit')[2]).toHaveTextContent(
+      'does not fit the cadence',
+    );
+    fireEvent.click(within(panel).getByLabelText('Only songs that fit the cadence'));
+    expect(rows()).toHaveLength(2);
+    expect(within(panel).getByTestId('finder-hidden')).toHaveTextContent('1 hidden');
+    fireEvent.click(within(panel).getByLabelText('Only songs that fit the cadence'));
+    expect(rows()).toHaveLength(3);
+  });
+
+  it('judges hits by the block cadence when no range is typed, like the chips do (review B2)', async () => {
+    const panel = await find(() =>
+      Promise.resolve([hit('Off One', 150), hit('Close One', 188), hit('Exact One', 180)]),
+    );
+    expect(within(panel).getByTestId('song-bpm-min')).toHaveValue('');
+    fireEvent.click(within(panel).getByTestId('finder-search'));
+    const list = await within(panel).findByTestId('finder-results');
+    const verdicts = () =>
+      within(list)
+        .getAllByTestId('finder-fit')
+        .map((b) => b.getAttribute('data-verdict'));
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent?.match(/(Exact|Close|Off) One/)?.[1]),
+    ).toEqual(['Exact', 'Close', 'Off']);
+    expect(verdicts()).toEqual(['fit', 'fit', 'miss']);
+    fireEvent.click(within(panel).getByLabelText('Only songs that fit the cadence'));
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('a hit just outside a typed range still fits when its tempo matches the cadence', async () => {
+    const panel = await find(() => Promise.resolve([hit('Near One', 180)]));
+    fireEvent.change(within(panel).getByTestId('song-bpm-min'), { target: { value: '170' } });
+    fireEvent.change(within(panel).getByTestId('song-bpm-max'), { target: { value: '176' } });
+    fireEvent.blur(within(panel).getByTestId('song-bpm-max'));
+    fireEvent.click(within(panel).getByTestId('finder-search'));
+    expect(await within(panel).findByTestId('finder-fit')).toHaveAttribute('data-verdict', 'fit');
+  });
+
+  it('shows no cadence for a slot whose range is one song tempo that is no cadence (review B3)', async () => {
+    const panel = await find(() => Promise.resolve([hit('Slow One', 86)]));
+    fireEvent.click(within(panel).getByTestId('finder-search'));
+    await within(panel).findByTestId('finder-results');
+    fireEvent.click(within(panel).getByTestId('finder-pick'));
+    expect(within(panel).getByTestId('song-bpm-min')).toHaveValue('86');
+    expect(within(panel).queryByTestId('song-cadence')).not.toBeInTheDocument();
+    expect(panel).not.toHaveTextContent('43–43');
+  });
+
+  it('keeps one status note in the finder, empty until something is hidden', async () => {
+    const panel = await find(() => Promise.resolve([hit('Off One', 150), hit('Exact One', 180)]));
+    fireEvent.click(within(panel).getByTestId('finder-search'));
+    await within(panel).findByTestId('finder-results');
+    const note = within(panel).getByTestId('finder-hidden');
+    expect(note).toBeEmptyDOMElement();
+    fireEvent.click(within(panel).getByLabelText('Only songs that fit the cadence'));
+    expect(within(panel).getByTestId('finder-hidden')).toBe(note);
+    expect(note).toHaveTextContent('1 hidden');
   });
 
   it('without the Deezer setting nor a key: no Deezer option, search says what to turn on', async () => {

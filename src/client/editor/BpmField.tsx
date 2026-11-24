@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   BPM_MAX,
   BPM_MIN,
+  cadenceFit,
   genresForRpm,
   matchBpm,
   parseBpmInput,
@@ -17,6 +18,8 @@ import { type BpmHit } from '../music/getsongbpm/client';
 import { BRAND, errorInfo, errorText, SITE, type ErrorInfo } from '../music/provider-labels';
 import { trackQuery } from '../music/getsongbpm/query';
 import { Button } from '../ui/Button';
+import { cadenceText, verdictMark } from './Cadence';
+import cadence from './Cadence.module.css';
 import styles from './Inspector.module.css';
 
 type LookupState =
@@ -160,6 +163,9 @@ export function BpmField({
   };
 
   const match = value !== undefined && rpm !== undefined ? matchBpm(value, rpm) : undefined;
+  const fitInfo = cadenceFit(value, rpm);
+  const verdict = fitInfo?.verdict;
+  const trackCadence = cadenceText(t, value);
   const targets = rpm === undefined ? [] : targetBpms(rpm);
   const exact = targets.find((x) => x.kind === 'exact')?.bpm;
   const half = targets.find((x) => x.kind === 'half')?.bpm;
@@ -253,6 +259,11 @@ export function BpmField({
           )}
         </div>
       )}
+      {track && trackCadence && (
+        <small className={styles.caption} data-testid="track-cadence">
+          {trackCadence}
+        </small>
+      )}
       {track && touched && invalid && (
         <small role="alert" className={styles.error}>
           {t('editor.bpm.error', { min: String(BPM_MIN), max: String(BPM_MAX) })}
@@ -272,13 +283,24 @@ export function BpmField({
         </small>
       )}
       {track && match && (
-        <small className={styles.caption} data-testid="bpm-match" data-fit={match.fit}>
+        <small
+          className={`${styles.caption} ${cadence.badge} ${cadence[verdict ?? 'fit']}`}
+          data-testid="bpm-match"
+          data-fit={match.fit}
+          data-verdict={verdict}
+        >
+          <span aria-hidden="true">{fitInfo ? verdictMark(fitInfo) : ''}</span>{' '}
           {t(`editor.bpm.match.${match.kind}`)}
           {match.fit === 'close' ? ` · ${t('editor.bpm.close')}` : ''}
         </small>
       )}
       {track && value !== undefined && rpm !== undefined && !match && (
-        <small className={styles.caption} data-testid="bpm-nomatch">
+        <small
+          className={`${styles.caption} ${cadence.badge} ${cadence.miss}`}
+          data-testid="bpm-nomatch"
+          data-verdict="miss"
+        >
+          <span aria-hidden="true">{verdictMark({ verdict: 'miss' })}</span>{' '}
           {t('editor.bpm.noMatch')}
         </small>
       )}

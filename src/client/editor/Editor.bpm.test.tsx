@@ -135,6 +135,19 @@ describe('BPM matching hint', () => {
     expect(screen.getByTestId('bpm-nomatch')).toBeInTheDocument();
   });
 
+  it('shows the rpm a typed BPM suits and tints the verdict (fit, half time, miss)', async () => {
+    const bpm = await pinTrack();
+    fireEvent.change(bpm, { target: { value: '180' } });
+    expect(screen.getByTestId('track-cadence')).toHaveTextContent('≈ 85–95 rpm');
+    expect(screen.getByTestId('bpm-match')).toHaveAttribute('data-verdict', 'fit');
+    fireEvent.change(bpm, { target: { value: '90' } });
+    expect(screen.getByTestId('track-cadence')).toHaveTextContent('half time ≈ 85–95 rpm');
+    expect(screen.getByTestId('bpm-match')).toHaveAttribute('data-verdict', 'alt');
+    fireEvent.change(bpm, { target: { value: '128' } });
+    expect(screen.getByTestId('track-cadence')).toHaveTextContent('≈ 61–68 rpm');
+    expect(screen.getByTestId('bpm-nomatch')).toHaveAttribute('data-verdict', 'miss');
+  });
+
   it('does not announce an error while typing, only after leaving the field', async () => {
     const bpm = await pinTrack();
     fireEvent.change(bpm, { target: { value: '1' } });

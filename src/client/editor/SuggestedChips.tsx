@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import type { MatchKind } from '../../domain/bpm-match';
+import { cadenceFit, type MatchKind } from '../../domain/bpm-match';
 import { useT } from '../i18n';
 import { suggestFor, type LibraryTrack } from '../music/library/library';
 import { useSongLibrary } from '../music/library/tag-controller';
 import { BRAND } from '../music/provider-labels';
+import { cadenceText } from './Cadence';
 import styles from './SuggestedChips.module.css';
 
 const MAX_CHIPS = 6;
@@ -56,17 +57,25 @@ export function SuggestedChips({
               : BRAND[track.bpmSource];
           const fit = `${t(KIND_KEY[match.kind])}${match.fit === 'close' ? ` (${t('editor.suggest.close')})` : ''}`;
           const name = track.artist ? `${track.title} · ${track.artist}` : track.title;
+          const rpmText = cadenceText(t, track.bpm);
+          const verdict = cadenceFit(track.bpm, rpm)?.verdict ?? 'fit';
           return (
             <li key={track.id}>
               <button
                 type="button"
                 className={styles.chip}
                 data-testid="suggested-chip"
-                title={`${name} — ${track.bpm} BPM · ${source} · ${fit}`}
+                data-verdict={verdict}
+                title={`${name} — ${track.bpm} BPM${rpmText ? ` (${rpmText})` : ''} · ${source} · ${fit}`}
                 onClick={() => onPick(track)}
               >
                 <span className={styles.name}>{name}</span>
                 <span className={styles.meta}>{`${track.bpm} BPM · ${source} · ${fit}`}</span>
+                {rpmText && (
+                  <span className={styles.meta} data-testid="suggested-cadence">
+                    {rpmText}
+                  </span>
+                )}
               </button>
             </li>
           );

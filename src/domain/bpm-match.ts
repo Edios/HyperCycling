@@ -91,6 +91,127 @@ export function fitToRange(bpm: number, range: readonly [number, number]): Match
   return undefined;
 }
 
+/** Cadences the editor mentions when it translates a song tempo to rpm. */
+export const CADENCE_HINT_MIN = 50;
+export const CADENCE_HINT_MAX = 130;
+
+/** The cadence window a song tempo suits when read as `kind`: rpm = bpm / multiplier, +-tolerance. */
+export interface CadenceHint {
+  kind: MatchKind;
+  lo: number;
+  hi: number;
+}
+
+/**
+ * The whole rpm a song tempo suits, as the exact inverse of `matchBpm`: a cadence is in the window
+ * of a kind when its target tempo (rpm x 2, x 1 or x 4) is within `tolerance` (default `BPM_CLOSE`)
+ * of the song's, so lo = ceil(c / (1 + tol)) and hi = floor(c / (1 - tol)) with c = bpm / multiplier.
+ * Windows are cut to the cadences nobody is warned about (50-130 rpm) and to the tempo range
+ * `targetBpms` knows; empty ones are left out. Exact first. Empty for an invalid tempo.
+ */
+export function cadenceHints(bpm: number, tolerance: number = BPM_CLOSE): CadenceHint[] {
+  if (!validNumber(bpm)) return [];
+  const kinds: MatchKind[] = ['exact', 'half', 'double'];
+  const out: CadenceHint[] = [];
+  for (const kind of kinds) {
+    const mult = MULTIPLIER[kind];
+    const centre = bpm / mult;
+    // A hair of slack keeps 1 +- tolerance products from losing a whole cadence to rounding.
+    const lo = Math.max(
+      Math.ceil(centre / (1 + tolerance) - 1e-9),
+      CADENCE_HINT_MIN,
+      Math.ceil(BPM_MIN / mult),
+    );
+    const hi = Math.min(
+      Math.floor(centre / (1 - tolerance) + 1e-9),
+      CADENCE_HINT_MAX,
+      Math.floor(BPM_MAX / mult),
+    );
+    if (lo <= hi) out.push({ kind, lo, hi });
+  }
+  return out;
+}
+
+/**
+ * The rpm window of a wanted BPM range (a song slot's): 2 BPM = 1 RPM on the beat. Undefined when
+ * that is no cadence anybody rides (e.g. a range that is a single slow song tempo, 86 BPM = 43 rpm).
+ */
+export function cadenceOfBpmRange(range: readonly [number, number]): [number, number] | undefined {
+  const mid = (range[0] + range[1]) / 4;
+  if (!(mid >= CADENCE_HINT_MIN && mid <= CADENCE_HINT_MAX)) return undefined;
+  return [Math.round(range[0] / 2), Math.round(range[1] / 2)];
+}
+
+/**
+ * The cadence a song slot asks for: its tempo range read as rpm when that is a rideable cadence,
+ * else the block's own cadence (`blockRpm`). One cadence for everything the slot judges.
+ */
+export function slotCadence(
+  range: readonly [number, number] | null | undefined,
+  blockRpm: number | undefined,
+): number | undefined {
+  if (range && cadenceOfBpmRange(range)) return (range[0] + range[1]) / 4;
+  return blockRpm;
+}
+
+/**
+ * How a song suits a cadence: 'fit' on the beat (2 BPM = 1 RPM), 'alt' in half or double time,
+ * 'miss' when it does not fit at all.
+ */
+export type CadenceVerdict = 'fit' | 'alt' | 'miss';
+
+const VERDICT_OF_KIND: Record<MatchKind, CadenceVerdict> = {
+  exact: 'fit',
+  half: 'alt',
+  double: 'alt',
+};
+
+export interface CadenceFit {
+  verdict: CadenceVerdict;
+  /** How it fits; undefined for 'miss'. */
+  kind?: MatchKind;
+  /** Within the close window but not on the beat. */
+  close?: boolean;
+}
+
+/** A song tempo against a block's cadence (rpm); undefined when either is not a valid number. */
+export function cadenceFit(
+  bpm: number | undefined,
+  rpm: number | undefined,
+): CadenceFit | undefined {
+  if (bpm === undefined || rpm === undefined || !validNumber(bpm) || !validNumber(rpm)) {
+    return undefined;
+  }
+  const m = matchBpm(bpm, rpm);
+  if (!m) return { verdict: 'miss' };
+  return {
+    verdict: VERDICT_OF_KIND[m.kind],
+    kind: m.kind,
+    ...(m.fit === 'close' ? { close: true } : {}),
+  };
+}
+
+const VERDICT_RANK: Record<CadenceVerdict, number> = { fit: 0, alt: 1, miss: 2 };
+
+/**
+
+ * Items best-fitting first (on the beat, then half/double time, then misses; inside each, exact
+ * tempos before close ones), stable inside a group. Items whose tempo is unknown (undefined verdict) go last.
+ */
+export function sortByCadence<T>(
+  items: readonly T[],
+  verdictOf: (item: T) => CadenceFit | undefined,
+): T[] {
+  const rank = (item: T): number => {
+    const v = verdictOf(item);
+    return v ? VERDICT_RANK[v.verdict] * 2 + (v.close ? 1 : 0) : 6;
+  };
+  return items
+    .map((item, i) => ({ item, i, r: rank(item) }))
+    .sort((a, b) => a.r - b.r || a.i - b.i)
+    .map((x) => x.item);
+}
+
 /** BPM from tap timestamps (ms): median interval of the last 12 taps, so one stray tap is ignored. */
 export function tapTempoBpm(tapsMs: number[]): number | undefined {
   const taps = tapsMs.slice(-12);
