@@ -32,7 +32,8 @@
  * the song id (the catalog's order does not matter). Runs before a ride (wizard, editor), never
  * inside the session engine; about 1-4 ms per workout on the shipped catalog.
  */
-import { BPM_CLOSE, BPM_RELAXED, matchBpm } from './bpm-match';
+import { BPM_CLOSE, BPM_MAX, BPM_MIN, BPM_RELAXED, matchBpm, type MatchKind } from './bpm-match';
+import { zoneForEffort } from './hr-zones';
 import { youtubeTrack } from './music-chain';
 import { fillSlotGap, MAX_CUT_SEC, type GapRule } from './music-gaps';
 import { flattenWorkout } from './segments';
@@ -192,6 +193,26 @@ export const ENERGY_STEP_RIGHT = 0.1;
 export const ENERGY_STEP = 0.2;
 /** A section is a climb when its cadence is this low (a slow, heavy gear). */
 export const CLIMB_RPM = 75;
+/**
+ * A light song (energy 1-2) in the work costs this much (literature, spec §9 C: slow music is
+ * preferred at no intensity). A penalty, not a ban: with today's catalog a ban pushed the few
+ * energetic songs at 85-100 rpm (Maanam, Margaret) into most rides; the history can still rotate
+ * a light song in when the strong ones were just played.
+ */
+export const SLOW_WORK_PENALTY = 0.3;
+
+/**
+ * Comfort band of song tempos (literature, spec §9 B): 120-140 BPM; work in zone 4 and up
+ * tolerates up to 160, a climb up to 150 (§9 E). A song inside it gets `BAND_BONUS`, and the
+ * relation (2x, 1:1 or 4x the cadence) whose tempo is nearest it is the one scored in full.
+ */
+export const BAND_LOW = 120;
+export const BAND_HIGH = 140;
+export const BAND_HIGH_HARD = 160;
+export const BAND_HIGH_CLIMB = 150;
+export const BAND_BONUS = 0.05;
+/** Work from this HR zone up tolerates the faster band. */
+const BAND_HARD_ZONE = 4;
 /** A ladder step needs at least this many candidates to stop the walk (spec §7.2: "< 3"). */
 export const MIN_CANDIDATES = 3;
 /** Most songs the beam compares per step (the best ones). */
@@ -281,10 +302,50 @@ function climbPart(s: MusicSection): boolean {
   return !calmPart(s) && s.rpmMean <= CLIMB_RPM && s.workEffort >= 5;
 }
 
+/** A part of the work: not the warm-up or the cool-down, and asking for energy 3 or more. */
+function workPart(s: MusicSection): boolean {
+  return s.role !== 'warmup' && s.role !== 'cooldown' && s.energy >= 3;
+}
+
+/** The song tempos comfortable in a part (spec §9 B, E). */
+export function comfortBand(s: MusicSection): [number, number] {
+  if (hardPart(s) || zoneForEffort(s.workEffort) >= BAND_HARD_ZONE)
+    return [BAND_LOW, BAND_HIGH_HARD];
+  if (climbPart(s)) return [BAND_LOW, BAND_HIGH_CLIMB];
+  return [BAND_LOW, BAND_HIGH];
+}
+
+const RELATIONS: readonly MatchKind[] = ['exact', 'half', 'double'];
+
+/**
+ * The relation of song tempo to cadence nearest the comfort band (2x first on a tie) in a work
+ * part: 1:1 at an easy 90 rpm (90 BPM is nearer 120-140 than 180), 2x on a 60-75 rpm climb
+ * (120-150) and in hard work (180 BPM is nearer 120-160 than 90).
+ */
+export function preferredKind(s: MusicSection): MatchKind {
+  // Only in the work: the warm-up and the cool-down keep 2x (no research there, spec §9 H; with
+  // 1:1 at 90 rpm the few calm 85-95 BPM songs crowded every warm-up).
+  if (!workPart(s)) return 'exact';
+  const [lo, hi] = comfortBand(s);
+  let best: MatchKind = 'exact';
+  let bestDist = Infinity;
+  for (const kind of RELATIONS) {
+    const bpm = s.rpmMean * MULTIPLIER[kind];
+    if (bpm < BPM_MIN || bpm > BPM_MAX) continue;
+    const dist = bpm < lo ? lo - bpm : bpm > hi ? bpm - hi : 0;
+    if (dist < bestDist) {
+      best = kind;
+      bestDist = dist;
+    }
+  }
+  return best;
+}
+
 /**
  * Energy fit 0..1 of a song for a part, or undefined when the song may not play there (spec §2b):
  * a hard part never takes a song 3 steps calmer, a calm part never one 3 steps stronger, the
- * warm-up never an energy 5 song and a climb never a light one (energy 1-2).
+ * warm-up never an energy 5 song and a climb never a light one (energy 1-2); elsewhere in the
+ * work a light song costs `SLOW_WORK_PENALTY` in `scoreTrack`.
  */
 export function energyFit(t: Pick<CatalogTrack, 'energy'>, s: MusicSection): number | undefined {
   const d = t.energy - s.energy;
@@ -323,7 +384,11 @@ export function scoreTrack(
   const m =
     t.bpm === undefined
       ? undefined
-      : matchBpm(t.bpm, s.rpmMean, { tolerance: opts.tolerance ?? BPM_CLOSE });
+      : matchBpm(t.bpm, s.rpmMean, {
+          tolerance: opts.tolerance ?? BPM_CLOSE,
+          // Without half/double time only 2x plays, so it is scored in full.
+          prefer: (opts.halfDouble ?? true) ? preferredKind(s) : 'exact',
+        });
   const usable = m !== undefined && ((opts.halfDouble ?? true) || m.kind === 'exact');
   if (usable && t.bpm !== undefined) rideRpm = t.bpm / MULTIPLIER[m.kind];
   if (cooldown) {
@@ -342,7 +407,15 @@ export function scoreTrack(
     (!t.roles.includes('intervals') || t.traits?.includes('long-intro') === true)
       ? INTERVAL_MISFIT
       : 0;
+  const [bandLo, bandHi] = comfortBand(s);
+  const band =
+    !cooldown && usable && t.bpm !== undefined && t.bpm >= bandLo && t.bpm <= bandHi
+      ? BAND_BONUS
+      : 0;
+  const slowWork = workPart(s) && t.energy <= 2 ? SLOW_WORK_PENALTY : 0;
   const score =
+    band -
+    slowWork +
     WEIGHTS.bpm * bpmFit +
     WEIGHTS.energy * eFit +
     WEIGHTS.role * roleFit(t, s) +

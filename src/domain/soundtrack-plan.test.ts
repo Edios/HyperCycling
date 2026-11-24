@@ -162,9 +162,12 @@ describe('scoreTrack', () => {
   const s = section();
 
   it('ranks on the beat over close over half time, and drops a song off the tempo', () => {
-    const onBeat = scoreTrack(song('a', { bpm: 180 }), s)!;
-    const close = scoreTrack(song('b', { bpm: 189 }), s)!; // 5% off
-    const half = scoreTrack(song('c', { bpm: 90 }), s)!;
+    // A hard part: 180 BPM is nearer the 120-160 band than 90, so 2x is the relation in full
+    // (spec §9 B; at an easy 90 rpm 1:1 would be).
+    const s = section({ role: 'hard', energy: 4, workEffort: 7 });
+    const onBeat = scoreTrack(song('a', { bpm: 180, energy: 4 }), s)!;
+    const close = scoreTrack(song('b', { bpm: 189, energy: 4 }), s)!; // 5% off
+    const half = scoreTrack(song('c', { bpm: 90, energy: 4 }), s)!;
     expect(onBeat.fit).toBe('on-beat');
     expect(close.fit).toBe('close');
     expect(half.fit).toBe('half');
@@ -172,7 +175,7 @@ describe('scoreTrack', () => {
     expect(half.score).toBeGreaterThan(close.score);
     expect(onBeat.rideRpm).toBe(90);
     expect(half.rideRpm).toBe(90);
-    expect(scoreTrack(song('d', { bpm: 150 }), s)).toBeUndefined();
+    expect(scoreTrack(song('d', { bpm: 150, energy: 4 }), s)).toBeUndefined();
   });
 
   it('honours the tempo window, the half/double switch and the ignore-tempo step', () => {
@@ -498,7 +501,9 @@ describe('planSoundtrack', () => {
   });
 
   it('rotates with the history of the last rides: a song of the last ride steps back', () => {
-    const p = prefs({ categories: ['electronic'] });
+    // Electronic and rock: the fixture's electronic songs alone are all energy 2, which the work
+    // now charges for (spec §9 C), so they no longer offer a real choice.
+    const p = prefs({ categories: ['electronic', 'rock'] });
     const first = planSoundtrack(ride, catalog, p);
     const again = planSoundtrack(ride, catalog, p, {
       history: [allPicks(first).map((x) => x.ref.id)],
@@ -698,6 +703,13 @@ describe('planSoundtrack', () => {
     });
 
     it('does not add a second Polish song when a locked section has one', () => {
+      // The Polish song made a clear fit for the 65 rpm climb (2x = 130 BPM, in the band), so the
+      // first plan surely has it (spec §9 B/E moved it out of the 88 rpm parts).
+      const catalog = fixture().map((t) =>
+        t.id === 'pl1'
+          ? { ...t, bpm: 130, energy: 4 as const, roles: ['climb' as const, 'steady' as const] }
+          : t,
+      );
       const first = planSoundtrack(ride, catalog, prefs());
       const withPl = first.sections.find((s) =>
         s.picks.some((x) => byId(catalog).get(x.ref.id)!.pl),
