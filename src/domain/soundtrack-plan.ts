@@ -21,9 +21,10 @@
  *    repaired by an exact length search when the beam misses. A long section simply gets more
  *    songs (a block is never split). Synthwave and drum and bass are an add-on: one per section
  *    at most, and each one in the ride makes the next one less likely.
- * 4. Polish songs are a chip of their own ("Polish", `prefs.polish`): with it on they count as one
- *    of the chosen kinds of music and get a small lift (the old rule of one Polish song in every
- *    ride is gone, owner's decision of 2026-11-22).
+ * 4. Polish songs are a chip of their own ("Polish", `prefs.polish`): with it on, a Polish song of
+ *    another kind of music fits like a neighbour category (`NEIGHBOUR_FIT`), so it joins the mix
+ *    without pushing the chosen kinds out (the old rule of one Polish song in every ride is gone,
+ *    owner's decision of 2026-11-22).
  * 5. Gaps (`fillSlotGap`, rules R1-R4): a longer upload, a reserve song, the instrumental ending
  *    again, then the long fallback songs (only with "no gaps").
  *
@@ -73,8 +74,9 @@ export interface SoundtrackPrefs {
   /** "Shuffle": another seed gives another order of near-equal songs. */
   seed: number;
   /**
-   * The "Polish" chip: Polish songs count as one of the chosen kinds of music, whatever their
-   * category, and get a small lift (`POLISH_LIFT`). Absent = off (plans saved before the chip).
+   * The "Polish" chip: a Polish song of a kind of music that was not chosen fits like a neighbour
+   * category (`NEIGHBOUR_FIT`), from the first step of the ladder. Absent = off (plans saved
+   * before the chip).
    */
   polish?: boolean;
 }
@@ -175,8 +177,6 @@ export const ANY_CATEGORY_FIT = 0.5;
  * enough not to cover one step of energy, spec §2b).
  */
 export const SHUFFLE_JITTER = 0.08;
-/** Lift of a Polish song with the "Polish" chip on. */
-export const POLISH_LIFT = 0.06;
 /**
  * In a part of short hard intervals, a song without the intervals role or with a long intro (the
  * drop must come with the first repetition) costs this much (spec §2a).
@@ -462,12 +462,15 @@ function categoryFit(
   step: LadderStep,
   polish: boolean,
 ): number | undefined {
-  if (chosen.size === 0 || (polish && t.pl === true)) return 1;
+  if (chosen.size === 0) return 1;
   let fit: number | undefined;
   for (const c of t.categories) {
     if (chosen.has(c)) return 1;
     if (step.neighbours && near.has(c)) fit = NEIGHBOUR_FIT;
   }
+  // The "Polish" chip: a Polish song of another kind is a neighbour, never a full fit (a few
+  // Polish songs fit many tempos and would otherwise be in most plans).
+  if (polish && t.pl === true && step.neighbours) fit = NEIGHBOUR_FIT;
   return fit ?? (step.any ? ANY_CATEGORY_FIT : undefined);
 }
 
@@ -523,7 +526,6 @@ function scoredAt(
     const key = keys[i] as string;
     if (ride.used.has(key)) continue;
     if (!t.clean && !prefs.explicit) continue;
-    const polish = prefs.polish === true && t.pl === true;
     const cat = categoryFit(t, ctx.chosen, ctx.near, step, prefs.polish === true);
     if (cat === undefined) continue;
     const sc = scoreTrack(t, s, {
@@ -539,8 +541,7 @@ function scoredAt(
     const addOn = t.supplement ? SUPPLEMENT_PENALTY * (1 + ride.supplements) : 0;
     const score =
       sc.score +
-      SHUFFLE_JITTER * shuffleValue(prefs.seed, t.id) +
-      (polish ? POLISH_LIFT : 0) -
+      SHUFFLE_JITTER * shuffleValue(prefs.seed, t.id) -
       ARTIST_REPEAT_PENALTY * plays -
       addOn -
       (ctx.historySong.get(key) ?? 0) -

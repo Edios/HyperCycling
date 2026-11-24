@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { EffortLevel } from '../domain/effort';
 import { sectionsOf, type MusicSection } from '../domain/soundtrack';
+import { builtinWorkouts } from '../client/data/builtin';
 import { isSprintTrack, parseCatalog, type CatalogTrack } from '../domain/soundtrack-catalog';
 import {
   DEFAULT_SOUNDTRACK_PREFS,
@@ -9,6 +10,7 @@ import {
   type SoundtrackPlan,
   type SoundtrackPrefs,
 } from '../domain/soundtrack-plan';
+import { FIRST_VISIT_PREFS } from '../domain/soundtrack-wizard';
 import type { Block, RampBlock, RepeatBlock, SteadyBlock, Workout } from '../domain/workout';
 import rawCatalog from './soundtrack/catalog.json';
 
@@ -204,17 +206,6 @@ describe('long parts at 65-90 rpm: the energy asked for, and variety', () => {
     }
   });
 
-  it('plays at least 3 different Polish songs over 10 rides with the "Polish" chip on', () => {
-    for (const categories of WIDE) {
-      const polish = new Set(
-        tenRides(categories)
-          .flatMap(allIds)
-          .filter((id) => byId.get(id)?.pl),
-      );
-      expect(polish.size, categories.join('+') || 'any').toBeGreaterThanOrEqual(3);
-    }
-  });
-
   it('plays no Polish song for its own sake with the chip off (no more "one in every ride")', () => {
     const plan = planSoundtrack(steadyRide, catalog, prefs({ categories: ['electronic'] }));
     for (const s of plan.sections) {
@@ -227,6 +218,53 @@ describe('long parts at 65-90 rpm: the energy asked for, and variety', () => {
         }
       }
     }
+  });
+});
+
+describe('what a first visit gets on every built-in workout (no history yet)', () => {
+  const plans = builtinWorkouts.map((w) => ({
+    w,
+    sections: new Map(sectionsOf(w).map((s) => [s.id, s])),
+    plan: planSoundtrack(w, catalog, FIRST_VISIT_PREFS),
+  }));
+
+  it('never plays an energy 5 song in a warm-up (the old planner played 88)', () => {
+    const hot: string[] = [];
+    for (const { w, sections, plan } of plans) {
+      for (const s of plan.sections) {
+        if (sections.get(s.sectionId)?.role !== 'warmup') continue;
+        for (const p of s.picks)
+          if (byId.get(p.ref.id)?.energy === 5) hot.push(`${w.id}/${p.ref.id}`);
+      }
+    }
+    expect(hot).toEqual([]);
+  });
+
+  it('picks at least 75% of the songs within one step of the energy asked for (the old one 68%)', () => {
+    let picks = 0;
+    let within = 0;
+    for (const { sections, plan } of plans) {
+      for (const s of plan.sections) {
+        const sec = sections.get(s.sectionId);
+        if (!sec) continue;
+        for (const p of s.picks) {
+          picks += 1;
+          if (Math.abs((byId.get(p.ref.id) as CatalogTrack).energy - sec.energy) <= 1) within += 1;
+        }
+      }
+    }
+    expect(within / picks).toBeGreaterThanOrEqual(0.75);
+  });
+
+  it('puts no Polish song in more than 30% of the plans (the chip must not crowd them in)', () => {
+    const counts = new Map<string, number>();
+    for (const { plan } of plans) {
+      for (const id of new Set(allIds(plan))) {
+        if (byId.get(id)?.pl) counts.set(id, (counts.get(id) ?? 0) + 1);
+      }
+    }
+    const crowded = [...counts].filter(([, n]) => n > 0.3 * plans.length).map(([id]) => id);
+    expect(crowded).toEqual([]);
   });
 });
 

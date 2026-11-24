@@ -474,14 +474,27 @@ describe('planSoundtrack', () => {
     });
   });
 
-  it('plays Polish songs of any kind with the "Polish" chip on, and none for their own sake without', () => {
-    const isPl = (p: PlanPick) => byId(catalog).get(p.ref.id)!.pl === true;
-    const off = planSoundtrack(ride, catalog, prefs({ categories: ['electronic'] }));
-    // pl1 is rock: with the chip off it is just a rock song (the old "one in every ride" is gone).
-    expect(allPicks(off).filter(isPl)).toEqual([]);
-    const on = planSoundtrack(ride, catalog, prefs({ categories: ['electronic'], polish: true }));
-    expect(allPicks(on).filter(isPl)).toHaveLength(1);
-    expect(on.sections.some((s) => s.report.relaxed.includes('polish'))).toBe(false);
+  it('takes a Polish song of another kind like a neighbour category with the "Polish" chip on', () => {
+    // 10 minutes at 89 rpm; Electronic has two songs (not enough), House (its neighbour) none.
+    const part = workout([steady('a', 600, 5, 89)]);
+    const songs = [
+      song('e1', { bpm: 178, sec: 200, categories: ['electronic'] }),
+      song('e2', { bpm: 178, sec: 200, categories: ['electronic'] }),
+      song('r1', { bpm: 178, sec: 200, categories: ['rock'] }),
+      song('pl1', { bpm: 178, sec: 200, categories: ['rock'], over: { pl: true } }),
+    ];
+    const off = planSoundtrack(part, songs, prefs({ categories: ['electronic'] }));
+    // Without the chip a rock song only comes with "any category", Polish or not.
+    expect(off.sections[0]!.report.relaxed).toContain('anyCategory');
+    const on = planSoundtrack(part, songs, prefs({ categories: ['electronic'], polish: true }));
+    // With it, the Polish rock song is a neighbour: one step earlier, and it is taken.
+    expect(on.sections[0]!.report.relaxed).toEqual(['tolerance', 'category']);
+    expect(on.sections[0]!.picks.map((p) => p.ref.id).sort()).toEqual(['e1', 'e2', 'pl1']);
+    // Where the chosen kinds fill the part, the chip changes nothing (no full fit, no lift).
+    const full = [...songs, song('e3', { bpm: 178, sec: 200, categories: ['electronic'] })];
+    expect(
+      planSoundtrack(part, full, prefs({ categories: ['electronic'], polish: true })).sections,
+    ).toEqual(planSoundtrack(part, full, prefs({ categories: ['electronic'] })).sections);
   });
 
   it('rotates with the history of the last rides: a song of the last ride steps back', () => {
