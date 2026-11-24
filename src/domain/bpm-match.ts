@@ -17,7 +17,7 @@ export interface BpmMatch {
   fit: MatchFit;
   /** Relative distance to the target tempo (0.02 = 2%). */
   deviation: number;
-  /** 0..1; exact on-beat = 1. */
+  /** 0..1; on the beat in the preferred relation = 1 (see `bpmCurve`). */
   score: number;
 }
 
@@ -26,9 +26,29 @@ export const BPM_MIN = 40;
 export const BPM_MAX = 220;
 
 const MULTIPLIER: Record<MatchKind, number> = { exact: 2, half: 1, double: 4 };
-const KIND_WEIGHT: Record<MatchKind, number> = { exact: 1, half: 0.85, double: 0.85 };
+/** Score share of a relation that is not the preferred one. */
+export const KIND_WEIGHT_OTHER = 0.85;
 /** A song within this share of a target tempo is on the beat. */
 export const BPM_ON_BEAT = 0.03;
+/**
+ * Literature (spec §9 A): synchronising with the cadence works within about 2.5-3%, so the tempo
+ * score is flat up to `BPM_ON_BEAT`, then falls without a cliff: to `BPM_CURVE_CLOSE` at the edge
+ * of the usual window (`BPM_CLOSE`, the old 'close' score) and on, more gently, to
+ * `BPM_CURVE_RELAXED` at the planner's widest one (`BPM_RELAXED`). The windows do not change.
+ */
+export const BPM_CURVE_CLOSE = 0.6;
+export const BPM_CURVE_RELAXED = 0.3;
+
+/** Tempo score 0..1 of a relative distance to a target tempo (flat, then falling gently). */
+export function bpmCurve(deviation: number): number {
+  if (deviation <= BPM_ON_BEAT) return 1;
+  if (deviation <= BPM_CLOSE) {
+    return 1 - ((deviation - BPM_ON_BEAT) / (BPM_CLOSE - BPM_ON_BEAT)) * (1 - BPM_CURVE_CLOSE);
+  }
+  const past = (deviation - BPM_CLOSE) / (BPM_RELAXED - BPM_CLOSE);
+  return Math.max(0, BPM_CURVE_CLOSE - past * (BPM_CURVE_CLOSE - BPM_CURVE_RELAXED));
+}
+
 /** Default window: a song within this share of a target tempo is close enough. */
 export const BPM_CLOSE = 0.06;
 /** Wider window the soundtrack planner may fall back to when a section has too few songs. */
@@ -40,6 +60,11 @@ export interface MatchOptions {
    * `BPM_ON_BEAT` (or past the tolerance, if that is smaller) is a 'close' fit with the same score.
    */
   tolerance?: number;
+  /**
+   * The relation scored in full (default 'exact', the owner's 2 BPM = 1 RPM); the others score
+   * `KIND_WEIGHT_OTHER` of it. The planner passes the one nearest the comfort band (spec §9 B).
+   */
+  prefer?: MatchKind;
 }
 
 function validNumber(n: number | undefined): n is number {
@@ -64,12 +89,13 @@ export function matchBpm(bpm: number, rpm: number, opts?: MatchOptions): BpmMatc
   const tol = opts?.tolerance;
   const close = tol !== undefined && Number.isFinite(tol) && tol >= 0 ? tol : BPM_CLOSE;
   const onBeat = Math.min(BPM_ON_BEAT, close);
+  const prefer = opts?.prefer ?? 'exact';
   let best: BpmMatch | undefined;
   for (const target of targetBpms(rpm)) {
     const deviation = Math.abs(bpm - target.bpm) / target.bpm;
     if (deviation > close) continue;
     const fit: MatchFit = deviation <= onBeat ? 'on-beat' : 'close';
-    const score = (fit === 'on-beat' ? 1 : 0.6) * KIND_WEIGHT[target.kind];
+    const score = bpmCurve(deviation) * (target.kind === prefer ? 1 : KIND_WEIGHT_OTHER);
     if (!best || score > best.score || (score === best.score && deviation < best.deviation)) {
       best = { kind: target.kind, fit, deviation, score };
     }

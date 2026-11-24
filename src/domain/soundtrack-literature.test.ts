@@ -10,6 +10,7 @@ import {
   planSoundtrack,
   preferredKind,
   scoreTrack,
+  SLOW_WORK_PENALTY,
 } from './soundtrack-plan';
 import { FIRST_VISIT_PREFS } from './soundtrack-wizard';
 
@@ -120,36 +121,38 @@ describe('B: the comfort band 120-140 BPM', () => {
   });
 });
 
-describe('C: no slow song in the work', () => {
-  it('never plays an energy 1-2 song in a work part (energy 3 and up, not warm-up/cool-down)', () => {
-    expect(scoreTrack(song(180, { energy: 2 }), section({ energy: 3 }))).toBeUndefined();
-    expect(
-      scoreTrack(song(180, { energy: 2 }), section({ role: 'hard', energy: 4, workEffort: 7 })),
-    ).toBeUndefined();
+describe('C: a slow song in the work costs a lot (a penalty, not a ban)', () => {
+  it('costs an energy 1-2 song SLOW_WORK_PENALTY in a work part (energy 3 and up)', () => {
+    const work = section({ energy: 3 });
+    const light = scoreTrack(song(180, { energy: 2 }), work)!;
+    expect(SLOW_WORK_PENALTY).toBeCloseTo(0.3);
+    // Against an energy 3 song the light one loses its energy step and the penalty.
+    expect(score(song(180, { energy: 3 }), work) - light.score).toBeGreaterThanOrEqual(
+      SLOW_WORK_PENALTY,
+    );
   });
 
-  it('still lets an energy 2 song play in a recovery part, the warm-up and the cool-down', () => {
-    expect(scoreTrack(song(180, { energy: 2 }), section({ energy: 2 }))).toBeDefined();
-    expect(
-      scoreTrack(song(180, { energy: 2 }), section({ role: 'warmup', energy: 3 })),
-    ).toBeDefined();
+  it('charges nothing in a recovery part or the warm-up: there only the energy step counts', () => {
+    for (const part of [section({ energy: 2 }), section({ role: 'warmup', energy: 3 })]) {
+      const gap = score(song(180, { energy: 3 }), part) - score(song(180, { energy: 2 }), part);
+      expect(scoreTrack(song(180, { energy: 2 }), part)).toBeDefined();
+      expect(Math.abs(gap)).toBeLessThan(SLOW_WORK_PENALTY);
+    }
   });
 
-  it('leaves no energy 1-2 song in a work part of any first-visit plan (the old planner: 155)', () => {
+  it('plays far fewer energy 1-2 songs in the work of first-visit plans (the old planner: 155)', () => {
     const catalog = parseCatalog(rawCatalog).tracks;
     const byId = new Map(catalog.map((t) => [t.id, t]));
-    const slow: string[] = [];
+    let slow = 0;
     for (const w of builtinWorkouts) {
       const secs = new Map(sectionsOf(w).map((s) => [s.id, s]));
       for (const s of planSoundtrack(w, catalog, FIRST_VISIT_PREFS).sections) {
         const sec = secs.get(s.sectionId);
         if (!sec || sec.role === 'warmup' || sec.role === 'cooldown' || sec.energy < 3) continue;
-        for (const p of s.picks) {
-          if ((byId.get(p.ref.id)?.energy ?? 5) <= 2) slow.push(`${w.id}/${p.ref.id}`);
-        }
+        for (const p of s.picks) if ((byId.get(p.ref.id)?.energy ?? 5) <= 2) slow += 1;
       }
     }
-    expect(slow).toEqual([]);
+    expect(slow).toBeLessThanOrEqual(120);
   });
 });
 

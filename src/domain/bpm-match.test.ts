@@ -6,6 +6,7 @@ import {
   slotCadence,
   sortByCadence,
   BPM_CLOSE,
+  bpmCurve,
   BPM_RELAXED,
   fitToRange,
   BPM_MAX,
@@ -78,7 +79,11 @@ describe('matchBpm with a tolerance', () => {
   });
   it('widens the window to 10% for the relaxed planner step', () => {
     const m = matchBpm(168, 90, { tolerance: BPM_RELAXED });
-    expect(m).toMatchObject({ kind: 'exact', fit: 'close', score: 0.6 });
+    expect(m).toMatchObject({ kind: 'exact', fit: 'close' });
+    // Past the 6% window the score keeps falling gently (0.6 at 6%, 0.3 at 10%).
+    expect(m!.score).toBeCloseTo(bpmCurve(12 / 180), 9);
+    expect(m!.score).toBeLessThan(0.6);
+    expect(m!.score).toBeGreaterThan(0.3);
     expect(m!.deviation).toBeCloseTo(12 / 180, 9);
     expect(matchBpm(160, 90, { tolerance: BPM_RELAXED })).toBeUndefined(); // 11% below
   });
