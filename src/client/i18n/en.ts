@@ -1303,6 +1303,7 @@ export const en = {
       size: 'canvas',
       quality: 'quality',
       scene: 'scene',
+      webgl: 'WebGL: {reason}',
     },
     autoLowered: 'Lowered quality for smoothness',
   },
