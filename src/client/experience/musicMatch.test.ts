@@ -187,28 +187,30 @@ describe('annotate', () => {
   });
 
   it('warns when the song is shorter than the slot', () => {
-    const a = annotate(option(259), NIGHTCALL, 300, [86, 92], new Map());
+    const a = annotate(option(259), NIGHTCALL, 300, [86, 92], new Map(), []);
     expect(a.shortBySec).toBe(41);
   });
 
   it('does not warn when the song is long enough', () => {
-    expect(annotate(option(300), NIGHTCALL, 300, [86, 92], new Map()).shortBySec).toBeUndefined();
+    expect(
+      annotate(option(300), NIGHTCALL, 300, [86, 92], new Map(), []).shortBySec,
+    ).toBeUndefined();
   });
 
   it('uses the library tempo over the author tempo and marks a bad fit', () => {
-    const a = annotate(option(300), NIGHTCALL, 300, [86, 92], new Map([['nc000000000', 120]]));
+    const a = annotate(option(300), NIGHTCALL, 300, [86, 92], new Map([['nc000000000', 120]]), []);
     expect(a).toMatchObject({ bpm: 120, bpmFrom: 'library', bpmFit: 'off' });
   });
 
   it('accepts a tempo that matches 2 BPM = 1 RPM', () => {
-    const a = annotate(option(300, 90), NIGHTCALL, 300, [86, 92], new Map());
+    const a = annotate(option(300, 90), NIGHTCALL, 300, [86, 92], new Map(), []);
     expect(a).toMatchObject({ bpm: 90, bpmFrom: 'hint' });
     expect(a.bpmFit).not.toBe('off');
   });
 
   it('skips the tempo check for a beatless slot', () => {
     expect(
-      annotate(option(300), { ...NIGHTCALL, noBeat: true }, 300, [64, 70], new Map()).bpm,
+      annotate(option(300), { ...NIGHTCALL, noBeat: true }, 300, [64, 70], new Map(), []).bpm,
     ).toBeUndefined();
   });
 });

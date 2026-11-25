@@ -399,8 +399,12 @@ export function annotate(
   slotSec: number,
   range: readonly [number, number] | undefined,
   cache: ReadonlyMap<string, number>,
-  /** The cadences of the slot's blocks (`slotCadences`); without them the BPM range is used. */
-  cadences: readonly SlotCadence[] = [],
+  /**
+   * The cadences of the slot's blocks (`slotCadences`). Required, so that no call can fall back to
+   * the tautology of the BPM range by leaving it out; an empty list (a slot of blocks without an
+   * rpm) is the one case that uses the range.
+   */
+  cadences: readonly SlotCadence[],
 ): Annotation {
   const out: Annotation = {};
   const cached = cache.get(option.ref.id);
