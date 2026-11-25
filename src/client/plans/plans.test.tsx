@@ -172,7 +172,7 @@ describe('PlanDetail', () => {
     const labels = screen.getAllByTestId('load-label').map((l) => l.textContent);
     expect(labels).toHaveLength(8);
     expect(labels[0]).toBe('W1 · test');
-    expect(labels[7]).toBe('W8 · test');
+    expect(labels[7]).toBe('W8');
     expect(labels[1]).toBe('W2');
     expect(screen.getByTestId('preview-progres')).toHaveTextContent('Progres');
     expect(screen.getByTestId('preview-freestyle')).toHaveTextContent('Freestyle');

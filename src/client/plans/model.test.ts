@@ -50,7 +50,8 @@ describe('plans model', () => {
   it('finds the ramp-test weeks and drops them without watts', () => {
     const weeks = testWeeks(buildForm, METERED_SETTINGS.equipment, 'progresFreestyle');
     expect(weeks).toContain(1);
-    expect(weeks).toContain(buildForm.weeks.length);
+    // The light last week offers the test only as the alternative (R4b), so it is not a test week.
+    expect(weeks).not.toContain(buildForm.weeks.length);
     const none = testWeeks(
       buildForm,
       { ...METERED_SETTINGS.equipment, showsWatts: false },
@@ -61,8 +62,7 @@ describe('plans model', () => {
 
   it('does not count week 1 as a test week when the first test is skipped', () => {
     const weeks = testWeeks(buildForm, METERED_SETTINGS.equipment, 'progresFreestyle', true);
-    expect(weeks).not.toContain(1);
-    expect(weeks).toContain(buildForm.weeks.length);
+    expect(weeks).toEqual([]);
   });
 });
 

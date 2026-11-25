@@ -118,14 +118,14 @@
       "sessions": [
         {
           "slot": "progres",
-          "workoutId": "ftp-test-20"
+          "workoutId": "sweet-spot-2x10"
         },
         {
           "slot": "freestyle",
           "workoutId": "cadence-pyramid"
         }
       ],
-      "progresAlt": "sweet-spot-2x10"
+      "progresAlt": "ftp-test-20"
     }
   ]
 }
