@@ -17,6 +17,7 @@ import {
   isSprintTrack,
   parseCatalog,
   ROLE_SPRINT_RPM,
+  TRACK_MOODS,
   type CatalogTrack,
 } from '../../domain/soundtrack-catalog';
 import raw from './catalog.json';
@@ -147,7 +148,13 @@ describe("soundtrack catalog: owner's rules", () => {
   it('gives a song ridden at 105 rpm or faster only the intervals role', () => {
     const fast = onBeat.filter((t) => catalogRpm(t.bpm) >= ROLE_SPRINT_RPM);
     expect(fast.length).toBeGreaterThan(0);
-    for (const t of fast) expect(t.roles, t.id).toEqual(['intervals']);
+    // The finisher role is a mark on top of the real ones (R1d-2).
+    for (const t of fast) {
+      expect(
+        t.roles.filter((r) => r !== 'finisher'),
+        t.id,
+      ).toEqual(['intervals']);
+    }
   });
 
   it('files dance-house at half tempo under Pop/Electronic, not House', () => {
@@ -196,6 +203,55 @@ describe("soundtrack catalog: owner's rules", () => {
       expect(t.durationSec, t.id).toBeGreaterThanOrEqual(420);
       expect(t.energy, t.id).toBeLessThanOrEqual(3);
       expect(t.clean, t.id).toBe(true);
+    }
+  });
+});
+
+describe('groove, mood and finisher tags (R1d-2)', () => {
+  const steadyBeat = tracks.filter((t) => t.beat === 'steady');
+  const finishers = tracks.filter((t) => t.roles.includes('finisher'));
+
+  it('gives every song with a beat a groove of 1-3 and every song a mood', () => {
+    expect(steadyBeat.filter((t) => t.groove === undefined).map((t) => t.id)).toEqual([]);
+    expect(tracks.filter((t) => t.mood === undefined).map((t) => t.id)).toEqual([]);
+    expect(tracks.filter((t) => t.beat === 'none' && t.groove !== undefined)).toEqual([]);
+  });
+
+  it('spreads the groove: most songs hold a steady beat, some are loose', () => {
+    const share = (g: number) =>
+      steadyBeat.filter((t) => t.groove === g).length / steadyBeat.length;
+    expect(share(3)).toBeGreaterThanOrEqual(0.4);
+    expect(share(3)).toBeLessThanOrEqual(0.8);
+    expect(share(2)).toBeGreaterThanOrEqual(0.15);
+    expect(share(1)).toBeGreaterThanOrEqual(0.02);
+    expect(share(1)).toBeLessThanOrEqual(0.15);
+  });
+
+  it('uses every mood, none for more than 30% of the songs', () => {
+    for (const m of TRACK_MOODS) {
+      const n = tracks.filter((t) => t.mood === m).length;
+      expect(n, m).toBeGreaterThanOrEqual(15);
+      expect(n / tracks.length, m).toBeLessThanOrEqual(0.3);
+    }
+  });
+
+  it('has finishers: euphoric, energy 4-5, no long intro, no add-on style, groove 2 or more', () => {
+    expect(finishers.length).toBeGreaterThanOrEqual(15);
+    expect(finishers.length / tracks.length).toBeLessThanOrEqual(0.2);
+    for (const t of finishers) {
+      expect(t.mood, t.id).toBe('euphoric');
+      expect(t.energy, t.id).toBeGreaterThanOrEqual(4);
+      expect(t.traits ?? [], t.id).not.toContain('long-intro');
+      expect(t.supplement, t.id).toBeUndefined();
+      expect(t.groove ?? 0, t.id).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('keeps the calm songs calm: no cool-down song is aggressive, no warm-up one is aggressive', () => {
+    for (const t of tracks.filter(
+      (x) => x.roles.includes('cooldown') || x.roles.includes('warmup'),
+    )) {
+      expect(t.mood, t.id).not.toBe('aggressive');
     }
   });
 });

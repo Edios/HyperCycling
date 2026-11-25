@@ -241,15 +241,18 @@ export const NEIGHBOUR_CATEGORIES: Readonly<Record<MusicCategoryId, readonly Mus
 
 type RoleRow = Readonly<Record<TrackRole, number>>;
 
-/** How well a song's role suits a section (rows: what the section is). */
+/**
+ * How well a song's role suits a section (rows: what the section is). `finisher` is a mark on top
+ * of the real roles and is not read yet (0 everywhere, so it never changes the best role).
+ */
 const ROLE_FIT: Readonly<Record<SectionRole | 'climb', RoleRow>> = {
-  warmup: { warmup: 1, steady: 0.8, cooldown: 0.6, climb: 0.5, intervals: 0.3 },
-  steady: { steady: 1, warmup: 0.8, climb: 0.8, intervals: 0.4, cooldown: 0.4 },
-  climb: { climb: 1, steady: 0.8, intervals: 0.6, warmup: 0.4, cooldown: 0.2 },
-  tempo: { steady: 1, intervals: 0.8, climb: 0.7, warmup: 0.5, cooldown: 0.2 },
-  hard: { intervals: 1, steady: 0.7, climb: 0.7, warmup: 0.3, cooldown: 0.1 },
-  peak: { intervals: 1, steady: 0.5, climb: 0.5, warmup: 0.2, cooldown: 0 },
-  cooldown: { cooldown: 1, warmup: 0.6, steady: 0.3, climb: 0.2, intervals: 0 },
+  warmup: { warmup: 1, steady: 0.8, cooldown: 0.6, climb: 0.5, intervals: 0.3, finisher: 0 },
+  steady: { steady: 1, warmup: 0.8, climb: 0.8, intervals: 0.4, cooldown: 0.4, finisher: 0 },
+  climb: { climb: 1, steady: 0.8, intervals: 0.6, warmup: 0.4, cooldown: 0.2, finisher: 0 },
+  tempo: { steady: 1, intervals: 0.8, climb: 0.7, warmup: 0.5, cooldown: 0.2, finisher: 0 },
+  hard: { intervals: 1, steady: 0.7, climb: 0.7, warmup: 0.3, cooldown: 0.1, finisher: 0 },
+  peak: { intervals: 1, steady: 0.5, climb: 0.5, warmup: 0.2, cooldown: 0, finisher: 0 },
+  cooldown: { cooldown: 1, warmup: 0.6, steady: 0.3, climb: 0.2, intervals: 0, finisher: 0 },
 };
 
 export interface ScoreOptions {

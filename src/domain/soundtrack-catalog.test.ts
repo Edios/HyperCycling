@@ -8,6 +8,8 @@ import {
   HALF_FROM_BPM,
   isSprintTrack,
   parseCatalog,
+  TRACK_MOODS,
+  TRACK_ROLES,
   type CatalogTrack,
 } from './soundtrack-catalog';
 
@@ -220,6 +222,56 @@ describe('sprint songs: intervals, energy 4-5, no long intro', () => {
     expect(catalogProblems([track({ bpm: 120, roles: ['intervals'], energy: 2 })])).toEqual([]);
     expect(catalogProblems([track({ energyNote: 'Doubt.' })])).toEqual([
       'artist-song: an energy note needs the tagging revision (tagged: 2)',
+    ]);
+  });
+});
+
+describe('groove, mood and the finisher role (R1d-2)', () => {
+  it('has a groove of 1-3, a mood from the list and a finisher role, all optional', () => {
+    expect(TRACK_MOODS).toEqual(['mellow', 'warm', 'euphoric', 'dark', 'aggressive', 'playful']);
+    expect(TRACK_ROLES).toContain('finisher');
+    expect(valid(track({ groove: 1, mood: 'dark' }))).toBe(true);
+    expect(valid(track({ groove: 3, mood: 'euphoric' }))).toBe(true);
+    expect(valid(track())).toBe(true);
+    expect(valid({ ...track(), groove: 0 })).toBe(false);
+    expect(valid({ ...track(), groove: 4 })).toBe(false);
+    expect(valid({ ...track(), groove: 2.5 })).toBe(false);
+    expect(valid({ ...track(), mood: 'sad' })).toBe(false);
+  });
+
+  it('gives a song without a beat a mood but no groove (there is no beat to hold)', () => {
+    const beatless = { bpm: undefined, beat: 'none' as const, roles: ['cooldown' as const] };
+    expect(catalogProblems([track({ ...beatless, mood: 'mellow' })])).toEqual([]);
+    expect(catalogProblems([track({ ...beatless, groove: 2 })])).toEqual([
+      'artist-song: a song without a beat has no groove',
+    ]);
+  });
+
+  it('lets a finisher be a high-energy euphoric song that has another role too', () => {
+    const finisher = track({ roles: ['steady', 'finisher'], energy: 4, mood: 'euphoric' });
+    expect(catalogProblems([finisher])).toEqual([]);
+    expect(catalogProblems([{ ...finisher, energy: 3 }])).toEqual([
+      'artist-song: a finisher needs energy 4 or 5',
+    ]);
+    expect(catalogProblems([{ ...finisher, mood: 'dark' }])).toEqual([
+      'artist-song: a finisher needs the euphoric mood',
+    ]);
+    expect(catalogProblems([{ ...finisher, mood: undefined }])).toHaveLength(1);
+    expect(catalogProblems([{ ...finisher, roles: ['finisher'] }])).toEqual([
+      'artist-song: a finisher also needs another role',
+    ]);
+  });
+
+  it('does not count the finisher role in the rule of 105 rpm: a sprint finisher is intervals only', () => {
+    const sprint = track({
+      bpm: 120,
+      roles: ['intervals', 'finisher'],
+      energy: 5,
+      mood: 'euphoric',
+    });
+    expect(catalogProblems([sprint])).toEqual([]);
+    expect(catalogProblems([{ ...sprint, roles: ['steady', 'finisher'] }])).toEqual([
+      'artist-song: ridden at 120 rpm, so its only role is intervals',
     ]);
   });
 });

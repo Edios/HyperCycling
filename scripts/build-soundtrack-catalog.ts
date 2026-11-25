@@ -20,6 +20,8 @@
 // - applies the upload fixes found since the proposal (`UPLOAD_FIXES`);
 // - appends the finished entries of `soundtrack-catalog-additions.json` (songs added by data PRs
 //   after the proposal, with their own tagging and uploads);
+// - applies `soundtrack-groove-tags.json` to every song: groove 1-3 (not for a beatless song), a
+//   mood, and the `finisher` role mark (spec section 8);
 // - refuses songs the owner vetoed, then validates everything with `parseCatalog`.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -33,6 +35,7 @@ import {
   TRACK_ROLES,
   type CatalogTrack,
   type SoundtrackCatalog,
+  type TrackMood,
   type TrackRole,
 } from '../src/domain/soundtrack-catalog';
 
@@ -298,10 +301,44 @@ const clash = additions.filter((t) => selection.includes(t.id));
 if (clash.length > 0)
   fail(`Additions already in the selection: ${clash.map((t) => t.id).join(', ')}`);
 
+interface GrooveTag {
+  groove?: 1 | 2 | 3;
+  mood: TrackMood;
+  finisher?: true;
+}
+const GROOVE_TAGS = JSON.parse(
+  readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), 'soundtrack-groove-tags.json'),
+    'utf8',
+  ),
+) as Record<string, GrooveTag>;
+
+/** The song with its groove, mood and finisher mark, in the catalog's field order. */
+function withGroove(t: CatalogTrack): CatalogTrack {
+  const tag = GROOVE_TAGS[t.id];
+  if (!tag) return fail(`No groove tag for ${t.id}`);
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(t)) {
+    if (k === 'tagged') {
+      if (tag.groove !== undefined) out.groove = tag.groove;
+      out.mood = tag.mood;
+    }
+    out[k] = k === 'roles' && tag.finisher ? [...(v as TrackRole[]), 'finisher'] : v;
+  }
+  return out as unknown as CatalogTrack;
+}
+
 const catalog: SoundtrackCatalog = {
   v: 1,
-  tracks: [...selection.map((id) => toCatalog(byId.get(id) as ProposalTrack)), ...additions],
+  tracks: [...selection.map((id) => toCatalog(byId.get(id) as ProposalTrack)), ...additions].map(
+    withGroove,
+  ),
 };
+const unknownGroove = Object.keys(GROOVE_TAGS).filter(
+  (id) => !catalog.tracks.some((t) => t.id === id),
+);
+if (unknownGroove.length > 0)
+  fail(`Groove tags for songs not in the catalog: ${unknownGroove.join(', ')}`);
 parseCatalog(catalog); // throws with every problem listed
 
 const text = await format(JSON.stringify(catalog), {
