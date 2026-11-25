@@ -16,6 +16,7 @@ import {
   GENRES,
   genresForRpm,
   matchBpm,
+  nearestKind,
   parseBpmFromName,
   parseBpmInput,
   rankTracks,
@@ -216,7 +217,8 @@ describe('cadenceHints (a song tempo as rpm)', () => {
 describe('cadenceFit', () => {
   it('is fit on the beat, alt in half or double time, miss otherwise', () => {
     expect(cadenceFit(180, 90)).toEqual({ verdict: 'fit', kind: 'exact' });
-    expect(cadenceFit(90, 90)).toEqual({ verdict: 'alt', kind: 'half' });
+    expect(cadenceFit(90, 90)).toEqual({ verdict: 'fit', kind: 'half' }); // the planner's 1:1 at an easy 90 rpm
+    expect(cadenceFit(75, 75)).toEqual({ verdict: 'alt', kind: 'half' }); // a climb wants 2x (150)
     expect(cadenceFit(200, 50)).toEqual({ verdict: 'alt', kind: 'double' });
     expect(cadenceFit(150, 90)).toEqual({ verdict: 'miss' });
   });
@@ -305,5 +307,14 @@ describe('slot cadence (review B3)', () => {
     expect(slotCadence([86, 86], 90)).toBe(90);
     expect(slotCadence(undefined, 90)).toBe(90);
     expect(slotCadence(undefined, undefined)).toBeUndefined();
+  });
+});
+
+describe('nearestKind: one rule for the planner and the editor', () => {
+  it('picks the relation nearest the band, 2x on a tie', () => {
+    expect(nearestKind(90, [120, 140])).toBe('half');
+    expect(nearestKind(90, [120, 160])).toBe('exact');
+    expect(nearestKind(65, [120, 150])).toBe('exact');
+    expect(nearestKind(110, [120, 140])).toBe('half');
   });
 });

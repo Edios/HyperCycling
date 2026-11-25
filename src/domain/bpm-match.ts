@@ -56,8 +56,9 @@ export const BPM_RELAXED = 0.1;
 
 export interface MatchOptions {
   /**
-   * Widest relative distance that still counts as a match (default `BPM_CLOSE`). Everything past
-   * `BPM_ON_BEAT` (or past the tolerance, if that is smaller) is a 'close' fit with the same score.
+   * Widest relative distance that still counts as a match (default `BPM_CLOSE`, 6%; the planner
+   * also uses `BPM_RELAXED`). A match within `BPM_ON_BEAT` (or the tolerance, if smaller) is
+   * 'on-beat'; a deviation past it is 'close', and its score falls along `bpmCurve`.
    */
   tolerance?: number;
   /**
@@ -98,6 +99,30 @@ export function matchBpm(bpm: number, rpm: number, opts?: MatchOptions): BpmMatc
     const score = bpmCurve(deviation) * (target.kind === prefer ? 1 : KIND_WEIGHT_OTHER);
     if (!best || score > best.score || (score === best.score && deviation < best.deviation)) {
       best = { kind: target.kind, fit, deviation, score };
+    }
+  }
+  return best;
+}
+
+/** Comfort band of song tempos (spec §9 B): the planner widens it in hard work and on climbs. */
+export const BAND_LOW = 120;
+export const BAND_HIGH = 140;
+
+/**
+ * The relation of song tempo to cadence (2x, 1:1 or 4x) whose tempo is nearest `band`, 2x first on
+ * a tie. The planner's `preferredKind` and the editor's `cadenceFit` both read it.
+ */
+export function nearestKind(rpm: number, band: readonly [number, number]): MatchKind {
+  const [lo, hi] = band;
+  let best: MatchKind = 'exact';
+  let bestDist = Infinity;
+  for (const kind of ['exact', 'half', 'double'] as const) {
+    const bpm = rpm * MULTIPLIER[kind];
+    if (bpm < BPM_MIN || bpm > BPM_MAX) continue;
+    const dist = bpm < lo ? lo - bpm : bpm > hi ? bpm - hi : 0;
+    if (dist < bestDist) {
+      best = kind;
+      bestDist = dist;
     }
   }
   return best;
@@ -181,8 +206,9 @@ export function slotCadence(
 }
 
 /**
- * How a song suits a cadence: 'fit' on the beat (2 BPM = 1 RPM), 'alt' in half or double time,
- * 'miss' when it does not fit at all.
+ * How a song suits a cadence: 'fit' on the beat (2 BPM = 1 RPM) or in the relation the planner
+ * prefers at that cadence (1:1 at an easy 90 rpm), 'alt' in another half or double time, 'miss'
+ * when it does not fit at all.
  */
 export type CadenceVerdict = 'fit' | 'alt' | 'miss';
 
@@ -210,8 +236,11 @@ export function cadenceFit(
   }
   const m = matchBpm(bpm, rpm);
   if (!m) return { verdict: 'miss' };
+  // The editor knows the cadence but not the effort: the relation nearest the usual comfort band
+  // is the planner's choice in easy work, 2x is its choice everywhere else; both are a fit.
+  const preferred = m.kind === nearestKind(rpm, [BAND_LOW, BAND_HIGH]);
   return {
-    verdict: VERDICT_OF_KIND[m.kind],
+    verdict: m.kind === 'exact' || preferred ? 'fit' : VERDICT_OF_KIND[m.kind],
     kind: m.kind,
     ...(m.fit === 'close' ? { close: true } : {}),
   };
