@@ -18,6 +18,10 @@ import {
 // Pages build only (sessions autosave to the shared local database). Spotify answers from route
 // mocks, so nothing touches the real network.
 
+// The tests share nothing (each starts its own page and scene), so they run in parallel workers:
+// the biggest one takes ~140 s on CI, the file used to take ~300 s one test after another.
+test.describe.configure({ mode: 'parallel' });
+
 const SHOTS = process.env.SHOTS_DIR ?? '';
 
 const VIEWPORTS = [

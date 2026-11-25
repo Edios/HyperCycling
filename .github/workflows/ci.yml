@@ -69,7 +69,11 @@ jobs:
       # The browsers come from the cache; the system libraries they need do not.
       - if: steps.browsers.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
-      - run: npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }} --workers=3
+      # The specs are dealt out by measured time (tests/e2e/shard-weights.json), not by test count as
+      # `--shard` would: see src/shared/e2e-shard-plan.ts. Refresh the weights after big spec changes.
+      - run: npx playwright test --workers=3
+        env:
+          E2E_SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
       - name: Slowest specs (job summary)
         if: always()
         run: node scripts/e2e-timing.mjs test-results/results.json "shard ${{ matrix.shard }}/${{ strategy.job-total }}"

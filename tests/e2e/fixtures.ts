@@ -169,14 +169,21 @@ export const test = base.extend<
     { auto: true },
   ],
   /**
-   * A stored interrupted session would pop the resume prompt in the next test of the same worker,
-   * so it is cleared before each test (the pages build has a fresh IndexedDB per test context).
+   * What one test leaves in the worker's database must not reach the next one on that worker:
+   * - a stored interrupted session would pop the resume prompt;
+   * - stored settings win over the fresh-profile defaults, including the metered bike of
+   *   `seedMeteredBike`: after any spec that saved a setting, a later ride test saw the plain knob
+   *   bike (no watts) and failed, but only when both landed on the same worker (a flake that came
+   *   and went with the sharding).
+   * Both are cleared before each test (the pages build has a fresh IndexedDB per test context).
    */
   cleanActiveSession: [
     async ({ request }, use, info) => {
       if (info.project.name.startsWith('local')) {
-        const res = await request.delete('/api/active-session');
-        expect(res.ok()).toBe(true);
+        for (const url of ['/api/active-session', '/api/settings']) {
+          const res = await request.delete(url);
+          expect(res.ok(), url).toBe(true);
+        }
       }
       await use();
     },
