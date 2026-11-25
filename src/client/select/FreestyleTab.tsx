@@ -6,7 +6,14 @@ import { useLibrary } from '../data/useLibrary';
 import { useLang, useT } from '../i18n';
 import { Button } from '../ui/Button';
 import { Chip } from '../ui/Chip';
-import { filterLibrary, FILTER_IDS, rotationHint, tagKey, type FilterId } from './model';
+import {
+  countsAsRide,
+  filterLibrary,
+  FILTER_IDS,
+  rotationHint,
+  tagKey,
+  type FilterId,
+} from './model';
 import { useLastSession } from './useActivePlan';
 import { WorkoutList } from './WorkoutList';
 import { WorkoutPreview } from './WorkoutPreview';
@@ -45,7 +52,7 @@ export function FreestyleTab() {
   const [now] = useState(() => Date.now());
   const hint = useMemo(() => {
     const w = workouts.find((x) => x.id === lastRide?.workoutId);
-    return rotationHint(w, lastRide?.endedAt, now);
+    return rotationHint(w, lastRide && countsAsRide(lastRide) ? lastRide.endedAt : undefined, now);
   }, [workouts, lastRide, now]);
   const shown = useMemo(
     () => filterLibrary(workouts, filter, query, lang),

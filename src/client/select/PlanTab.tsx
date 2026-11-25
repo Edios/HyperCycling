@@ -18,7 +18,7 @@ import { useLang, useT } from '../i18n';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { ProfileChart } from '../ui/ProfileChart';
-import { effectiveSession } from '../plans/effective-session';
+import { effectiveSession, swapAlternativeId } from '../plans/effective-session';
 import { minutesOf } from './model';
 import { SwapModal } from './SwapModal';
 import { useActivePlan, useLastSession } from './useActivePlan';
@@ -169,10 +169,10 @@ function ActivePlanView({ plan, progress }: { plan: Plan; progress: PlanProgress
     if (next.slot === 'freestyle') {
       return workouts.filter((w) => w.category === 'freestyle' && w.id !== next.workoutId);
     }
-    const alt = plan.weeks[next.week - 1]?.progresAlt;
-    const altWorkout = alt !== undefined && alt !== next.workoutId ? byId.get(alt) : undefined;
+    const alt = swapAlternativeId(plan, next.week, next.workoutId, equipment);
+    const altWorkout = alt !== undefined ? byId.get(alt) : undefined;
     return altWorkout ? [altWorkout] : [];
-  }, [next, plan, workouts, byId]);
+  }, [next, plan, workouts, byId, equipment]);
 
   if (!libraryLoaded) return <div className={styles.page} aria-busy="true" />;
 

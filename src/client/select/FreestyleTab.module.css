@@ -21,7 +21,8 @@
   gap: 0.75rem;
 }
 
-.actions .link {
+.actions .link,
+.hint .link {
   border-color: transparent;
   background: transparent;
   color: var(--mut);
@@ -31,7 +32,8 @@
   padding: 0 0.75rem;
 }
 
-.actions .link:hover:not(:disabled) {
+.actions .link:hover:not(:disabled),
+.hint .link:hover:not(:disabled) {
   color: var(--fg);
   border-color: transparent;
 }

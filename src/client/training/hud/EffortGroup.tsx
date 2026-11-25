@@ -178,9 +178,12 @@ export function EffortGroup({
         )}
         {hr && <div className={styles.hr}>{hr}</div>}
         <div className={styles.posRow}>
-          <PositionBadge position={position} upcoming={upcomingPosition}
+          <PositionBadge
+            position={position}
+            upcoming={upcomingPosition}
             inSec={upcomingInSec}
-            reducedMotion={!motion} />
+            reducedMotion={!motion}
+          />
           {trainer && <ErgControls hud={trainer} />}
           {resistanceCommand && (
             <div

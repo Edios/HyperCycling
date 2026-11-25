@@ -137,3 +137,8 @@ export function rotationHint(
   if (EASY_TAGS.includes(tag)) return { last: tag, filter: 'hiit' };
   return null;
 }
+
+/** A ride stopped after seconds is not what the rider did that day; finished or 10+ minutes counts. */
+export function countsAsRide(log: { completed: boolean; riddenSec: number }): boolean {
+  return log.completed || log.riddenSec >= 10 * 60;
+}
