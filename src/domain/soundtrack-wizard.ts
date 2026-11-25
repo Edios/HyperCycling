@@ -56,7 +56,7 @@ export function parseSoundtrackPrefs(raw: unknown): SoundtrackPrefs {
   return {
     v: 1,
     categories: cats.length > 0 ? cats : [...FIRST_VISIT_PREFS.categories],
-    includeLibrary: false, // the rider's own songs come with PR 6
+    includeLibrary: bool(o.includeLibrary, false),
     continuity: o.continuity === 'gapsOk' ? 'gapsOk' : 'seamless',
     explicit: bool(o.explicit, FIRST_VISIT_PREFS.explicit),
     allowHalfDouble: bool(o.allowHalfDouble, FIRST_VISIT_PREFS.allowHalfDouble),

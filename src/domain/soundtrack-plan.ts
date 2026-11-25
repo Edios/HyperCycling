@@ -108,7 +108,8 @@ export type PickFit = 'on-beat' | 'close' | 'half' | 'double' | 'off' | 'nobeat'
 
 /** One song of a section's queue. */
 export interface PlanPick {
-  ref: { kind: 'catalog'; id: string };
+  /** 'own' = a song the rider added (PR 6); its id starts with `own-`. */
+  ref: { kind: 'catalog' | 'own'; id: string };
   /** The YouTube upload to play first (the others stay its backups). */
   upload: string;
   /** Where playback starts in the song, seconds (above 0 only for a repeated ending, rule R3). */
@@ -589,7 +590,8 @@ function categoryFit(
   step: LadderStep,
   polish: boolean,
 ): number | undefined {
-  if (chosen.size === 0) return 1;
+  // The rider's own songs have no category: asking for them is asking for any of them.
+  if (chosen.size === 0 || t.own === true) return 1;
   let fit: number | undefined;
   for (const c of t.categories) {
     if (chosen.has(c)) return 1;
@@ -658,6 +660,7 @@ function scoredAt(
     const t = catalog[i] as CatalogTrack;
     const key = keys[i] as string;
     if (ride.used.has(key)) continue;
+    if (t.own === true && !prefs.includeLibrary) continue;
     if (!t.clean && !prefs.explicit) continue;
     const cat = categoryFit(t, ctx.chosen, ctx.near, step, prefs.polish === true);
     if (cat === undefined) continue;
@@ -1318,7 +1321,7 @@ export function planSoundtrack(
         scoreTrack(track, s, { tolerance: BPM_RELAXED, ignoreBpm: true })?.fit ??
         'off';
       picks.push({
-        ref: { kind: 'catalog', id: track.id },
+        ref: { kind: track.own === true ? 'own' : 'catalog', id: track.id },
         upload: ref.id,
         startAtSec: ref.startAtSec,
         atSec: at,

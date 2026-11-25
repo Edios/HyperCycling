@@ -6,6 +6,7 @@ import { summarizeRide, type RideRecord } from '../domain/ride';
 import type { CollectionRepo, Repositories } from '../domain/repositories';
 import type { ActiveSession, SessionLog } from '../domain/session-log';
 import { DEFAULT_SETTINGS, type SessionConfig, type Settings } from '../domain/settings';
+import type { OwnTrackRecord } from '../domain/soundtrack-own';
 import type { SoundtrackPlanRecord } from '../domain/soundtrack-store';
 import type { Workout } from '../domain/workout';
 
@@ -162,6 +163,19 @@ export function planRecord(id: string, seed = 1): SoundtrackPlanRecord {
   };
 }
 
+/** One of the rider's own songs stored under `id` (an 11-character video id made from it). */
+export function ownTrack(id: string, bpm = 128): OwnTrackRecord {
+  const youtubeId = `${id}xxxxxxxxxxx`.slice(0, 11);
+  return {
+    id,
+    schemaVersion: 1,
+    createdAt: '2026-11-26T10:00:00.000Z',
+    youtubeId,
+    title: `Song ${id}`,
+    bpm,
+  };
+}
+
 export function bundle(): ExportBundle {
   return {
     app: APP_ID,
@@ -172,6 +186,7 @@ export function bundle(): ExportBundle {
     planProgress: [progress('plan1')],
     sessionLogs: [log('l1')],
     soundtrackPlans: [planRecord('w1')],
+    ownTracks: [ownTrack('a')],
     settings: settings(),
   };
 }
@@ -233,6 +248,13 @@ const collections: CollectionCase[] = [
     make: (id) => planRecord(id),
     changed: (id) => planRecord(id, 7),
     bad: (id) => ({ ...planRecord(id), schemaVersion: 9 }) as unknown as SoundtrackPlanRecord,
+  },
+  {
+    label: 'ownTracks',
+    repo: (r) => r.ownTracks,
+    make: (id) => ownTrack(id),
+    changed: (id) => ownTrack(id, 90),
+    bad: (id) => ({ ...ownTrack(id), bpm: 999 }) as unknown as OwnTrackRecord,
   },
 ];
 
@@ -364,6 +386,7 @@ export function runRepositoryContract(name: string, makeRepos: () => Promise<Rep
         for (const p of src.planProgress) await repos.planProgress.put(p);
         for (const l of src.sessionLogs) await repos.sessionLogs.put(l);
         for (const p of src.soundtrackPlans ?? []) await repos.soundtrackPlans.put(p);
+        for (const t of src.ownTracks ?? []) await repos.ownTracks.put(t);
         await repos.settings.put(settings());
         await repos.activeSession.put(active());
         const out = await repos.exportAll();
@@ -469,6 +492,18 @@ export function runRepositoryContract(name: string, makeRepos: () => Promise<Rep
       it('rejects a plan stored under another workout id', async () => {
         const wrong = { ...planRecord('w1'), id: 'w2' };
         await expect(repos.soundtrackPlans.put(wrong)).rejects.toThrow();
+      });
+
+      it('keeps the own songs when a backup has none, replaces them when it has', async () => {
+        await repos.ownTracks.put(ownTrack('keep'));
+        const old = bundle();
+        delete old.ownTracks;
+        await repos.replaceAll(old);
+        expect((await repos.ownTracks.list()).map((t) => t.id)).toEqual(['keep']);
+        await repos.replaceAll({ ...bundle(), ownTracks: [ownTrack('b')] });
+        expect((await repos.ownTracks.list()).map((t) => t.id)).toEqual(['b']);
+        const out = await repos.exportAll();
+        expect(out.ownTracks).toEqual([ownTrack('b')]);
       });
 
       it('clears the active session when replacing data', async () => {

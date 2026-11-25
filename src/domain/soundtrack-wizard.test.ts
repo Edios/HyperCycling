@@ -80,8 +80,10 @@ describe('parseSoundtrackPrefs', () => {
     expect(parseSoundtrackPrefs({ seed: 2 ** 40 }).seed).toBe(FIRST_VISIT_PREFS.seed);
   });
 
-  it('never takes the library from storage (the rider own songs come later)', () => {
-    expect(parseSoundtrackPrefs({ includeLibrary: true }).includeLibrary).toBe(false);
+  it('remembers "use my songs" (PR 6), off on a first visit or a broken value', () => {
+    expect(parseSoundtrackPrefs({ includeLibrary: true }).includeLibrary).toBe(true);
+    expect(parseSoundtrackPrefs({ includeLibrary: 'yes' }).includeLibrary).toBe(false);
+    expect(parseSoundtrackPrefs({}).includeLibrary).toBe(false);
   });
 });
 

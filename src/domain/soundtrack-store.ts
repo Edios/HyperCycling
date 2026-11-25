@@ -29,7 +29,7 @@ const MAX_FALLBACK = 4;
 const SEC = z.number().finite().min(0).max(86_400);
 
 const pickSchema = z.object({
-  ref: z.object({ kind: z.literal('catalog'), id: z.string().min(1).max(80) }),
+  ref: z.object({ kind: z.enum(['catalog', 'own']), id: z.string().min(1).max(80) }),
   upload: z.string().regex(YOUTUBE_ID),
   startAtSec: SEC,
   atSec: SEC,

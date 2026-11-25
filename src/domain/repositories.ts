@@ -4,6 +4,7 @@ import type { Player } from './player';
 import type { RideRecord } from './ride';
 import type { ActiveSession, SessionLog } from './session-log';
 import type { Settings } from './settings';
+import type { OwnTrackRecord } from './soundtrack-own';
 import type { SoundtrackPlanRecord } from './soundtrack-store';
 import type { Workout } from './workout';
 
@@ -36,6 +37,11 @@ export interface Repositories {
    * replaceAll then leaves the plans alone).
    */
   soundtrackPlans: CollectionRepo<SoundtrackPlanRecord>;
+  /**
+   * The rider's own songs (a YouTube link and a typed tempo, id = `own-` + video id). Like the
+   * plans, they travel in exportAll / replaceAll, and a backup without them leaves them alone.
+   */
+  ownTracks: CollectionRepo<OwnTrackRecord>;
   settings: SingletonRepo<Settings>;
   activeSession: SingletonRepo<ActiveSession>;
   exportAll(): Promise<ExportBundle>;
