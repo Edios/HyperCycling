@@ -32,7 +32,15 @@
  * the song id (the catalog's order does not matter). Runs before a ride (wizard, editor), never
  * inside the session engine; about 1-4 ms per workout on the shipped catalog.
  */
-import { BPM_CLOSE, BPM_MAX, BPM_MIN, BPM_RELAXED, matchBpm, type MatchKind } from './bpm-match';
+import {
+  BAND_HIGH,
+  BAND_LOW,
+  BPM_CLOSE,
+  BPM_RELAXED,
+  matchBpm,
+  nearestKind,
+  type MatchKind,
+} from './bpm-match';
 import { zoneForEffort } from './hr-zones';
 import { youtubeTrack } from './music-chain';
 import { fillSlotGap, MAX_CUT_SEC, type GapRule } from './music-gaps';
@@ -53,6 +61,7 @@ import {
   catalogRpm,
   ROLE_SPRINT_RPM,
   type CatalogTrack,
+  type TrackMood,
   type TrackRole,
 } from './soundtrack-catalog';
 import { MAX_QUEUE, type TrackRef, type Workout } from './workout';
@@ -208,10 +217,9 @@ export const SLOW_WORK_PENALTY = 0.3;
  * tolerates up to 160, a climb up to 150 (§9 E). A song inside it gets `BAND_BONUS`, and the
  * relation (2x, 1:1 or 4x the cadence) whose tempo is nearest it is the one scored in full.
  */
-export const BAND_LOW = 120;
-export const BAND_HIGH = 140;
 export const BAND_HIGH_HARD = 160;
 export const BAND_HIGH_CLIMB = 150;
+export { BAND_HIGH, BAND_LOW };
 export const BAND_BONUS = 0.05;
 /** Work from this HR zone up tolerates the faster band. */
 const BAND_HARD_ZONE = 4;
@@ -254,6 +262,46 @@ const ROLE_FIT: Readonly<Record<SectionRole | 'climb', RoleRow>> = {
   peak: { intervals: 1, steady: 0.5, climb: 0.5, warmup: 0.2, cooldown: 0, finisher: 0 },
   cooldown: { cooldown: 1, warmup: 0.6, steady: 0.3, climb: 0.2, intervals: 0, finisher: 0 },
 };
+
+/**
+ * Soft weights of the groove and mood tags (spec §8-9). Both are centred: a song without the tag,
+ * or one at the neutral value, scores as before. Small on purpose: under one step of energy
+ * (`ENERGY_STEP` x `WEIGHTS.energy` = 0.06) and about the size of the shuffle jitter.
+ */
+export const GROOVE_WEIGHT = 0.06;
+export const MOOD_WEIGHT = 0.04;
+
+/** The groove (1 loose - 3 locked beat) a part wants: locked in the work, loose in the calm ends. */
+function wantedGroove(s: MusicSection): 1 | 2 | 3 {
+  if (s.role === 'warmup' || s.role === 'cooldown') return 1;
+  return workPart(s) || climbPart(s) || hardPart(s) ? 3 : 2;
+}
+
+/** Groove term -GROOVE_WEIGHT/2..+GROOVE_WEIGHT/2; 0 for a song without groove or at the middle. */
+function grooveTerm(t: CatalogTrack, s: MusicSection): number {
+  if (t.groove === undefined) return 0;
+  const fit = 1 - Math.abs(t.groove - wantedGroove(s)) / 2; // 0..1
+  const centre = 1 - Math.abs(2 - wantedGroove(s)) / 2; // the fit of a middle groove
+  return GROOVE_WEIGHT * (fit - centre);
+}
+
+/** How well a mood suits a kind of part, 0..1 (rows: part; spec §9 gives no research, taste only). */
+const MOOD_FIT: Readonly<Record<SectionRole | 'climb', Readonly<Record<TrackMood, number>>>> = {
+  warmup: { mellow: 1, warm: 1, playful: 0.7, euphoric: 0.4, dark: 0.3, aggressive: 0 },
+  steady: { warm: 1, playful: 0.8, euphoric: 0.8, dark: 0.6, aggressive: 0.5, mellow: 0.4 },
+  tempo: { warm: 1, euphoric: 0.9, playful: 0.7, dark: 0.7, aggressive: 0.6, mellow: 0.3 },
+  climb: { dark: 1, euphoric: 0.8, aggressive: 0.7, warm: 0.6, playful: 0.4, mellow: 0.2 },
+  hard: { aggressive: 1, euphoric: 1, dark: 0.8, playful: 0.5, warm: 0.4, mellow: 0 },
+  peak: { aggressive: 1, euphoric: 1, dark: 0.8, playful: 0.5, warm: 0.4, mellow: 0 },
+  cooldown: { mellow: 1, warm: 0.9, playful: 0.5, euphoric: 0.3, dark: 0.3, aggressive: 0 },
+};
+
+/** Mood term, centred on 0.6 (a typical fit); 0 for a song without mood. */
+function moodTerm(t: CatalogTrack, s: MusicSection): number {
+  if (t.mood === undefined) return 0;
+  const row = climbPart(s) ? 'climb' : s.role;
+  return MOOD_WEIGHT * (MOOD_FIT[row][t.mood] - 0.6);
+}
 
 export interface ScoreOptions {
   /** Tempo window (default `BPM_CLOSE`). */
@@ -320,8 +368,6 @@ export function comfortBand(s: MusicSection): [number, number] {
   return [BAND_LOW, BAND_HIGH];
 }
 
-const RELATIONS: readonly MatchKind[] = ['exact', 'half', 'double'];
-
 /**
  * The relation of song tempo to cadence nearest the comfort band (2x first on a tie) in a work
  * part: 1:1 at an easy 90 rpm (90 BPM is nearer 120-140 than 180), 2x on a 60-75 rpm climb
@@ -331,19 +377,7 @@ export function preferredKind(s: MusicSection): MatchKind {
   // Only in the work: the warm-up and the cool-down keep 2x (no research there, spec §9 H; with
   // 1:1 at 90 rpm the few calm 85-95 BPM songs crowded every warm-up).
   if (!workPart(s)) return 'exact';
-  const [lo, hi] = comfortBand(s);
-  let best: MatchKind = 'exact';
-  let bestDist = Infinity;
-  for (const kind of RELATIONS) {
-    const bpm = s.rpmMean * MULTIPLIER[kind];
-    if (bpm < BPM_MIN || bpm > BPM_MAX) continue;
-    const dist = bpm < lo ? lo - bpm : bpm > hi ? bpm - hi : 0;
-    if (dist < bestDist) {
-      best = kind;
-      bestDist = dist;
-    }
-  }
-  return best;
+  return nearestKind(s.rpmMean, comfortBand(s));
 }
 
 /**
@@ -421,6 +455,8 @@ export function scoreTrack(
   const score =
     band -
     slowWork +
+    grooveTerm(t, s) +
+    moodTerm(t, s) +
     WEIGHTS.bpm * bpmFit +
     WEIGHTS.energy * eFit +
     WEIGHTS.role * roleFit(t, s) +

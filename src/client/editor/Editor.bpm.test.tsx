@@ -135,14 +135,14 @@ describe('BPM matching hint', () => {
     expect(screen.getByTestId('bpm-nomatch')).toBeInTheDocument();
   });
 
-  it('shows the rpm a typed BPM suits and tints the verdict (fit, half time, miss)', async () => {
+  it('shows the rpm a typed BPM suits and tints the verdict (fit, 1:1 at 90 rpm also fits, miss)', async () => {
     const bpm = await pinTrack();
     fireEvent.change(bpm, { target: { value: '180' } });
     expect(screen.getByTestId('track-cadence')).toHaveTextContent('≈ 85–95 rpm');
     expect(screen.getByTestId('bpm-match')).toHaveAttribute('data-verdict', 'fit');
     fireEvent.change(bpm, { target: { value: '90' } });
     expect(screen.getByTestId('track-cadence')).toHaveTextContent('half time ≈ 85–95 rpm');
-    expect(screen.getByTestId('bpm-match')).toHaveAttribute('data-verdict', 'alt');
+    expect(screen.getByTestId('bpm-match')).toHaveAttribute('data-verdict', 'fit'); // 1:1 is the planner's pick at an easy 90 rpm
     fireEvent.change(bpm, { target: { value: '128' } });
     expect(screen.getByTestId('track-cadence')).toHaveTextContent('≈ 61–68 rpm');
     expect(screen.getByTestId('bpm-nomatch')).toHaveAttribute('data-verdict', 'miss');

@@ -159,6 +159,75 @@ function fixture(): CatalogTrack[] {
 
 // --- scoreTrack -----------------------------------------------------------------------------
 
+describe('scoreTrack: groove and mood (R1e-2)', () => {
+  const work = section({ role: 'hard', energy: 4, workEffort: 7 });
+  const warm = section({ role: 'warmup', energy: 2, rpmMean: 85, targetBpm: 170, workEffort: 3 });
+  const cool = section({ role: 'cooldown', energy: 1, rpmMean: 80, targetBpm: 160, workEffort: 2 });
+  const tagged = (over: Partial<CatalogTrack>, spec: SongSpec = {}): CatalogTrack =>
+    song('t', { energy: 4, ...spec, over });
+
+  it('prefers a steady groove (3) in the work and on climbs', () => {
+    const loose = scoreTrack(tagged({ groove: 1 }), work)!.score;
+    const mid = scoreTrack(tagged({ groove: 2 }), work)!.score;
+    const tight = scoreTrack(tagged({ groove: 3 }), work)!.score;
+    expect(tight).toBeGreaterThan(mid);
+    expect(mid).toBeGreaterThan(loose);
+    const climb = section({ role: 'tempo', energy: 4, rpmMean: 65, targetBpm: 130, workEffort: 6 });
+    const c = (g: 1 | 3) => scoreTrack(tagged({ groove: g }, { bpm: 130 }), climb)!.score;
+    expect(c(3)).toBeGreaterThan(c(1));
+  });
+
+  it('prefers a looser groove (1) in the warm-up and the cool-down', () => {
+    for (const s of [warm, cool]) {
+      const g = (n: 1 | 3) =>
+        scoreTrack(
+          song('w', { energy: s.energy, roles: ['cooldown', 'warmup'], over: { groove: n } }),
+          s,
+        )!.score;
+      expect(g(1)).toBeGreaterThan(g(3));
+    }
+  });
+
+  it('leans on the mood by section type, lightly', () => {
+    const m = (mood: NonNullable<CatalogTrack['mood']>, s: MusicSection) =>
+      scoreTrack(
+        song('m', {
+          energy: s.energy,
+          roles: ['warmup', 'cooldown', 'intervals', 'steady'],
+          over: { mood },
+        }),
+        s,
+      )!.score;
+    expect(m('aggressive', work)).toBeGreaterThan(m('mellow', work));
+    expect(m('mellow', warm)).toBeGreaterThan(m('aggressive', warm));
+    expect(m('mellow', cool)).toBeGreaterThan(m('dark', cool));
+    // Light: a mood never outweighs one step of energy.
+    const best = m('aggressive', work) - m('mellow', work);
+    expect(best).toBeLessThan(0.1);
+  });
+
+  it('leaves songs without the tags exactly where they were', () => {
+    const plain = song('p', { energy: 4 });
+    const neutral = { ...plain, groove: 2 as const };
+    expect(scoreTrack(neutral, work)!.score).toBeCloseTo(scoreTrack(plain, work)!.score, 10);
+  });
+});
+
+describe('scoreTrack: a section without a cadence (DEFAULT_RPM 90)', () => {
+  it('is scored at the default cadence like an explicit 90 rpm one', () => {
+    const w = workout([steady('a', 600, 5)]);
+    const [sec] = sectionsOf(w);
+    expect(sec!.rpmKnown).toBe(false);
+    const explicit = section({ ...sec!, rpmKnown: true });
+    for (const bpm of [90, 180, 150]) {
+      const t = song('x', { bpm });
+      expect(scoreTrack(t, sec!)).toEqual(scoreTrack(t, explicit));
+    }
+    // 1:1 at the default 90 rpm, as in any easy part.
+    expect(scoreTrack(song('y', { bpm: 90 }), sec!)?.fit).toBe('half');
+  });
+});
+
 describe('scoreTrack', () => {
   const s = section();
 
