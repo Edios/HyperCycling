@@ -13,6 +13,7 @@ import {
   resolveHintQueue,
   resolveSlot,
   searchQuery,
+  slotCadences,
   withUserMusic,
   type SearchFn,
 } from './musicMatch';
@@ -209,6 +210,71 @@ describe('annotate', () => {
     expect(
       annotate(option(300), { ...NIGHTCALL, noBeat: true }, 300, [64, 70], new Map()).bpm,
     ).toBeUndefined();
+  });
+});
+
+describe('annotate against the cadence of the slot blocks (P5)', () => {
+  const experience = builtinExperiences.find((e) => e.id === 'neon-grid-45')!;
+  const workout = getWorkout(experience.workoutRef.id)!;
+  const hintOf = (slot: number): MusicHint => experience.musicHints!.find((h) => h.slot === slot)!;
+  const optionOf = (h: MusicHint) => ({
+    source: 'main' as const,
+    wanted: { artist: h.artist, title: h.title, ...(h.bpm !== undefined ? { bpm: h.bpm } : {}) },
+    ref: {
+      provider: 'youtube',
+      id: 'yt000000000',
+      title: h.title,
+      durationSec: 300,
+      startAtSec: 0,
+    } as TrackRef,
+    explicit: false,
+    playable: true as boolean | undefined,
+    score: 90,
+  });
+  const annotated = (slot: number) => {
+    const h = hintOf(slot);
+    return annotate(
+      optionOf(h),
+      h,
+      300,
+      h.bpm ? [h.bpm - 3, h.bpm + 3] : undefined,
+      new Map(),
+      slotCadences(workout, slot),
+    );
+  };
+
+  it('reads the cadences of a slot: rpm and seconds of every stretch, in order', () => {
+    const c = slotCadences(workout, 0);
+    expect(c.reduce((n, x) => n + x.sec, 0)).toBe(300);
+    expect([...new Set(c.map((x) => x.rpm))].sort()).toEqual([85, 90, 100]);
+    expect(slotCadences(workout, 99)).toEqual([]);
+  });
+
+  it('no longer calls Nightcall on the beat in a warm-up ridden at 85-100 rpm', () => {
+    // The old check turned the BPM range of the slot into a made-up 44.5 rpm and said "on-beat".
+    const a = annotated(0);
+    expect(a.bpmFit).toBe('off');
+    expect(a.bpmShare).toBeCloseTo(0.4, 1);
+  });
+
+  it('says how much of the slot time the tempo fits: Faded at 85-90 rpm is close, not on the beat', () => {
+    const a = annotated(3);
+    expect(a.bpmShare).toBe(1);
+    expect(a.bpmFit).toBe('close');
+  });
+
+  it('is on the beat when the cadence holds the tempo for most of the slot', () => {
+    // Don't Worry Child (129 BPM) at 64-66 rpm.
+    const a = annotated(4);
+    expect(a.bpmShare).toBe(1);
+    expect(a.bpmFit).toBe('on-beat');
+  });
+
+  it('keeps the old range check when the slot has no cadence at all', () => {
+    const h = hintOf(0);
+    const a = annotate(optionOf(h), h, 300, [86, 92], new Map(), []);
+    expect(a.bpmFit).toBe('on-beat');
+    expect(a.bpmShare).toBeUndefined();
   });
 });
 
