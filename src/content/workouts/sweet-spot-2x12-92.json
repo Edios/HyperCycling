@@ -1,15 +1,15 @@
 {
   "id": "sweet-spot-2x12-92",
   "name": "Sweet Spot 2 × 12 (92%)",
-  "description": "Two twelve-minute sweet spot blocks at 92% of FTP.",
+  "description": "Two twelve-minute sweet spot blocks at 92% of FTP. Why: sweet spot (about 88-92% FTP) is a popular compromise, much of the threshold benefit for less fatigue.",
   "localized": {
     "en": {
       "name": "Sweet Spot 2 × 12 (92%)",
-      "description": "Two twelve-minute sweet spot blocks at 92% of FTP."
+      "description": "Two twelve-minute sweet spot blocks at 92% of FTP. Why: sweet spot (about 88-92% FTP) is a popular compromise, much of the threshold benefit for less fatigue."
     },
     "pl": {
       "name": "Sweet spot 2 × 12 (92%)",
-      "description": "Dwa dwunastominutowe odcinki sweet spot przy 92% FTP."
+      "description": "Dwa dwunastominutowe odcinki sweet spot przy 92% FTP. Po co: sweet spot (ok. 88-92% FTP) to popularny kompromis: sporo korzyści progu przy mniejszym zmęczeniu."
     }
   },
   "category": "progres",

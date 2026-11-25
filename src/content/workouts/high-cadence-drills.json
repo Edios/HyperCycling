@@ -1,15 +1,15 @@
 {
   "id": "high-cadence-drills",
   "name": "Spin Drills",
-  "description": "Six rounds of one minute of very fast spinning and one minute slower.",
+  "description": "Six rounds of one minute of very fast spinning and one minute slower. Why: cadence work makes pedalling smoother and shows you the range where you feel comfortable.",
   "localized": {
     "en": {
       "name": "Spin Drills",
-      "description": "Six rounds of one minute of very fast spinning and one minute slower."
+      "description": "Six rounds of one minute of very fast spinning and one minute slower. Why: cadence work makes pedalling smoother and shows you the range where you feel comfortable."
     },
     "pl": {
       "name": "Młynek",
-      "description": "Sześć razy minuta bardzo szybkiego kręcenia i minuta wolniejszego."
+      "description": "Sześć razy minuta bardzo szybkiego kręcenia i minuta wolniejszego. Po co: praca nad kadencją wygładza pedałowanie i pokazuje zakres, w którym czujesz się najlepiej."
     }
   },
   "category": "freestyle",

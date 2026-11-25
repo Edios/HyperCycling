@@ -1,15 +1,15 @@
 {
   "id": "long-breath-60",
   "name": "Long Breath 60",
-  "description": "Three long tempo stretches with a short easy spell in between.",
+  "description": "Three long tempo stretches with a short easy spell in between. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold.",
   "localized": {
     "en": {
       "name": "Long Breath 60",
-      "description": "Three long tempo stretches with a short easy spell in between."
+      "description": "Three long tempo stretches with a short easy spell in between. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold."
     },
     "pl": {
       "name": "Długi oddech 60",
-      "description": "Trzy długie odcinki w tempie z krótkim luzem pomiędzy."
+      "description": "Trzy długie odcinki w tempie z krótkim luzem pomiędzy. Po co: tempo trenuje wytrzymałość w tempie, które da się utrzymać długo, przy mniejszym zmęczeniu niż próg."
     }
   },
   "category": "freestyle",

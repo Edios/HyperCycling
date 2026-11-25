@@ -1,15 +1,15 @@
 {
   "id": "threshold-2x15",
   "name": "Threshold 2 x 15",
-  "description": "Two fifteen-minute blocks just under threshold.",
+  "description": "Two fifteen-minute blocks just under threshold. Why: time close to FTP raises the power you can hold for an hour.",
   "localized": {
     "en": {
       "name": "Threshold 2 x 15",
-      "description": "Two fifteen-minute blocks just under threshold."
+      "description": "Two fifteen-minute blocks just under threshold. Why: time close to FTP raises the power you can hold for an hour."
     },
     "pl": {
       "name": "Próg 2 × 15",
-      "description": "Dwa piętnastominutowe odcinki tuż pod progiem."
+      "description": "Dwa piętnastominutowe odcinki tuż pod progiem. Po co: czas blisko FTP podnosi moc, którą utrzymasz przez godzinę."
     }
   },
   "category": "freestyle",

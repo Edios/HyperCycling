@@ -1,15 +1,15 @@
 {
   "id": "hill-repeats-standing",
   "name": "Standing Hill Repeats",
-  "description": "Six climbs of two and a half minutes: sit, stand for half a minute, sit again. Stay smooth when you stand.",
+  "description": "Six climbs of two and a half minutes: sit, stand for half a minute, sit again. Stay smooth when you stand. Why: heavy gear and low cadence build leg strength; the standing parts change which muscles do the work.",
   "localized": {
     "en": {
       "name": "Standing Hill Repeats",
-      "description": "Six climbs of two and a half minutes: sit, stand for half a minute, sit again. Stay smooth when you stand."
+      "description": "Six climbs of two and a half minutes: sit, stand for half a minute, sit again. Stay smooth when you stand. Why: heavy gear and low cadence build leg strength; the standing parts change which muscles do the work."
     },
     "pl": {
       "name": "Podjazdy ze wstawaniem",
-      "description": "Sześć podjazdów po dwie i pół minuty: siedzisz, wstajesz na pół minuty, siadasz. Na stojąco jedź płynnie."
+      "description": "Sześć podjazdów po dwie i pół minuty: siedzisz, wstajesz na pół minuty, siadasz. Na stojąco jedź płynnie. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; fragmenty na stojąco zmieniają to, które mięśnie pracują."
     }
   },
   "category": "freestyle",

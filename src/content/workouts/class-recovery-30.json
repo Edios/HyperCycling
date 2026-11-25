@@ -1,11 +1,11 @@
 {
   "id": "class-recovery-30",
   "name": "Class: Recovery 30",
-  "description": "An easy seated ride: three calm songs with gentle cadence changes, no standing.",
+  "description": "An easy seated ride: three calm songs with gentle cadence changes, no standing. Why: easy spinning clears fatigue so the hard days count.",
   "localized": {
     "en": {
       "name": "Class: Recovery 30",
-      "description": "An easy seated ride: three calm songs with gentle cadence changes, no standing.",
+      "description": "An easy seated ride: three calm songs with gentle cadence changes, no standing. Why: easy spinning clears fatigue so the hard days count.",
       "songHints": {
         "class-recovery-30-s1": "Calm warm-up song, about 5 min. Aim for about 165 BPM.",
         "class-recovery-30-s2": "Relaxed groove; the beat sets the cadence, up and down 10 rpm. Aim for about 188 BPM.",
@@ -16,7 +16,7 @@
     },
     "pl": {
       "name": "Zajęcia: regeneracja 30",
-      "description": "Lekka jazda na siedząco: trzy spokojne piosenki z łagodnymi zmianami kadencji, bez stania.",
+      "description": "Lekka jazda na siedząco: trzy spokojne piosenki z łagodnymi zmianami kadencji, bez stania. Po co: lekkie kręcenie usuwa zmęczenie, dzięki czemu twarde dni przynoszą efekt.",
       "songHints": {
         "class-recovery-30-s1": "Spokojna piosenka na rozgrzewkę, ok. 5 min. Szukaj ok. 165 BPM.",
         "class-recovery-30-s2": "Rozluźniony groove; rytm wyznacza kadencję, w górę i w dół o 10 obr./min. Szukaj ok. 188 BPM.",

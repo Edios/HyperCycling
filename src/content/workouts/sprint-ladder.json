@@ -1,15 +1,15 @@
 {
   "id": "sprint-ladder",
   "name": "Sprint Ladder",
-  "description": "Sprints of 10, 15, 20, 25 and 30 seconds with full recovery in between. The 20 and 25-second sprints are ridden standing.",
+  "description": "Sprints of 10, 15, 20, 25 and 30 seconds with full recovery in between. The 20 and 25-second sprints are ridden standing. Why: short all-out efforts train leg speed and power.",
   "localized": {
     "en": {
       "name": "Sprint Ladder",
-      "description": "Sprints of 10, 15, 20, 25 and 30 seconds with full recovery in between. The 20 and 25-second sprints are ridden standing."
+      "description": "Sprints of 10, 15, 20, 25 and 30 seconds with full recovery in between. The 20 and 25-second sprints are ridden standing. Why: short all-out efforts train leg speed and power."
     },
     "pl": {
       "name": "Sprinterska drabinka",
-      "description": "Sprinty 10, 15, 20, 25 i 30 sekund z pełnym odpoczynkiem między nimi. Sprinty 20 i 25 s jedziesz na stojąco."
+      "description": "Sprinty 10, 15, 20, 25 i 30 sekund z pełnym odpoczynkiem między nimi. Sprinty 20 i 25 s jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg."
     }
   },
   "category": "freestyle",

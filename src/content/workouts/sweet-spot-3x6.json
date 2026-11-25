@@ -1,15 +1,15 @@
 {
   "id": "sweet-spot-3x6",
   "name": "Sweet Spot 3 x 6",
-  "description": "Three six-minute sweet spot blocks, ideal for getting started.",
+  "description": "Three six-minute sweet spot blocks, ideal for getting started. Why: sweet spot (about 88-92% FTP) is a popular compromise, much of the threshold benefit for less fatigue.",
   "localized": {
     "en": {
       "name": "Sweet Spot 3 x 6",
-      "description": "Three six-minute sweet spot blocks, ideal for getting started."
+      "description": "Three six-minute sweet spot blocks, ideal for getting started. Why: sweet spot (about 88-92% FTP) is a popular compromise, much of the threshold benefit for less fatigue."
     },
     "pl": {
       "name": "Sweet spot 3 × 6",
-      "description": "Trzy sześciominutowe odcinki sweet spot dla początkujących."
+      "description": "Trzy sześciominutowe odcinki sweet spot dla początkujących. Po co: sweet spot (ok. 88-92% FTP) to popularny kompromis: sporo korzyści progu przy mniejszym zmęczeniu."
     }
   },
   "category": "progres",

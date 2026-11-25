@@ -1,15 +1,15 @@
 {
   "id": "high-cadence-endurance",
   "name": "High Cadence Endurance",
-  "description": "Five four-minute blocks at a light gear and 100 rpm, with easy spinning between. Calm legs, quick feet.",
+  "description": "Five four-minute blocks at a light gear and 100 rpm, with easy spinning between. Calm legs, quick feet. Why: easy steady riding builds the aerobic base every other workout rests on.",
   "localized": {
     "en": {
       "name": "High Cadence Endurance",
-      "description": "Five four-minute blocks at a light gear and 100 rpm, with easy spinning between. Calm legs, quick feet."
+      "description": "Five four-minute blocks at a light gear and 100 rpm, with easy spinning between. Calm legs, quick feet. Why: easy steady riding builds the aerobic base every other workout rests on."
     },
     "pl": {
       "name": "Wytrzymałość na wysokiej kadencji",
-      "description": "Pięć czterominutowych odcinków na lekkim przełożeniu przy 100 obr./min, między nimi lekkie kręcenie. Spokojne nogi, szybkie stopy."
+      "description": "Pięć czterominutowych odcinków na lekkim przełożeniu przy 100 obr./min, między nimi lekkie kręcenie. Spokojne nogi, szybkie stopy. Po co: spokojna, równa jazda buduje bazę tlenową, na której opiera się każdy inny trening."
     }
   },
   "category": "freestyle",

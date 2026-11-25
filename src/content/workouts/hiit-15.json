@@ -1,15 +1,15 @@
 {
   "id": "hiit-15",
   "name": "15 Minute HIIT",
-  "description": "A short session: four rounds of one minute hard and one minute easy.",
+  "description": "A short session: four rounds of one minute hard and one minute easy. Why: short hard-easy repeats keep you near VO2max for a long total time while each effort stays controlled.",
   "localized": {
     "en": {
       "name": "15 Minute HIIT",
-      "description": "A short session: four rounds of one minute hard and one minute easy."
+      "description": "A short session: four rounds of one minute hard and one minute easy. Why: short hard-easy repeats keep you near VO2max for a long total time while each effort stays controlled."
     },
     "pl": {
       "name": "15 min HIIT",
-      "description": "Krótka sesja: cztery razy minuta mocno i minuta luzu."
+      "description": "Krótka sesja: cztery razy minuta mocno i minuta luzu. Po co: krótkie powtórzenia mocno-lekko utrzymują blisko VO2max przez długi łączny czas, a każdy wysiłek pozostaje pod kontrolą."
     }
   },
   "category": "freestyle",

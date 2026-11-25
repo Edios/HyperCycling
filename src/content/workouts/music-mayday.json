@@ -1,15 +1,15 @@
 {
   "id": "music-mayday",
   "name": "Music Holiday Ride",
-  "description": "An easy Zone 2 ride with four one-minute surges on the choruses.",
+  "description": "An easy Zone 2 ride with four one-minute surges on the choruses. Why: easy steady riding builds the aerobic base every other workout rests on.",
   "localized": {
     "en": {
       "name": "Music Holiday Ride",
-      "description": "An easy Zone 2 ride with four one-minute surges on the choruses."
+      "description": "An easy Zone 2 ride with four one-minute surges on the choruses. Why: easy steady riding builds the aerobic base every other workout rests on."
     },
     "pl": {
       "name": "Muzyczna majówka",
-      "description": "Spokojna jazda w strefie 2 z czterema minutowymi zrywami na refrenach."
+      "description": "Spokojna jazda w strefie 2 z czterema minutowymi zrywami na refrenach. Po co: spokojna, równa jazda buduje bazę tlenową, na której opiera się każdy inny trening."
     }
   },
   "category": "freestyle",

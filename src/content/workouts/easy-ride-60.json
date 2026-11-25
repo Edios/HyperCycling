@@ -1,15 +1,15 @@
 {
   "id": "easy-ride-60",
   "name": "Easy Zone 2, 60 min",
-  "description": "An hour of calm Zone 2 riding to build your base.",
+  "description": "An hour of calm Zone 2 riding to build your base. Why: easy steady riding builds the aerobic base every other workout rests on.",
   "localized": {
     "en": {
       "name": "Easy Zone 2, 60 min",
-      "description": "An hour of calm Zone 2 riding to build your base."
+      "description": "An hour of calm Zone 2 riding to build your base. Why: easy steady riding builds the aerobic base every other workout rests on."
     },
     "pl": {
       "name": "Spokojna strefa 2, 60 min",
-      "description": "Godzina spokojnej jazdy w strefie 2 do budowania bazy."
+      "description": "Godzina spokojnej jazdy w strefie 2 do budowania bazy. Po co: spokojna, równa jazda buduje bazę tlenową, na której opiera się każdy inny trening."
     }
   },
   "category": "freestyle",

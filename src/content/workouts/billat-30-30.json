@@ -1,15 +1,15 @@
 {
   "id": "billat-30-30",
   "name": "Billat 30-30",
-  "description": "Three sets of thirty seconds hard and thirty seconds easy, ten times per set, with a five-minute break between sets.",
+  "description": "Three sets of thirty seconds hard and thirty seconds easy, ten times per set, with a five-minute break between sets. Why: 30 s on, 30 s off keeps you near VO2max for many minutes; this is the friendlier take on Billat's 30/30.",
   "localized": {
     "en": {
       "name": "Billat 30-30",
-      "description": "Three sets of thirty seconds hard and thirty seconds easy, ten times per set, with a five-minute break between sets."
+      "description": "Three sets of thirty seconds hard and thirty seconds easy, ten times per set, with a five-minute break between sets. Why: 30 s on, 30 s off keeps you near VO2max for many minutes; this is the friendlier take on Billat's 30/30."
     },
     "pl": {
       "name": "Billat 30-30",
-      "description": "Trzy serie: trzydzieści sekund mocno, trzydzieści lekko, po dziesięć razy w serii, między seriami pięć minut przerwy."
+      "description": "Trzy serie: trzydzieści sekund mocno, trzydzieści lekko, po dziesięć razy w serii, między seriami pięć minut przerwy. Po co: 30 s mocno, 30 s lekko trzyma blisko VO2max przez wiele minut; to łagodniejsza wersja 30/30 Billat."
     }
   },
   "category": "freestyle",

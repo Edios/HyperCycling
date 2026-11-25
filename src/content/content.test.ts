@@ -422,6 +422,23 @@ describe('built-in workouts', () => {
     }
   });
 
+  it('every workout description ends with a one-sentence rationale in both languages', () => {
+    for (const w of builtinWorkouts) {
+      expect(w.localized?.en?.description, w.id).toMatch(/ Why: [^]+\.$/);
+      expect(w.localized?.pl?.description, w.id).toMatch(/ Po co: [^]+\.$/);
+    }
+  });
+
+  it('a rationale only talks about standing or a named source where the workout fits', () => {
+    for (const w of builtinWorkouts) {
+      const why = (w.localized?.en?.description ?? '').split(' Why: ')[1] ?? '';
+      const stands = flattenWorkout(w).some((s) => s.position === 'standing');
+      if (/standing/i.test(why)) expect(stands, `${w.id}: why mentions standing`).toBe(true);
+      if (/R[øo]nnestad/.test(why)) expect(w.id, w.id).toMatch(/^thirty-fifteen/);
+      expect(why, w.id).not.toMatch(/\d %/);
+    }
+  });
+
   it('declares standard warm-up and cool-down scaling', () => {
     for (const w of builtinWorkouts) {
       expect(w.scaling, w.id).toBeDefined();

@@ -1,15 +1,15 @@
 {
   "id": "tempo-cadence-3x6",
   "name": "Tempo with Cadence",
-  "description": "Three six-minute tempo blocks with the cadence switching every minute between 65 and 95.",
+  "description": "Three six-minute tempo blocks with the cadence switching every minute between 65 and 95. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold.",
   "localized": {
     "en": {
       "name": "Tempo with Cadence",
-      "description": "Three six-minute tempo blocks with the cadence switching every minute between 65 and 95."
+      "description": "Three six-minute tempo blocks with the cadence switching every minute between 65 and 95. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold."
     },
     "pl": {
       "name": "Tempo z kadencją",
-      "description": "Trzy sześciominutowe odcinki tempa, co minutę zmiana kadencji z 65 na 95."
+      "description": "Trzy sześciominutowe odcinki tempa, co minutę zmiana kadencji z 65 na 95. Po co: tempo trenuje wytrzymałość w tempie, które da się utrzymać długo, przy mniejszym zmęczeniu niż próg."
     }
   },
   "category": "progres",

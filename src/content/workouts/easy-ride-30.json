@@ -1,15 +1,15 @@
 {
   "id": "easy-ride-30",
   "name": "Easy Zone 2, 30 min",
-  "description": "A relaxed Zone 2 spin at a pace where you can still talk.",
+  "description": "A relaxed Zone 2 spin at a pace where you can still talk. Why: easy steady riding builds the aerobic base every other workout rests on.",
   "localized": {
     "en": {
       "name": "Easy Zone 2, 30 min",
-      "description": "A relaxed Zone 2 spin at a pace where you can still talk."
+      "description": "A relaxed Zone 2 spin at a pace where you can still talk. Why: easy steady riding builds the aerobic base every other workout rests on."
     },
     "pl": {
       "name": "Spokojna strefa 2, 30 min",
-      "description": "Spokojna jazda w strefie 2, w tempie, przy którym możesz rozmawiać."
+      "description": "Spokojna jazda w strefie 2, w tempie, przy którym możesz rozmawiać. Po co: spokojna, równa jazda buduje bazę tlenową, na której opiera się każdy inny trening."
     }
   },
   "category": "freestyle",

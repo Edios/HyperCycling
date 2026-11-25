@@ -1,15 +1,15 @@
 {
   "id": "cadence-warmup",
   "name": "Cadence Warm-up",
-  "description": "A ladder of ever faster cadence finished with five short bursts.",
+  "description": "A ladder of ever faster cadence finished with five short bursts. Why: cadence work makes pedalling smoother and shows you the range where you feel comfortable.",
   "localized": {
     "en": {
       "name": "Cadence Warm-up",
-      "description": "A ladder of ever faster cadence finished with five short bursts."
+      "description": "A ladder of ever faster cadence finished with five short bursts. Why: cadence work makes pedalling smoother and shows you the range where you feel comfortable."
     },
     "pl": {
       "name": "Kadencja na rozgrzanie",
-      "description": "Drabinka coraz szybszej kadencji, a na koniec pięć krótkich zrywów."
+      "description": "Drabinka coraz szybszej kadencji, a na koniec pięć krótkich zrywów. Po co: praca nad kadencją wygładza pedałowanie i pokazuje zakres, w którym czujesz się najlepiej."
     }
   },
   "category": "freestyle",

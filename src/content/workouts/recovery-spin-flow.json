@@ -1,15 +1,15 @@
 {
   "id": "recovery-spin-flow",
   "name": "Recovery Flow",
-  "description": "Easy spinning with a light cadence wave: a few minutes slow, a few minutes faster, never hard.",
+  "description": "Easy spinning with a light cadence wave: a few minutes slow, a few minutes faster, never hard. Why: easy spinning clears fatigue so the hard days count.",
   "localized": {
     "en": {
       "name": "Recovery Flow",
-      "description": "Easy spinning with a light cadence wave: a few minutes slow, a few minutes faster, never hard."
+      "description": "Easy spinning with a light cadence wave: a few minutes slow, a few minutes faster, never hard. Why: easy spinning clears fatigue so the hard days count."
     },
     "pl": {
       "name": "Regeneracyjny przepływ",
-      "description": "Lekkie kręcenie z falą kadencji: kilka minut wolniej, kilka szybciej, nigdy mocno."
+      "description": "Lekkie kręcenie z falą kadencji: kilka minut wolniej, kilka szybciej, nigdy mocno. Po co: lekkie kręcenie usuwa zmęczenie, dzięki czemu twarde dni przynoszą efekt."
     }
   },
   "category": "freestyle",

@@ -1,15 +1,15 @@
 {
   "id": "demo-mixed",
   "name": "Demo mix",
-  "description": "Nine-minute mixed demo: warm-up ramp, short intervals, a sprint, a standing climb and a cool-down.",
+  "description": "Nine-minute mixed demo: warm-up ramp, short intervals, a sprint, a standing climb and a cool-down. Why: a taste of several kinds of effort in one ride, to find what you like.",
   "localized": {
     "en": {
       "name": "Demo mix",
-      "description": "Nine-minute mixed demo: warm-up ramp, short intervals, a sprint, a standing climb and a cool-down."
+      "description": "Nine-minute mixed demo: warm-up ramp, short intervals, a sprint, a standing climb and a cool-down. Why: a taste of several kinds of effort in one ride, to find what you like."
     },
     "pl": {
       "name": "Mieszanka demo",
-      "description": "Dziewięciominutowe demo: rozgrzewka, krótkie interwały, sprint, podjazd na stojąco i schłodzenie."
+      "description": "Dziewięciominutowe demo: rozgrzewka, krótkie interwały, sprint, podjazd na stojąco i schłodzenie. Po co: próbka kilku rodzajów wysiłku w jednej jeździe, żeby znaleźć to, co lubisz."
     }
   },
   "category": "freestyle",

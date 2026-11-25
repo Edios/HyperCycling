@@ -1,15 +1,15 @@
 {
   "id": "pyramid-sweet-spot",
   "name": "Sweet Spot Pyramid 4-6-8-6-4",
-  "description": "Sweet spot blocks that grow to eight minutes and shrink again, with two minutes of easy spinning between them.",
+  "description": "Sweet spot blocks that grow to eight minutes and shrink again, with two minutes of easy spinning between them. Why: sweet spot (about 88-92% FTP) is a popular compromise, much of the threshold benefit for less fatigue.",
   "localized": {
     "en": {
       "name": "Sweet Spot Pyramid 4-6-8-6-4",
-      "description": "Sweet spot blocks that grow to eight minutes and shrink again, with two minutes of easy spinning between them."
+      "description": "Sweet spot blocks that grow to eight minutes and shrink again, with two minutes of easy spinning between them. Why: sweet spot (about 88-92% FTP) is a popular compromise, much of the threshold benefit for less fatigue."
     },
     "pl": {
       "name": "Piramida sweet spot 4-6-8-6-4",
-      "description": "Odcinki sweet spot rosną do ośmiu minut i znów się skracają, między nimi dwie minuty lekkiego kręcenia."
+      "description": "Odcinki sweet spot rosną do ośmiu minut i znów się skracają, między nimi dwie minuty lekkiego kręcenia. Po co: sweet spot (ok. 88-92% FTP) to popularny kompromis: sporo korzyści progu przy mniejszym zmęczeniu."
     }
   },
   "category": "freestyle",

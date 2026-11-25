@@ -1,15 +1,15 @@
 {
   "id": "music-30-30-beats",
   "name": "30-30 to the Beat",
-  "description": "Two sets of ten: thirty seconds on the chorus, thirty seconds on the verse. Pick songs with a clear change in energy.",
+  "description": "Two sets of ten: thirty seconds on the chorus, thirty seconds on the verse. Pick songs with a clear change in energy. Why: short hard-easy repeats keep you near VO2max for a long total time while each effort stays controlled.",
   "localized": {
     "en": {
       "name": "30-30 to the Beat",
-      "description": "Two sets of ten: thirty seconds on the chorus, thirty seconds on the verse. Pick songs with a clear change in energy."
+      "description": "Two sets of ten: thirty seconds on the chorus, thirty seconds on the verse. Pick songs with a clear change in energy. Why: short hard-easy repeats keep you near VO2max for a long total time while each effort stays controlled."
     },
     "pl": {
       "name": "30-30 w rytmie",
-      "description": "Dwie serie po dziesięć: trzydzieści sekund na refrenie, trzydzieści na zwrotce. Wybierz piosenki z wyraźną zmianą energii."
+      "description": "Dwie serie po dziesięć: trzydzieści sekund na refrenie, trzydzieści na zwrotce. Wybierz piosenki z wyraźną zmianą energii. Po co: krótkie powtórzenia mocno-lekko utrzymują blisko VO2max przez długi łączny czas, a każdy wysiłek pozostaje pod kontrolą."
     }
   },
   "category": "freestyle",

@@ -1,11 +1,11 @@
 {
   "id": "class-neon-grid-30",
   "name": "Class: Neon Grid 30",
-  "description": "Seven songs, effort 3–9: intervals, a summit climb with a long recovery after it, and a sprint finish.",
+  "description": "Seven songs, effort 3–9: intervals, a summit climb with a long recovery after it, and a sprint finish. Why: a class-style ride, where the effort follows the music instead of the clock.",
   "localized": {
     "en": {
       "name": "Class: Neon Grid 30",
-      "description": "Seven songs, effort 3–9: intervals, a summit climb with a long recovery after it, and a sprint finish.",
+      "description": "Seven songs, effort 3–9: intervals, a summit climb with a long recovery after it, and a sprint finish. Why: a class-style ride, where the effort follows the music instead of the clock.",
       "songHints": {
         "class-neon-grid-30-s1": "Easy electronic warm-up, about 5 min. Aim for about 90 BPM. Idea: Kavinsky – Nightcall (91).",
         "class-neon-grid-30-s2": "Fast, driving song for 30/30 intervals. Aim for about 174 BPM. Idea: The Weeknd – Blinding Lights (171).",
@@ -18,7 +18,7 @@
     },
     "pl": {
       "name": "Zajęcia: Neon Grid 30",
-      "description": "Siedem piosenek, wysiłek 3–9: interwały, podjazd na szczyt z długim odpoczynkiem po nim i sprint na koniec.",
+      "description": "Siedem piosenek, wysiłek 3–9: interwały, podjazd na szczyt z długim odpoczynkiem po nim i sprint na koniec. Po co: jazda w stylu zajęć, w której wysiłek podąża za muzyką, a nie za zegarem.",
       "songHints": {
         "class-neon-grid-30-s1": "Lekka elektronika na rozgrzewkę, ok. 5 min. Szukaj ok. 90 BPM. Pomysł: Kavinsky – Nightcall (91).",
         "class-neon-grid-30-s2": "Szybki, napędzający utwór na interwały 30/30. Szukaj ok. 174 BPM. Pomysł: The Weeknd – Blinding Lights (171).",

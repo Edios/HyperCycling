@@ -1,15 +1,15 @@
 {
   "id": "two-by-twenty",
   "name": "Two by Twenty",
-  "description": "The classic long threshold session: two twenty-minute blocks just under your FTP with a five-minute break.",
+  "description": "The classic long threshold session: two twenty-minute blocks just under your FTP with a five-minute break. Why: time close to FTP raises the power you can hold for an hour.",
   "localized": {
     "en": {
       "name": "Two by Twenty",
-      "description": "The classic long threshold session: two twenty-minute blocks just under your FTP with a five-minute break."
+      "description": "The classic long threshold session: two twenty-minute blocks just under your FTP with a five-minute break. Why: time close to FTP raises the power you can hold for an hour."
     },
     "pl": {
       "name": "Dwa razy dwadzieścia",
-      "description": "Klasyczna długa sesja progowa: dwa dwudziestominutowe odcinki tuż pod FTP i pięć minut przerwy."
+      "description": "Klasyczna długa sesja progowa: dwa dwudziestominutowe odcinki tuż pod FTP i pięć minut przerwy. Po co: czas blisko FTP podnosi moc, którą utrzymasz przez godzinę."
     }
   },
   "category": "freestyle",

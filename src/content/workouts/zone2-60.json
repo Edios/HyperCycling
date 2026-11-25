@@ -1,15 +1,15 @@
 {
   "id": "zone2-60",
   "name": "Zone 2 Hour",
-  "description": "A full hour of steady endurance riding. A short easy minute after each block gives you a chance to drink and shake out.",
+  "description": "A full hour of steady endurance riding. A short easy minute after each block gives you a chance to drink and shake out. Why: easy steady riding builds the aerobic base every other workout rests on.",
   "localized": {
     "en": {
       "name": "Zone 2 Hour",
-      "description": "A full hour of steady endurance riding. A short easy minute after each block gives you a chance to drink and shake out."
+      "description": "A full hour of steady endurance riding. A short easy minute after each block gives you a chance to drink and shake out. Why: easy steady riding builds the aerobic base every other workout rests on."
     },
     "pl": {
       "name": "Godzina w strefie 2",
-      "description": "Pełna godzina równej jazdy wytrzymałościowej. Krótka lekka minuta po każdym odcinku pozwala napić się i rozluźnić."
+      "description": "Pełna godzina równej jazdy wytrzymałościowej. Krótka lekka minuta po każdym odcinku pozwala napić się i rozluźnić. Po co: spokojna, równa jazda buduje bazę tlenową, na której opiera się każdy inny trening."
     }
   },
   "category": "freestyle",

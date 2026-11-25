@@ -1,15 +1,15 @@
 {
   "id": "vo2-5x3",
   "name": "VO2 5 x 3",
-  "description": "Five three-minute blocks aimed at your maximal oxygen uptake.",
+  "description": "Five three-minute blocks aimed at your maximal oxygen uptake. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks.",
   "localized": {
     "en": {
       "name": "VO2 5 x 3",
-      "description": "Five three-minute blocks aimed at your maximal oxygen uptake."
+      "description": "Five three-minute blocks aimed at your maximal oxygen uptake. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks."
     },
     "pl": {
       "name": "VO2 5 × 3",
-      "description": "Pięć trzyminutowych odcinków na maksymalny pobór tlenu."
+      "description": "Pięć trzyminutowych odcinków na maksymalny pobór tlenu. Po co: twarde interwały blisko maksymalnej mocy tlenowej podnoszą VO2max; dwa takie treningi tygodniowo wystarczą, by po kilku tygodniach to zauważyć."
     }
   },
   "category": "freestyle",

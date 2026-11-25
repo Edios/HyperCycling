@@ -1,15 +1,15 @@
 {
   "id": "first-over-unders",
   "name": "First Over-Unders",
-  "description": "Two sets of two cycles: 2 minutes over threshold and 1 minute under.",
+  "description": "Two sets of two cycles: 2 minutes over threshold and 1 minute under. Why: swinging above and below threshold teaches the body to clear and re-use fatigue while still working.",
   "localized": {
     "en": {
       "name": "First Over-Unders",
-      "description": "Two sets of two cycles: 2 minutes over threshold and 1 minute under."
+      "description": "Two sets of two cycles: 2 minutes over threshold and 1 minute under. Why: swinging above and below threshold teaches the body to clear and re-use fatigue while still working."
     },
     "pl": {
       "name": "Pierwsze over-under",
-      "description": "Dwie serie po dwa cykle: 2 minuty nad progiem i minuta poniżej."
+      "description": "Dwie serie po dwa cykle: 2 minuty nad progiem i minuta poniżej. Po co: przeskoki nad i pod progiem uczą ciało radzić sobie ze zmęczeniem, nie przerywając pracy."
     }
   },
   "category": "freestyle",

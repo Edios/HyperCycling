@@ -1,15 +1,15 @@
 {
   "id": "over-unders-2-1",
   "name": "Over-Unders 2-1",
-  "description": "Two minutes just under threshold, one minute just over, twice in a row, then a rest. Three rounds teach you to clear fatigue while riding hard.",
+  "description": "Two minutes just under threshold, one minute just over, twice in a row, then a rest. Three rounds teach you to clear fatigue while riding hard. Why: swinging above and below threshold teaches the body to clear and re-use fatigue while still working.",
   "localized": {
     "en": {
       "name": "Over-Unders 2-1",
-      "description": "Two minutes just under threshold, one minute just over, twice in a row, then a rest. Three rounds teach you to clear fatigue while riding hard."
+      "description": "Two minutes just under threshold, one minute just over, twice in a row, then a rest. Three rounds teach you to clear fatigue while riding hard. Why: swinging above and below threshold teaches the body to clear and re-use fatigue while still working."
     },
     "pl": {
       "name": "Over-under 2-1",
-      "description": "Dwie minuty tuż pod progiem, minuta tuż nad nim, dwa razy z rzędu, potem przerwa. Trzy rundy uczą radzić sobie ze zmęczeniem przy mocnej jeździe."
+      "description": "Dwie minuty tuż pod progiem, minuta tuż nad nim, dwa razy z rzędu, potem przerwa. Trzy rundy uczą radzić sobie ze zmęczeniem przy mocnej jeździe. Po co: przeskoki nad i pod progiem uczą ciało radzić sobie ze zmęczeniem, nie przerywając pracy."
     }
   },
   "category": "freestyle",

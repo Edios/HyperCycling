@@ -1,15 +1,15 @@
 {
   "id": "mixed-surges-60",
   "name": "Tempo with Surges",
-  "description": "Steady tempo riding broken by a short surge, like a group ride. Four rounds, each with a breather.",
+  "description": "Steady tempo riding broken by a short surge, like a group ride. Four rounds, each with a breather. Why: short all-out efforts train leg speed and power.",
   "localized": {
     "en": {
       "name": "Tempo with Surges",
-      "description": "Steady tempo riding broken by a short surge, like a group ride. Four rounds, each with a breather."
+      "description": "Steady tempo riding broken by a short surge, like a group ride. Four rounds, each with a breather. Why: short all-out efforts train leg speed and power."
     },
     "pl": {
       "name": "Tempo z zrywami",
-      "description": "Równe tempo przerywane krótkim zrywem, jak na jeździe grupowej. Cztery rundy, każda z oddechem."
+      "description": "Równe tempo przerywane krótkim zrywem, jak na jeździe grupowej. Cztery rundy, każda z oddechem. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg."
     }
   },
   "category": "freestyle",

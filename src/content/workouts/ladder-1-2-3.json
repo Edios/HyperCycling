@@ -1,15 +1,15 @@
 {
   "id": "ladder-1-2-3",
   "name": "Steps 1-2-3",
-  "description": "Three rounds of 1, 2 and 3 minute steps at rising power.",
+  "description": "Three rounds of 1, 2 and 3 minute steps at rising power. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks.",
   "localized": {
     "en": {
       "name": "Steps 1-2-3",
-      "description": "Three rounds of 1, 2 and 3 minute steps at rising power."
+      "description": "Three rounds of 1, 2 and 3 minute steps at rising power. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks."
     },
     "pl": {
       "name": "Schody 1-2-3",
-      "description": "Trzy rundy z odcinkami 1, 2 i 3 minuty o rosnącej mocy."
+      "description": "Trzy rundy z odcinkami 1, 2 i 3 minuty o rosnącej mocy. Po co: twarde interwały blisko maksymalnej mocy tlenowej podnoszą VO2max; dwa takie treningi tygodniowo wystarczą, by po kilku tygodniach to zauważyć."
     }
   },
   "category": "freestyle",

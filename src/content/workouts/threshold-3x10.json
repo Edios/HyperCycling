@@ -1,15 +1,15 @@
 {
   "id": "threshold-3x10",
   "name": "Threshold 3 x 10",
-  "description": "Three ten-minute blocks right at threshold.",
+  "description": "Three ten-minute blocks right at threshold. Why: time close to FTP raises the power you can hold for an hour.",
   "localized": {
     "en": {
       "name": "Threshold 3 x 10",
-      "description": "Three ten-minute blocks right at threshold."
+      "description": "Three ten-minute blocks right at threshold. Why: time close to FTP raises the power you can hold for an hour."
     },
     "pl": {
       "name": "Próg 3 × 10",
-      "description": "Trzy dziesięciominutowe odcinki na progu."
+      "description": "Trzy dziesięciominutowe odcinki na progu. Po co: czas blisko FTP podnosi moc, którą utrzymasz przez godzinę."
     }
   },
   "category": "freestyle",

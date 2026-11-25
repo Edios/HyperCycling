@@ -1,15 +1,15 @@
 {
   "id": "staircase",
   "name": "Staircase",
-  "description": "Climb a staircase of four-minute steps from easy to just over threshold, then walk back down.",
+  "description": "Climb a staircase of four-minute steps from easy to just over threshold, then walk back down. Why: time close to FTP raises the power you can hold for an hour.",
   "localized": {
     "en": {
       "name": "Staircase",
-      "description": "Climb a staircase of four-minute steps from easy to just over threshold, then walk back down."
+      "description": "Climb a staircase of four-minute steps from easy to just over threshold, then walk back down. Why: time close to FTP raises the power you can hold for an hour."
     },
     "pl": {
       "name": "Schody",
-      "description": "Wchodzisz po schodach z czterominutowych stopni, od lekkiego tempa do tuż ponad próg, a potem schodzisz w dół."
+      "description": "Wchodzisz po schodach z czterominutowych stopni, od lekkiego tempa do tuż ponad próg, a potem schodzisz w dół. Po co: czas blisko FTP podnosi moc, którą utrzymasz przez godzinę."
     }
   },
   "category": "freestyle",

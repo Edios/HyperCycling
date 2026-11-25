@@ -1,15 +1,15 @@
 {
   "id": "thirty-fifteen",
   "name": "Thirty-Fifteen",
-  "description": "Two sets of twelve rounds of 30 seconds hard and 15 seconds easy.",
+  "description": "Two sets of twelve rounds of 30 seconds hard and 15 seconds easy. Why: 30 s hard, 15 s easy is the format in which Rønnestad found short intervals beating long ones in trained riders.",
   "localized": {
     "en": {
       "name": "Thirty-Fifteen",
-      "description": "Two sets of twelve rounds of 30 seconds hard and 15 seconds easy."
+      "description": "Two sets of twelve rounds of 30 seconds hard and 15 seconds easy. Why: 30 s hard, 15 s easy is the format in which Rønnestad found short intervals beating long ones in trained riders."
     },
     "pl": {
       "name": "Trzydzieści/piętnaście",
-      "description": "Dwie serie po dwanaście razy 30 sekund mocno i 15 sekund luzu."
+      "description": "Dwie serie po dwanaście razy 30 sekund mocno i 15 sekund luzu. Po co: 30 s mocno, 15 s lekko to format, w którym Rønnestad wykazał przewagę krótkich interwałów nad długimi u wytrenowanych."
     }
   },
   "category": "freestyle",

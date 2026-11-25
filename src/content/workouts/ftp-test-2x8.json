@@ -1,15 +1,15 @@
 {
   "id": "ftp-test-2x8",
   "name": "Two by Eight Test",
-  "description": "Two eight-minute all-in efforts with ten minutes of rest. Take the higher average and multiply by 90% for an estimate of FTP.",
+  "description": "Two eight-minute all-in efforts with ten minutes of rest. Take the higher average and multiply by 90% for an estimate of FTP. Why: your FTP sets the watt targets of every other workout, so it pays to measure it.",
   "localized": {
     "en": {
       "name": "Two by Eight Test",
-      "description": "Two eight-minute all-in efforts with ten minutes of rest. Take the higher average and multiply by 90% for an estimate of FTP."
+      "description": "Two eight-minute all-in efforts with ten minutes of rest. Take the higher average and multiply by 90% for an estimate of FTP. Why: your FTP sets the watt targets of every other workout, so it pays to measure it."
     },
     "pl": {
       "name": "Test 2 × 8 minut",
-      "description": "Dwa ośmiominutowe wysiłki na maksa z dziesięciominutową przerwą. Weź wyższą średnią i pomnóż przez 90%, by oszacować FTP."
+      "description": "Dwa ośmiominutowe wysiłki na maksa z dziesięciominutową przerwą. Weź wyższą średnią i pomnóż przez 90%, by oszacować FTP. Po co: Twoje FTP wyznacza cele watowe wszystkich innych treningów, więc warto je zmierzyć."
     }
   },
   "category": "freestyle",

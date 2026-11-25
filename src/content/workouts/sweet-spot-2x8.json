@@ -1,15 +1,15 @@
 {
   "id": "sweet-spot-2x8",
   "name": "Sweet Spot 2 × 8",
-  "description": "Two eight-minute sweet spot blocks with a gentle lead-in.",
+  "description": "Two eight-minute sweet spot blocks with a gentle lead-in. Why: sweet spot (about 88-92% FTP) is a popular compromise, much of the threshold benefit for less fatigue.",
   "localized": {
     "en": {
       "name": "Sweet Spot 2 × 8",
-      "description": "Two eight-minute sweet spot blocks with a gentle lead-in."
+      "description": "Two eight-minute sweet spot blocks with a gentle lead-in. Why: sweet spot (about 88-92% FTP) is a popular compromise, much of the threshold benefit for less fatigue."
     },
     "pl": {
       "name": "Sweet spot 2 × 8",
-      "description": "Dwa ośmiominutowe odcinki sweet spot z wolniejszym wstępem."
+      "description": "Dwa ośmiominutowe odcinki sweet spot z wolniejszym wstępem. Po co: sweet spot (ok. 88-92% FTP) to popularny kompromis: sporo korzyści progu przy mniejszym zmęczeniu."
     }
   },
   "category": "progres",

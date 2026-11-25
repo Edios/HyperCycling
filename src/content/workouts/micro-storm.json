@@ -1,15 +1,15 @@
 {
   "id": "micro-storm",
   "name": "Micro Storm",
-  "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy.",
+  "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy. Why: 30 s on, 30 s off keeps you near VO2max for many minutes; this is the friendlier take on Billat's 30/30.",
   "localized": {
     "en": {
       "name": "Micro Storm",
-      "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy."
+      "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy. Why: 30 s on, 30 s off keeps you near VO2max for many minutes; this is the friendlier take on Billat's 30/30."
     },
     "pl": {
       "name": "Mikroburza",
-      "description": "Trzy serie po dziesięć razy 30 sekund mocno i 30 sekund luzu."
+      "description": "Trzy serie po dziesięć razy 30 sekund mocno i 30 sekund luzu. Po co: 30 s mocno, 30 s lekko trzyma blisko VO2max przez wiele minut; to łagodniejsza wersja 30/30 Billat."
     }
   },
   "category": "freestyle",

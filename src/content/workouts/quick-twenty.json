@@ -1,15 +1,15 @@
 {
   "id": "quick-twenty",
   "name": "Quick Twenty",
-  "description": "Three rounds of three minutes of hard tempo finished with 30 seconds harder.",
+  "description": "Three rounds of three minutes of hard tempo finished with 30 seconds harder. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold.",
   "localized": {
     "en": {
       "name": "Quick Twenty",
-      "description": "Three rounds of three minutes of hard tempo finished with 30 seconds harder."
+      "description": "Three rounds of three minutes of hard tempo finished with 30 seconds harder. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold."
     },
     "pl": {
       "name": "Szybkie 20",
-      "description": "Trzy razy trzy minuty mocnego tempa zakończone 30 sekundami mocniej."
+      "description": "Trzy razy trzy minuty mocnego tempa zakończone 30 sekundami mocniej. Po co: tempo trenuje wytrzymałość w tempie, które da się utrzymać długo, przy mniejszym zmęczeniu niż próg."
     }
   },
   "category": "freestyle",

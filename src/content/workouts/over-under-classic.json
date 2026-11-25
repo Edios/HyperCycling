@@ -1,15 +1,15 @@
 {
   "id": "over-under-classic",
   "name": "Classic Over-Unders",
-  "description": "Nine minutes alternating just under and over threshold, three times.",
+  "description": "Nine minutes alternating just under and over threshold, three times. Why: swinging above and below threshold teaches the body to clear and re-use fatigue while still working.",
   "localized": {
     "en": {
       "name": "Classic Over-Unders",
-      "description": "Nine minutes alternating just under and over threshold, three times."
+      "description": "Nine minutes alternating just under and over threshold, three times. Why: swinging above and below threshold teaches the body to clear and re-use fatigue while still working."
     },
     "pl": {
       "name": "Over-under klasyk",
-      "description": "Dziewięć minut na przemian pod progiem i nad progiem, trzy razy."
+      "description": "Dziewięć minut na przemian pod progiem i nad progiem, trzy razy. Po co: przeskoki nad i pod progiem uczą ciało radzić sobie ze zmęczeniem, nie przerywając pracy."
     }
   },
   "category": "freestyle",
