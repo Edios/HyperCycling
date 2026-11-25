@@ -35,6 +35,8 @@ export interface TrainingView {
   pulse: boolean;
   /** Position the next block switches to, set only in the last seconds before the change. */
   upcomingPosition?: Position;
+  /** Whole seconds until that change (the badge counts them down). */
+  upcomingInSec?: number;
 }
 
 const PULSE_SEC = 3;
@@ -81,6 +83,7 @@ export function buildTrainingView(
   const nextPosition = next ? positionOf(next) : undefined;
   if (nextPosition && nextPosition !== view.position && remainingSec <= POSITION_WARN_SEC) {
     view.upcomingPosition = nextPosition;
+    view.upcomingInSec = Math.ceil(remainingSec);
   }
   return view;
 }

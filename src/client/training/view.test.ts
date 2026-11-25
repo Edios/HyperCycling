@@ -37,6 +37,10 @@ describe('upcoming position change (R6)', () => {
   it('announces standing a few seconds before a seated block ends', () => {
     expect(view(0, 5)?.upcomingPosition).toBe('standing');
   });
+  it('counts the seconds to the change (R4b: stand in X s)', () => {
+    expect(view(0, 5)?.upcomingInSec).toBe(5);
+    expect(view(0, 30)?.upcomingInSec).toBeUndefined();
+  });
   it('is silent while the change is still far away', () => {
     expect(view(0, 30)?.upcomingPosition).toBeUndefined();
   });

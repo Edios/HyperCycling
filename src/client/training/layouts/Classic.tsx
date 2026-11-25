@@ -77,6 +77,7 @@ export function Classic({
           {...(view.next ? { next: view.next } : {})}
           position={view.position}
           upcomingPosition={view.upcomingPosition}
+          upcomingInSec={view.upcomingInSec}
           step={{ index: view.stepIndex, count: view.stepCount }}
           motion={!reducedMotion}
           showFtp={showsWatts}

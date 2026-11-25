@@ -40,6 +40,15 @@ describe('PositionBadge', () => {
     expect(badge).toHaveAccessibleName(/seated.*standing/i);
   });
 
+  it('counts down to the change in both languages (R4b)', () => {
+    const { rerender } = render(<PositionBadge position="seated" upcoming="standing" inSec={5} />);
+    expect(screen.getByTestId('position-badge')).toHaveTextContent('Standing in 5 s');
+    expect(screen.getByTestId('position-badge')).toHaveAccessibleName(/in 5 s/);
+    setLang('pl');
+    rerender(<PositionBadge position="seated" upcoming="standing" inSec={5} />);
+    expect(screen.getByTestId('position-badge')).toHaveTextContent('Stojąc za 5 s');
+  });
+
   it('shows no highlight when no change is coming', () => {
     render(<PositionBadge position="seated" />);
     const badge = screen.getByTestId('position-badge');

@@ -56,6 +56,7 @@ export function OverlayHud({
       {...(view.next ? { next: view.next } : {})}
       position={view.position}
       upcomingPosition={view.upcomingPosition}
+      upcomingInSec={view.upcomingInSec}
       step={{ index: view.stepIndex, count: view.stepCount }}
       showFtp={showsWatts}
       {...(trainer ? { trainer } : {})}
