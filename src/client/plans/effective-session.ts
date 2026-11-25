@@ -25,3 +25,19 @@ export function effectiveSession(
   const alt = plan.weeks[week - 1]?.progresAlt;
   return alt !== undefined && ftpTestKindOf(alt) === undefined ? alt : FALLBACK_PROGRES_ID;
 }
+
+/**
+ * The week's `progresAlt` offered by Swap on a progres slot: only when it differs from the current
+ * session, and never an FTP test for a bike that shows no watts (it could not be ridden).
+ */
+export function swapAlternativeId(
+  plan: Plan,
+  week: number,
+  currentId: string,
+  equipment: Equipment,
+): string | undefined {
+  const alt = plan.weeks[week - 1]?.progresAlt;
+  if (alt === undefined || alt === currentId) return undefined;
+  if (ftpTestKindOf(alt) !== undefined && !equipment.showsWatts) return undefined;
+  return alt;
+}

@@ -47,7 +47,14 @@ const cards = () => screen.getAllByTestId('workout-card');
 describe('FreestyleTab', () => {
   it('nudges toward an easier day after a recent hard ride (R4b)', async () => {
     const hard = builtinWorkouts.find((w) => w.tags.includes('vo2')) as Workout;
-    logs.list = [{ workoutId: hard.id, endedAt: new Date(Date.now() - 3_600_000).toISOString() }];
+    logs.list = [
+      {
+        workoutId: hard.id,
+        endedAt: new Date(Date.now() - 3_600_000).toISOString(),
+        completed: true,
+        riddenSec: 1800,
+      },
+    ];
     renderTab();
     const hint = await screen.findByTestId('rotation-hint');
     expect(hint).toHaveTextContent(/Last ride: .*easier/);

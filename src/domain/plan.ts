@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LANGS, type Lang, type Localized } from './lang';
+import { ftpTestKindOf } from './ftp-test';
 import { flattenWorkout } from './segments';
 import type { Workout } from './workout';
 
@@ -152,7 +153,11 @@ export function workoutOf(
   layout: PlanLayout,
 ): string | undefined {
   if (slot === 'freestyle' && layout === 'doubleProgres') {
-    return plan.weeks[week - 1]?.progresAlt ?? sessionOf(plan, week, 'progres');
+    const alt = plan.weeks[week - 1]?.progresAlt;
+    // A test is never the second ride of a week (it is the opt-in swap of the progres slot).
+    if (alt !== undefined && ftpTestKindOf(alt) !== undefined)
+      return sessionOf(plan, week, 'freestyle');
+    return alt ?? sessionOf(plan, week, 'progres');
   }
   return sessionOf(plan, week, slot);
 }

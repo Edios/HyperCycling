@@ -2,7 +2,14 @@ import type { Segment } from '../../domain/segments';
 import { describe, expect, it } from 'vitest';
 import type { Workout } from '../../domain/workout';
 import { builtinWorkouts } from '../data/builtin';
-import { difficultyOf, filterLibrary, normalizeText, primaryTag, rotationHint } from './model';
+import {
+  countsAsRide,
+  difficultyOf,
+  filterLibrary,
+  normalizeText,
+  primaryTag,
+  rotationHint,
+} from './model';
 
 const base = builtinWorkouts[0] as Workout;
 const make = (over: Partial<Workout>): Workout => ({ ...base, ...over });
@@ -102,5 +109,13 @@ describe('rotationHint (R4b)', () => {
   });
   it('does not guess for the rider own workouts', () => {
     expect(rotationHint(mineWk, daysAgo(1), NOW)).toBeNull();
+  });
+});
+
+describe('countsAsRide (R4b review)', () => {
+  it('ignores a ride stopped after a few seconds', () => {
+    expect(countsAsRide({ completed: false, riddenSec: 10 })).toBe(false);
+    expect(countsAsRide({ completed: false, riddenSec: 600 })).toBe(true);
+    expect(countsAsRide({ completed: true, riddenSec: 30 })).toBe(true);
   });
 });

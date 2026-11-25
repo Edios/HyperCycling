@@ -114,6 +114,11 @@ describe('nextSession', () => {
     const p = progress({ layout: 'doubleProgres' }, [entry(1, 'progres')]);
     expect(nextSession(plan(), p)).toMatchObject({ slot: 'freestyle', workoutId: 'w1alt' });
   });
+  it('doubleProgres never serves an FTP test as the second ride, the week freestyle instead', () => {
+    const weeks = plan().weeks.map((w, i) => (i === 0 ? { ...w, progresAlt: 'ftp-test-20' } : w));
+    const p = progress({ layout: 'doubleProgres' }, [entry(1, 'progres')]);
+    expect(nextSession(plan({ weeks }), p)).toMatchObject({ slot: 'freestyle', workoutId: 'w1f' });
+  });
   it('doubleProgres falls back to the week progres without progresAlt', () => {
     const p = progress({ layout: 'doubleProgres' }, [
       entry(1, 'progres'),

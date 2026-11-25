@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Plan } from '../../domain/plan';
 import { METERED_SETTINGS } from '../test-settings';
-import { effectiveSession, FALLBACK_PROGRES_ID } from './effective-session';
+import { effectiveSession, FALLBACK_PROGRES_ID, swapAlternativeId } from './effective-session';
 
 const RAMP_TEST_ID = 'ramp-test';
 
@@ -121,5 +121,20 @@ describe('effectiveSession', () => {
 
   it('is undefined for a week that does not exist', () => {
     expect(effectiveSession(plan, 9, 'progres', watts)).toBeUndefined();
+  });
+});
+
+describe('swapAlternativeId (R4b review)', () => {
+  it('offers the week alternative when it differs from the current session', () => {
+    expect(swapAlternativeId(plan, 3, 'sweet', watts)).toBe('alt-3');
+    expect(swapAlternativeId(plan, 3, 'alt-3', watts)).toBeUndefined();
+  });
+  it('does not offer an FTP test to a bike without a power reading', () => {
+    const testAlt: Plan = {
+      ...plan,
+      weeks: [{ ...plan.weeks[2]!, progresAlt: 'ftp-test-20' }],
+    };
+    expect(swapAlternativeId(testAlt, 1, 'sweet', watts)).toBe('ftp-test-20');
+    expect(swapAlternativeId(testAlt, 1, 'sweet', noWatts)).toBeUndefined();
   });
 });
