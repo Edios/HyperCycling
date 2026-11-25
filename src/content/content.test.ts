@@ -278,6 +278,16 @@ describe('built-in plans', () => {
     }
   });
 
+  it('a light week never opens with an FTP test (the test is an opt-in alternative there)', () => {
+    for (const p of builtinPlans) {
+      p.weeks.forEach((week, i) => {
+        if (!week.light) return;
+        const progres = week.sessions.find((s) => s.slot === 'progres')?.workoutId ?? '';
+        expect(get(progres).tags, `${p.id} week ${i + 1}: ${progres}`).not.toContain('test');
+      });
+    }
+  });
+
   it('light weeks carry at most 75 % of the previous week hard minutes', () => {
     for (const p of builtinPlans) {
       const load = weeklyLoad(p, get);

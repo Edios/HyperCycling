@@ -38,10 +38,15 @@ describe('PlanCalendar', () => {
     expect(within(first).getByTestId('calendar-test')).toHaveTextContent('Test');
   });
 
-  it('drops the week-1 test when skipFirstTest is set but keeps the later re-test', () => {
+  it('drops the week-1 test when skipFirstTest is set', () => {
     renderCal({ skipFirstTest: true });
+    expect(screen.queryAllByTestId('calendar-test')).toHaveLength(0);
+  });
+
+  it('keeps a later re-test where the plan has one (back-to-form ends with a test)', () => {
+    const backToForm = builtinPlans.find((p) => p.id === 'back-to-form') as Plan;
+    renderCal({ skipFirstTest: true }, watts, backToForm);
     const rows = screen.getAllByTestId('calendar-week');
-    expect(within(rows[0] as HTMLElement).queryByTestId('calendar-test')).toBeNull();
     expect(within(rows.at(-1) as HTMLElement).getByTestId('calendar-test')).toBeInTheDocument();
   });
 
