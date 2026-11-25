@@ -90,7 +90,8 @@ test.describe('Match music', () => {
     expect(frameBox?.width).toBeGreaterThanOrEqual(200);
     expect(frameBox?.height).toBeGreaterThanOrEqual(200);
     await expect(page.getByTestId('music-player-name')).not.toBeEmpty();
-    expect((await ytCalls(page)).some((c) => c === 'volume:30')).toBe(true);
+    // The volume is set when the player reports it is ready, a moment after the frame shows.
+    await expect.poll(async () => (await ytCalls(page)).includes('volume:30')).toBe(true);
     await shot(page, 'soundtrack-step2-preview-pc');
     await page.getByTestId('soundtrack-play').first().click(); // the same button stops it
     await expect(dock).toHaveAttribute('data-visible', 'false');
@@ -196,7 +197,7 @@ test.describe('Match music', () => {
     await showPlayer(page);
 
     // The song of the ride is from the matched plan, in YouTube's player.
-    expect((await ytCalls(page))[0]).toMatch(/^create:/);
+    await expect.poll(async () => (await ytCalls(page))[0]).toMatch(/^create:/);
 
     // Hide it with its own button: the music goes on (nothing paused), the choice is remembered.
     const callsBefore = (await ytCalls(page)).filter((c) => c === 'pause').length;

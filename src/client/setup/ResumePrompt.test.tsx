@@ -11,8 +11,10 @@ interface Db {
   progress?: PlanProgress;
   players: Player[];
   cleared: number;
+  /** How many times the component asked for the stored session. */
+  reads: number;
 }
-const db: Db = { players: [], cleared: 0 };
+const db: Db = { players: [], cleared: 0, reads: 0 };
 
 vi.mock('../data/repositories', () => ({
   getRepositories: () =>
@@ -22,7 +24,10 @@ vi.mock('../data/repositories', () => ({
       players: { list: () => Promise.resolve(db.players) },
       planProgress: { get: () => Promise.resolve(db.progress) },
       activeSession: {
-        get: () => Promise.resolve(db.active),
+        get: () => {
+          db.reads++;
+          return Promise.resolve(db.active);
+        },
         clear: () => {
           db.cleared++;
           db.active = undefined;
@@ -78,6 +83,7 @@ beforeEach(() => {
   db.progress = undefined;
   db.players = [ania];
   db.cleared = 0;
+  db.reads = 0;
   resetSettingsForTests();
   useSessionStore.setState({ runtime: undefined });
 });
@@ -123,7 +129,9 @@ describe('ResumePrompt', () => {
   it('shows nothing without an interrupted session', async () => {
     renderApp();
     await screen.findByTestId('where');
-    await new Promise((r) => setTimeout(r, 50));
+    // Not a fixed sleep: wait until the prompt has read the (empty) store, then let it settle.
+    await waitFor(() => expect(db.reads).toBeGreaterThan(0));
+    await act(async () => {});
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
