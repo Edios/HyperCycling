@@ -1,15 +1,15 @@
 {
   "id": "forty-twenty",
   "name": "40/20",
-  "description": "Two sets of eight rounds of 40 seconds hard and 20 seconds easy. Why: short hard-easy repeats keep you near VO2max for a long total time; Rønnestad's work found 30/15 beats long intervals in trained riders.",
+  "description": "Two sets of eight rounds of 40 seconds hard and 20 seconds easy. Why: short hard-easy repeats keep you near VO2max for a long total time while each effort stays controlled.",
   "localized": {
     "en": {
       "name": "40/20",
-      "description": "Two sets of eight rounds of 40 seconds hard and 20 seconds easy. Why: short hard-easy repeats keep you near VO2max for a long total time; Rønnestad's work found 30/15 beats long intervals in trained riders."
+      "description": "Two sets of eight rounds of 40 seconds hard and 20 seconds easy. Why: short hard-easy repeats keep you near VO2max for a long total time while each effort stays controlled."
     },
     "pl": {
       "name": "40/20",
-      "description": "Dwie serie po osiem razy 40 sekund mocno i 20 sekund luzu. Po co: krótkie powtórzenia mocno-lekko utrzymują blisko VO2max przez długi łączny czas; w badaniach Rønnestada 30/15 pokonało długie interwały u wytrenowanych."
+      "description": "Dwie serie po osiem razy 40 sekund mocno i 20 sekund luzu. Po co: krótkie powtórzenia mocno-lekko utrzymują blisko VO2max przez długi łączny czas, a każdy wysiłek pozostaje pod kontrolą."
     }
   },
   "category": "freestyle",

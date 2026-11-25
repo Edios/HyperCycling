@@ -1,15 +1,15 @@
 {
   "id": "climb-and-attack",
   "name": "Climb and Attack",
-  "description": "Five songs: three with a climb and a growing sprint, one with chorus surges and one with surprise sprints. Two of the sprints are ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
+  "description": "Five songs: three with a climb and a growing sprint, one with chorus surges and one with surprise sprints. Two of the sprints are ridden standing. Why: short all-out efforts train leg speed and power.",
   "localized": {
     "en": {
       "name": "Climb and Attack",
-      "description": "Five songs: three with a climb and a growing sprint, one with chorus surges and one with surprise sprints. Two of the sprints are ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
+      "description": "Five songs: three with a climb and a growing sprint, one with chorus surges and one with surprise sprints. Two of the sprints are ridden standing. Why: short all-out efforts train leg speed and power."
     },
     "pl": {
       "name": "Podjazd i atak",
-      "description": "Pięć piosenek: trzy z podjazdem i coraz dłuższym sprintem, jedna z atakami w refrenach i jedna z niespodziewanymi sprintami. Dwa sprinty jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
+      "description": "Pięć piosenek: trzy z podjazdem i coraz dłuższym sprintem, jedna z atakami w refrenach i jedna z niespodziewanymi sprintami. Dwa sprinty jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg."
     }
   },
   "category": "freestyle",

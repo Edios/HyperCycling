@@ -1,15 +1,15 @@
 {
   "id": "sweet-spot-3x10",
   "name": "Sweet Spot 3 x 10",
-  "description": "Three ten-minute sweet spot blocks, a core fitness builder. Why: sweet spot (about 88-92 % FTP) is a popular compromise, much of the threshold benefit for less fatigue.",
+  "description": "Three ten-minute sweet spot blocks, a core fitness builder. Why: sweet spot (about 88-92% FTP) is a popular compromise, much of the threshold benefit for less fatigue.",
   "localized": {
     "en": {
       "name": "Sweet Spot 3 x 10",
-      "description": "Three ten-minute sweet spot blocks, a core fitness builder. Why: sweet spot (about 88-92 % FTP) is a popular compromise, much of the threshold benefit for less fatigue."
+      "description": "Three ten-minute sweet spot blocks, a core fitness builder. Why: sweet spot (about 88-92% FTP) is a popular compromise, much of the threshold benefit for less fatigue."
     },
     "pl": {
       "name": "Sweet spot 3 × 10",
-      "description": "Trzy dziesięciominutowe odcinki sweet spot, podstawowy trening budujący formę. Po co: sweet spot (ok. 88-92 % FTP) to popularny kompromis: sporo korzyści progu przy mniejszym zmęczeniu."
+      "description": "Trzy dziesięciominutowe odcinki sweet spot, podstawowy trening budujący formę. Po co: sweet spot (ok. 88-92% FTP) to popularny kompromis: sporo korzyści progu przy mniejszym zmęczeniu."
     }
   },
   "category": "freestyle",

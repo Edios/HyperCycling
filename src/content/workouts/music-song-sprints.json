@@ -1,15 +1,15 @@
 {
   "id": "music-song-sprints",
   "name": "Song and Sprint",
-  "description": "A steady song, then a thirty-second sprint on the last chorus, six times. Simple, loud and fun. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
+  "description": "A steady song, then a thirty-second sprint on the last chorus, six times. Simple, loud and fun. Why: short all-out efforts train leg speed and power.",
   "localized": {
     "en": {
       "name": "Song and Sprint",
-      "description": "A steady song, then a thirty-second sprint on the last chorus, six times. Simple, loud and fun. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
+      "description": "A steady song, then a thirty-second sprint on the last chorus, six times. Simple, loud and fun. Why: short all-out efforts train leg speed and power."
     },
     "pl": {
       "name": "Piosenka i sprint",
-      "description": "Równa piosenka, potem trzydziestosekundowy sprint na ostatnim refrenie, sześć razy. Prosto, głośno i wesoło. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
+      "description": "Równa piosenka, potem trzydziestosekundowy sprint na ostatnim refrenie, sześć razy. Prosto, głośno i wesoło. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg."
     }
   },
   "category": "freestyle",

@@ -1,15 +1,15 @@
 {
   "id": "ladder-10-20-30",
   "name": "Ladder 10-20-30",
-  "description": "Eight rounds of short bursts of 10, 20 and 30 seconds with equal rest. The 10-second sprint is ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
+  "description": "Eight rounds of short bursts of 10, 20 and 30 seconds with equal rest. The 10-second sprint is ridden standing. Why: short all-out efforts train leg speed and power.",
   "localized": {
     "en": {
       "name": "Ladder 10-20-30",
-      "description": "Eight rounds of short bursts of 10, 20 and 30 seconds with equal rest. The 10-second sprint is ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
+      "description": "Eight rounds of short bursts of 10, 20 and 30 seconds with equal rest. The 10-second sprint is ridden standing. Why: short all-out efforts train leg speed and power."
     },
     "pl": {
       "name": "Drabinka 10-20-30",
-      "description": "Osiem rund krótkich zrywów 10, 20 i 30 sekund z równą przerwą. Sprint 10 s jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
+      "description": "Osiem rund krótkich zrywów 10, 20 i 30 sekund z równą przerwą. Sprint 10 s jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg."
     }
   },
   "category": "freestyle",

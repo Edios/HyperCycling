@@ -1,15 +1,15 @@
 {
   "id": "standing-climbs",
   "name": "Standing Climbs",
-  "description": "Five four-minute climbs, switching every minute between seated and standing. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
+  "description": "Five four-minute climbs, switching every minute between seated and standing. Why: heavy gear and low cadence build leg strength; the standing parts change which muscles do the work.",
   "localized": {
     "en": {
       "name": "Standing Climbs",
-      "description": "Five four-minute climbs, switching every minute between seated and standing. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
+      "description": "Five four-minute climbs, switching every minute between seated and standing. Why: heavy gear and low cadence build leg strength; the standing parts change which muscles do the work."
     },
     "pl": {
       "name": "Podjazdy na stojąco",
-      "description": "Pięć czterominutowych podjazdów, co minutę zmiana: siedząc, stojąc. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
+      "description": "Pięć czterominutowych podjazdów, co minutę zmiana: siedząc, stojąc. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; fragmenty na stojąco zmieniają to, które mięśnie pracują."
     }
   },
   "category": "freestyle",

@@ -1,15 +1,15 @@
 {
   "id": "thirty-fifteen-2x10",
   "name": "Thirty-Fifteen 2 x 10",
-  "description": "Two sets of ten rounds of 30 seconds hard and 15 seconds easy. Why: short hard-easy repeats keep you near VO2max for a long total time; Rønnestad's work found 30/15 beats long intervals in trained riders.",
+  "description": "Two sets of ten rounds of 30 seconds hard and 15 seconds easy. Why: 30 s hard, 15 s easy is the format in which Rønnestad found short intervals beating long ones in trained riders.",
   "localized": {
     "en": {
       "name": "Thirty-Fifteen 2 x 10",
-      "description": "Two sets of ten rounds of 30 seconds hard and 15 seconds easy. Why: short hard-easy repeats keep you near VO2max for a long total time; Rønnestad's work found 30/15 beats long intervals in trained riders."
+      "description": "Two sets of ten rounds of 30 seconds hard and 15 seconds easy. Why: 30 s hard, 15 s easy is the format in which Rønnestad found short intervals beating long ones in trained riders."
     },
     "pl": {
       "name": "Trzydzieści/piętnaście 2 × 10",
-      "description": "Dwie serie po dziesięć razy 30 sekund mocno i 15 sekund luzu. Po co: krótkie powtórzenia mocno-lekko utrzymują blisko VO2max przez długi łączny czas; w badaniach Rønnestada 30/15 pokonało długie interwały u wytrenowanych."
+      "description": "Dwie serie po dziesięć razy 30 sekund mocno i 15 sekund luzu. Po co: 30 s mocno, 15 s lekko to format, w którym Rønnestad wykazał przewagę krótkich interwałów nad długimi u wytrenowanych."
     }
   },
   "category": "freestyle",

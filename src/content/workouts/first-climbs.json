@@ -1,15 +1,15 @@
 {
   "id": "first-climbs",
   "name": "First Climbs",
-  "description": "Four four-minute climbs at low cadence, standing for the last minute. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
+  "description": "Four four-minute climbs at low cadence, standing for the last minute. Why: heavy gear and low cadence build leg strength; the standing parts change which muscles do the work.",
   "localized": {
     "en": {
       "name": "First Climbs",
-      "description": "Four four-minute climbs at low cadence, standing for the last minute. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
+      "description": "Four four-minute climbs at low cadence, standing for the last minute. Why: heavy gear and low cadence build leg strength; the standing parts change which muscles do the work."
     },
     "pl": {
       "name": "Pierwsze podjazdy",
-      "description": "Cztery czterominutowe podjazdy na niskiej kadencji, ostatnia minuta na stojąco. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
+      "description": "Cztery czterominutowe podjazdy na niskiej kadencji, ostatnia minuta na stojąco. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; fragmenty na stojąco zmieniają to, które mięśnie pracują."
     }
   },
   "category": "freestyle",

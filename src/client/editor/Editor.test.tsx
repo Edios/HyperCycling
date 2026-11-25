@@ -733,7 +733,7 @@ describe('QA group B', () => {
       await screen.findByTestId('editor-screen');
       expect(screen.getByLabelText('Nazwa treningu')).toHaveValue('Ściana muzyczna');
       expect(screen.getByLabelText('Opis')).toHaveValue(
-        'Cztery piosenki: podjazd siedząc, podjazd stojąc, seria 20/20/20 i 30/30 z większym oporem.',
+        'Cztery piosenki: podjazd siedząc, podjazd stojąc, seria 20/20/20 i 30/30 z większym oporem. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; fragmenty na stojąco zmieniają to, które mięśnie pracują.',
       );
     } finally {
       setLang('en');

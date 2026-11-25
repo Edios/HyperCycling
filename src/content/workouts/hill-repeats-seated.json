@@ -1,15 +1,15 @@
 {
   "id": "hill-repeats-seated",
   "name": "Seated Hill Repeats",
-  "description": "Six four-minute climbs in the saddle at a low, strong cadence, then a roll back down. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
+  "description": "Six four-minute climbs in the saddle at a low, strong cadence, then a roll back down. Why: heavy gear and low cadence build leg strength, seated and steady.",
   "localized": {
     "en": {
       "name": "Seated Hill Repeats",
-      "description": "Six four-minute climbs in the saddle at a low, strong cadence, then a roll back down. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
+      "description": "Six four-minute climbs in the saddle at a low, strong cadence, then a roll back down. Why: heavy gear and low cadence build leg strength, seated and steady."
     },
     "pl": {
       "name": "Podjazdy siedząc",
-      "description": "Sześć czterominutowych podjazdów w siodle przy niskiej, mocnej kadencji, potem zjazd na regenerację. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
+      "description": "Sześć czterominutowych podjazdów w siodle przy niskiej, mocnej kadencji, potem zjazd na regenerację. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg, siedząc i równo."
     }
   },
   "category": "freestyle",

@@ -1,15 +1,15 @@
 {
   "id": "four-eights-102",
   "name": "Four Eights (102%)",
-  "description": "Four eight-minute blocks at 102% of FTP, the maintenance version. Why: 4 x 8 minutes near 105 % FTP is the format from Seiler's research on threshold and VO2 work.",
+  "description": "Four eight-minute blocks at 102% of FTP, the maintenance version. Why: eight-minute efforts at or just above FTP are the kind of block Seiler studied; they raise the power you can hold for an hour.",
   "localized": {
     "en": {
       "name": "Four Eights (102%)",
-      "description": "Four eight-minute blocks at 102% of FTP, the maintenance version. Why: 4 x 8 minutes near 105 % FTP is the format from Seiler's research on threshold and VO2 work."
+      "description": "Four eight-minute blocks at 102% of FTP, the maintenance version. Why: eight-minute efforts at or just above FTP are the kind of block Seiler studied; they raise the power you can hold for an hour."
     },
     "pl": {
       "name": "Cztery ósemki (102%)",
-      "description": "Cztery ośmiominutowe odcinki przy 102% FTP, wersja na stałą formę. Po co: 4 x 8 minut w okolicy 105 % FTP to format z badań Seilera nad pracą progową i VO2."
+      "description": "Cztery ośmiominutowe odcinki przy 102% FTP, wersja na stałą formę. Po co: ośmiominutowe wysiłki w okolicy FTP to rodzaj bloku badanego przez Seilera; podnoszą moc, którą utrzymasz przez godzinę."
     }
   },
   "category": "progres",

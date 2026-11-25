@@ -1,15 +1,15 @@
 {
   "id": "music-climbs",
   "name": "Climbs to Music",
-  "description": "Five three-minute climbs set to songs, each finishing standing up. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
+  "description": "Five three-minute climbs set to songs, each finishing standing up. Why: heavy gear and low cadence build leg strength; the standing parts change which muscles do the work.",
   "localized": {
     "en": {
       "name": "Climbs to Music",
-      "description": "Five three-minute climbs set to songs, each finishing standing up. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
+      "description": "Five three-minute climbs set to songs, each finishing standing up. Why: heavy gear and low cadence build leg strength; the standing parts change which muscles do the work."
     },
     "pl": {
       "name": "Podjazdy pod muzykę",
-      "description": "Pięć trzyminutowych podjazdów do piosenek, każdy kończy się na stojąco. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
+      "description": "Pięć trzyminutowych podjazdów do piosenek, każdy kończy się na stojąco. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; fragmenty na stojąco zmieniają to, które mięśnie pracują."
     }
   },
   "category": "freestyle",

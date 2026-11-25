@@ -1,15 +1,15 @@
 {
   "id": "micro-attacks",
   "name": "Micro Attacks",
-  "description": "Three sets of five 20-second bursts with easy riding in between. The first, third and fifth attack in each set are ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
+  "description": "Three sets of five 20-second bursts with easy riding in between. The first, third and fifth attack in each set are ridden standing. Why: short all-out efforts train leg speed and power.",
   "localized": {
     "en": {
       "name": "Micro Attacks",
-      "description": "Three sets of five 20-second bursts with easy riding in between. The first, third and fifth attack in each set are ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
+      "description": "Three sets of five 20-second bursts with easy riding in between. The first, third and fifth attack in each set are ridden standing. Why: short all-out efforts train leg speed and power."
     },
     "pl": {
       "name": "Mikroataki",
-      "description": "Trzy serie po pięć zrywów po 20 sekund, reszta spokojnie. Pierwszy, trzeci i piąty atak w serii jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
+      "description": "Trzy serie po pięć zrywów po 20 sekund, reszta spokojnie. Pierwszy, trzeci i piąty atak w serii jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg."
     }
   },
   "category": "freestyle",

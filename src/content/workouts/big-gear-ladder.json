@@ -1,15 +1,15 @@
 {
   "id": "big-gear-ladder",
   "name": "Big Gear Ladder",
-  "description": "Heavy-gear efforts of three, four, five and six minutes with three minutes of easy spinning between. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
+  "description": "Heavy-gear efforts of three, four, five and six minutes with three minutes of easy spinning between. Why: heavy gear and low cadence build leg strength, seated and steady.",
   "localized": {
     "en": {
       "name": "Big Gear Ladder",
-      "description": "Heavy-gear efforts of three, four, five and six minutes with three minutes of easy spinning between. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
+      "description": "Heavy-gear efforts of three, four, five and six minutes with three minutes of easy spinning between. Why: heavy gear and low cadence build leg strength, seated and steady."
     },
     "pl": {
       "name": "Drabina na ciężkim biegu",
-      "description": "Wysiłki na ciężkim przełożeniu po trzy, cztery, pięć i sześć minut, między nimi trzy minuty lekkiego kręcenia. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
+      "description": "Wysiłki na ciężkim przełożeniu po trzy, cztery, pięć i sześć minut, między nimi trzy minuty lekkiego kręcenia. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg, siedząc i równo."
     }
   },
   "category": "freestyle",

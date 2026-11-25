@@ -1,15 +1,15 @@
 {
   "id": "endurance-bursts",
   "name": "Endurance with Bursts",
-  "description": "Easy endurance riding with a short burst every seven minutes to keep things interesting. Every burst is ridden standing, a change of position in the long steady ride. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
+  "description": "Easy endurance riding with a short burst every seven minutes to keep things interesting. Every burst is ridden standing, a change of position in the long steady ride. Why: short all-out efforts train leg speed and power.",
   "localized": {
     "en": {
       "name": "Endurance with Bursts",
-      "description": "Easy endurance riding with a short burst every seven minutes to keep things interesting. Every burst is ridden standing, a change of position in the long steady ride. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
+      "description": "Easy endurance riding with a short burst every seven minutes to keep things interesting. Every burst is ridden standing, a change of position in the long steady ride. Why: short all-out efforts train leg speed and power."
     },
     "pl": {
       "name": "Wytrzymałość z wyskokami",
-      "description": "Spokojna jazda wytrzymałościowa z krótkim wyskokiem co siedem minut, żeby się nie nudzić. Każdy zryw jedziesz na stojąco: zmiana pozycji w długiej, równej jeździe. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
+      "description": "Spokojna jazda wytrzymałościowa z krótkim wyskokiem co siedem minut, żeby się nie nudzić. Każdy zryw jedziesz na stojąco: zmiana pozycji w długiej, równej jeździe. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg."
     }
   },
   "category": "freestyle",
