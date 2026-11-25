@@ -107,3 +107,33 @@ export function musicHintsOf(w: Workout): string[] {
     (h) => h !== '',
   );
 }
+
+const HARD_TAGS: readonly PrimaryTag[] = ['hiit', 'vo2', 'sprint', 'threshold', 'climb', 'test'];
+const EASY_TAGS: readonly PrimaryTag[] = ['endurance', 'recovery'];
+/** A hint only makes sense for a recent ride. */
+export const ROTATION_HINT_DAYS = 3;
+
+export interface RotationHint {
+  /** What the last ride was (its card tag). */
+  last: PrimaryTag;
+  /** The filter chip that shows the suggested kind of day. */
+  filter: FilterId;
+}
+
+/**
+ * A light "what next" nudge for Freestyle, not a generator: after a hard ride suggest an easy one,
+ * after an easy ride something sharper; nothing for middling sessions, old rides or own workouts.
+ */
+export function rotationHint(
+  last: Workout | undefined,
+  endedAt: string | undefined,
+  now: number,
+): RotationHint | null {
+  if (!last || endedAt === undefined) return null;
+  const age = now - Date.parse(endedAt);
+  if (!Number.isFinite(age) || age > ROTATION_HINT_DAYS * 86_400_000) return null;
+  const tag = primaryTag(last);
+  if (HARD_TAGS.includes(tag)) return { last: tag, filter: 'zone2' };
+  if (EASY_TAGS.includes(tag)) return { last: tag, filter: 'hiit' };
+  return null;
+}

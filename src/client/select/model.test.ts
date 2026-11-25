@@ -2,7 +2,7 @@ import type { Segment } from '../../domain/segments';
 import { describe, expect, it } from 'vitest';
 import type { Workout } from '../../domain/workout';
 import { builtinWorkouts } from '../data/builtin';
-import { difficultyOf, filterLibrary, normalizeText, primaryTag } from './model';
+import { difficultyOf, filterLibrary, normalizeText, primaryTag, rotationHint } from './model';
 
 const base = builtinWorkouts[0] as Workout;
 const make = (over: Partial<Workout>): Workout => ({ ...base, ...over });
@@ -78,5 +78,29 @@ describe('difficultyOf', () => {
   it('blends mean and peak effort, capped at 10', () => {
     expect(difficultyOf([seg(600, 4), seg(600, 8)])).toBe(7);
     expect(difficultyOf([seg(60, 10)])).toBe(10);
+  });
+});
+
+describe('rotationHint (R4b)', () => {
+  const NOW = Date.parse('2026-11-25T12:00:00Z');
+  const daysAgo = (d: number): string => new Date(NOW - d * 86_400_000).toISOString();
+  const vo2 = make({ id: 'v', tags: ['vo2'] });
+  const z2 = make({ id: 'z', tags: ['endurance'] });
+  const tempo = make({ id: 't', tags: ['tempo'] });
+  const mineWk = make({ id: 'm', tags: ['mine', 'vo2'] });
+
+  it('suggests an easier day after a hard one', () => {
+    expect(rotationHint(vo2, daysAgo(1), NOW)).toEqual({ last: 'vo2', filter: 'zone2' });
+  });
+  it('suggests something sharper after an easy day', () => {
+    expect(rotationHint(z2, daysAgo(1), NOW)).toEqual({ last: 'endurance', filter: 'hiit' });
+  });
+  it('stays quiet after a middling session, an old ride or no ride', () => {
+    expect(rotationHint(tempo, daysAgo(1), NOW)).toBeNull();
+    expect(rotationHint(vo2, daysAgo(5), NOW)).toBeNull();
+    expect(rotationHint(undefined, undefined, NOW)).toBeNull();
+  });
+  it('does not guess for the rider own workouts', () => {
+    expect(rotationHint(mineWk, daysAgo(1), NOW)).toBeNull();
   });
 });

@@ -274,3 +274,13 @@
     }
   }
 }
+
+.hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 1rem;
+  color: var(--mut);
+  line-height: 1.4;
+}
