@@ -7,6 +7,7 @@ import type { Workout } from '../../domain/workout';
 
 const mine = vi.hoisted(() => ({ list: [] as Workout[] }));
 const put = vi.hoisted(() => vi.fn());
+const logs = vi.hoisted(() => ({ list: [] as unknown[] }));
 
 vi.mock('../data/repositories', () => ({
   getRepositories: () =>
@@ -19,6 +20,7 @@ vi.mock('../data/repositories', () => ({
         },
       },
       settings: { get: () => Promise.resolve(undefined) },
+      sessionLogs: { list: () => Promise.resolve(logs.list) },
     }),
 }));
 
@@ -43,6 +45,24 @@ function renderTab() {
 const cards = () => screen.getAllByTestId('workout-card');
 
 describe('FreestyleTab', () => {
+  it('nudges toward an easier day after a recent hard ride (R4b)', async () => {
+    const hard = builtinWorkouts.find((w) => w.tags.includes('vo2')) as Workout;
+    logs.list = [{ workoutId: hard.id, endedAt: new Date(Date.now() - 3_600_000).toISOString() }];
+    renderTab();
+    const hint = await screen.findByTestId('rotation-hint');
+    expect(hint).toHaveTextContent(/Last ride: .*easier/);
+    fireEvent.click(within(hint).getByRole('button', { name: 'Show' }));
+    expect(screen.getByRole('button', { name: 'Zone 2' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByTestId('rotation-hint')).toBeNull();
+    logs.list = [];
+  });
+
+  it('shows no hint without a recent ride', async () => {
+    renderTab();
+    await screen.findAllByTestId('workout-card');
+    expect(screen.queryByTestId('rotation-hint')).toBeNull();
+  });
+
   it('shows every built-in workout by default', async () => {
     renderTab();
     await screen.findAllByTestId('workout-card');

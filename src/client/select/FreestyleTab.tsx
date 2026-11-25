@@ -6,7 +6,8 @@ import { useLibrary } from '../data/useLibrary';
 import { useLang, useT } from '../i18n';
 import { Button } from '../ui/Button';
 import { Chip } from '../ui/Chip';
-import { filterLibrary, FILTER_IDS, type FilterId } from './model';
+import { filterLibrary, FILTER_IDS, rotationHint, tagKey, type FilterId } from './model';
+import { useLastSession } from './useActivePlan';
 import { WorkoutList } from './WorkoutList';
 import { WorkoutPreview } from './WorkoutPreview';
 import styles from './FreestyleTab.module.css';
@@ -40,6 +41,12 @@ export function FreestyleTab() {
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const lastRide = useLastSession();
+  const [now] = useState(() => Date.now());
+  const hint = useMemo(() => {
+    const w = workouts.find((x) => x.id === lastRide?.workoutId);
+    return rotationHint(w, lastRide?.endedAt, now);
+  }, [workouts, lastRide, now]);
   const shown = useMemo(
     () => filterLibrary(workouts, filter, query, lang),
     [workouts, filter, query, lang],
@@ -131,6 +138,16 @@ export function FreestyleTab() {
           </Chip>
         ))}
       </div>
+      {hint && filter === 'all' && query.trim() === '' && (
+        <p className={styles.hint} data-testid="rotation-hint">
+          {t(hint.filter === 'zone2' ? 'free.hintAfterHard' : 'free.hintAfterEasy', {
+            kind: t(tagKey(hint.last)),
+          })}
+          <Button className={styles.link} onClick={() => setFilter(hint.filter)}>
+            {t('free.hintShow')}
+          </Button>
+        </p>
+      )}
       {!loaded ? (
         <div className={styles.ghosts} aria-busy="true" data-testid="freestyle-loading">
           <p className={styles.loading} role="status">
