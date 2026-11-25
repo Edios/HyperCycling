@@ -192,21 +192,22 @@ describe('Neon Grid owner picks', () => {
       "Swedish House Mafia - Don't You Worry Child",
       'Chase & Status - Blind Faith (Loadstar Remix)',
       'Pendulum - Witchcraft',
-      'Kavinsky - Nightcall',
+      // Nightcall was here a second time (audit P4); Holdin On is 90 BPM, 2:35, like the 2:30 slot.
+      'Flume - Holdin On',
       'Eric Prydz - Pjanoo',
       'Sub Focus - Tidal Wave',
       'Brian Eno - An Ending (Ascent) (Remastered 2019)',
     ]);
   });
 
-  it('flags the same song in slots 1 and 8 of Neon Grid 45 only', () => {
+  it('plays no song twice in any Neon Grid ride (audit P4: Nightcall was in slots 1 and 8 of 45)', () => {
     const e = (id: string) => builtinExperiences.find((x) => x.id === id)!;
-    expect(duplicateHintSlots(e('neon-grid-45'))).toEqual([[0, 7]]);
-    expect(duplicateHintSlots(e('neon-grid-45-light'))).toEqual([]);
-    expect(duplicateHintSlots(e('neon-grid-30'))).toEqual([]);
+    for (const id of ['neon-grid-45', 'neon-grid-45-light', 'neon-grid-30']) {
+      expect(duplicateHintSlots(e(id)), id).toEqual([]);
+    }
   });
 
-  it('gives the duplicate slot 8 the alternatives Awake and Starboy', () => {
+  it('keeps Awake and Starboy as the reserve of slot 8, now Holdin On', () => {
     const h = hints('neon-grid-45').find((x) => x.slot === 7)!;
     expect(h.alternatives?.map((a) => a.title)).toEqual(['Awake', 'Starboy']);
   });
@@ -225,11 +226,14 @@ describe('Neon Grid authored music queues', () => {
   const slotOf = (id: string, title: string): number =>
     hints(id).find((h) => h.title === title)!.slot;
 
-  it('queues the two songs for the slots with short songs, offsets and versions valid', () => {
+  it('keeps the second song of the long-song slots as the first reserve, versions valid', () => {
     for (const id of ['neon-grid-45', 'neon-grid-45-light']) {
       const dywc = hints(id).find((h) => h.title === "Don't You Worry Child")!;
       expect(dywc.version).toBe('extended');
-      expect(dywc.queue?.map((q) => q.title)).toEqual(['Clarity']);
+      // Audit P2: the 6:44 song fills the 6:00 slot, so Clarity never played from the queue: it is
+      // the first reserve now (the reserve plays when a song is gone or short, as before).
+      expect(dywc.queue).toBeUndefined();
+      expect(dywc.alternatives?.[0]?.title).toBe('Clarity');
     }
     for (const id of ['neon-grid-45', 'neon-grid-45-light', 'neon-grid-30']) {
       // One song fills the 4:00 sprint slot (a second track used to play for only 59 s).
@@ -239,7 +243,8 @@ describe('Neon Grid authored music queues', () => {
     }
     for (const id of ['neon-grid-45', 'neon-grid-30']) {
       const pj = hints(id).find((h) => h.title === 'Pjanoo')!;
-      expect(pj.queue?.map((q) => q.title)).toEqual(['Titanium']);
+      expect(pj.queue).toBeUndefined(); // the 7:31 song fills the 5:00 slot (audit P2)
+      expect(pj.alternatives?.[0]?.title).toBe('Titanium');
     }
     expect(slotOf('neon-grid-45', 'Pjanoo')).toBe(8);
   });

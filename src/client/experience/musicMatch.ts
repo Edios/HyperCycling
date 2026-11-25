@@ -5,7 +5,7 @@
  */
 import { slotQueue, songChain, type ChainOptions } from '../../domain/music-chain';
 import { fillSlotGap, type GapFill } from '../../domain/music-gaps';
-import { rankTracks } from '../../domain/bpm-match';
+import { cadenceFit, rankTracks } from '../../domain/bpm-match';
 import { pickPreferred, songKey, type PlanCandidate } from '../../domain/slot-plan';
 import {
   hintQueue,
@@ -14,6 +14,7 @@ import {
   type MusicHint,
   type SongSuggestion,
 } from '../../domain/experience';
+import { flattenWorkout } from '../../domain/segments';
 import {
   compileSongCues,
   songDurationSec,
@@ -350,12 +351,43 @@ export async function resolveAll(
   return out;
 }
 
+/** How long one stretch of a slot is ridden at one cadence. */
+export interface SlotCadence {
+  rpm: number;
+  sec: number;
+}
+
+/**
+ * The cadences the rider pedals in a slot, stretch by stretch (blocks without an rpm are left out).
+ * The tempo of a song is checked against these, not against the BPM range the slot was authored
+ * with: that range says what the author hoped for, the blocks say what the rider does.
+ */
+export function slotCadences(w: Workout, slotIndex: number): SlotCadence[] {
+  const slot = w.songs?.[slotIndex];
+  if (!slot) return [];
+  const a = w.blocks.findIndex((b) => b.id === slot.firstBlockId);
+  const z = w.blocks.findIndex((b) => b.id === slot.lastBlockId);
+  if (a < 0 || z < a) return [];
+  return flattenWorkout({ ...w, blocks: w.blocks.slice(a, z + 1) }).flatMap((s) =>
+    s.rpm !== undefined && s.durationSec > 0 ? [{ rpm: s.rpm, sec: s.durationSec }] : [],
+  );
+}
+
+/** A song counts as on the beat / close for a slot when it fits this share of the slot's time. */
+export const CADENCE_SHARE_OK = 0.8;
+
 export interface Annotation {
   /** Tempo used for the check: from the library cache when known, else the author's. */
   bpm?: number;
   bpmFrom?: 'library' | 'hint';
-  /** How the tempo suits the slot (2 BPM = 1 RPM); absent when unknown or the slot is beatless. */
+  /**
+   * How the tempo suits the slot (2 BPM = 1 RPM); absent when unknown or the slot is beatless.
+   * With the slot's cadences: 'on-beat' when it is on the beat for `CADENCE_SHARE_OK` of the time,
+   * 'close' when it fits (on the beat or close) for that much of it, else 'off'.
+   */
   bpmFit?: 'on-beat' | 'close' | 'off';
+  /** Share (0-1) of the slot's time in which the tempo fits the cadence; only with the cadences. */
+  bpmShare?: number;
   /** The song ends this many seconds before its slot does (add a second song with the same BPM). */
   shortBySec?: number;
 }
@@ -367,6 +399,8 @@ export function annotate(
   slotSec: number,
   range: readonly [number, number] | undefined,
   cache: ReadonlyMap<string, number>,
+  /** The cadences of the slot's blocks (`slotCadences`); without them the BPM range is used. */
+  cadences: readonly SlotCadence[] = [],
 ): Annotation {
   const out: Annotation = {};
   const cached = cache.get(option.ref.id);
@@ -374,7 +408,26 @@ export function annotate(
   if (bpm !== undefined && !hint.noBeat) {
     out.bpm = bpm;
     out.bpmFrom = cached !== undefined ? 'library' : 'hint';
-    if (range) {
+    const total = cadences.reduce((n, c) => n + c.sec, 0);
+    if (total > 0) {
+      let fits = 0;
+      let onBeat = 0;
+      for (const c of cadences) {
+        const f = cadenceFit(bpm, c.rpm);
+        if (f && f.verdict !== 'miss') {
+          fits += c.sec;
+          if (!f.close) onBeat += c.sec;
+        }
+      }
+      out.bpmShare = fits / total;
+      out.bpmFit =
+        onBeat / total >= CADENCE_SHARE_OK
+          ? 'on-beat'
+          : fits / total >= CADENCE_SHARE_OK
+            ? 'close'
+            : 'off';
+    } else if (range) {
+      // No cadence known (a slot of blocks without an rpm): the authored BPM range is all there is.
       const rpm = (range[0] + range[1]) / 4; // 2 BPM = 1 RPM
       const ranked = rankTracks([{ bpm }], rpm)[0];
       out.bpmFit = ranked ? ranked.match.fit : 'off';

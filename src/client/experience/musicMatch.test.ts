@@ -246,7 +246,7 @@ describe('annotate against the cadence of the slot blocks (P5)', () => {
   it('reads the cadences of a slot: rpm and seconds of every stretch, in order', () => {
     const c = slotCadences(workout, 0);
     expect(c.reduce((n, x) => n + x.sec, 0)).toBe(300);
-    expect([...new Set(c.map((x) => x.rpm))].sort()).toEqual([85, 90, 100]);
+    expect([...new Set(c.map((x) => x.rpm))].sort((a, b) => a - b)).toEqual([85, 90, 100]);
     expect(slotCadences(workout, 99)).toEqual([]);
   });
 
