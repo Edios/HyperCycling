@@ -1,15 +1,15 @@
 {
   "id": "sweet-spot-2x15",
   "name": "Sweet Spot 2 × 15",
-  "description": "Two long, even sweet spot blocks of fifteen minutes each.",
+  "description": "Two long, even sweet spot blocks of fifteen minutes each. Why: sweet spot (about 88-92 % FTP) is a popular compromise, much of the threshold benefit for less fatigue.",
   "localized": {
     "en": {
       "name": "Sweet Spot 2 × 15",
-      "description": "Two long, even sweet spot blocks of fifteen minutes each."
+      "description": "Two long, even sweet spot blocks of fifteen minutes each. Why: sweet spot (about 88-92 % FTP) is a popular compromise, much of the threshold benefit for less fatigue."
     },
     "pl": {
       "name": "Sweet spot 2 × 15",
-      "description": "Dwa długie, równe odcinki sweet spot po piętnaście minut."
+      "description": "Dwa długie, równe odcinki sweet spot po piętnaście minut. Po co: sweet spot (ok. 88-92 % FTP) to popularny kompromis: sporo korzyści progu przy mniejszym zmęczeniu."
     }
   },
   "category": "freestyle",

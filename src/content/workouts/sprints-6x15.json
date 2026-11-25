@@ -1,15 +1,15 @@
 {
   "id": "sprints-6x15",
   "name": "Six Fifteens",
-  "description": "Six all-out fifteen-second sprints with long recoveries. Quality over quantity: go full gas, then rest fully. Every sprint is ridden standing, out of the saddle.",
+  "description": "Six all-out fifteen-second sprints with long recoveries. Quality over quantity: go full gas, then rest fully. Every sprint is ridden standing, out of the saddle. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
   "localized": {
     "en": {
       "name": "Six Fifteens",
-      "description": "Six all-out fifteen-second sprints with long recoveries. Quality over quantity: go full gas, then rest fully. Every sprint is ridden standing, out of the saddle."
+      "description": "Six all-out fifteen-second sprints with long recoveries. Quality over quantity: go full gas, then rest fully. Every sprint is ridden standing, out of the saddle. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
     },
     "pl": {
       "name": "Sześć piętnastek",
-      "description": "Sześć piętnastosekundowych sprintów na maksa z długimi przerwami. Jakość, nie ilość: pełny gaz, potem pełny odpoczynek. Każdy sprint jedziesz na stojąco."
+      "description": "Sześć piętnastosekundowych sprintów na maksa z długimi przerwami. Jakość, nie ilość: pełny gaz, potem pełny odpoczynek. Każdy sprint jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
     }
   },
   "category": "freestyle",

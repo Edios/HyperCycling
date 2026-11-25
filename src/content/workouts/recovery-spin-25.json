@@ -1,15 +1,15 @@
 {
   "id": "recovery-spin-25",
   "name": "Recovery Spin 25",
-  "description": "Very easy spinning to flush out the legs after a hard day. Do not push: if in doubt, go easier.",
+  "description": "Very easy spinning to flush out the legs after a hard day. Do not push: if in doubt, go easier. Why: easy spinning clears fatigue so the hard days count.",
   "localized": {
     "en": {
       "name": "Recovery Spin 25",
-      "description": "Very easy spinning to flush out the legs after a hard day. Do not push: if in doubt, go easier."
+      "description": "Very easy spinning to flush out the legs after a hard day. Do not push: if in doubt, go easier. Why: easy spinning clears fatigue so the hard days count."
     },
     "pl": {
       "name": "Regeneracyjne kręcenie 25",
-      "description": "Bardzo lekkie kręcenie, które rozluźnia nogi po ciężkim dniu. Nie przyspieszaj: w razie wątpliwości jedź lżej."
+      "description": "Bardzo lekkie kręcenie, które rozluźnia nogi po ciężkim dniu. Nie przyspieszaj: w razie wątpliwości jedź lżej. Po co: lekkie kręcenie usuwa zmęczenie, dzięki czemu twarde dni przynoszą efekt."
     }
   },
   "category": "freestyle",

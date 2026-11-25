@@ -1,15 +1,15 @@
 {
   "id": "sprint-steps",
   "name": "Sprint Steps",
-  "description": "Five sprints of 10, 15, 20, 25 and 30 seconds, each followed by three minutes of easy spinning. The 15 and 25-second sprints are ridden standing.",
+  "description": "Five sprints of 10, 15, 20, 25 and 30 seconds, each followed by three minutes of easy spinning. The 15 and 25-second sprints are ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
   "localized": {
     "en": {
       "name": "Sprint Steps",
-      "description": "Five sprints of 10, 15, 20, 25 and 30 seconds, each followed by three minutes of easy spinning. The 15 and 25-second sprints are ridden standing."
+      "description": "Five sprints of 10, 15, 20, 25 and 30 seconds, each followed by three minutes of easy spinning. The 15 and 25-second sprints are ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
     },
     "pl": {
       "name": "Schodki sprintów",
-      "description": "Pięć sprintów: 10, 15, 20, 25 i 30 sekund, po każdym trzy minuty lekkiego kręcenia. Sprinty 15 i 25 s jedziesz na stojąco."
+      "description": "Pięć sprintów: 10, 15, 20, 25 i 30 sekund, po każdym trzy minuty lekkiego kręcenia. Sprinty 15 i 25 s jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
     }
   },
   "category": "freestyle",

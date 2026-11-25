@@ -1,11 +1,11 @@
 {
   "id": "class-hills-40",
   "name": "Class: Hills 40",
-  "description": "Steady incline, rolling hills, switchbacks and a long climb (about 41 minutes). Standing stays under 7 minutes.",
+  "description": "Steady incline, rolling hills, switchbacks and a long climb (about 41 minutes). Standing stays under 7 minutes. Why: a class-style ride, where the effort follows the music instead of the clock.",
   "localized": {
     "en": {
       "name": "Class: Hills 40",
-      "description": "Steady incline, rolling hills, switchbacks and a long climb (about 41 minutes). Standing stays under 7 minutes.",
+      "description": "Steady incline, rolling hills, switchbacks and a long climb (about 41 minutes). Standing stays under 7 minutes. Why: a class-style ride, where the effort follows the music instead of the clock.",
       "songHints": {
         "class-hills-40-s1": "Easy warm-up song, about 7 min. Aim for about 175 BPM.",
         "class-hills-40-s2": "Slow, heavy song; two beats per pedal stroke on the incline. Aim for about 146 BPM.",
@@ -18,7 +18,7 @@
     },
     "pl": {
       "name": "Zajęcia: podjazdy 40",
-      "description": "Podjazd stały, pagórki, serpentyny i długa wspinaczka (około 41 minut). Stanie poniżej 7 minut.",
+      "description": "Podjazd stały, pagórki, serpentyny i długa wspinaczka (około 41 minut). Stanie poniżej 7 minut. Po co: jazda w stylu zajęć, w której wysiłek podąża za muzyką, a nie za zegarem.",
       "songHints": {
         "class-hills-40-s1": "Lekka piosenka na rozgrzewkę, ok. 7 min. Szukaj ok. 175 BPM.",
         "class-hills-40-s2": "Wolna, ciężka piosenka; dwa uderzenia na jeden obrót korby na podjeździe. Szukaj ok. 146 BPM.",

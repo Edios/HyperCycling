@@ -1,15 +1,15 @@
 {
   "id": "torque-surges",
   "name": "Torque Surges",
-  "description": "Heavy tempo with a one-minute push at low cadence each round. Builds strength you can use on every climb.",
+  "description": "Heavy tempo with a one-minute push at low cadence each round. Builds strength you can use on every climb. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
   "localized": {
     "en": {
       "name": "Torque Surges",
-      "description": "Heavy tempo with a one-minute push at low cadence each round. Builds strength you can use on every climb."
+      "description": "Heavy tempo with a one-minute push at low cadence each round. Builds strength you can use on every climb. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
     },
     "pl": {
       "name": "Zrywy siłowe",
-      "description": "Ciężkie tempo z minutowym naciskiem na niskiej kadencji w każdej rundzie. Buduje siłę przydatną na każdym podjeździe."
+      "description": "Ciężkie tempo z minutowym naciskiem na niskiej kadencji w każdej rundzie. Buduje siłę przydatną na każdym podjeździe. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
     }
   },
   "category": "freestyle",

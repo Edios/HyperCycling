@@ -1,15 +1,15 @@
 {
   "id": "waves",
   "name": "Waves",
-  "description": "Five five-minute tempo waves, each with three 15-second bursts inside. The middle sprint of each wave is ridden standing.",
+  "description": "Five five-minute tempo waves, each with three 15-second bursts inside. The middle sprint of each wave is ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
   "localized": {
     "en": {
       "name": "Waves",
-      "description": "Five five-minute tempo waves, each with three 15-second bursts inside. The middle sprint of each wave is ridden standing."
+      "description": "Five five-minute tempo waves, each with three 15-second bursts inside. The middle sprint of each wave is ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
     },
     "pl": {
       "name": "Fale",
-      "description": "Pięć pięciominutowych fal w tempie z trzema zrywami po 15 sekund w każdej. Środkowy sprint każdej fali jedziesz na stojąco."
+      "description": "Pięć pięciominutowych fal w tempie z trzema zrywami po 15 sekund w każdej. Środkowy sprint każdej fali jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
     }
   },
   "category": "freestyle",

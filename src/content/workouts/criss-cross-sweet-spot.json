@@ -1,15 +1,15 @@
 {
   "id": "criss-cross-sweet-spot",
   "name": "Criss-Cross Sweet Spot",
-  "description": "Long ramps that weave across the sweet spot zone: a gentle way to practise changing pace without panic.",
+  "description": "Long ramps that weave across the sweet spot zone: a gentle way to practise changing pace without panic. Why: sweet spot (about 88-92 % FTP) is a popular compromise, much of the threshold benefit for less fatigue.",
   "localized": {
     "en": {
       "name": "Criss-Cross Sweet Spot",
-      "description": "Long ramps that weave across the sweet spot zone: a gentle way to practise changing pace without panic."
+      "description": "Long ramps that weave across the sweet spot zone: a gentle way to practise changing pace without panic. Why: sweet spot (about 88-92 % FTP) is a popular compromise, much of the threshold benefit for less fatigue."
     },
     "pl": {
       "name": "Criss-cross w sweet spot",
-      "description": "Długie rampy przecinające strefę sweet spot: łagodny sposób na ćwiczenie zmian tempa bez paniki."
+      "description": "Długie rampy przecinające strefę sweet spot: łagodny sposób na ćwiczenie zmian tempa bez paniki. Po co: sweet spot (ok. 88-92 % FTP) to popularny kompromis: sporo korzyści progu przy mniejszym zmęczeniu."
     }
   },
   "category": "freestyle",

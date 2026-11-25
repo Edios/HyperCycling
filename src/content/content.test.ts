@@ -422,6 +422,13 @@ describe('built-in workouts', () => {
     }
   });
 
+  it('every workout description ends with a one-sentence rationale in both languages', () => {
+    for (const w of builtinWorkouts) {
+      expect(w.localized?.en?.description, w.id).toMatch(/ Why: [^]+\.$/);
+      expect(w.localized?.pl?.description, w.id).toMatch(/ Po co: [^]+\.$/);
+    }
+  });
+
   it('declares standard warm-up and cool-down scaling', () => {
     for (const w of builtinWorkouts) {
       expect(w.scaling, w.id).toBeDefined();

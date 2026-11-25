@@ -1,15 +1,15 @@
 {
   "id": "light-music-30",
   "name": "Light Music Ride",
-  "description": "A short, light ride with three chorus surges.",
+  "description": "A short, light ride with three chorus surges. Why: easy steady riding builds the aerobic base every other workout rests on.",
   "localized": {
     "en": {
       "name": "Light Music Ride",
-      "description": "A short, light ride with three chorus surges."
+      "description": "A short, light ride with three chorus surges. Why: easy steady riding builds the aerobic base every other workout rests on."
     },
     "pl": {
       "name": "Pod muzykę, lekko",
-      "description": "Krótka, lekka jazda z trzema zrywami w refrenach."
+      "description": "Krótka, lekka jazda z trzema zrywami w refrenach. Po co: spokojna, równa jazda buduje bazę tlenową, na której opiera się każdy inny trening."
     }
   },
   "category": "freestyle",

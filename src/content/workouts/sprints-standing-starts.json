@@ -1,15 +1,15 @@
 {
   "id": "sprints-standing-starts",
   "name": "Standing Starts",
-  "description": "Stand and accelerate for ten seconds, then sit and keep the speed for twenty. Full recovery in between.",
+  "description": "Stand and accelerate for ten seconds, then sit and keep the speed for twenty. Full recovery in between. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
   "localized": {
     "en": {
       "name": "Standing Starts",
-      "description": "Stand and accelerate for ten seconds, then sit and keep the speed for twenty. Full recovery in between."
+      "description": "Stand and accelerate for ten seconds, then sit and keep the speed for twenty. Full recovery in between. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
     },
     "pl": {
       "name": "Starty ze stania",
-      "description": "Wstajesz i przyspieszasz przez dziesięć sekund, potem siadasz i utrzymujesz prędkość przez dwadzieścia. Pełna przerwa między startami."
+      "description": "Wstajesz i przyspieszasz przez dziesięć sekund, potem siadasz i utrzymujesz prędkość przez dwadzieścia. Pełna przerwa między startami. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
     }
   },
   "category": "freestyle",

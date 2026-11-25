@@ -1,15 +1,15 @@
 {
   "id": "tempo-30",
   "name": "Tempo 30",
-  "description": "Two even tempo blocks for a short and solid session.",
+  "description": "Two even tempo blocks for a short and solid session. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold.",
   "localized": {
     "en": {
       "name": "Tempo 30",
-      "description": "Two even tempo blocks for a short and solid session."
+      "description": "Two even tempo blocks for a short and solid session. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold."
     },
     "pl": {
       "name": "Tempo 30",
-      "description": "Dwa równe odcinki w tempie, krótka i mocna sesja."
+      "description": "Dwa równe odcinki w tempie, krótka i mocna sesja. Po co: tempo trenuje wytrzymałość w tempie, które da się utrzymać długo, przy mniejszym zmęczeniu niż próg."
     }
   },
   "category": "freestyle",

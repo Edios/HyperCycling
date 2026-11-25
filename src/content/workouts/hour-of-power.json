@@ -1,15 +1,15 @@
 {
   "id": "hour-of-power",
   "name": "Hour of Power",
-  "description": "A full music class: a flat song, a climb song, a short sprint and a breather, repeated four times. Let the playlist run the ride.",
+  "description": "A full music class: a flat song, a climb song, a short sprint and a breather, repeated four times. Let the playlist run the ride. Why: a class-style ride, where the effort follows the music instead of the clock.",
   "localized": {
     "en": {
       "name": "Hour of Power",
-      "description": "A full music class: a flat song, a climb song, a short sprint and a breather, repeated four times. Let the playlist run the ride."
+      "description": "A full music class: a flat song, a climb song, a short sprint and a breather, repeated four times. Let the playlist run the ride. Why: a class-style ride, where the effort follows the music instead of the clock."
     },
     "pl": {
       "name": "Godzina mocy",
-      "description": "Pełne zajęcia z muzyką: piosenka na płaskim, piosenka na podjazd, krótki sprint i oddech, cztery razy. Niech playlista prowadzi jazdę."
+      "description": "Pełne zajęcia z muzyką: piosenka na płaskim, piosenka na podjazd, krótki sprint i oddech, cztery razy. Niech playlista prowadzi jazdę. Po co: jazda w stylu zajęć, w której wysiłek podąża za muzyką, a nie za zegarem."
     }
   },
   "category": "freestyle",

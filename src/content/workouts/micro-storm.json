@@ -1,15 +1,15 @@
 {
   "id": "micro-storm",
   "name": "Micro Storm",
-  "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy.",
+  "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy. Why: short hard-easy repeats keep you near VO2max for a long total time; Rønnestad's work found 30/15 beats long intervals in trained riders.",
   "localized": {
     "en": {
       "name": "Micro Storm",
-      "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy."
+      "description": "Three sets of ten rounds of 30 seconds hard and 30 seconds easy. Why: short hard-easy repeats keep you near VO2max for a long total time; Rønnestad's work found 30/15 beats long intervals in trained riders."
     },
     "pl": {
       "name": "Mikroburza",
-      "description": "Trzy serie po dziesięć razy 30 sekund mocno i 30 sekund luzu."
+      "description": "Trzy serie po dziesięć razy 30 sekund mocno i 30 sekund luzu. Po co: krótkie powtórzenia mocno-lekko utrzymują blisko VO2max przez długi łączny czas; w badaniach Rønnestada 30/15 pokonało długie interwały u wytrenowanych."
     }
   },
   "category": "freestyle",

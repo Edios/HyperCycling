@@ -1,11 +1,11 @@
 {
   "id": "class-hiit-30",
   "name": "Class: HIIT 30",
-  "description": "Eight songs in about 30 minutes: on/off intervals, a ladder, a cadence build and two hills.",
+  "description": "Eight songs in about 30 minutes: on/off intervals, a ladder, a cadence build and two hills. Why: a class-style ride, where the effort follows the music instead of the clock.",
   "localized": {
     "en": {
       "name": "Class: HIIT 30",
-      "description": "Eight songs in about 30 minutes: on/off intervals, a ladder, a cadence build and two hills.",
+      "description": "Eight songs in about 30 minutes: on/off intervals, a ladder, a cadence build and two hills. Why: a class-style ride, where the effort follows the music instead of the clock.",
       "songHints": {
         "class-hiit-30-s1": "Warm-up song with a relaxed groove, about 4 min. Aim for about 175 BPM.",
         "class-hiit-30-s2": "Steady four-on-the-floor song; 30 s on / 30 s off follows the beat. Aim for about 175 BPM.",
@@ -19,7 +19,7 @@
     },
     "pl": {
       "name": "Zajęcia: HIIT 30",
-      "description": "Osiem piosenek w około 30 minut: interwały on/off, drabinka, wzrost kadencji i dwa podjazdy.",
+      "description": "Osiem piosenek w około 30 minut: interwały on/off, drabinka, wzrost kadencji i dwa podjazdy. Po co: jazda w stylu zajęć, w której wysiłek podąża za muzyką, a nie za zegarem.",
       "songHints": {
         "class-hiit-30-s1": "Rozgrzewkowa piosenka o luźnym groove, ok. 4 min. Szukaj ok. 175 BPM.",
         "class-hiit-30-s2": "Równa piosenka z czterema uderzeniami na takt; 30 s on / 30 s off idzie z rytmem. Szukaj ok. 175 BPM.",

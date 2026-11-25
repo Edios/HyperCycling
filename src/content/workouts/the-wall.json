@@ -1,15 +1,15 @@
 {
   "id": "the-wall",
   "name": "The Wall",
-  "description": "Three eight-minute climbs with building resistance, standing for the last two minutes.",
+  "description": "Three eight-minute climbs with building resistance, standing for the last two minutes. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
   "localized": {
     "en": {
       "name": "The Wall",
-      "description": "Three eight-minute climbs with building resistance, standing for the last two minutes."
+      "description": "Three eight-minute climbs with building resistance, standing for the last two minutes. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
     },
     "pl": {
       "name": "Ściana",
-      "description": "Trzy ośmiominutowe podjazdy o rosnącym oporze, dwie ostatnie minuty na stojąco."
+      "description": "Trzy ośmiominutowe podjazdy o rosnącym oporze, dwie ostatnie minuty na stojąco. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
     }
   },
   "category": "freestyle",

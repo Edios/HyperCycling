@@ -1,15 +1,15 @@
 {
   "id": "quick-twenty",
   "name": "Quick Twenty",
-  "description": "Three rounds of three minutes of hard tempo finished with 30 seconds harder.",
+  "description": "Three rounds of three minutes of hard tempo finished with 30 seconds harder. Why: short hard-easy repeats keep you near VO2max for a long total time; Rønnestad's work found 30/15 beats long intervals in trained riders.",
   "localized": {
     "en": {
       "name": "Quick Twenty",
-      "description": "Three rounds of three minutes of hard tempo finished with 30 seconds harder."
+      "description": "Three rounds of three minutes of hard tempo finished with 30 seconds harder. Why: short hard-easy repeats keep you near VO2max for a long total time; Rønnestad's work found 30/15 beats long intervals in trained riders."
     },
     "pl": {
       "name": "Szybkie 20",
-      "description": "Trzy razy trzy minuty mocnego tempa zakończone 30 sekundami mocniej."
+      "description": "Trzy razy trzy minuty mocnego tempa zakończone 30 sekundami mocniej. Po co: krótkie powtórzenia mocno-lekko utrzymują blisko VO2max przez długi łączny czas; w badaniach Rønnestada 30/15 pokonało długie interwały u wytrenowanych."
     }
   },
   "category": "freestyle",

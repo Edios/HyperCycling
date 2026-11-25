@@ -1,15 +1,15 @@
 {
   "id": "finale-music",
   "name": "Music Finale",
-  "description": "Four song-long climbs, each finished with a sprint.",
+  "description": "Four song-long climbs, each finished with a sprint. Why: a class-style ride, where the effort follows the music instead of the clock.",
   "localized": {
     "en": {
       "name": "Music Finale",
-      "description": "Four song-long climbs, each finished with a sprint."
+      "description": "Four song-long climbs, each finished with a sprint. Why: a class-style ride, where the effort follows the music instead of the clock."
     },
     "pl": {
       "name": "Finał z muzyką",
-      "description": "Cztery podjazdy do piosenek, każdy zakończony sprintem."
+      "description": "Cztery podjazdy do piosenek, każdy zakończony sprintem. Po co: jazda w stylu zajęć, w której wysiłek podąża za muzyką, a nie za zegarem."
     }
   },
   "category": "freestyle",

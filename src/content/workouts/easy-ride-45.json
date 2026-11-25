@@ -1,15 +1,15 @@
 {
   "id": "easy-ride-45",
   "name": "Easy Zone 2, 45 min",
-  "description": "A steady Zone 2 ride with four short minutes of faster pedaling.",
+  "description": "A steady Zone 2 ride with four short minutes of faster pedaling. Why: easy steady riding builds the aerobic base every other workout rests on.",
   "localized": {
     "en": {
       "name": "Easy Zone 2, 45 min",
-      "description": "A steady Zone 2 ride with four short minutes of faster pedaling."
+      "description": "A steady Zone 2 ride with four short minutes of faster pedaling. Why: easy steady riding builds the aerobic base every other workout rests on."
     },
     "pl": {
       "name": "Spokojna strefa 2, 45 min",
-      "description": "Spokojna jazda w strefie 2 z czterema minutowymi odcinkami szybszej kadencji."
+      "description": "Spokojna jazda w strefie 2 z czterema minutowymi odcinkami szybszej kadencji. Po co: spokojna, równa jazda buduje bazę tlenową, na której opiera się każdy inny trening."
     }
   },
   "category": "freestyle",

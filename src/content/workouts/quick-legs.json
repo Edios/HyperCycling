@@ -1,15 +1,15 @@
 {
   "id": "quick-legs",
   "name": "Quick Legs",
-  "description": "Two series of three songs, each with a tempo climb and a sprint mid-song, ending with a recovery song. The first sprint after each climb is ridden standing.",
+  "description": "Two series of three songs, each with a tempo climb and a sprint mid-song, ending with a recovery song. The first sprint after each climb is ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
   "localized": {
     "en": {
       "name": "Quick Legs",
-      "description": "Two series of three songs, each with a tempo climb and a sprint mid-song, ending with a recovery song. The first sprint after each climb is ridden standing."
+      "description": "Two series of three songs, each with a tempo climb and a sprint mid-song, ending with a recovery song. The first sprint after each climb is ridden standing. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
     },
     "pl": {
       "name": "Szybkie nogi",
-      "description": "Dwie serie trzech piosenek z podjazdem tempa i sprintem pośrodku, na koniec piosenka na uspokojenie. Pierwszy sprint po każdym podjeździe jedziesz na stojąco."
+      "description": "Dwie serie trzech piosenek z podjazdem tempa i sprintem pośrodku, na koniec piosenka na uspokojenie. Pierwszy sprint po każdym podjeździe jedziesz na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
     }
   },
   "category": "freestyle",

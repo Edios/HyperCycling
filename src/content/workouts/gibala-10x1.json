@@ -1,15 +1,15 @@
 {
   "id": "gibala-10x1",
   "name": "Ten Times One Minute",
-  "description": "Ten one-minute efforts with 75 seconds of easy spinning: a famous time-efficient interval format.",
+  "description": "Ten one-minute efforts with 75 seconds of easy spinning: a famous time-efficient interval format. Why: ten one-minute efforts are a time-efficient HIIT format from Gibala's studies.",
   "localized": {
     "en": {
       "name": "Ten Times One Minute",
-      "description": "Ten one-minute efforts with 75 seconds of easy spinning: a famous time-efficient interval format."
+      "description": "Ten one-minute efforts with 75 seconds of easy spinning: a famous time-efficient interval format. Why: ten one-minute efforts are a time-efficient HIIT format from Gibala's studies."
     },
     "pl": {
       "name": "Dziesięć razy minuta",
-      "description": "Dziesięć jednominutowych wysiłków i po 75 sekund lekkiego kręcenia: znany, oszczędny czasowo format interwałów."
+      "description": "Dziesięć jednominutowych wysiłków i po 75 sekund lekkiego kręcenia: znany, oszczędny czasowo format interwałów. Po co: dziesięć jednominutowych wysiłków to oszczędny czasowo format HIIT z badań Gibali."
     }
   },
   "category": "freestyle",

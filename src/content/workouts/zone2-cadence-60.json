@@ -1,15 +1,15 @@
 {
   "id": "zone2-cadence-60",
   "name": "Zone 2 with Cadence Blocks",
-  "description": "An hour of endurance with a three-minute high-cadence block in every round to keep the legs lively.",
+  "description": "An hour of endurance with a three-minute high-cadence block in every round to keep the legs lively. Why: easy steady riding builds the aerobic base every other workout rests on.",
   "localized": {
     "en": {
       "name": "Zone 2 with Cadence Blocks",
-      "description": "An hour of endurance with a three-minute high-cadence block in every round to keep the legs lively."
+      "description": "An hour of endurance with a three-minute high-cadence block in every round to keep the legs lively. Why: easy steady riding builds the aerobic base every other workout rests on."
     },
     "pl": {
       "name": "Strefa 2 z blokami kadencji",
-      "description": "Godzina wytrzymałości, w każdej rundzie trzy minuty wysokiej kadencji, żeby nogi nie zasnęły."
+      "description": "Godzina wytrzymałości, w każdej rundzie trzy minuty wysokiej kadencji, żeby nogi nie zasnęły. Po co: spokojna, równa jazda buduje bazę tlenową, na której opiera się każdy inny trening."
     }
   },
   "category": "freestyle",

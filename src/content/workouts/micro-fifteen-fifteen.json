@@ -1,15 +1,15 @@
 {
   "id": "micro-fifteen-fifteen",
   "name": "15/15 Micro-Intervals",
-  "description": "Fifteen seconds hard, fifteen easy, in two sets of fourteen. Short enough to stay controlled, long enough to burn.",
+  "description": "Fifteen seconds hard, fifteen easy, in two sets of fourteen. Short enough to stay controlled, long enough to burn. Why: short hard-easy repeats keep you near VO2max for a long total time; Rønnestad's work found 30/15 beats long intervals in trained riders.",
   "localized": {
     "en": {
       "name": "15/15 Micro-Intervals",
-      "description": "Fifteen seconds hard, fifteen easy, in two sets of fourteen. Short enough to stay controlled, long enough to burn."
+      "description": "Fifteen seconds hard, fifteen easy, in two sets of fourteen. Short enough to stay controlled, long enough to burn. Why: short hard-easy repeats keep you near VO2max for a long total time; Rønnestad's work found 30/15 beats long intervals in trained riders."
     },
     "pl": {
       "name": "Mikrointerwały 15/15",
-      "description": "Piętnaście sekund mocno, piętnaście lekko, w dwóch seriach po czternaście powtórzeń. Dość krótko, by zachować kontrolę, dość długo, by zapiekło."
+      "description": "Piętnaście sekund mocno, piętnaście lekko, w dwóch seriach po czternaście powtórzeń. Dość krótko, by zachować kontrolę, dość długo, by zapiekło. Po co: krótkie powtórzenia mocno-lekko utrzymują blisko VO2max przez długi łączny czas; w badaniach Rønnestada 30/15 pokonało długie interwały u wytrenowanych."
     }
   },
   "category": "freestyle",

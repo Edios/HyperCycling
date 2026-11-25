@@ -1,15 +1,15 @@
 {
   "id": "tabata-lite",
   "name": "Tabata Lite",
-  "description": "A single set of eight rounds of 20 seconds hard and 10 seconds easy.",
+  "description": "A single set of eight rounds of 20 seconds hard and 10 seconds easy. Why: very short and very hard, it gives a HIIT stimulus when you only have twenty minutes.",
   "localized": {
     "en": {
       "name": "Tabata Lite",
-      "description": "A single set of eight rounds of 20 seconds hard and 10 seconds easy."
+      "description": "A single set of eight rounds of 20 seconds hard and 10 seconds easy. Why: very short and very hard, it gives a HIIT stimulus when you only have twenty minutes."
     },
     "pl": {
       "name": "Tabata-lite",
-      "description": "Jedna seria osiem razy 20 sekund mocno i 10 sekund luzu."
+      "description": "Jedna seria osiem razy 20 sekund mocno i 10 sekund luzu. Po co: bardzo krótko i bardzo mocno, daje bodziec HIIT, gdy masz tylko dwadzieścia minut."
     }
   },
   "category": "freestyle",

@@ -1,15 +1,15 @@
 {
   "id": "hill-surges",
   "name": "Climb with Surges",
-  "description": "Four rolling hills: settle in, stand for a surge, sit and settle again.",
+  "description": "Four rolling hills: settle in, stand for a surge, sit and settle again. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
   "localized": {
     "en": {
       "name": "Climb with Surges",
-      "description": "Four rolling hills: settle in, stand for a surge, sit and settle again."
+      "description": "Four rolling hills: settle in, stand for a surge, sit and settle again. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
     },
     "pl": {
       "name": "Podjazd z zrywami",
-      "description": "Cztery pagórki: wchodzisz w rytm, wstajesz na zryw, siadasz i znów łapiesz rytm."
+      "description": "Cztery pagórki: wchodzisz w rytm, wstajesz na zryw, siadasz i znów łapiesz rytm. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
     }
   },
   "category": "freestyle",

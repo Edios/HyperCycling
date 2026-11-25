@@ -1,15 +1,15 @@
 {
   "id": "leg-strength",
   "name": "Leg Strength",
-  "description": "Four five-minute blocks at low cadence and heavy resistance.",
+  "description": "Four five-minute blocks at low cadence and heavy resistance. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
   "localized": {
     "en": {
       "name": "Leg Strength",
-      "description": "Four five-minute blocks at low cadence and heavy resistance."
+      "description": "Four five-minute blocks at low cadence and heavy resistance. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
     },
     "pl": {
       "name": "Siła w nogach",
-      "description": "Cztery pięciominutowe odcinki na niskiej kadencji i mocnym oporze."
+      "description": "Cztery pięciominutowe odcinki na niskiej kadencji i mocnym oporze. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
     }
   },
   "category": "freestyle",

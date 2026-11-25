@@ -1,15 +1,15 @@
 {
   "id": "short-threes",
   "name": "Short Threes",
-  "description": "Three three-minute efforts well above threshold with equal rest.",
+  "description": "Three three-minute efforts well above threshold with equal rest. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks.",
   "localized": {
     "en": {
       "name": "Short Threes",
-      "description": "Three three-minute efforts well above threshold with equal rest."
+      "description": "Three three-minute efforts well above threshold with equal rest. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks."
     },
     "pl": {
       "name": "Krótkie trójki",
-      "description": "Trzy trzyminutowe odcinki mocno ponad progiem, tyle samo luzu."
+      "description": "Trzy trzyminutowe odcinki mocno ponad progiem, tyle samo luzu. Po co: twarde interwały blisko maksymalnej mocy tlenowej podnoszą VO2max; dwa takie treningi tygodniowo wystarczą, by po kilku tygodniach to zauważyć."
     }
   },
   "category": "freestyle",

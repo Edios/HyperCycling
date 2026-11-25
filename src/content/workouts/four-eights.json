@@ -1,15 +1,15 @@
 {
   "id": "four-eights",
   "name": "Four Eights",
-  "description": "Four eight-minute blocks just above threshold, a classic interval format.",
+  "description": "Four eight-minute blocks just above threshold, a classic interval format. Why: 4 x 8 minutes near 105 % FTP is the format from Seiler's research on threshold and VO2 work.",
   "localized": {
     "en": {
       "name": "Four Eights",
-      "description": "Four eight-minute blocks just above threshold, a classic interval format."
+      "description": "Four eight-minute blocks just above threshold, a classic interval format. Why: 4 x 8 minutes near 105 % FTP is the format from Seiler's research on threshold and VO2 work."
     },
     "pl": {
       "name": "Cztery ósemki",
-      "description": "Cztery ośmiominutowe odcinki tuż powyżej progu, klasyczny format interwałowy."
+      "description": "Cztery ośmiominutowe odcinki tuż powyżej progu, klasyczny format interwałowy. Po co: 4 x 8 minut w okolicy 105 % FTP to format z badań Seilera nad pracą progową i VO2."
     }
   },
   "category": "freestyle",

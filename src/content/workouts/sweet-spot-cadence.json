@@ -1,15 +1,15 @@
 {
   "id": "sweet-spot-cadence",
   "name": "Sweet Spot with Cadence",
-  "description": "Sweet spot with the cadence switching every minute between heavy and slow, light and fast.",
+  "description": "Sweet spot with the cadence switching every minute between heavy and slow, light and fast. Why: sweet spot (about 88-92 % FTP) is a popular compromise, much of the threshold benefit for less fatigue.",
   "localized": {
     "en": {
       "name": "Sweet Spot with Cadence",
-      "description": "Sweet spot with the cadence switching every minute between heavy and slow, light and fast."
+      "description": "Sweet spot with the cadence switching every minute between heavy and slow, light and fast. Why: sweet spot (about 88-92 % FTP) is a popular compromise, much of the threshold benefit for less fatigue."
     },
     "pl": {
       "name": "Sweet spot z kadencją",
-      "description": "Sweet spot ze zmienną kadencją co minutę: raz ciężko i wolno, raz lekko i szybko."
+      "description": "Sweet spot ze zmienną kadencją co minutę: raz ciężko i wolno, raz lekko i szybko. Po co: sweet spot (ok. 88-92 % FTP) to popularny kompromis: sporo korzyści progu przy mniejszym zmęczeniu."
     }
   },
   "category": "freestyle",

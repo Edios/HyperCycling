@@ -1,15 +1,15 @@
 {
   "id": "cadence-pyramid",
   "name": "Cadence Pyramid",
-  "description": "A 1-2-3-2-1 minute pyramid where cadence rises and falls, done twice.",
+  "description": "A 1-2-3-2-1 minute pyramid where cadence rises and falls, done twice. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold.",
   "localized": {
     "en": {
       "name": "Cadence Pyramid",
-      "description": "A 1-2-3-2-1 minute pyramid where cadence rises and falls, done twice."
+      "description": "A 1-2-3-2-1 minute pyramid where cadence rises and falls, done twice. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold."
     },
     "pl": {
       "name": "Kadencyjna piramida",
-      "description": "Piramida 1-2-3-2-1 minut, w której rośnie i maleje kadencja, dwa razy."
+      "description": "Piramida 1-2-3-2-1 minut, w której rośnie i maleje kadencja, dwa razy. Po co: tempo trenuje wytrzymałość w tempie, które da się utrzymać długo, przy mniejszym zmęczeniu niż próg."
     }
   },
   "category": "freestyle",

@@ -1,15 +1,15 @@
 {
   "id": "minute-for-minute",
   "name": "Minute for Minute",
-  "description": "Nine rounds of one minute hard and one minute easy.",
+  "description": "Nine rounds of one minute hard and one minute easy. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks.",
   "localized": {
     "en": {
       "name": "Minute for Minute",
-      "description": "Nine rounds of one minute hard and one minute easy."
+      "description": "Nine rounds of one minute hard and one minute easy. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks."
     },
     "pl": {
       "name": "Minuta za minutę",
-      "description": "Dziewięć razy minuta mocno i minuta luzu."
+      "description": "Dziewięć razy minuta mocno i minuta luzu. Po co: twarde interwały blisko maksymalnej mocy tlenowej podnoszą VO2max; dwa takie treningi tygodniowo wystarczą, by po kilku tygodniach to zauważyć."
     }
   },
   "category": "freestyle",

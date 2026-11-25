@@ -1,15 +1,15 @@
 {
   "id": "pyramid-classic",
   "name": "Classic Pyramid 1-2-3-4-3-2-1",
-  "description": "The textbook pyramid: intervals of 1, 2, 3, 4, 3, 2 and 1 minute, each followed by a recovery. Longer means a little easier.",
+  "description": "The textbook pyramid: intervals of 1, 2, 3, 4, 3, 2 and 1 minute, each followed by a recovery. Longer means a little easier. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks.",
   "localized": {
     "en": {
       "name": "Classic Pyramid 1-2-3-4-3-2-1",
-      "description": "The textbook pyramid: intervals of 1, 2, 3, 4, 3, 2 and 1 minute, each followed by a recovery. Longer means a little easier."
+      "description": "The textbook pyramid: intervals of 1, 2, 3, 4, 3, 2 and 1 minute, each followed by a recovery. Longer means a little easier. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks."
     },
     "pl": {
       "name": "Klasyczna piramida 1-2-3-4-3-2-1",
-      "description": "Podręcznikowa piramida: odcinki 1, 2, 3, 4, 3, 2 i 1 minuta, każdy z przerwą. Im dłuższy odcinek, tym nieco lżejszy."
+      "description": "Podręcznikowa piramida: odcinki 1, 2, 3, 4, 3, 2 i 1 minuta, każdy z przerwą. Im dłuższy odcinek, tym nieco lżejszy. Po co: twarde interwały blisko maksymalnej mocy tlenowej podnoszą VO2max; dwa takie treningi tygodniowo wystarczą, by po kilku tygodniach to zauważyć."
     }
   },
   "category": "freestyle",

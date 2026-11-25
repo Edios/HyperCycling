@@ -1,15 +1,15 @@
 {
   "id": "rolling-ramps",
   "name": "Rolling Hills",
-  "description": "Rolling terrain in ramps: a four-minute drag uphill, a two-minute fall back. Six hills in a row.",
+  "description": "Rolling terrain in ramps: a four-minute drag uphill, a two-minute fall back. Six hills in a row. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
   "localized": {
     "en": {
       "name": "Rolling Hills",
-      "description": "Rolling terrain in ramps: a four-minute drag uphill, a two-minute fall back. Six hills in a row."
+      "description": "Rolling terrain in ramps: a four-minute drag uphill, a two-minute fall back. Six hills in a row. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
     },
     "pl": {
       "name": "Pofalowany teren",
-      "description": "Falujący teren w rampach: cztery minuty podjazdu, dwie minuty zjazdu. Sześć pagórków z rzędu."
+      "description": "Falujący teren w rampach: cztery minuty podjazdu, dwie minuty zjazdu. Sześć pagórków z rzędu. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
     }
   },
   "category": "freestyle",

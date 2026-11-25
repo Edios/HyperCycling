@@ -1,15 +1,15 @@
 {
   "id": "recovery-spin-45",
   "name": "Recovery Spin 45",
-  "description": "A long, gentle spin with a quick leg shake-out every eight minutes. Conversation pace all the way.",
+  "description": "A long, gentle spin with a quick leg shake-out every eight minutes. Conversation pace all the way. Why: easy spinning clears fatigue so the hard days count.",
   "localized": {
     "en": {
       "name": "Recovery Spin 45",
-      "description": "A long, gentle spin with a quick leg shake-out every eight minutes. Conversation pace all the way."
+      "description": "A long, gentle spin with a quick leg shake-out every eight minutes. Conversation pace all the way. Why: easy spinning clears fatigue so the hard days count."
     },
     "pl": {
       "name": "Regeneracyjne kręcenie 45",
-      "description": "Długie, łagodne kręcenie z krótkim rozruchem nóg co osiem minut. Cały czas tempo rozmowy."
+      "description": "Długie, łagodne kręcenie z krótkim rozruchem nóg co osiem minut. Cały czas tempo rozmowy. Po co: lekkie kręcenie usuwa zmęczenie, dzięki czemu twarde dni przynoszą efekt."
     }
   },
   "category": "freestyle",

@@ -1,15 +1,15 @@
 {
   "id": "music-wall",
   "name": "Wall of Music",
-  "description": "Four songs: a seated climb, a standing climb, a 20/20/20 song and a 30/30 song with more resistance.",
+  "description": "Four songs: a seated climb, a standing climb, a 20/20/20 song and a 30/30 song with more resistance. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work.",
   "localized": {
     "en": {
       "name": "Wall of Music",
-      "description": "Four songs: a seated climb, a standing climb, a 20/20/20 song and a 30/30 song with more resistance."
+      "description": "Four songs: a seated climb, a standing climb, a 20/20/20 song and a 30/30 song with more resistance. Why: heavy gear and low cadence build leg strength; standing changes which muscles do the work."
     },
     "pl": {
       "name": "Ściana muzyczna",
-      "description": "Cztery piosenki: podjazd siedząc, podjazd stojąc, seria 20/20/20 i 30/30 z większym oporem."
+      "description": "Cztery piosenki: podjazd siedząc, podjazd stojąc, seria 20/20/20 i 30/30 z większym oporem. Po co: ciężkie przełożenie i niska kadencja budują siłę nóg; stanie zmienia to, które mięśnie pracują."
     }
   },
   "category": "freestyle",

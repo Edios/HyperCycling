@@ -1,15 +1,15 @@
 {
   "id": "recovery-30",
   "name": "Recovery 30",
-  "description": "A very light spin to loosen the legs after hard days.",
+  "description": "A very light spin to loosen the legs after hard days. Why: easy spinning clears fatigue so the hard days count.",
   "localized": {
     "en": {
       "name": "Recovery 30",
-      "description": "A very light spin to loosen the legs after hard days."
+      "description": "A very light spin to loosen the legs after hard days. Why: easy spinning clears fatigue so the hard days count."
     },
     "pl": {
       "name": "Regeneracja 30",
-      "description": "Bardzo lekka jazda na rozkręcenie nóg po ciężkich dniach."
+      "description": "Bardzo lekka jazda na rozkręcenie nóg po ciężkich dniach. Po co: lekkie kręcenie usuwa zmęczenie, dzięki czemu twarde dni przynoszą efekt."
     }
   },
   "category": "freestyle",

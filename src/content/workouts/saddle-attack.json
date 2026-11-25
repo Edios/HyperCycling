@@ -1,15 +1,15 @@
 {
   "id": "saddle-attack",
   "name": "Attack from the Saddle",
-  "description": "Six seated sprints followed by four standing starts.",
+  "description": "Six seated sprints followed by four standing starts. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp.",
   "localized": {
     "en": {
       "name": "Attack from the Saddle",
-      "description": "Six seated sprints followed by four standing starts."
+      "description": "Six seated sprints followed by four standing starts. Why: short all-out efforts train leg speed and power; the long easy gaps keep each one sharp."
     },
     "pl": {
       "name": "Atak z siodła",
-      "description": "Sześć sprintów na siedząco i cztery starty na stojąco."
+      "description": "Sześć sprintów na siedząco i cztery starty na stojąco. Po co: krótkie maksymalne zrywy uczą szybkości i mocy nóg; długie przerwy sprawiają, że każdy jest ostry."
     }
   },
   "category": "freestyle",

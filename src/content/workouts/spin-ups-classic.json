@@ -1,15 +1,15 @@
 {
   "id": "spin-ups-classic",
   "name": "Spin-Ups",
-  "description": "Cadence builds from 100 to 115 rpm in thirty-second steps, then a long easy reset. Stay smooth: no bouncing in the saddle.",
+  "description": "Cadence builds from 100 to 115 rpm in thirty-second steps, then a long easy reset. Stay smooth: no bouncing in the saddle. Why: cadence work makes pedalling smoother and shows you the range where you feel comfortable.",
   "localized": {
     "en": {
       "name": "Spin-Ups",
-      "description": "Cadence builds from 100 to 115 rpm in thirty-second steps, then a long easy reset. Stay smooth: no bouncing in the saddle."
+      "description": "Cadence builds from 100 to 115 rpm in thirty-second steps, then a long easy reset. Stay smooth: no bouncing in the saddle. Why: cadence work makes pedalling smoother and shows you the range where you feel comfortable."
     },
     "pl": {
       "name": "Rozkręcanie kadencji",
-      "description": "Kadencja rośnie od 100 do 115 obr./min co trzydzieści sekund, potem długi lekki reset. Płynnie, bez podskakiwania w siodle."
+      "description": "Kadencja rośnie od 100 do 115 obr./min co trzydzieści sekund, potem długi lekki reset. Płynnie, bez podskakiwania w siodle. Po co: praca nad kadencją wygładza pedałowanie i pokazuje zakres, w którym czujesz się najlepiej."
     }
   },
   "category": "freestyle",

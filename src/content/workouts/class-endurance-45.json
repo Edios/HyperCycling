@@ -1,11 +1,11 @@
 {
   "id": "class-endurance-45",
   "name": "Class: Endurance 45",
-  "description": "Seated tempo songs with small resistance steps and short standing breaks (about 44 minutes).",
+  "description": "Seated tempo songs with small resistance steps and short standing breaks (about 44 minutes). Why: a class-style ride, where the effort follows the music instead of the clock.",
   "localized": {
     "en": {
       "name": "Class: Endurance 45",
-      "description": "Seated tempo songs with small resistance steps and short standing breaks (about 44 minutes).",
+      "description": "Seated tempo songs with small resistance steps and short standing breaks (about 44 minutes). Why: a class-style ride, where the effort follows the music instead of the clock.",
       "songHints": {
         "class-endurance-45-s1": "Easy warm-up song, about 6 min. Aim for about 175 BPM.",
         "class-endurance-45-s2": "Mid-tempo song with a steady groove for a seated tempo. Aim for about 175 BPM.",
@@ -19,7 +19,7 @@
     },
     "pl": {
       "name": "Zajęcia: wytrzymałość 45",
-      "description": "Utwory w tempie, siedząc, z małymi krokami oporu i krótkimi przerwami na stojąco (około 44 minuty).",
+      "description": "Utwory w tempie, siedząc, z małymi krokami oporu i krótkimi przerwami na stojąco (około 44 minuty). Po co: jazda w stylu zajęć, w której wysiłek podąża za muzyką, a nie za zegarem.",
       "songHints": {
         "class-endurance-45-s1": "Lekka piosenka na rozgrzewkę, ok. 6 min. Szukaj ok. 175 BPM.",
         "class-endurance-45-s2": "Piosenka o średnim tempie i równym groove do tempa na siedząco. Szukaj ok. 175 BPM.",

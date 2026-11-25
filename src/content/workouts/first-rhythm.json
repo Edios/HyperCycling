@@ -1,15 +1,15 @@
 {
   "id": "first-rhythm",
   "name": "First Rhythm",
-  "description": "Three five-minute hard tempo blocks with two easy minutes between them.",
+  "description": "Three five-minute hard tempo blocks with two easy minutes between them. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold.",
   "localized": {
     "en": {
       "name": "First Rhythm",
-      "description": "Three five-minute hard tempo blocks with two easy minutes between them."
+      "description": "Three five-minute hard tempo blocks with two easy minutes between them. Why: tempo trains endurance at a pace you can hold for long, with less fatigue than threshold."
     },
     "pl": {
       "name": "Pierwszy rytm",
-      "description": "Trzy pięciominutowe odcinki w mocnym tempie, dwie minuty luzu pomiędzy."
+      "description": "Trzy pięciominutowe odcinki w mocnym tempie, dwie minuty luzu pomiędzy. Po co: tempo trenuje wytrzymałość w tempie, które da się utrzymać długo, przy mniejszym zmęczeniu niż próg."
     }
   },
   "category": "progres",

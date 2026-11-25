@@ -1,15 +1,15 @@
 {
   "id": "cadence-test",
   "name": "Cadence Test",
-  "description": "Four five-minute steps at 80, 90, 100 and 110 rpm to find your comfortable cadence.",
+  "description": "Four five-minute steps at 80, 90, 100 and 110 rpm to find your comfortable cadence. Why: cadence work makes pedalling smoother and shows you the range where you feel comfortable.",
   "localized": {
     "en": {
       "name": "Cadence Test",
-      "description": "Four five-minute steps at 80, 90, 100 and 110 rpm to find your comfortable cadence."
+      "description": "Four five-minute steps at 80, 90, 100 and 110 rpm to find your comfortable cadence. Why: cadence work makes pedalling smoother and shows you the range where you feel comfortable."
     },
     "pl": {
       "name": "Test kadencji",
-      "description": "Cztery pięciominutowe odcinki z kadencją 80, 90, 100 i 110, żeby znaleźć najwygodniejszą kadencję."
+      "description": "Cztery pięciominutowe odcinki z kadencją 80, 90, 100 i 110, żeby znaleźć najwygodniejszą kadencję. Po co: praca nad kadencją wygładza pedałowanie i pokazuje zakres, w którym czujesz się najlepiej."
     }
   },
   "category": "freestyle",

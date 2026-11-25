@@ -1,15 +1,15 @@
 {
   "id": "five-attacks",
   "name": "Five Attacks",
-  "description": "Five two-minute attacks with an equally long break.",
+  "description": "Five two-minute attacks with an equally long break. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks.",
   "localized": {
     "en": {
       "name": "Five Attacks",
-      "description": "Five two-minute attacks with an equally long break."
+      "description": "Five two-minute attacks with an equally long break. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks."
     },
     "pl": {
       "name": "Pięć ataków",
-      "description": "Pięć dwuminutowych ataków z równie długą przerwą."
+      "description": "Pięć dwuminutowych ataków z równie długą przerwą. Po co: twarde interwały blisko maksymalnej mocy tlenowej podnoszą VO2max; dwa takie treningi tygodniowo wystarczą, by po kilku tygodniach to zauważyć."
     }
   },
   "category": "freestyle",

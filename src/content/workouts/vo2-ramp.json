@@ -1,15 +1,15 @@
 {
   "id": "vo2-ramp",
   "name": "VO2 Ramps",
-  "description": "Each effort starts at threshold and climbs to VO2 pace over three minutes. Save a little for the end of every ramp.",
+  "description": "Each effort starts at threshold and climbs to VO2 pace over three minutes. Save a little for the end of every ramp. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks.",
   "localized": {
     "en": {
       "name": "VO2 Ramps",
-      "description": "Each effort starts at threshold and climbs to VO2 pace over three minutes. Save a little for the end of every ramp."
+      "description": "Each effort starts at threshold and climbs to VO2 pace over three minutes. Save a little for the end of every ramp. Why: hard intervals near your maximal aerobic power raise VO2max; two such sessions a week are enough to notice in a few weeks."
     },
     "pl": {
       "name": "Rampy VO2",
-      "description": "Każdy wysiłek zaczyna się na progu i w ciągu trzech minut dochodzi do tempa VO2. Zostaw sobie trochę sił na koniec każdej rampy."
+      "description": "Każdy wysiłek zaczyna się na progu i w ciągu trzech minut dochodzi do tempa VO2. Zostaw sobie trochę sił na koniec każdej rampy. Po co: twarde interwały blisko maksymalnej mocy tlenowej podnoszą VO2max; dwa takie treningi tygodniowo wystarczą, by po kilku tygodniach to zauważyć."
     }
   },
   "category": "freestyle",

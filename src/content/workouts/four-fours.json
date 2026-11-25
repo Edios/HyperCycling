@@ -1,15 +1,15 @@
 {
   "id": "four-fours",
   "name": "Four Fours",
-  "description": "Four four-minute efforts well above threshold with three minutes of rest.",
+  "description": "Four four-minute efforts well above threshold with three minutes of rest. Why: 4 x 4 minutes hard is the classic aerobic-power interval format, long enough to push VO2max, short enough to repeat.",
   "localized": {
     "en": {
       "name": "Four Fours",
-      "description": "Four four-minute efforts well above threshold with three minutes of rest."
+      "description": "Four four-minute efforts well above threshold with three minutes of rest. Why: 4 x 4 minutes hard is the classic aerobic-power interval format, long enough to push VO2max, short enough to repeat."
     },
     "pl": {
       "name": "Cztery czwórki",
-      "description": "Cztery czterominutowe odcinki mocno ponad progiem, trzy minuty luzu."
+      "description": "Cztery czterominutowe odcinki mocno ponad progiem, trzy minuty luzu. Po co: 4 x 4 minuty mocno to klasyczny format na moc tlenową: dość długi, by podnieść VO2max, dość krótki, by go powtórzyć."
     }
   },
   "category": "freestyle",
