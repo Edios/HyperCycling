@@ -66,13 +66,14 @@ test('a slot where no upload plays blocks Start and points to Spotify', async ({
   await page.getByTestId('exp-check-run').click();
   const blocked = page.getByTestId('exp-check-blocked');
   await expect(blocked).toBeVisible();
-  await expect(blocked).toContainText('1, 8');
+  // Nightcall is slot 1 only (slot 8 was a second Nightcall until the music audit, P4).
+  await expect(blocked).toContainText('in parts 1.');
   await expect(page.getByTestId('exp-check-slot').first()).toHaveAttribute('data-health', 'red');
   await expect(page.getByRole('button', { name: 'Start' })).toBeDisabled();
   // The bar says why Start is off, even when the accordion with the result is closed.
   await expect(page.getByTestId('start-notice')).toContainText('will not play');
   // Only a backup plays for the others: nothing else is red.
-  await expect(page.locator('[data-testid="exp-check-slot"][data-health="red"]')).toHaveCount(2);
+  await expect(page.locator('[data-testid="exp-check-slot"][data-health="red"]')).toHaveCount(1);
 });
 
 test('a dead main upload alone is only a yellow warning', async ({ page }) => {

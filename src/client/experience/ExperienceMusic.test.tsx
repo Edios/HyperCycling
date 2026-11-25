@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Experience, MusicHint } from '../../domain/experience';
 import { builtinExperiences, getWorkout } from '../data/builtin';
 import { SpotifyError, type SpotifyProvider, type SpotifyTrackHit } from '../music/spotify';
 import { ExperienceMusic } from './ExperienceMusic';
@@ -36,7 +37,13 @@ const everything = (q: string): SpotifyTrackHit[] => {
   return [hit(`id${m[1]!.replace(/\W/g, '').padEnd(10, 'x').slice(0, 10)}`, m[1]!, m[2]!)];
 };
 
+/** The scenario with edits to its hints (the shipped data has no queue and no repeated song now). */
+function experienceWith(edit: (hints: MusicHint[]) => MusicHint[]): Experience {
+  return { ...exp, musicHints: edit(structuredClone(exp.musicHints ?? [])) };
+}
+
 function setup(opts: {
+  experience?: Experience;
   connected?: boolean;
   provider?: SpotifyProvider;
   choices?: Choices;
@@ -46,7 +53,7 @@ function setup(opts: {
   render(
     <MemoryRouter>
       <ExperienceMusic
-        experience={exp}
+        experience={opts.experience ?? exp}
         workout={workout}
         connected={opts.connected ?? true}
         choices={opts.choices ?? {}}
@@ -152,7 +159,15 @@ describe('ExperienceMusic', () => {
   });
 
   it('saves the authored queue of two songs for a slot, in order', async () => {
-    const onChoices = setup({ provider: providerFor(everything) });
+    // The shipped scenarios have no queue since the audit (P2); a hint with one still works.
+    const experience = experienceWith((hints) =>
+      hints.map((h) => {
+        if (h.slot !== 4) return h;
+        const [clarity, ...rest] = h.alternatives ?? [];
+        return { ...h, queue: clarity ? [clarity] : [], alternatives: rest };
+      }),
+    );
+    const onChoices = setup({ experience, provider: providerFor(everything) });
     fireEvent.click(screen.getByTestId('exp-music-match'));
     await screen.findByTestId('exp-music-review');
     fireEvent.click(screen.getByTestId('exp-music-approve'));
@@ -186,7 +201,11 @@ describe('ExperienceMusic', () => {
   });
 
   it('warns that the same song is suggested for parts 1 and 8', () => {
-    setup({});
+    // No shipped scenario repeats a song since the audit (P4), so repeat one here.
+    const experience = experienceWith((hints) =>
+      hints.map((h) => (h.slot === 7 ? { ...hints[0]!, slot: 7 } : h)),
+    );
+    setup({ experience });
     expect(screen.getByTestId('exp-music-duplicate').textContent).toMatch(/1.*8/);
   });
 

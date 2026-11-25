@@ -83,11 +83,11 @@ describe('ExperienceMusicCheck', () => {
     fireEvent.click(screen.getByTestId('exp-check-run'));
     const list = await screen.findByTestId('exp-check-list');
     const slots = within(list).getAllByTestId('exp-check-slot');
-    // Nightcall is slot 1 and slot 8 of Neon Grid 45.
+    // Nightcall is slot 1 only (slot 8 was a second Nightcall until the audit, P4).
     expect(slots[0]!.getAttribute('data-health')).toBe('red');
-    expect(slots[7]!.getAttribute('data-health')).toBe('red');
+    expect(slots[7]!.getAttribute('data-health')).toBe('green');
     const blocked = screen.getByTestId('exp-check-blocked');
-    expect(blocked.textContent).toMatch(/1, 8/);
+    expect(blocked.textContent).toContain('in parts 1.');
     expect(blocked.getAttribute('role')).toBe('alert');
     expect(within(blocked).queryByTestId('exp-check-spotify')).toBeNull(); // not connected: a link
     expect(within(blocked).getByRole('link')).toBeTruthy();

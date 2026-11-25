@@ -215,19 +215,6 @@
       "durationSec": 404,
       "alternatives": [
         {
-          "artist": "Calvin Harris",
-          "title": "Feel So Close",
-          "bpm": 128
-        },
-        {
-          "artist": "Avicii",
-          "title": "Waiting For Love",
-          "bpm": 128
-        }
-      ],
-      "version": "extended",
-      "queue": [
-        {
           "artist": "Zedd",
           "title": "Clarity",
           "bpm": 128,
@@ -254,8 +241,19 @@
               "durationSec": 272
             }
           ]
+        },
+        {
+          "artist": "Calvin Harris",
+          "title": "Feel So Close",
+          "bpm": 128
+        },
+        {
+          "artist": "Avicii",
+          "title": "Waiting For Love",
+          "bpm": 128
         }
       ],
+      "version": "extended",
       "youtube": [
         {
           "id": "V9_jp0n-2Mw",
@@ -318,7 +316,8 @@
           "label": "re-upload (xValorHD)",
           "durationSec": 238
         }
-      ]
+      ],
+      "durationSec": 253
     },
     {
       "slot": 6,
@@ -381,10 +380,27 @@
     },
     {
       "slot": 7,
-      "artist": "Kavinsky",
-      "title": "Nightcall",
-      "bpm": 91,
-      "durationSec": 259,
+      "artist": "Flume",
+      "title": "Holdin On",
+      "bpm": 90,
+      "durationSec": 155,
+      "youtube": [
+        {
+          "id": "X_H3cIsenBQ",
+          "label": "official/topic (Flume)",
+          "durationSec": 155
+        },
+        {
+          "id": "aynV4UOU-As",
+          "label": "official/topic (Flume)",
+          "durationSec": 154
+        },
+        {
+          "id": "iMvrv9MPPXs",
+          "label": "official/topic (Future Classic)",
+          "durationSec": 154
+        }
+      ],
       "alternatives": [
         {
           "artist": "Tycho",
@@ -397,28 +413,6 @@
           "title": "Starboy",
           "bpm": 93
         }
-      ],
-      "youtube": [
-        {
-          "id": "MV_3Dpw-BRY",
-          "label": "official audio",
-          "durationSec": 257
-        },
-        {
-          "id": "46qo_V1zcOM",
-          "label": "official audio",
-          "durationSec": 261
-        },
-        {
-          "id": "ahienBeHUWw",
-          "label": "re-upload, lyrics (vibes & vanilla)",
-          "durationSec": 257
-        },
-        {
-          "id": "Gl8SUy1C9JY",
-          "label": "re-upload, lyrics (Lyrically Speaking)",
-          "durationSec": 257
-        }
       ]
     },
     {
@@ -428,19 +422,6 @@
       "bpm": 126,
       "durationSec": 451,
       "alternatives": [
-        {
-          "artist": "Avicii",
-          "title": "Levels",
-          "bpm": 126
-        },
-        {
-          "artist": "Calvin Harris",
-          "title": "Summer",
-          "bpm": 128
-        }
-      ],
-      "version": "extended",
-      "queue": [
         {
           "artist": "David Guetta",
           "title": "Titanium",
@@ -468,8 +449,19 @@
               "durationSec": 245
             }
           ]
+        },
+        {
+          "artist": "Avicii",
+          "title": "Levels",
+          "bpm": 126
+        },
+        {
+          "artist": "Calvin Harris",
+          "title": "Summer",
+          "bpm": 128
         }
       ],
+      "version": "extended",
       "youtube": [
         {
           "id": "HUvovrkygZg",
@@ -791,19 +783,6 @@
       "durationSec": 404,
       "alternatives": [
         {
-          "artist": "Calvin Harris",
-          "title": "Feel So Close",
-          "bpm": 128
-        },
-        {
-          "artist": "Avicii",
-          "title": "Waiting For Love",
-          "bpm": 128
-        }
-      ],
-      "version": "extended",
-      "queue": [
-        {
           "artist": "Zedd",
           "title": "Clarity",
           "bpm": 128,
@@ -830,8 +809,19 @@
               "durationSec": 272
             }
           ]
+        },
+        {
+          "artist": "Calvin Harris",
+          "title": "Feel So Close",
+          "bpm": 128
+        },
+        {
+          "artist": "Avicii",
+          "title": "Waiting For Love",
+          "bpm": 128
         }
       ],
+      "version": "extended",
       "youtube": [
         {
           "id": "V9_jp0n-2Mw",
@@ -894,7 +884,8 @@
           "label": "re-upload (xValorHD)",
           "durationSec": 238
         }
-      ]
+      ],
+      "durationSec": 253
     },
     {
       "slot": 6,
@@ -999,10 +990,27 @@
     },
     {
       "slot": 8,
-      "artist": "The Weeknd",
-      "title": "Starboy",
-      "bpm": 93,
-      "durationSec": 230,
+      "artist": "Metronomy",
+      "title": "The Look",
+      "bpm": 85,
+      "durationSec": 278,
+      "youtube": [
+        {
+          "id": "w-zgXwT8Yyo",
+          "label": "official/topic (Metronomy)",
+          "durationSec": 278
+        },
+        {
+          "id": "iPKJUzkTt6Y",
+          "label": "re-upload",
+          "durationSec": 278
+        },
+        {
+          "id": "0ivOmIXiu-Y",
+          "label": "re-upload",
+          "durationSec": 281
+        }
+      ],
       "alternatives": [
         {
           "artist": "Tycho",
@@ -1014,28 +1022,6 @@
           "artist": "Alan Walker",
           "title": "Faded",
           "bpm": 90
-        }
-      ],
-      "youtube": [
-        {
-          "id": "Rif-RTvmmss",
-          "label": "official (VEVO) audio",
-          "durationSec": 231
-        },
-        {
-          "id": "plnfIj7dkJE",
-          "label": "topic (auto-generated)",
-          "durationSec": 230
-        },
-        {
-          "id": "dMMUH_ZpbB0",
-          "label": "official (VEVO) lyric video",
-          "durationSec": 232
-        },
-        {
-          "id": "34Na4j8AVgA",
-          "label": "official (VEVO) video",
-          "durationSec": 273
         }
       ]
     },
@@ -1306,19 +1292,6 @@
       "durationSec": 451,
       "alternatives": [
         {
-          "artist": "Avicii",
-          "title": "Levels",
-          "bpm": 126
-        },
-        {
-          "artist": "Calvin Harris",
-          "title": "Summer",
-          "bpm": 128
-        }
-      ],
-      "version": "extended",
-      "queue": [
-        {
           "artist": "David Guetta",
           "title": "Titanium",
           "bpm": 126,
@@ -1345,8 +1318,19 @@
               "durationSec": 245
             }
           ]
+        },
+        {
+          "artist": "Avicii",
+          "title": "Levels",
+          "bpm": 126
+        },
+        {
+          "artist": "Calvin Harris",
+          "title": "Summer",
+          "bpm": 128
         }
       ],
+      "version": "extended",
       "youtube": [
         {
           "id": "HUvovrkygZg",
