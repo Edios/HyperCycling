@@ -54,6 +54,7 @@ export const en = {
     seated: 'Seated',
     standing: 'Standing',
     position: 'Position',
+    positionIn: 'in {n} s',
     step: 'Step {n}/{total}',
     resistanceAdd: 'Turn up',
     resistanceEase: 'Ease off',

@@ -32,6 +32,8 @@ export interface EffortGroupProps {
   position?: Position;
   /** Position the next block switches to, set in the last seconds before the change. */
   upcomingPosition?: Position | undefined;
+  /** Seconds until that change, for the badge countdown. */
+  upcomingInSec?: number | undefined;
   /** Step inside a stepped ramp; the line is drawn only when count > 1. */
   step?: { index: number; count: number };
   /**
@@ -67,6 +69,7 @@ export function EffortGroup({
   next,
   position,
   upcomingPosition,
+  upcomingInSec,
   step,
   nextPlacement = 'below',
   glass = false,
@@ -175,7 +178,9 @@ export function EffortGroup({
         )}
         {hr && <div className={styles.hr}>{hr}</div>}
         <div className={styles.posRow}>
-          <PositionBadge position={position} upcoming={upcomingPosition} reducedMotion={!motion} />
+          <PositionBadge position={position} upcoming={upcomingPosition}
+            inSec={upcomingInSec}
+            reducedMotion={!motion} />
           {trainer && <ErgControls hud={trainer} />}
           {resistanceCommand && (
             <div

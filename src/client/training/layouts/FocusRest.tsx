@@ -54,6 +54,7 @@ export function FocusRest({ view, active, reducedMotion, showFtp = true }: Focus
           <PositionBadge
             position={view.position}
             upcoming={view.upcomingPosition}
+            inSec={view.upcomingInSec}
             reducedMotion={reducedMotion}
           />
         </div>

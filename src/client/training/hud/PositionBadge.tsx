@@ -7,6 +7,8 @@ export interface PositionBadgeProps {
   position: Position | undefined;
   /** The position the next block switches to: the badge calls it before the change. */
   upcoming?: Position | undefined;
+  /** Seconds until the change; shown next to the coming position ("Standing in 5 s"). */
+  inSec?: number | undefined;
   /** Reduced motion or Effects off: the call stays visible but does not move. */
   reducedMotion?: boolean;
   className?: string;
@@ -46,6 +48,7 @@ function StandingIcon() {
 export function PositionBadge({
   position,
   upcoming,
+  inSec,
   reducedMotion = false,
   className,
 }: PositionBadgeProps) {
@@ -54,7 +57,9 @@ export function PositionBadge({
   const word = t(resolved === 'standing' ? 'training.standing' : 'training.seated');
   const change = upcoming && upcoming !== resolved ? upcoming : undefined;
   const changeWord = change ? t(change === 'standing' ? 'training.standing' : 'training.seated') : '';
-  const label = `${t('training.position')}: ${word}${change ? `, ${t('training.next')}: ${changeWord}` : ''}`;
+  const when =
+    change && inSec !== undefined && inSec > 0 ? ` ${t('training.positionIn', { n: inSec })}` : '';
+  const label = `${t('training.position')}: ${word}${change ? `, ${t('training.next')}: ${changeWord}${when}` : ''}`;
   return (
     <div
       className={`${styles.badge} ${change && !reducedMotion ? styles.calling : ''} ${className ?? ''}`}
@@ -67,7 +72,7 @@ export function PositionBadge({
     >
       {(change ?? resolved) === 'standing' ? <StandingIcon /> : <SeatedIcon />}
       <span className={styles.word} aria-hidden="true">
-        {change ? changeWord : word}
+        {change ? `${changeWord}${when}` : word}
       </span>
     </div>
   );

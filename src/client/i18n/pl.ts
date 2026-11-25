@@ -58,6 +58,7 @@ export const pl: Messages = {
     seated: 'Siedząc',
     standing: 'Stojąc',
     position: 'Pozycja',
+    positionIn: 'za {n} s',
     step: 'Krok {n}/{total}',
     resistanceAdd: 'Dodaj opór',
     resistanceEase: 'Odpuść',
