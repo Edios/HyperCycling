@@ -28,3 +28,11 @@
   color: var(--bg);
   border-color: var(--fg);
 }
+
+/* Touch screens and a phone on its side (rem is small there): a 44 px target. */
+@media (pointer: coarse), (max-height: 500px) {
+  .chip {
+    height: max(44px, 2.25rem);
+    border-radius: 22px;
+  }
+}

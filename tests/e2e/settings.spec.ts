@@ -72,7 +72,8 @@ test('settings: the FTP calculator saves the result as my FTP', async ({ page })
 test('settings: zones reject a non-increasing table and keep valid edits after a reload', async ({
   page,
 }) => {
-  await page.goto('./#/settings');
+  // Zones are a rarely used section: collapsed unless asked for.
+  await page.goto('./#/settings?section=zones');
   const level5 = page.getByLabel('% FTP for level 5', { exact: true });
   await level5.fill('60');
   await expect(page.getByText('Must be higher than the level below.')).toBeVisible();

@@ -35,7 +35,7 @@ test('diagnostics: device card, performance test table and copy report', async (
   });
   test.skip(!webgl, 'WebGL is not available in this headless browser');
 
-  await page.goto('./#/settings?diagMs=600');
+  await page.goto('./#/settings?diagMs=600&section=diagnostics');
   await page.getByRole('button', { name: 'Run test' }).click();
   await expect(page.getByRole('dialog', { name: 'Performance test' })).toBeVisible();
   const table = page.getByTestId('results-table');

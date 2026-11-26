@@ -2,7 +2,7 @@ import type { ComponentPropsWithRef } from 'react';
 import styles from './Button.module.css';
 
 export interface ButtonProps extends ComponentPropsWithRef<'button'> {
-  /** `text`: a secondary action without a frame (brand §5.3: frames only for input fields). */
+  /** `text`: a secondary action without a frame (UI audit §5.3: frames only for input fields). */
   variant?: 'default' | 'primary' | 'text';
   size?: 'normal' | 'big';
 }

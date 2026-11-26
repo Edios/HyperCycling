@@ -138,6 +138,7 @@ describe('Settings, music player', () => {
       name: 'Show the music player',
     })) as HTMLInputElement;
     expect(toggle.checked).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Help: Show the music player' }));
     expect(screen.getByTestId('music-player-hint')).toHaveTextContent('200 × 200');
     expect(screen.queryByTestId('music-player-off-note')).not.toBeInTheDocument();
     fireEvent.click(toggle);
@@ -167,6 +168,7 @@ describe('Settings, music player on a mobile device', () => {
       name: 'Show the music player',
     })) as HTMLInputElement;
     expect(toggle.checked).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: 'Help: Show the music player' }));
     expect(screen.getByTestId('music-player-hint')).toHaveTextContent('starts off');
     // Not the rider's own choice: no note about their responsibility.
     expect(screen.queryByTestId('music-player-off-note')).not.toBeInTheDocument();

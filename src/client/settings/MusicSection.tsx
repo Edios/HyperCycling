@@ -21,6 +21,7 @@ import { spotifyErrorKey } from '../music/spotify/messages';
 import type { SpotifyDevice } from '../music/spotify/provider';
 import { getSharedSpotifyProvider } from '../music/spotify/shared';
 import { Button } from '../ui/Button';
+import { SettingRow } from '../ui/SettingRow';
 import { Toggle } from '../ui/Toggle';
 import styles from './Settings.module.css';
 
@@ -212,7 +213,9 @@ export function MusicSection() {
   return (
     <div className={styles.stack}>
       <p className={styles.lead}>{t('settings.music.intro')}</p>
-      <MusicSourceSelect className={styles.note} />
+      <SettingRow topic={t('experience.check.source.label')} help={t('setup.sourceHelp')}>
+        <MusicSourceSelect />
+      </SettingRow>
 
       {onLocalhost && (
         <div role="alert" className={styles.warning} data-testid="localhost-warning">
@@ -350,26 +353,31 @@ export function MusicSection() {
         </p>
       </div>
 
-      <div className={styles.field}>
+      <SettingRow
+        topic={t('settings.music.player.label')}
+        help={<p data-testid="music-player-hint">{t('settings.music.player.hint')}</p>}
+        {...(settings.showMusicPlayer === false
+          ? {
+              status: (
+                <span role="status" data-testid="music-player-off-note">
+                  {t('settings.music.player.offNote')}
+                </span>
+              ),
+            }
+          : {})}
+      >
         <Toggle
           label={t('settings.music.player.label')}
           checked={playerShown}
           onChange={(on) => void save_({ showMusicPlayer: on })}
         />
-        <p className={styles.note} data-testid="music-player-hint">
-          {t('settings.music.player.hint')}
-        </p>
-        {settings.showMusicPlayer === false && (
-          <p className={styles.note} role="status" data-testid="music-player-off-note">
-            {t('settings.music.player.offNote')}
-          </p>
-        )}
-      </div>
+      </SettingRow>
 
       <SongLibraryCard />
 
-      <div className={styles.setup}>
-        <h3 className={styles.subTitle}>{t('settings.music.setupTitle')}</h3>
+      {/* Read once when connecting Spotify: collapsed (audit N-10). */}
+      <details className={styles.setup}>
+        <summary className={styles.subTitle}>{t('settings.music.setupTitle')}</summary>
         <ol className={styles.steps}>
           <li>{t('settings.music.setupSteps.dashboard')}</li>
           <li>
@@ -386,7 +394,7 @@ export function MusicSection() {
           <li>{t('settings.music.setupSteps.connect')}</li>
         </ol>
         <p className={styles.note}>{t('settings.music.premiumNote')}</p>
-      </div>
+      </details>
     </div>
   );
 }

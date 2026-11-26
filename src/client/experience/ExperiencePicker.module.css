@@ -39,12 +39,15 @@
   gap: 0.75rem;
 }
 /* Wide screens: card and scenario preview in two columns, a 1 px line between them. */
+/* A wide card fills the row: the grid is one column then. */
+.grid:has(> .wide) {
+  grid-template-columns: minmax(0, 1fr);
+}
 .wide {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: minmax(22rem, 30rem) minmax(0, 1fr);
   gap: 0 2rem;
-  max-width: 76rem;
 }
 .wide .scenarioBox {
   margin: 0;
@@ -87,7 +90,7 @@
   color: var(--mut);
   font-size: 0.9375rem;
 }
-/* Plain facts, no frames (brand §5.3): a dot between them. */
+/* Plain facts, no frames (UI audit §5.3): a dot between them. */
 .facts li + li::before {
   content: '·';
   margin-right: 0.5rem;
@@ -157,6 +160,11 @@
   white-space: nowrap;
 }
 .slotSub {
+  overflow: hidden;
+}
+/* The song in its own box, so a long title ends in a visible ellipsis. */
+.slotSong {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }

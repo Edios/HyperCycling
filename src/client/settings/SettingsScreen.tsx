@@ -4,6 +4,7 @@ import { DashLine } from '../brand';
 import { useSettings } from '../data/useSettings';
 import { useT, type MessageKey } from '../i18n';
 import { AppBar } from '../ui/AppBar';
+import { Icon } from '../ui/Icon';
 import { AboutSection } from './AboutSection';
 import { DataSection } from './DataSection';
 import { DiagnosticsSection } from './DiagnosticsSection';
@@ -16,29 +17,54 @@ import { TrainingSection } from './TrainingSection';
 import { ZonesSection } from './ZonesSection';
 import styles from './Settings.module.css';
 
-/** One titled block of the settings screen. */
+/**
+ * One titled block of the settings screen. A rarely used one (`open` given) is collapsed: its
+ * title is a button that opens it, and its body is only rendered when open (audit N-10).
+ */
 export function SettingsSection({
   id,
   titleKey,
+  open,
+  onToggle,
   children,
 }: {
   id: string;
   titleKey: MessageKey;
+  /** Undefined: always open. */
+  open?: boolean;
+  onToggle?: () => void;
   children: ReactNode;
 }) {
   const t = useT();
   const headingId = `settings-${id}-title`;
+  const bodyId = `settings-${id}-body`;
+  const collapsible = open !== undefined;
   return (
     <section
       id={`settings-section-${id}`}
-      className={styles.section}
+      className={`${styles.section} ${collapsible && !open ? styles.sectionClosed : ''}`}
       aria-labelledby={headingId}
       data-testid={`settings-${id}`}
     >
       <h2 id={headingId} className={styles.sectionTitle}>
-        {t(titleKey)}
+        {collapsible ? (
+          <button
+            type="button"
+            className={styles.sectionToggle}
+            aria-expanded={open}
+            aria-controls={bodyId}
+            onClick={onToggle}
+          >
+            {t(titleKey)}
+            <span className={styles.chevron}>
+              <Icon name="chevron" size={22} />
+            </span>
+          </button>
+        ) : (
+          t(titleKey)
+        )}
       </h2>
-      {children}
+      {collapsible ? open && <div id={bodyId}>{children}</div> : children}
     </section>
   );
 }
@@ -48,6 +74,8 @@ const SECTIONS: readonly {
   titleKey: MessageKey;
   navKey: MessageKey;
   body: ReactNode;
+  /** Rarely used: collapsed until opened (from its title, the nav or `?section=`). */
+  rare?: true;
 }[] = [
   {
     id: 'general',
@@ -69,6 +97,7 @@ const SECTIONS: readonly {
   },
   {
     id: 'zones',
+    rare: true,
     titleKey: 'settings.zones.title',
     navKey: 'settings.nav.zones',
     body: <ZonesSection />,
@@ -81,18 +110,21 @@ const SECTIONS: readonly {
   },
   {
     id: 'data',
+    rare: true,
     titleKey: 'settings.data.title',
     navKey: 'settings.nav.data',
     body: <DataSection />,
   },
   {
     id: 'diagnostics',
+    rare: true,
     titleKey: 'diagnostics.title',
     navKey: 'settings.nav.diagnostics',
     body: <DiagnosticsSection />,
   },
   {
     id: 'about',
+    rare: true,
     titleKey: 'settings.about.title',
     navKey: 'settings.nav.about',
     body: <AboutSection />,
@@ -140,12 +172,29 @@ export function SettingsScreen() {
   const [active, setActive] = useActiveSection(loaded);
   const [params] = useSearchParams();
   const wanted = params.get('section');
+  const [opened, setOpened] = useState<ReadonlySet<string>>(() => new Set(wanted ? [wanted] : []));
+  // A new `?section=` (a link from another screen while this one is open) opens that section too:
+  // adjusted while rendering, not in an effect.
+  const [seenWanted, setSeenWanted] = useState(wanted);
+  if (wanted !== seenWanted) {
+    setSeenWanted(wanted);
+    if (wanted && !opened.has(wanted)) setOpened(new Set(opened).add(wanted));
+  }
+  const open = (id: string): void =>
+    setOpened((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+  const toggle = (id: string): void =>
+    setOpened((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
   useEffect(() => {
     if (!loaded || !wanted) return;
     document.getElementById(`settings-section-${wanted}`)?.scrollIntoView?.({ block: 'start' });
   }, [loaded, wanted]);
   const goTo = (id: string): void => {
     setActive(id);
+    open(id);
     document.getElementById(`settings-section-${id}`)?.scrollIntoView?.({ block: 'start' });
   };
   return (
@@ -180,7 +229,12 @@ export function SettingsScreen() {
               )}
               {loaded &&
                 SECTIONS.map((s) => (
-                  <SettingsSection key={s.id} id={s.id} titleKey={s.titleKey}>
+                  <SettingsSection
+                    key={s.id}
+                    id={s.id}
+                    titleKey={s.titleKey}
+                    {...(s.rare ? { open: opened.has(s.id), onToggle: () => toggle(s.id) } : {})}
+                  >
                     {s.body}
                   </SettingsSection>
                 ))}

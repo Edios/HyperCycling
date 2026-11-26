@@ -67,3 +67,10 @@
   border-color: transparent;
   background: color-mix(in srgb, var(--fg) 6%, transparent);
 }
+
+/* Touch screens and a phone on its side (rem is small there): every button is a 44 px target. */
+@media (pointer: coarse), (max-height: 500px) {
+  .btn {
+    min-height: 44px;
+  }
+}
