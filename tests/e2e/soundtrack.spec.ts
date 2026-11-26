@@ -223,6 +223,8 @@ test.describe('Match music', () => {
     await page.goto('./#/settings');
     const toggle = page.getByRole('switch', { name: 'Show the music player' });
     await expect(toggle).toBeChecked();
+    // The explanation sits under the row's "?".
+    await page.getByRole('button', { name: 'Help: Show the music player' }).click();
     await expect(page.getByTestId('music-player-hint')).toContainText('200 × 200');
     await toggle.uncheck();
     await expect(page.getByTestId('music-player-off-note')).toContainText(

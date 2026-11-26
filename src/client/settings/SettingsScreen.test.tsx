@@ -66,7 +66,13 @@ function renderScreen() {
   );
 }
 
-const section = (id: string) => screen.findByTestId(`settings-${id}`);
+/** A section, opened first when it is a collapsed (rarely used) one. */
+const section = async (id: string) => {
+  const el = await screen.findByTestId(`settings-${id}`);
+  const toggle = el.querySelector<HTMLButtonElement>('h2 > button[aria-expanded="false"]');
+  if (toggle) fireEvent.click(toggle);
+  return el;
+};
 
 beforeEach(() => {
   db.settings = undefined;
@@ -116,8 +122,16 @@ describe('Settings screen structure', () => {
     Element.prototype.scrollIntoView = scroll;
     renderScreen();
     await section('general');
+    const zones = screen.getByTestId('settings-zones');
+    // A rarely used section is collapsed; the nav opens it.
+    expect(within(zones).queryByLabelText('% FTP for level 1')).toBeNull();
+    expect(within(zones).getByRole('button', { name: 'Zones' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
     const nav = screen.getByRole('navigation', { name: 'Settings sections' });
     fireEvent.click(within(nav).getByRole('button', { name: 'Zones' }));
+    expect(within(zones).getByLabelText('% FTP for level 1')).toBeInTheDocument();
     expect(scroll).toHaveBeenCalled();
     expect(within(nav).getByRole('button', { name: 'Zones' })).toHaveAttribute(
       'aria-current',
@@ -237,7 +251,7 @@ describe('FTP test guide', () => {
     const radios = within(guide).getAllByRole('radio');
     expect(radios[0]).toHaveAccessibleName('20-minute test');
     expect(radios[0]).toBeChecked();
-    expect(within(guide).getByTestId('ftp-recommended')).toHaveTextContent("don’t know your FTP");
+    expect(within(guide).getByTestId('ftp-recommended')).toHaveTextContent('don’t know your FTP');
     expect(within(guide).getByTestId('ftp-recommended')).toHaveTextContent('8 out of 10');
     expect(within(guide).getByText('FTP = 95% of the 20-minute average power')).toBeVisible();
     expect(within(guide).getByTestId('ftp-test-start')).toHaveAttribute(
@@ -354,8 +368,10 @@ describe('Training', () => {
 });
 
 describe('Zones', () => {
-  const pctInput = async (level: number) =>
-    (await screen.findByLabelText(`% FTP for level ${level}`)) as HTMLInputElement;
+  const pctInput = async (level: number) => {
+    await section('zones');
+    return (await screen.findByLabelText(`% FTP for level ${level}`)) as HTMLInputElement;
+  };
 
   it('lists the 10 levels with their % FTP', async () => {
     renderScreen();
@@ -547,6 +563,7 @@ describe('Data', () => {
     );
     try {
       renderScreen();
+      await section('data');
       expect(await screen.findByText('Database file: C:/data/x.db')).toBeInTheDocument();
     } finally {
       vi.unstubAllGlobals();
@@ -560,6 +577,7 @@ describe('Data', () => {
     );
     try {
       renderScreen();
+      await section('data');
       expect(await screen.findByTestId('data-location')).toHaveTextContent(
         'Local database (the location is not available).',
       );
@@ -572,6 +590,7 @@ describe('Data', () => {
     vi.stubEnv('VITE_STORAGE', 'indexeddb');
     try {
       renderScreen();
+      await section('data');
       expect(await screen.findByText(/Browser storage \(IndexedDB\)/)).toBeInTheDocument();
     } finally {
       vi.unstubAllEnvs();

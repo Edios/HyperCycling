@@ -174,7 +174,9 @@ function SeriesCard({ series, filter }: { series: ExperienceSeries; filter: Leve
                     </span>
                     <span className={styles.slotSub}>
                       <Icon name="music" size={13} />
-                      {song ?? t('experience.noSong')}
+                      <span className={styles.slotSong} title={song}>
+                        {song ?? t('experience.noSong')}
+                      </span>
                     </span>
                   </span>
                   <span className={styles.slotBar} aria-hidden="true">

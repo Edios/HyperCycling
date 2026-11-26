@@ -230,6 +230,13 @@
   gap: 0.25rem 1rem;
 }
 
+/* At least a 24 px target each (WCAG 2.5.8), also on a phone where the rem is small. */
+.footerLinks a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
 .footerCredit {
   flex: 1 0 100%;
 }

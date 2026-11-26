@@ -16,7 +16,8 @@ test('heart-rate zones: HRmax from age, zone column and toggle in Settings', asy
   const row = page.getByTestId('player-row').filter({ hasText: name });
   await expect(row).toContainText('183');
 
-  await page.goto('./#/settings');
+  // Zones are a rarely used section: collapsed unless asked for.
+  await page.goto('./#/settings?section=zones');
   const zones = page.getByTestId('zones-table');
   await expect(zones.getByTestId('zone-hr').nth(5)).toHaveText('Z3 · 70–80%');
 
