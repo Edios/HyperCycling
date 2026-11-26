@@ -4,6 +4,8 @@ import styles from './RateButtons.module.css';
 export type RateTap = 'up' | 'down' | 'love';
 
 export interface RateButtonsProps {
+  /** Placement from the parent (a row of its own, or inline). */
+  className?: string | undefined;
   feedback?: { rating?: 'up' | 'down'; love?: true } | undefined;
   onRate: (tap: RateTap) => void;
 }
@@ -17,7 +19,7 @@ const HEART =
  * The owner's thumbs and heart for the song that plays (energy matching spec §9 J), next to its
  * title: in the now-playing label, or in the music player's caption when the player is shown.
  */
-export function RateButtons({ feedback, onRate }: RateButtonsProps) {
+export function RateButtons({ className, feedback, onRate }: RateButtonsProps) {
   const t = useT();
   const buttons = [
     { tap: 'up', label: t('music.rateUp'), path: THUMB, on: feedback?.rating === 'up' },
@@ -31,7 +33,11 @@ export function RateButtons({ feedback, onRate }: RateButtonsProps) {
     { tap: 'love', label: t('music.rateLove'), path: HEART, on: feedback?.love === true },
   ] as const;
   return (
-    <span className={styles.rate} role="group" aria-label={t('music.rateLabel')}>
+    <span
+      className={className ? `${styles.rate} ${className}` : styles.rate}
+      role="group"
+      aria-label={t('music.rateLabel')}
+    >
       {buttons.map((b) => (
         <button
           key={b.tap}

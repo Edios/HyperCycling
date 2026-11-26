@@ -63,6 +63,43 @@
   text-overflow: ellipsis;
 }
 
+/*
+ * With the song thumbs (only while the ride controls show): the title keeps the label's whole
+ * width and the thumbs share the second line with the artist (which gives way first). The thumbs
+ * take no more height than that line: their 32 px icons overhang it, the touch targets are 44 px.
+ */
+.root.rated {
+  display: grid;
+  row-gap: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'icon title title'
+    'icon meta rate';
+  align-items: center;
+}
+
+.rated .text {
+  display: contents;
+}
+
+.rated .icon,
+.rated .mute {
+  grid-area: icon;
+}
+
+.rated .title {
+  grid-area: title;
+}
+
+.rated .meta {
+  grid-area: meta;
+}
+
+.rated .rate {
+  grid-area: rate;
+  margin-block: -8px;
+}
+
 @media (max-width: 760px) and (orientation: portrait) {
   .root.root {
     /* Under the 8px zone bar, full width of the stack, one line: title, then the artist. */
@@ -79,6 +116,23 @@
 
   .icon {
     font-size: 16px;
+  }
+
+  /*
+   * The strip is one line and the layouts keep exactly that room (--chip-room): the thumbs sit at
+   * its end and take no height (their 32 px icons overhang the 16 px line; the touch targets are
+   * 44 px all the same).
+   */
+  .root.rated {
+    display: flex;
+  }
+
+  .rated .text {
+    display: flex;
+  }
+
+  .rated .rate {
+    margin-left: auto;
   }
 
   .text {

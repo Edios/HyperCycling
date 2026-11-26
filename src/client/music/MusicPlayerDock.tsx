@@ -51,7 +51,7 @@ export function MusicPlayerDock({
           {track?.title || t('music.unknownTrack')}
           {track?.artist ? <small>{track.artist}</small> : null}
         </span>
-        {visible && extra}
+        {visible && extra ? <span className={styles.extra}>{extra}</span> : null}
         {onHide && (
           <button
             type="button"

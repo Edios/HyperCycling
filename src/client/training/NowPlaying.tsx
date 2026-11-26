@@ -19,7 +19,7 @@ export function NowPlaying({ track, muted, feedback, onRate }: NowPlayingProps) 
   const title = track.title || t('music.unknownTrack');
   return (
     <div
-      className={`${hud.panel} ${styles.root}`}
+      className={`${hud.panel} ${styles.root}${onRate ? ` ${styles.rated}` : ''}`}
       data-g="S"
       data-testid="now-playing"
       data-provider={track.provider}
@@ -51,7 +51,7 @@ export function NowPlaying({ track, muted, feedback, onRate }: NowPlayingProps) 
           {muted ? ` · ${t('music.nowPlayingMuted')}` : ''}
         </span>
       </span>
-      {onRate && <RateButtons feedback={feedback} onRate={onRate} />}
+      {onRate && <RateButtons className={styles.rate} feedback={feedback} onRate={onRate} />}
     </div>
   );
 }
