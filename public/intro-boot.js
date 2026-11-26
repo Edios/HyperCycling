@@ -3,9 +3,12 @@
  * by CSS) is shown: sets data-intro="full" | "static" on <html>. A separate classic file because the
  * CSP forbids inline scripts. The rules are those of src/client/brand/intro-policy.ts (introMode);
  * a test runs both against the same cases. Storage that cannot be read means "first visit".
+ * It also sets data-boot on <html> every time: while it runs, the page shows the still logo instead
+ * of the fallback text in #root until React replaces it (src/client/brand/intro-boot.css).
  */
 (function () {
   var root = document.documentElement;
+  root.setAttribute('data-boot', '');
   try {
     var KEY_LAST = 'hypercycling.intro.last';
     var KEY_PREF = 'hypercycling.intro.pref';

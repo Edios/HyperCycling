@@ -12,6 +12,7 @@ import {
   writeIntroPref,
   type IntroEnv,
 } from './intro-policy';
+import { fillIntroTicks } from './intro-markup';
 import { INTRO_TIMING, tickStart, tickVarsCss } from './intro-timeline';
 
 const mocks = vi.hoisted(() => ({ intensity: 1, loaded: true }));
@@ -137,6 +138,20 @@ describe('intro-boot.js', () => {
     expect(localStorage.getItem(INTRO_KEYS.last)).toBe(String(NOW));
     expect(run()).toBeNull();
   });
+  it('marks a running script on <html> in every case, so the static logo replaces the SEO text', () => {
+    for (const [, patch] of cases) {
+      const env = { ...base, ...patch };
+      localStorage.clear();
+      localStorage.setItem(INTRO_KEYS.pref, env.pref);
+      if (env.lastShownAt !== null) localStorage.setItem(INTRO_KEYS.last, String(env.lastShownAt));
+      if (env.effectsOff) localStorage.setItem(INTRO_KEYS.effectsOff, '1');
+      Object.defineProperty(navigator, 'webdriver', { value: env.webdriver, configurable: true });
+      document.documentElement.removeAttribute('data-boot');
+      run();
+      expect(document.documentElement.hasAttribute('data-boot'), _nameOf(patch)).toBe(true);
+    }
+    document.documentElement.removeAttribute('data-boot');
+  });
   it('shows the intro when storage is unavailable', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('denied');
@@ -145,6 +160,60 @@ describe('intro-boot.js', () => {
       throw new Error('denied');
     });
     expect(run()).toBe('full');
+  });
+});
+
+function _nameOf(patch: Partial<IntroEnv>): string {
+  return JSON.stringify(patch);
+}
+
+/**
+ * Before React starts, a visit without the intro used to show the fallback text of #root (heading,
+ * paragraphs, links) on the dark page, like a footer. With the script running it shows the still
+ * logo instead; crawlers and visitors without JavaScript keep the text (owner, 2026-11-26).
+ */
+describe('the page before React starts', () => {
+  const html = readFileSync(path.join(root, 'index.html'), 'utf8');
+  const css = readFileSync(path.join(root, 'src/client/brand/intro-boot.css'), 'utf8').replace(
+    /\/\*[\s\S]*?\*\//g,
+    '',
+  );
+  const rootHtml = html.slice(
+    html.indexOf('<div id="root">'),
+    html.indexOf('<script type="module"'),
+  );
+  /** The declarations of the first rule whose selector list has `selector`. */
+  const rule = (selector: string): string => {
+    const at = css.split('}').find((block) => {
+      const head = block.slice(0, block.indexOf('{'));
+      return head.split(',').some((x) => x.trim() === selector);
+    });
+    return at ? at.slice(at.indexOf('{') + 1) : '';
+  };
+
+  it('keeps the SEO text in #root, and a still logo next to it for React to replace', () => {
+    expect(rootHtml).toContain('<div class="boot-seo">');
+    expect(rootHtml).toContain('<h1>HyperCycling</h1>');
+    expect(rootHtml).toContain('<a href="https://getsongbpm.com"');
+    expect(rootHtml).toContain('<a href="https://github.com/Edios/HyperCycling"');
+    expect(rootHtml).toMatch(/<div id="boot-logo" aria-hidden="true">/);
+    expect(rootHtml).toContain('<!--INTRO_TICKS-->');
+  });
+
+  it('shows the logo and hides the text only while the script runs, with no animation', () => {
+    expect(rule('#boot-logo')).toMatch(/display:\s*none/);
+    expect(rule('html[data-boot] #boot-logo')).toMatch(/display:\s*grid/);
+    expect(rule('html[data-boot] #root > .boot-seo')).toMatch(/display:\s*none/);
+    // Still: no animation on the logo (the full intro keeps its own).
+    for (const block of css.split('}')) {
+      if (block.includes('#boot-logo')) expect(block).not.toMatch(/animation/);
+    }
+  });
+
+  it('fills every logo placeholder with the ticks (intro and still logo)', () => {
+    const out = fillIntroTicks(html);
+    expect(out).not.toContain('<!--INTRO_TICKS-->');
+    expect(out.match(/<path class="t0"/g)).toHaveLength(2);
   });
 });
 

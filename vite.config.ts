@@ -1,8 +1,7 @@
 import { readFileSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
-import { logoSegments } from './src/client/brand/geometry';
-import { MARK_SIZE } from './src/client/brand/intro-timeline';
+import { fillIntroTicks } from './src/client/brand/intro-markup';
 import { injectCspMeta } from './src/shared/cspMeta';
 
 /**
@@ -18,20 +17,11 @@ function cspMeta(): Plugin {
   };
 }
 
-/** Fills the intro's logo ticks (index.html) from the one logo geometry, in dev and in builds. */
+/** Fills the logo ticks of index.html (the intro and the still logo), in dev and in builds. */
 function introMarkup(): Plugin {
   return {
     name: 'spinning-tutor:intro-markup',
-    transformIndexHtml: (html) =>
-      html.replace(
-        '<!--INTRO_TICKS-->',
-        logoSegments(MARK_SIZE)
-          .map(
-            (s, i) =>
-              `<path class="t${i}" d="${s.d}" fill="${s.color}" stroke="${s.color}" stroke-width="${s.strokeWidth}" stroke-linejoin="round" />`,
-          )
-          .join(''),
-      ),
+    transformIndexHtml: fillIntroTicks,
   };
 }
 
