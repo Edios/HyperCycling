@@ -11,7 +11,12 @@
   display: flex;
   align-items: center;
   gap: calc(1.8 * var(--u));
-  max-width: min(30vw, calc(50vw - calc(40 * var(--u))));
+  /*
+   * Short of the controls bar in the middle: its half is ~40u on a computer, but its 44 px buttons
+   * make it ~185 px on a phone held sideways, hence the second limit in px (with the song thumbs,
+   * the label is often at its widest).
+   */
+  max-width: min(30vw, calc(50vw - calc(40 * var(--u))), calc(50vw - 230px));
   padding: calc(1.4 * var(--u)) calc(2.2 * var(--u));
   border-radius: calc(1.9 * var(--u));
   pointer-events: none;
@@ -56,35 +61,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.rate {
-  display: flex;
-  flex: none;
-  gap: calc(0.6 * var(--u));
-  pointer-events: auto;
-}
-
-.rateBtn {
-  display: grid;
-  place-items: center;
-  width: max(36px, calc(5 * var(--u)));
-  height: max(36px, calc(5 * var(--u)));
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--sub);
-  cursor: pointer;
-}
-
-.rateBtn[aria-pressed='true'] {
-  color: var(--fg);
-}
-
-.rateBtn svg {
-  width: 62%;
-  height: 62%;
 }
 
 @media (max-width: 760px) and (orientation: portrait) {

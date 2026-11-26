@@ -1,0 +1,28 @@
+.rate {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  pointer-events: auto;
+}
+
+.btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--sub, rgba(255, 255, 255, 0.6));
+  cursor: pointer;
+}
+
+.btn[aria-pressed='true'] {
+  color: var(--fg, #fff);
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+}
