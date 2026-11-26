@@ -27,6 +27,8 @@ import { Button } from '../ui/Button';
 import { Chip } from '../ui/Chip';
 import { ProfileChart } from '../ui/ProfileChart';
 import { Segmented } from '../ui/Segmented';
+import { OwnTracksPanel } from './OwnTracksPanel';
+import { useOwnTracks } from './own-tracks';
 import { PartCard } from './PartCard';
 import { freshSeed, historyIds, loadSoundtrackHistory } from './history';
 import { loadSoundtrackPrefs, saveSoundtrackPrefs } from './prefs';
@@ -133,8 +135,11 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
     setPrefs((p) => ({ ...p, ...patch }));
   };
 
+  // Own songs count only while there are some: the switch stays on with an emptied list.
+  const ownCount = useOwnTracks((s) => s.tracks.length);
+  const useOwn = prefs.includeLibrary && ownCount > 0;
   const planKey = (p: SoundtrackPrefs): string =>
-    `${p.categories.join(',')}|${p.polish === true ? 'pl' : ''}|${p.continuity}`;
+    `${p.categories.join(',')}|${p.polish === true ? 'pl' : ''}|${p.continuity}|${useOwn ? `own${catalog.length}` : ''}`;
 
   const goPlan = (): void => {
     saveSoundtrackPrefs(prefs);
@@ -293,6 +298,10 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
             )}
           </p>
         </div>
+        <OwnTracksPanel
+          use={prefs.includeLibrary}
+          onUseChange={(includeLibrary) => changePrefs({ includeLibrary })}
+        />
       </>
     );
   } else if (step === 2 && plan && summary) {

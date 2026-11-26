@@ -182,6 +182,12 @@ export const WEIGHTS = {
   trust: 0.05,
 } as const;
 
+/**
+ * Added to an own song's score (PR 6): the rider picked it, so where it fits as well as a catalog
+ * song it wins. It never makes a song fit that does not (the hard rules and the tempo stay).
+ */
+export const OWN_BONUS = 0.1;
+
 /** Category fit of a song from a neighbour category, and from any category (relaxed). */
 export const NEIGHBOUR_FIT = 0.7;
 export const ANY_CATEGORY_FIT = 0.5;
@@ -679,7 +685,8 @@ function scoredAt(
     const score =
       sc.score +
       SHUFFLE_JITTER * shuffleValue(prefs.seed, ctx.shuffleSalt + t.id) -
-      ARTIST_REPEAT_PENALTY * plays -
+      ARTIST_REPEAT_PENALTY * plays +
+      (t.own === true ? OWN_BONUS : 0) -
       addOn -
       rotation;
     out.push({ track: t, key, score, fit: sc.fit, rideRpm: sc.rideRpm, lenSec, rotation });
