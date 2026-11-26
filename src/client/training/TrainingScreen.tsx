@@ -804,15 +804,17 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
 
   // The global Diagnostics overlay (Root) shows what is drawn behind the HUD; nothing when off.
   const diagOn = settings.diagnostics === true;
-  const diagScene = world
-    ? `${t('setup.backgroundWorld')} / ${resolveWorld(worldId)}`
-    : t(youtube !== null ? 'setup.backgroundYoutube' : 'setup.backgroundBasic');
-  const diagQuality = world ? effectiveQuality : undefined;
+  const hasYoutube = youtube !== null;
   useEffect(() => {
     if (!diagOn) return;
-    publishDiagScene({ scene: diagScene, quality: diagQuality });
+    publishDiagScene({
+      scene: world
+        ? `${t('setup.backgroundWorld')} / ${resolveWorld(worldId)}`
+        : t(hasYoutube ? 'setup.backgroundYoutube' : 'setup.backgroundBasic'),
+      quality: world ? effectiveQuality : undefined,
+    });
     return () => publishDiagScene(null);
-  }, [diagOn, diagScene, diagQuality]);
+  }, [diagOn, world, worldId, hasYoutube, effectiveQuality, t]);
 
   if (!view) return null;
 

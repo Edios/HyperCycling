@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getSettingsSnapshot, updateSettings } from '../data/useSettings';
-import { DiagnosticsOverlay } from './DiagnosticsOverlay';
+import { DiagnosticsOverlay, resetOverlayDetailsForTests } from './DiagnosticsOverlay';
 import { installErrorLog, resetErrorLogForTests } from './error-log';
 import { publishDiagScene } from './scene';
 
@@ -16,6 +16,7 @@ beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
   vi.useRealTimers();
   publishDiagScene(null);
+  resetOverlayDetailsForTests();
   resetErrorLogForTests();
 });
 
@@ -80,5 +81,19 @@ describe('DiagnosticsOverlay', () => {
     expect(text).toContain('== Errors and warnings ==');
     fireEvent.click(screen.getByTestId('diagnostics-off'));
     await vi.waitFor(() => expect(getSettingsSnapshot().diagnostics).toBe(false));
+  });
+  it('starts compact on a phone and shows the details on request', () => {
+    const { innerWidth, innerHeight } = window;
+    Object.assign(window, { innerWidth: 390, innerHeight: 844 });
+    try {
+      render(<DiagnosticsOverlay />);
+      expect(screen.queryByTestId('diagnostics-viewport')).toBeNull();
+      expect(screen.getByTestId('diagnostics-errors')).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId('diagnostics-menu'));
+      fireEvent.click(screen.getByTestId('diagnostics-details'));
+      expect(screen.getByTestId('diagnostics-viewport')).toBeInTheDocument();
+    } finally {
+      Object.assign(window, { innerWidth, innerHeight });
+    }
   });
 });

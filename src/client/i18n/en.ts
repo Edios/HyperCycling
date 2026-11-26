@@ -1405,6 +1405,8 @@ export const en = {
       music: 'music: {line}',
       actions: 'Diagnostics: copy or save the report',
       off: 'Turn off diagnostics',
+      more: 'More details',
+      less: 'Fewer details',
     },
     autoLowered: 'Lowered quality for smoothness',
   },

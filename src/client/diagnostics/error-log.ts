@@ -60,7 +60,11 @@ function hook(now: () => number): () => void {
   };
 }
 
-/** Starts recording; returns the stop function. Nested installs share one set of hooks. */
+/**
+ * Starts recording; returns the stop function. Nested installs share one set of hooks. Stopping
+ * puts back the console methods from the moment recording started, so a wrapper another script
+ * adds while the mode is on is dropped when it is turned off (no such script in the app).
+ */
 export function installErrorLog(now: () => number = Date.now): () => void {
   installs += 1;
   if (installs === 1) uninstall = hook(now);

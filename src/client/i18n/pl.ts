@@ -1412,6 +1412,8 @@ export const pl: Messages = {
       music: 'muzyka: {line}',
       actions: 'Diagnostyka: kopiuj lub zapisz raport',
       off: 'Wyłącz diagnostykę',
+      more: 'Więcej szczegółów',
+      less: 'Mniej szczegółów',
     },
     autoLowered: 'Obniżono jakość dla płynności',
   },

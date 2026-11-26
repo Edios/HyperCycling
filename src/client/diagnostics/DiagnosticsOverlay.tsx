@@ -20,13 +20,20 @@ const cut = (s: string, n: number): string => (s.length > n ? `${s.slice(0, n - 
 
 type Notice = 'copied' | 'copyFailed' | 'saved';
 
+/**
+ * Full readout or just FPS and errors. Small screens (phones, either way round) start compact so
+ * the readout does not cover the HUD; the rider's choice holds for this visit.
+ */
+let detailsChoice: boolean | null = null;
+const startsDetailed = (): boolean => Math.min(window.innerWidth, window.innerHeight) >= 500;
+
 export interface DiagnosticsOverlayProps {
   /** Test seam. */
   download?: DownloadFn;
 }
 
 /**
- * Live readout over any screen (top-left, monospace) while diagnostics mode is on, with a small
+ * Live readout over any screen (top-left, menu button in the corner, monospace) while diagnostics mode is on, with a small
  * menu to copy or save the full report. Mounted by GlobalDiagnostics only when the mode is on.
  */
 export function DiagnosticsOverlay({ download = triggerDownload }: DiagnosticsOverlayProps) {
@@ -34,6 +41,11 @@ export function DiagnosticsOverlay({ download = triggerDownload }: DiagnosticsOv
   // Re-renders once a second; every value below is re-read then.
   const stats = useFrameMeter();
   const [open, setOpen] = useState(false);
+  const [details, setDetails] = useState(() => detailsChoice ?? startsDetailed());
+  const toggleDetails = (): void => {
+    detailsChoice = !details;
+    setDetails(!details);
+  };
   const [notice, setNotice] = useState<{ kind: Notice; id: number } | null>(null);
   const browser = useMemo(() => shortUserAgent(navigator.userAgent), []);
   const say = (kind: Notice): void => setNotice({ kind, id: Date.now() });
@@ -65,53 +77,6 @@ export function DiagnosticsOverlay({ download = triggerDownload }: DiagnosticsOv
 
   return (
     <div className={styles.root} data-testid="diagnostics">
-      <div className={styles.overlay} data-testid="diagnostics-overlay" aria-hidden="true">
-        <div>
-          {t('diagnostics.overlay.fps')} {Math.round(stats.avgFps)} |{' '}
-          {t('diagnostics.overlay.frame')} {stats.avgFrameMs.toFixed(1)}/
-          {stats.p95FrameMs.toFixed(1)}
-        </div>
-        <div>
-          {size ?? dash} | {scene?.quality ?? dash} | {scene?.scene ?? (location.hash || '#/')}
-        </div>
-        <div data-testid="diagnostics-viewport">
-          {formatViewport(readViewport(browserViewportEnv()))}
-        </div>
-        <div>{`v${APP_VERSION} | ${browser}`}</div>
-        <div data-testid="diagnostics-bt">
-          {t('diagnostics.overlay.bt', {
-            trainer: devices.trainer.status,
-            hr: devices.hr.status,
-          })}
-        </div>
-        <div data-testid="diagnostics-errors">
-          {t('diagnostics.overlay.errors', { n: errors.length })}
-          {lastError &&
-            ` | ${t('diagnostics.overlay.lastError', { text: cut(lastError.text, 48) })}`}
-        </div>
-        {lastSong && (
-          <div>
-            {t('diagnostics.overlay.music', {
-              line: cut(`${lastSong.outcome} #${lastSong.index} ${lastSong.title}`, 48),
-            })}
-          </div>
-        )}
-        {webglIssue && (
-          <div data-testid="diagnostics-webgl">
-            {t('diagnostics.overlay.webgl', { reason: webglIssue })}
-          </div>
-        )}
-        {rs && (
-          <div data-testid="diagnostics-gpu">
-            {t('diagnostics.overlay.gpu', {
-              ms: rs.gpuMs === null ? dash : rs.gpuMs.toFixed(1),
-              calls: rs.drawCalls,
-              tris: Math.round(rs.triangles / 1000),
-              mpx: rs.mpx.toFixed(2),
-            })}
-          </div>
-        )}
-      </div>
       <div className={styles.controls}>
         <button
           type="button"
@@ -145,12 +110,71 @@ export function DiagnosticsOverlay({ download = triggerDownload }: DiagnosticsOv
             <button
               type="button"
               className={styles.item}
+              data-testid="diagnostics-details"
+              onClick={toggleDetails}
+            >
+              {t(details ? 'diagnostics.overlay.less' : 'diagnostics.overlay.more')}
+            </button>
+            <button
+              type="button"
+              className={styles.item}
               data-testid="diagnostics-off"
               onClick={() => void updateSettings({ diagnostics: false }).catch(() => undefined)}
             >
               {t('diagnostics.overlay.off')}
             </button>
           </div>
+        )}
+      </div>
+      <div className={styles.overlay} data-testid="diagnostics-overlay" aria-hidden="true">
+        <div>
+          {t('diagnostics.overlay.fps')} {Math.round(stats.avgFps)} |{' '}
+          {t('diagnostics.overlay.frame')} {stats.avgFrameMs.toFixed(1)}/
+          {stats.p95FrameMs.toFixed(1)}
+        </div>
+        <div data-testid="diagnostics-errors">
+          {t('diagnostics.overlay.errors', { n: errors.length })}
+          {lastError &&
+            ` | ${t('diagnostics.overlay.lastError', { text: cut(lastError.text, 48) })}`}
+        </div>
+        {details && (
+          <>
+            <div>
+              {size ?? dash} | {scene?.quality ?? dash} | {scene?.scene ?? (location.hash || '#/')}
+            </div>
+            <div data-testid="diagnostics-viewport">
+              {formatViewport(readViewport(browserViewportEnv()))}
+            </div>
+            <div>{`v${APP_VERSION} | ${browser}`}</div>
+            <div data-testid="diagnostics-bt">
+              {t('diagnostics.overlay.bt', {
+                trainer: devices.trainer.status,
+                hr: devices.hr.status,
+              })}
+            </div>
+            {lastSong && (
+              <div>
+                {t('diagnostics.overlay.music', {
+                  line: cut(`${lastSong.outcome} #${lastSong.index} ${lastSong.title}`, 48),
+                })}
+              </div>
+            )}
+            {webglIssue && (
+              <div data-testid="diagnostics-webgl">
+                {t('diagnostics.overlay.webgl', { reason: webglIssue })}
+              </div>
+            )}
+            {rs && (
+              <div data-testid="diagnostics-gpu">
+                {t('diagnostics.overlay.gpu', {
+                  ms: rs.gpuMs === null ? dash : rs.gpuMs.toFixed(1),
+                  calls: rs.drawCalls,
+                  tris: Math.round(rs.triangles / 1000),
+                  mpx: rs.mpx.toFixed(2),
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
       {notice && (
@@ -162,4 +186,8 @@ export function DiagnosticsOverlay({ download = triggerDownload }: DiagnosticsOv
       )}
     </div>
   );
+}
+
+export function resetOverlayDetailsForTests(): void {
+  detailsChoice = null;
 }
