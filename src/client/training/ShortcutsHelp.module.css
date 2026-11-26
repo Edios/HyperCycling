@@ -13,6 +13,16 @@
   font-size: 1.5rem;
 }
 
+/* At least 44 px to tap and 12 px to read, also on a phone held sideways (vh-sized end dialog). */
+.help .close {
+  min-height: max(44px, calc(5.6 * var(--vh)));
+  font-size: max(14px, calc(3 * var(--vh)));
+}
+
+.help kbd {
+  font-size: max(12px, 0.875rem);
+}
+
 .help p {
   margin: 0.75rem 0;
   font-size: max(12px, 0.875rem);

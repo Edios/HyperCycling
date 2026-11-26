@@ -17,6 +17,21 @@ export function ShortcutsHelp({ onClose }: { onClose(): void }) {
   useEffect(() => {
     closeRef.current?.focus();
   }, []);
+  // A click outside takes the focus out of the list: Escape and "?" still close it (the ride's
+  // own shortcuts are off while it is open). Keys inside it are handled below and stop there.
+  const closeRefFn = useRef(onClose);
+  useEffect(() => {
+    closeRefFn.current = onClose;
+  });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key !== 'Escape' && e.key !== '?') return;
+      e.preventDefault();
+      closeRefFn.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const onKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key === 'Escape' || e.key === '?') {
@@ -31,7 +46,13 @@ export function ShortcutsHelp({ onClose }: { onClose(): void }) {
   };
 
   return (
-    <div className={styles.backdrop}>
+    <div
+      className={styles.backdrop}
+      // A click on the backdrop (not on the list) closes it.
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
         role="dialog"
         aria-modal="true"
@@ -51,7 +72,7 @@ export function ShortcutsHelp({ onClose }: { onClose(): void }) {
         </ul>
         <p>{t('shortcuts.remotes')}</p>
         <div className={styles.actions}>
-          <button ref={closeRef} type="button" onClick={onClose}>
+          <button ref={closeRef} type="button" className={own.close} onClick={onClose}>
             {t('shortcuts.close')}
           </button>
         </div>
