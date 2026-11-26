@@ -1200,3 +1200,35 @@ describe('music director: next song (the rider skips)', () => {
     expect(d.skip()).toBe(false);
   });
 });
+
+describe('music director: next song never skips into silence', () => {
+  const queued: MusicCue = {
+    blockId: 'b',
+    rep: 1,
+    track: track('Q1', 'spotify', 120),
+    queue: [track('Q2', 'spotify', 100)],
+  };
+
+  it('refuses at the last song of a part with nothing to fill the gap', async () => {
+    const d = make({ cues: [queued] });
+    d.start();
+    await runAt(130);
+    expect(d.skip()).toBe(true); // Q1 -> Q2
+    await advance(1500);
+    expect(d.skip()).toBe(false); // Q2 is the last: no silence on request
+    await advance(1500);
+    expect(spotify.log.filter((l) => l.startsWith('play:'))).toEqual(['play:Q1@30', 'play:Q2@0']);
+    expect(spotify.log.filter((l) => l.startsWith('fadeOut')).length).toBe(1);
+  });
+
+  it('skips to the fallback when the part has one to fill the gap', async () => {
+    const d = make({ cues: [queued], fallback: [track('F')] });
+    d.start();
+    await runAt(130);
+    d.skip();
+    await advance(1500);
+    expect(d.skip()).toBe(true);
+    await advance(1500);
+    expect(spotify.log.filter((l) => l.startsWith('play:')).at(-1)).toBe('play:F@0');
+  });
+});

@@ -29,6 +29,35 @@ test('ride shortcuts: "?" help, media play/pause, trainer keys without a trainer
   await expect(help).toContainText('Harder (trainer in ERG)');
   await page.keyboard.press('Escape');
   await expect(help).toBeHidden();
+  // A click outside takes the focus away: Escape still closes it, and so does the backdrop.
+  await page.keyboard.press('Shift+Slash');
+  await expect(help).toBeVisible();
+  await page.mouse.click(5, 5);
+  await expect(help).toBeHidden();
+  await page.keyboard.press('Shift+Slash');
+  await help.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  await page.keyboard.press('Escape');
+  await expect(help).toBeHidden();
+  // A phone held sideways: a 44 px Close and keys of at least 12 px.
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.keyboard.press('Shift+Slash');
+  const close = help.getByRole('button', { name: 'Close' });
+  expect((await close.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  const kbd = await help
+    .locator('kbd')
+    .first()
+    .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+  expect(kbd).toBeGreaterThanOrEqual(12);
+  if (process.env.SHOTS_DIR) {
+    // The page clock holds the opening animation at its start: show the list without it.
+    await help.evaluate((el) => {
+      for (const a of [...el.getAnimations(), ...el.parentElement!.getAnimations()]) a.finish();
+    });
+    await page.screenshot({ path: `${process.env.SHOTS_DIR}/844x390-shortcuts-help.png` });
+  }
+  await close.click();
+  await expect(help).toBeHidden();
+  await page.setViewportSize({ width: 1280, height: 720 });
   // Escape closed the help only: no end dialog, the ride is still idle.
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(screen).toHaveAttribute('data-status', 'idle');

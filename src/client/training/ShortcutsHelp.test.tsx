@@ -25,4 +25,17 @@ describe('ShortcutsHelp ("?" during the ride)', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
     expect(onClose).toHaveBeenCalledTimes(3);
   });
+
+  it('closes with Escape also when the focus left it (a click outside), and on the backdrop', () => {
+    const onClose = vi.fn();
+    render(<ShortcutsHelp onClose={onClose} />);
+    document.body.focus();
+    fireEvent.keyDown(document.body, { key: 'Escape', code: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+    const dialog = screen.getByRole('dialog');
+    fireEvent.click(dialog); // inside: stays
+    expect(onClose).toHaveBeenCalledTimes(1);
+    fireEvent.click(dialog.parentElement!); // the backdrop
+    expect(onClose).toHaveBeenCalledTimes(2);
+  });
 });

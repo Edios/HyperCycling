@@ -72,7 +72,8 @@ export interface MusicDirector {
   /**
    * "Next song": the song playing now ends here, as if its recording had ended (the rest of its
    * queue moves up, then the gap is filled like any other). The workout is untouched. False when
-   * nothing plays, or the song is over within 2 s anyway.
+   * nothing plays, the song is over within 2 s anyway, or nothing would play after it (the last
+   * song of a part with no fallback to fill the gap): a skip never asks for silence.
    */
   skip(): boolean;
   start(): void;
@@ -580,8 +581,21 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
 
     skip() {
       if (!started || disposed) return false;
-      const now = desiredNow(options.getState());
-      if (!now || !endEarly(now.key, now.offsetSec)) return false;
+      const state = options.getState();
+      const now = desiredNow(state);
+      if (!now) return false;
+      // What would play once this song ends here: nothing means silence on request, so no skip.
+      const trial = new Map(ended);
+      trial.set(now.key, Math.min(trial.get(now.key) ?? Infinity, now.offsetSec));
+      const after = musicAt({
+        segments: options.segments,
+        cues: options.cues,
+        fallback: options.fallback,
+        tSec: state.workoutElapsedSec,
+        ended: trial,
+      });
+      if (!after || after.key === now.key) return false;
+      if (!endEarly(now.key, now.offsetSec)) return false;
       void reconcile();
       return true;
     },
