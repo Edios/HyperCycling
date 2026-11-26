@@ -58,6 +58,35 @@
   text-overflow: ellipsis;
 }
 
+.rate {
+  display: flex;
+  flex: none;
+  gap: calc(0.6 * var(--u));
+  pointer-events: auto;
+}
+
+.rateBtn {
+  display: grid;
+  place-items: center;
+  width: max(36px, calc(5 * var(--u)));
+  height: max(36px, calc(5 * var(--u)));
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--sub);
+  cursor: pointer;
+}
+
+.rateBtn[aria-pressed='true'] {
+  color: var(--fg);
+}
+
+.rateBtn svg {
+  width: 62%;
+  height: 62%;
+}
+
 @media (max-width: 760px) and (orientation: portrait) {
   .root.root {
     /* Under the 8px zone bar, full width of the stack, one line: title, then the artist. */

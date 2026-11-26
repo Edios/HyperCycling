@@ -5,6 +5,7 @@ import { playerSchema } from '../domain/player';
 import { rideSchema } from '../domain/ride';
 import { activeSessionSchema, sessionLogSchema } from '../domain/session-log';
 import { settingsSchema } from '../domain/settings';
+import { songFeedbackSchema } from '../domain/song-feedback';
 import { ownTrackRecordSchema } from '../domain/soundtrack-own';
 import { soundtrackPlanRecordSchema } from '../domain/soundtrack-store';
 import { workoutSchema } from '../domain/workout';
@@ -17,6 +18,7 @@ export const schemas = {
   rides: rideSchema,
   soundtrackPlans: soundtrackPlanRecordSchema,
   ownTracks: ownTrackRecordSchema,
+  songFeedback: songFeedbackSchema,
   settings: settingsSchema,
   activeSession: activeSessionSchema,
 } as const;

@@ -4,6 +4,7 @@ import type { Player } from './player';
 import type { RideRecord } from './ride';
 import type { ActiveSession, SessionLog } from './session-log';
 import type { Settings } from './settings';
+import type { SongFeedbackRecord } from './song-feedback';
 import type { OwnTrackRecord } from './soundtrack-own';
 import type { SoundtrackPlanRecord } from './soundtrack-store';
 import type { Workout } from './workout';
@@ -42,6 +43,8 @@ export interface Repositories {
    * plans, they travel in exportAll / replaceAll, and a backup without them leaves them alone.
    */
   ownTracks: CollectionRepo<OwnTrackRecord>;
+  /** The owner's per-song thumbs during rides (spec §9 J); travels in the backup like the plans. */
+  songFeedback: CollectionRepo<SongFeedbackRecord>;
   settings: SingletonRepo<Settings>;
   activeSession: SingletonRepo<ActiveSession>;
   exportAll(): Promise<ExportBundle>;

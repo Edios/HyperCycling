@@ -77,6 +77,7 @@ export function createHttpRepositories(
     rides: collection('rides'),
     soundtrackPlans: collection('soundtrack-plans'),
     ownTracks: collection('own-tracks'),
+    songFeedback: collection('song-feedback'),
     settings: singleton('settings'),
     activeSession: singleton('active-session'),
     async exportAll() {

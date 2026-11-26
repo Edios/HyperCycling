@@ -69,6 +69,7 @@ import { localizedText } from '../data/localized';
 import { ControlsBar } from './ControlsBar';
 import { EndDialog } from './EndDialog';
 import { NowPlaying } from './NowPlaying';
+import { clearSongFeedback, rateSong, trackKey, useSongFeedback } from './song-feedback';
 import { QuickSettings } from './QuickSettings';
 import { withLiveChoice, youtubeUrlFor } from './quick-settings';
 import { CoachOverlay } from './hud/CoachOverlay';
@@ -228,6 +229,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     [t],
   );
   const [nowPlaying, setNowPlaying] = useState<TrackRef | null>(null);
+  const songFeedback = useSongFeedback((s) => s.byTrack);
+  // A new ride screen starts with no thumbs on screen (the earlier ride's stay on the device).
+  useEffect(() => clearSongFeedback(), []);
   // Beeps, cues and world are per ride (Setup / quick settings); Settings only supplies defaults.
   const soundsOn = runtime.options?.sounds ?? settings.sounds;
   const coachOn = runtime.options?.coach ?? settings.coach;
@@ -952,7 +956,27 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         )}
       </ToastStack>
       {runtime.config.music && nowPlaying && (
-        <NowPlaying track={nowPlaying} muted={!musicAudible} />
+        <NowPlaying
+          track={nowPlaying}
+          muted={!musicAudible}
+          // The thumbs come with the controls, so the HUD stays clean while riding.
+          {...(!hideControls && status !== 'idle'
+            ? {
+                feedback: songFeedback[trackKey(nowPlaying)],
+                onRate: (tap: 'up' | 'down' | 'love') => {
+                  void rateSong(
+                    {
+                      rideStartedAt: startedAt.current ?? new Date().toISOString(),
+                      workoutId: runtime.workout.id,
+                      track: nowPlaying,
+                      segment: view.segment,
+                    },
+                    tap,
+                  );
+                },
+              }
+            : {})}
+        />
       )}
       {runtime.config.music && (
         <MusicPlayerDock
