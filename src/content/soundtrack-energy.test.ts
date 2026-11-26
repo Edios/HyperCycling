@@ -311,14 +311,17 @@ describe('rotation over ten rides of every built-in workout (R1f)', () => {
     return out;
   });
 
-  it('puts no song in more than 75% of the rides (Flume - Holdin On was in 464 of 580)', () => {
+  it('puts no song in more than 35% of the rides (Flume - Holdin On was in 464, then 403 of 580)', () => {
     const counts = new Map<string, number>();
     for (const plans of rides) {
       for (const plan of plans.slice(0, 5)) {
         for (const id of new Set(allIds(plan))) counts.set(id, (counts.get(id) ?? 0) + 1);
       }
     }
-    const limit = 0.75 * 5 * rides.length;
+    // Each workout here remembers only its own rides, and the first ride of all 116 has no history
+    // (Flume is in 110 of those plans): 180 of 580 (31%) with the rest of four rides. The app's
+    // history is shared by all workouts; the owner's 25% is checked on that below.
+    const limit = 0.35 * 5 * rides.length;
     const top = [...counts].sort((a, b) => b[1] - a[1])[0]!;
     expect(top[1], top[0]).toBeLessThanOrEqual(limit);
   });
@@ -338,6 +341,62 @@ describe('rotation over ten rides of every built-in workout (R1f)', () => {
   it('leaves no gap over 30 s in any ride', () => {
     const gaps = rides.flat().flatMap((p) => p.sections.filter((s) => s.report.gapSec > 30));
     expect(gaps).toEqual([]);
+  });
+});
+
+describe('one song in at most 25% of the rides (owner decision of 2026-11-26)', () => {
+  // 580 rides through all built-in workouts (each five times, in a mixed order) with the history
+  // as the app keeps it: the last 8 confirmed plans of any workout, a workout's newer plan
+  // replacing its older one (`recordSoundtrackRide`).
+  const order = [0, 1, 2, 3, 4].flatMap((r) =>
+    builtinWorkouts.map((_, i) => ({
+      w: builtinWorkouts[(i * 37 + r * 11) % builtinWorkouts.length]!,
+      r,
+    })),
+  );
+  const kept: { workoutId: string; ids: string[] }[] = [];
+  const plans = order.map(({ w, r }) => {
+    const plan = planSoundtrack(
+      w,
+      catalog,
+      { ...FIRST_VISIT_PREFS, seed: 1000 + r * 7919 },
+      { history: kept.map((k) => k.ids) },
+    );
+    const at = kept.findIndex((k) => k.workoutId === w.id);
+    if (at >= 0) kept.splice(at, 1);
+    kept.unshift({ workoutId: w.id, ids: allIds(plan) });
+    kept.length = Math.min(kept.length, 8);
+    return { w, plan };
+  });
+
+  it('puts no song in more than 25% of the rides (Flume - Holdin On was in 342 of 580)', () => {
+    const counts = new Map<string, number>();
+    for (const { plan } of plans) {
+      for (const id of new Set(allIds(plan))) counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+    const top = [...counts].sort((a, b) => b[1] - a[1])[0]!;
+    // 137 (23.6%) with the rest of four rides.
+    expect(top[1], top[0]).toBeLessThanOrEqual(0.25 * plans.length);
+  });
+
+  it('leaves no gap over 30 s and keeps the energy within one step for most songs', () => {
+    let picks = 0;
+    let within = 0;
+    for (const { w, plan } of plans) {
+      const sections = new Map(sectionsOf(w).map((s) => [s.id, s]));
+      for (const s of plan.sections) {
+        expect(s.report.gapSec, `${w.id}/${s.sectionId}`).toBeLessThanOrEqual(30);
+        const sec = sections.get(s.sectionId);
+        if (!sec) continue;
+        for (const p of s.picks) {
+          picks += 1;
+          if (Math.abs((byId.get(p.ref.id) as CatalogTrack).energy - sec.energy) <= 1) within += 1;
+        }
+      }
+    }
+    // The rotation costs some fit: 84.3% within one step before the rest of four rides, 80.6%
+    // with it (the catalog has few songs at 85-95 rpm).
+    expect(within / picks).toBeGreaterThanOrEqual(0.78);
   });
 });
 

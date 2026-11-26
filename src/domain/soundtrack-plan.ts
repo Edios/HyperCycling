@@ -10,8 +10,9 @@
  *    and peak sections; nothing explicit in the cool-down, nor anywhere unless the rider allows it;
  *    no song twice in a ride; no energy 5 in the warm-up, nothing 3 steps calmer than a hard part
  *    asks for or 3 steps stronger than a calm one, nothing light (energy 1-2) on a climb (music
- *    energy spec §2b). Songs of the last rides cost a little (`history`, spec §3a), and a small
- *    seeded jitter reorders near-equal songs ("Shuffle").
+ *    energy spec §2b). Songs of the last rides cost a little (`history`, spec §3a), a song of the
+ *    last four rides rests (`ROTATION_REST_RIDES`: one song in at most 25% of the rides), and a
+ *    small seeded jitter reorders near-equal songs ("Shuffle").
  * 2. Relaxation ladder, when the songs cannot fill a section (too few, or no queue that ends
  *    within the tolerances): a wider tempo window, the neighbour categories, any category (the
  *    owner accepts stretching the categories for a mixed cadence), and at last any tempo (with a
@@ -595,6 +596,8 @@ export interface Candidate {
    * charges a song shorter than `ROTATION_REF_SEC` the rest of it (see there).
    */
   rotation?: number;
+  /** The song played in one of the last `ROTATION_REST_RIDES` rides (see there). */
+  resting?: boolean;
 }
 
 /** Playable length of a song from its start offset (main upload), seconds. */
@@ -632,6 +635,16 @@ export const HISTORY_ARTIST_MAX = 0.2;
  * before.
  */
 export const ROTATION_REF_SEC = 240;
+/**
+ * One song in at most 25% of the rides (owner's decision of 2026-11-26; before it Flume - Holdin
+ * On played in 403 of 580 first-visit rides). A song of the last `ROTATION_REST_RIDES` rides
+ * rests: it costs `ROTATION_REST_COST` once per queue, whatever its length (a short song was the
+ * handy filler of every 5-minute warm-up), and a part that took one does not stop on the first
+ * step of the ladder that fills it: a wider tempo window or a neighbour category with fresh songs
+ * may win. Where nothing else fits, the resting song still plays (never a gap instead).
+ */
+export const ROTATION_REST_RIDES = 4;
+export const ROTATION_REST_COST = 0.2;
 /**
  * An add-on style (synthwave, drum and bass) is a supplement, never the backbone: each such song
  * costs this much, plus as much again for every one already in the ride.
@@ -690,12 +703,29 @@ interface PlanContext {
   /** What the last rides cost a song (by song key) and an artist (`historyPenalties`). */
   historySong: ReadonlyMap<string, number>;
   historyArtist: ReadonlyMap<string, number>;
+  /** Song keys of the last `ROTATION_REST_RIDES` rides. */
+  resting: ReadonlySet<string>;
   /**
    * Mixed into the shuffle with the seed: the workout id, so one seed breaks the near-ties of
    * every workout its own way (R1f: with one seed for all, a song was in nearly every first-visit
    * plan or in few, depending on a few seconds of another song).
    */
   shuffleSalt: string;
+}
+
+/** Song keys of the last `ROTATION_REST_RIDES` rides (newest first; unknown ids are skipped). */
+function restingSongs(
+  history: readonly (readonly string[])[],
+  byId: ReadonlyMap<string, CatalogTrack>,
+): Set<string> {
+  const out = new Set<string>();
+  for (const ride of history.slice(0, ROTATION_REST_RIDES)) {
+    for (const id of ride) {
+      const t = byId.get(id);
+      if (t) out.add(songKey(t));
+    }
+  }
+  return out;
 }
 
 /** The rotation penalties of the last rides (newest first, catalog ids; unknown ids are skipped). */
@@ -756,7 +786,16 @@ function scoredAt(
       (t.own === true ? bonus : 0) -
       addOn -
       rotation;
-    out.push({ track: t, key, score, fit: sc.fit, rideRpm: sc.rideRpm, lenSec, rotation });
+    out.push({
+      track: t,
+      key,
+      score,
+      fit: sc.fit,
+      rideRpm: sc.rideRpm,
+      lenSec,
+      rotation,
+      ...(ctx.resting.has(key) ? { resting: true } : {}),
+    });
   }
   // Best first; ties by catalog id (deterministic whatever the catalog order).
   out.sort((a, b) => b.score - a.score || (a.track.id < b.track.id ? -1 : 1));
@@ -853,6 +892,7 @@ function addPenalty(st: BeamState, cand: Candidate): number {
   let penalty = st.penalty;
 
   if (st.lastArtist === cand.track.artist) penalty += SAME_ARTIST_COST;
+  if (cand.resting === true) penalty += ROTATION_REST_COST;
   if (
     st.lastRpm !== undefined &&
     cand.rideRpm !== undefined &&
@@ -1058,7 +1098,9 @@ function knapsackFill(
   const lo = Math.max(1, Math.ceil(durationSec - SLOT_TOLERANCE_SEC));
   const hi = Math.floor(durationSec + MAX_CUT_SEC);
   const width = hi + 1;
-  const best = new Float64Array(width).fill(-1);
+  // -Infinity = no set of songs adds up to this length (a set's value may be below 0: a resting
+  // song's cost, `ROTATION_REST_COST`, can outweigh its fit in a long part).
+  const best = new Float64Array(width).fill(-Infinity);
   best[0] = 0;
   const take = new Uint8Array(n * width);
   const lens: number[] = [];
@@ -1066,10 +1108,13 @@ function knapsackFill(
     const cand = candidates[i] as Candidate;
     const len = Math.max(1, Math.round(cand.lenSec));
     lens.push(len);
-    const w = cand.score * Math.min(cand.lenSec, durationSec) - rotationShortfall(cand);
+    const w =
+      cand.score * Math.min(cand.lenSec, durationSec) -
+      rotationShortfall(cand) -
+      (cand.resting === true ? ROTATION_REST_COST * durationSec : 0);
     for (let sec = hi; sec >= len; sec--) {
       const from = best[sec - len] as number;
-      if (from < 0) continue;
+      if (from === -Infinity) continue;
       if (from + w > (best[sec] as number)) {
         best[sec] = from + w;
         take[i * width + sec] = 1;
@@ -1079,7 +1124,8 @@ function knapsackFill(
   let at = -1;
   for (let sec = lo; sec <= hi; sec++) {
     // Most fit, then the smallest cut.
-    if ((best[sec] as number) >= 0 && (at < 0 || (best[sec] as number) > (best[at] as number))) {
+    const v = best[sec] as number;
+    if (v !== -Infinity && (at < 0 || v > (best[at] as number))) {
       at = sec;
     }
   }
@@ -1198,7 +1244,9 @@ function planSection(
       best = { candidates, relaxed, queue };
       bestValue = value;
     }
-    if (withinTolerance(queue) && candidates.length >= MIN_CANDIDATES) break;
+    // A queue with a resting song: the next steps may fill the part with fresh songs.
+    const resting = queue.picks.some((k) => (candidates[k] as Candidate).resting === true);
+    if (withinTolerance(queue) && candidates.length >= MIN_CANDIDATES && !resting) break;
   }
   return (
     best ?? {
@@ -1278,6 +1326,7 @@ export function planSoundtrack(
     near: neighboursOf(chosen),
     historySong: past.song,
     historyArtist: past.artist,
+    resting: restingSongs(opts.history ?? [], catalogById),
     shuffleSalt: `${workout.id}/`,
   };
   const ride: RideState = { used: new Set(), artists: new Map(), supplements: 0 };
