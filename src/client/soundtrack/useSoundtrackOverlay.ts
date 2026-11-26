@@ -1,6 +1,10 @@
 import { useEffect, useMemo } from 'react';
 import type { ChainOptions } from '../../domain/music-chain';
-import { compilePlan, withSoundtrack } from '../../domain/soundtrack-compile';
+import {
+  compilePlan,
+  withSoundtrack,
+  type CompiledSoundtrack,
+} from '../../domain/soundtrack-compile';
 import { isOwnTrackId } from '../../domain/soundtrack-own';
 import type { Workout } from '../../domain/workout';
 import { loadSavedPlan, useSoundtrackSession } from './session';
@@ -15,7 +19,23 @@ export interface SoundtrackOverlay {
    * ready: the music is on the workout.
    */
   state: 'none' | 'loading' | 'error' | 'stale' | 'ready';
+  /** Why a plan is stale: the ride changed, or an own song of the plan was removed. */
+  staleReason?: StaleReason;
   songs: number;
+}
+
+export type StaleReason = 'ride' | 'ownSongGone';
+
+/**
+ * Why a compiled plan may not play, or undefined when it may. A removed own song leaves a hole the
+ * rider did not choose: match again, as for a changed ride (the ride's change is said first).
+ */
+export function staleReason(
+  compiled: Pick<CompiledSoundtrack, 'stale' | 'missing'>,
+): StaleReason | undefined {
+  if (compiled.stale) return 'ride';
+  if (compiled.missing.some(isOwnTrackId)) return 'ownSongGone';
+  return undefined;
 }
 
 /**
@@ -37,9 +57,8 @@ export function useSoundtrackOverlay(
     if (catalog.status === 'error') return { workout: base, state: 'error', songs: 0 };
     if (catalog.status !== 'ready') return { workout: base, state: 'loading', songs: 0 };
     const compiled = compilePlan(plan, base, { catalog: catalog.catalog, chain });
-    // A removed own song leaves a hole the rider did not choose: match again, as for a changed ride.
-    if (compiled.stale || compiled.missing.some(isOwnTrackId))
-      return { workout: base, state: 'stale', songs: 0 };
+    const reason = staleReason(compiled);
+    if (reason) return { workout: base, state: 'stale', staleReason: reason, songs: 0 };
     const songs = compiled.cues.reduce((n, c) => n + 1 + (c.queue?.length ?? 0), 0);
     return { workout: withSoundtrack(base, compiled), state: 'ready', songs };
   }, [plan, catalog.status, catalog.catalog, base, chain]);

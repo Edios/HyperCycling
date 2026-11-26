@@ -299,6 +299,7 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
         <OwnTracksPanel
           use={prefs.includeLibrary}
           onUseChange={(includeLibrary) => changePrefs({ includeLibrary })}
+          catalog={catalog}
         />
       </>
     );

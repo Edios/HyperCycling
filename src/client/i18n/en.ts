@@ -680,6 +680,11 @@ export const en = {
       errTitle: 'Type a title.',
       errTempo: 'Type a tempo from {min} to {max} BPM.',
       errLength: 'Type a length from 0:30 to 60:00 as m:ss, e.g. 3:45.',
+      errInCatalog:
+        'This video is already in the catalog as “{name}”: it plays from there (with its checked tempo) when its kind of music is chosen.',
+      errStartNoLength:
+        'The link starts at {start}: type the song’s length too, so the plan knows how much of it plays.',
+      errStartLate: 'The link starts at {start}, less than 30 seconds before the end of the song.',
       errRemove: 'The song could not be removed from this device.',
       errDuplicate: 'This video is already on the list.',
       errFull: 'The list is full.',
@@ -745,6 +750,8 @@ export const en = {
       none: 'Match songs to this ride.',
       on: 'Matched: {songs} songs.',
       stale: 'The ride changed since you matched the music. Match it again.',
+      staleOwnSong:
+        'A song of yours in this music was removed from My songs. Match the music again.',
       loading: 'Loading the matched songs…',
       error: 'The matched songs could not be loaded.',
       change: 'Change',

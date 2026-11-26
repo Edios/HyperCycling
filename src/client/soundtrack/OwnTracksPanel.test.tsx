@@ -79,4 +79,51 @@ describe('OwnTracksPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remove the song My Anthem' }));
     await waitFor(() => expect(screen.queryByTestId('soundtrack-own-song')).toBeNull());
   });
+
+  it('does not add a video the catalog has, and says where it plays from', async () => {
+    const catalog = [
+      {
+        id: 'band-hit',
+        artist: 'Band',
+        title: 'Hit',
+        bpm: 128,
+        durationSec: 200,
+        youtube: [{ id: 'catalog0001' }],
+        categories: ['rock' as const],
+        roles: ['steady' as const],
+        energy: 3 as const,
+        beat: 'steady' as const,
+        clean: true,
+        verified: '2026-11-01',
+      },
+    ];
+    render(<OwnTracksPanel use={false} onUseChange={() => {}} catalog={catalog} />);
+    fireEvent.click(screen.getByRole('button', { name: /My songs/ }));
+    fill('soundtrack-own-link', 'https://youtu.be/catalog0001');
+    fill('soundtrack-own-title', 'Hit');
+    fill('soundtrack-own-bpm', '128');
+    fireEvent.click(screen.getByTestId('soundtrack-own-add'));
+    expect(await screen.findByText(/already in the catalog as “Band – Hit”/)).toBeTruthy();
+    expect(db.records.size).toBe(0);
+  });
+
+  it('asks for the length when the link starts later, and refuses a start near the end', async () => {
+    render(<OwnTracksPanel use={false} onUseChange={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /My songs/ }));
+    fill('soundtrack-own-link', 'https://youtu.be/abcdefghijk?t=200');
+    fill('soundtrack-own-title', 'Late');
+    fill('soundtrack-own-bpm', '128');
+    fireEvent.click(screen.getByTestId('soundtrack-own-add'));
+    expect(
+      await screen.findByText(/The link starts at 3:20: type the song’s length too/),
+    ).toBeTruthy();
+    fill('soundtrack-own-length', '3:30');
+    fireEvent.click(screen.getByTestId('soundtrack-own-add'));
+    expect(await screen.findByText(/less than 30 seconds before the end of the song/)).toBeTruthy();
+    expect(db.records.size).toBe(0);
+    fill('soundtrack-own-length', '5:00');
+    fireEvent.click(screen.getByTestId('soundtrack-own-add'));
+    expect(await screen.findByText('Added: Late')).toBeTruthy();
+    expect(db.records.get('own-abcdefghijk')).toMatchObject({ startSec: 200, durationSec: 300 });
+  });
 });

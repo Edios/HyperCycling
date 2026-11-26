@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { BPM_MAX, BPM_MIN } from '../../domain/bpm-match';
-import type { TrackEnergy } from '../../domain/soundtrack-catalog';
+import type { CatalogTrack, TrackEnergy } from '../../domain/soundtrack-catalog';
 import { useT } from '../i18n';
+import { formatClock } from '../training/format';
 import { Button } from '../ui/Button';
 import { Disclosure } from '../ui/Disclosure';
 import { Field } from '../ui/Field';
@@ -21,7 +22,10 @@ export function parseLength(raw: string): number | undefined {
   return undefined;
 }
 
-type FormError = 'errLink' | 'errTitle' | 'errTempo' | 'errLength';
+type FormError =
+  'errLink' | 'errTitle' | 'errTempo' | 'errLength' | 'errStartNoLength' | 'errStartLate';
+/** A start this close to the end leaves too little of the song to plan with. */
+const MIN_PLAY_SEC = 30;
 const RESULT_ERROR: Record<
   Exclude<AddOwnResult, 'added'>,
   'errDuplicate' | 'errFull' | 'errSave'
@@ -39,9 +43,12 @@ const RESULT_ERROR: Record<
 export function OwnTracksPanel({
   use,
   onUseChange,
+  catalog = [],
 }: {
   use: boolean;
   onUseChange: (use: boolean) => void;
+  /** The song catalog: a video already in it is not added again (it plays from there). */
+  catalog?: readonly CatalogTrack[];
 }) {
   const t = useT();
   const tracks = useOwnTracks((s) => s.tracks);
@@ -66,9 +73,27 @@ export function OwnTracksPanel({
     if (bpm.trim() === '' || !(tempo >= BPM_MIN && tempo <= BPM_MAX)) next.errTempo = true;
     if (length.trim() !== '' && (len === undefined || len < 30 || len > 3600))
       next.errLength = true;
+    // A link with a start time: without the length the plan would guess (3:30) how much plays.
+    const start = video?.startSec ?? 0;
+    if (start > 0 && !next.errLength) {
+      if (len === undefined) next.errStartNoLength = true;
+      else if (start > len - MIN_PLAY_SEC) next.errStartLate = true;
+    }
     setErrors(next);
     setStatus(undefined);
     if (!video || Object.keys(next).length > 0) return;
+    const inCatalog = catalog.find(
+      (c) => c.own !== true && c.youtube.some((u) => u.id === video.videoId),
+    );
+    if (inCatalog) {
+      setStatus({
+        text: t('soundtrack.own.errInCatalog', {
+          name: `${inCatalog.artist} – ${inCatalog.title}`,
+        }),
+        error: true,
+      });
+      return;
+    }
     setBusy(true);
     const result = await addOwnTrack({
       youtubeId: video.videoId,
@@ -225,7 +250,18 @@ export function OwnTracksPanel({
           <Field
             label={t('soundtrack.own.length')}
             hint={t('soundtrack.own.lengthHint')}
-            error={errors.errLength ? t('soundtrack.own.errLength') : undefined}
+            error={
+              errors.errLength
+                ? t('soundtrack.own.errLength')
+                : errors.errStartNoLength || errors.errStartLate
+                  ? t(
+                      errors.errStartLate
+                        ? 'soundtrack.own.errStartLate'
+                        : 'soundtrack.own.errStartNoLength',
+                      { start: formatClock(parseYoutubeUrl(link)?.startSec ?? 0) },
+                    )
+                  : undefined
+            }
           >
             {(id) => (
               <input
