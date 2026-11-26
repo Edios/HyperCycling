@@ -226,19 +226,24 @@ export interface CadenceFit {
   close?: boolean;
 }
 
-/** A song tempo against a block's cadence (rpm); undefined when either is not a valid number. */
+/**
+ * A song tempo against a block's cadence (rpm); undefined when either is not a valid number.
+ * `prefer` is the relation the planner plays in that block (`preferredKindAt`); without it, the
+ * one nearest the usual comfort band.
+ */
 export function cadenceFit(
   bpm: number | undefined,
   rpm: number | undefined,
+  prefer?: MatchKind,
 ): CadenceFit | undefined {
   if (bpm === undefined || rpm === undefined || !validNumber(bpm) || !validNumber(rpm)) {
     return undefined;
   }
   const m = matchBpm(bpm, rpm);
   if (!m) return { verdict: 'miss' };
-  // The editor knows the cadence but not the effort: the relation nearest the usual comfort band
-  // is the planner's choice in easy work, 2x is its choice everywhere else; both are a fit.
-  const preferred = m.kind === nearestKind(rpm, [BAND_LOW, BAND_HIGH]);
+  // Without the block's part: the relation nearest the usual comfort band is the planner's choice
+  // in easy work, 2x is its choice everywhere else; both are a fit.
+  const preferred = m.kind === (prefer ?? nearestKind(rpm, [BAND_LOW, BAND_HIGH]));
   return {
     verdict: m.kind === 'exact' || preferred ? 'fit' : VERDICT_OF_KIND[m.kind],
     kind: m.kind,

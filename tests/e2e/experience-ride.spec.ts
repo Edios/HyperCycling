@@ -30,7 +30,7 @@ test('Neon Grid 45: Home tile → picker → Setup → ride (shortened) → summ
   const card = page.locator('[data-testid="experience-card"][data-experience="neon-grid-45"]');
   await expect(card).toHaveCount(1);
   await expect(card).toContainText('11 songs');
-  await card.getByRole('button', { name: 'Show scenario' }).click();
+  // A wide screen shows the scenario beside the card, no toggle.
   await expect(page.getByTestId('experience-scenario').locator('li')).toHaveCount(11);
 
   // Setup is preset for the Experience: the Scenes world

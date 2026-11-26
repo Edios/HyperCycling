@@ -46,7 +46,10 @@ export function PlanTab() {
   return <ActivePlanView plan={active.plan} progress={active.progress} />;
 }
 
-/** First-run screen: three ways to start instead of an empty plan. */
+/**
+ * First-run screen: two tiles, build a plan or pick one (audit N-14). Freestyle and Experience are
+ * one tab away in the top bar, so they are not repeated here.
+ */
 function Welcome() {
   const t = useT();
   return (
@@ -61,14 +64,6 @@ function Welcome() {
         <Link to="/plans" className={styles.path}>
           <b>{t('welcome.browse')}</b>
           <span>{t('welcome.browseBody')}</span>
-        </Link>
-        <Link to="/freestyle" className={styles.path}>
-          <b>{t('welcome.ride')}</b>
-          <span>{t('welcome.rideBody')}</span>
-        </Link>
-        <Link to="/experiences" className={styles.path} data-testid="welcome-experience">
-          <b>{t('welcome.experience')}</b>
-          <span>{t('welcome.experienceBody')}</span>
         </Link>
       </div>
     </div>

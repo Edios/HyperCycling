@@ -1,4 +1,6 @@
 .screen {
+  /* The editor belongs to Freestyle (its back link leads there): one accent, the mode's. */
+  --acc: var(--free);
   display: flex;
   flex-direction: column;
   height: 100vh;

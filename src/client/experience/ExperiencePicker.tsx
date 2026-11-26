@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DashLine } from '../brand';
 import { flattenWorkout } from '../../domain/segments';
 import { experienceText, type Experience } from '../../domain/experience';
 import { builtinExperiences } from '../data/builtin';
@@ -13,6 +12,7 @@ import { Chip } from '../ui/Chip';
 import { Icon } from '../ui/Icon';
 import { ProfileChart } from '../ui/ProfileChart';
 import { Segmented } from '../ui/Segmented';
+import { useMediaQuery } from '../training/useMediaQuery';
 import {
   defaultVariant,
   effortRange,
@@ -27,6 +27,8 @@ import { useSongsLabel } from './useSongsLabel';
 import styles from './ExperiencePicker.module.css';
 
 const FILTERS: readonly LevelFilter[] = ['all', 'easy', 'medium', 'hard'];
+/** From this width a card shows its scenario beside it. */
+const WIDE = '(min-width: 64rem)';
 
 export function experienceSetupUrl(e: Experience): string {
   return `/setup/${encodeURIComponent(e.workoutRef.id)}?exp=${encodeURIComponent(e.id)}`;
@@ -57,7 +59,6 @@ export function ExperiencePicker() {
           ))}
         </div>
       </div>
-      <DashLine className={styles.dash} />
       <p className={styles.intro}>{t('experience.intro')}</p>
 
       <div className={styles.grid}>
@@ -78,6 +79,10 @@ function SeriesCard({ series, filter }: { series: ExperienceSeries; filter: Leve
   const { settings } = useSettings();
   const [pickedId, setPickedId] = useState<string | undefined>();
   const [expanded, setExpanded] = useState(false);
+  // Wide screens: the card and its scenario side by side, the scenario always shown (like the
+  // Freestyle preview); narrow screens keep the toggle.
+  const wide = useMediaQuery(WIDE);
+  const showScenario = wide || expanded;
 
   const e = series.variants.find((v) => v.id === pickedId) ?? defaultVariant(series, filter);
   const text = experienceText(e, lang);
@@ -91,55 +96,63 @@ function SeriesCard({ series, filter }: { series: ExperienceSeries; filter: Leve
   const heading = `${e.lengthMin} ${t('common.min')}${range ? ` · ${songsLabel(rows.length)} · ${t('experience.peak', { n: range.max })}` : ''}`;
 
   return (
-    <Card className={styles.card} data-testid="experience-card" data-experience={e.id}>
-      <p className={styles.kicker}>
-        {series.theme
-          ? t('experience.seriesKicker', { title: seriesTitle })
-          : t('experience.kicker')}
-      </p>
-      <h2>{seriesTitle}</h2>
-      {series.variants.length > 1 && (
-        <div className={styles.variants}>
-          <Segmented
-            label={t('experience.variantLabel')}
-            value={e.id}
-            options={series.variants.map((v) => ({
-              value: v.id,
-              label: variantLabel(experienceText(v, lang).title, seriesTitle, t('common.min')),
-            }))}
-            onChange={(id) => {
-              setPickedId(id);
-              setExpanded(false);
-            }}
-          />
+    <Card
+      className={`${styles.card} ${wide ? styles.wide : ''}`}
+      data-testid="experience-card"
+      data-experience={e.id}
+    >
+      <div className={styles.main}>
+        <p className={styles.kicker}>
+          {series.theme
+            ? t('experience.seriesKicker', { title: seriesTitle })
+            : t('experience.kicker')}
+        </p>
+        <h2>{seriesTitle}</h2>
+        {series.variants.length > 1 && (
+          <div className={styles.variants}>
+            <Segmented
+              label={t('experience.variantLabel')}
+              value={e.id}
+              options={series.variants.map((v) => ({
+                value: v.id,
+                label: variantLabel(experienceText(v, lang).title, seriesTitle, t('common.min')),
+              }))}
+              onChange={(id) => {
+                setPickedId(id);
+                setExpanded(false);
+              }}
+            />
+          </div>
+        )}
+        <p className={styles.desc}>{text.description}</p>
+        {segments.length > 0 && (
+          <div className={styles.chart} aria-hidden="true">
+            <ProfileChart segments={segments} height="3.25rem" />
+          </div>
+        )}
+        <ul className={styles.facts}>
+          <li>{t(`experience.level.${e.level}` as MessageKey)}</li>
+          {range && <li>{t('experience.cardEffort', { ...range })}</li>}
+          <li>{songsLabel(rows.length)}</li>
+        </ul>
+        <div className={styles.actions}>
+          <Button
+            variant="primary"
+            data-testid="experience-start"
+            onClick={() => navigate(experienceSetupUrl(e))}
+            disabled={!workout}
+          >
+            <Icon name="play" size={18} />
+            {t('experience.start')}
+          </Button>
+          {!wide && (
+            <Button variant="text" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
+              {t(expanded ? 'experience.hideScenario' : 'experience.showScenario')}
+            </Button>
+          )}
         </div>
-      )}
-      <p className={styles.desc}>{text.description}</p>
-      {segments.length > 0 && (
-        <div className={styles.chart} aria-hidden="true">
-          <ProfileChart segments={segments} height="3.25rem" />
-        </div>
-      )}
-      <ul className={styles.facts}>
-        <li>{t(`experience.level.${e.level}` as MessageKey)}</li>
-        {range && <li>{t('experience.cardEffort', { ...range })}</li>}
-        <li>{songsLabel(rows.length)}</li>
-      </ul>
-      <div className={styles.actions}>
-        <Button
-          variant="primary"
-          data-testid="experience-start"
-          onClick={() => navigate(experienceSetupUrl(e))}
-          disabled={!workout}
-        >
-          <Icon name="play" size={18} />
-          {t('experience.start')}
-        </Button>
-        <Button aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
-          {t(expanded ? 'experience.hideScenario' : 'experience.showScenario')}
-        </Button>
       </div>
-      {expanded && (
+      {showScenario && (
         <section className={styles.scenarioBox} aria-label={t('experience.scenarioTitle')}>
           <h3 className={styles.scenarioHead}>{t('experience.scenarioTitle')}</h3>
           <p className={styles.scenarioSum} data-testid="experience-scenario-summary">

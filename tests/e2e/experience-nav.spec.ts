@@ -28,8 +28,13 @@ for (const [name, size] of [
 
     const card = page.locator('[data-experience="neon-grid-30"]');
     const scenario = card.getByTestId('experience-scenario');
-    await expect(scenario).toHaveCount(0); // collapsed by default
-    await card.getByRole('button', { name: /scenario|scenariusz/i }).click();
+    if (size.width >= 1024) {
+      // Wide screen: the scenario sits beside the card, no toggle.
+      await expect(card.getByRole('button', { name: /scenario|scenariusz/i })).toHaveCount(0);
+    } else {
+      await expect(scenario).toHaveCount(0); // collapsed by default
+      await card.getByRole('button', { name: /scenario|scenariusz/i }).click();
+    }
     await expect(scenario).toBeVisible();
     await expect(scenario.locator('li').first()).toContainText(/\d+:\d\d/);
     await expect(scenario.locator('li').first()).toContainText(/\d\/10/);

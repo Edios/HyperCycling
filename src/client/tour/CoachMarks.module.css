@@ -2,9 +2,9 @@
   position: fixed;
   z-index: 60;
   box-sizing: border-box;
-  border: 2px solid var(--act);
+  border: 2px solid var(--acc);
   border-radius: 0.875rem;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--act) 25%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--acc) 25%, transparent);
   pointer-events: none;
   transition:
     left 0.2s ease,
@@ -22,7 +22,7 @@
   overflow: auto;
   padding: 0.875rem 1rem 0.75rem;
   border-radius: 1rem;
-  border: 1px solid var(--act);
+  border: 1px solid var(--acc);
   background: var(--s1);
   color: var(--fg);
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);

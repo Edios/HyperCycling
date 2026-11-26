@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BPM_RELAXED, matchBpm } from './bpm-match';
+import { BPM_RELAXED, cadenceFit, matchBpm } from './bpm-match';
 import type { EffortLevel } from './effort';
 import { songKey } from './slot-plan';
 import { sectionsOf, type MusicCategoryId, type MusicSection } from './soundtrack';
@@ -9,6 +9,7 @@ import {
   DEFAULT_SOUNDTRACK_PREFS,
   MAX_PICKS,
   planSoundtrack,
+  preferredKindAt,
   ROTATION_REF_SEC,
   scoreTrack,
   shuffleValue,
@@ -845,5 +846,36 @@ describe('planSoundtrack', () => {
     expect(soundtrackFingerprint(ride)).toMatch(/^[0-9a-f]{8}$/);
     expect(soundtrackFingerprint(other)).not.toBe(soundtrackFingerprint(ride));
     expect(soundtrackFingerprint(structuredClone(ride))).toBe(soundtrackFingerprint(ride));
+  });
+});
+
+describe('preferredKindAt (the editor judges songs by the planner rule)', () => {
+  // A calm 10-minute warm-up at 90 rpm, then easy work at 90 rpm, then a cool-down.
+  const w = workout([
+    steady('warm', 600, 3, 90),
+    steady('work', 1200, 5, 90),
+    steady('cool', 600, 2, 90),
+  ]);
+
+  it('is 2x in the warm-up and the cool-down, 1:1 in easy work at 90 rpm', () => {
+    expect(preferredKindAt(w, 'warm')).toBe('exact');
+    expect(preferredKindAt(w, 'work')).toBe('half');
+    expect(preferredKindAt(w, 'cool')).toBe('exact');
+    expect(preferredKindAt(w, 'missing')).toBeUndefined();
+  });
+
+  it('turns a 1:1 song in the warm-up into a second choice, a fit in the work', () => {
+    expect(cadenceFit(90, 90, preferredKindAt(w, 'warm'))).toEqual({
+      verdict: 'alt',
+      kind: 'half',
+    });
+    expect(cadenceFit(90, 90, preferredKindAt(w, 'work'))).toEqual({
+      verdict: 'fit',
+      kind: 'half',
+    });
+    expect(cadenceFit(180, 90, preferredKindAt(w, 'warm'))).toEqual({
+      verdict: 'fit',
+      kind: 'exact',
+    });
   });
 });

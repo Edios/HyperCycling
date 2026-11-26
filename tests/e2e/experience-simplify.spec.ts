@@ -52,7 +52,8 @@ for (const [name, size] of [
       'data-experience',
       'neon-grid-45',
     );
-    await page.getByRole('button', { name: 'Show scenario' }).click();
+    // A wide screen shows the scenario beside the card; narrower ones open it with the toggle.
+    if (size.width < 1024) await page.getByRole('button', { name: 'Show scenario' }).click();
     await expect(page.getByTestId('experience-scenario-summary')).toHaveText(
       '45 min · 11 songs · peak 9',
     );

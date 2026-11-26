@@ -88,7 +88,7 @@ beforeEach(() => {
 });
 
 describe('PlanTab', () => {
-  it('without an active plan shows a welcome screen with three ways to start', async () => {
+  it('without an active plan shows a welcome screen with two tiles: build or pick a plan', async () => {
     renderTab();
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Welcome to HyperCycling' }),
@@ -96,8 +96,7 @@ describe('PlanTab', () => {
     const build = screen.getByRole('link', { name: /Build my plan/ });
     expect(build).toHaveAttribute('href', '/plans/wizard');
     expect(screen.getByRole('link', { name: /Pick a plan/ })).toHaveAttribute('href', '/plans');
-    expect(screen.getByRole('link', { name: /Just ride/ })).toHaveAttribute('href', '/freestyle');
-    expect(screen.getByTestId('welcome-experience')).toHaveAttribute('href', '/experiences');
+    expect(screen.queryByRole('link', { name: /Just ride/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ride' })).not.toBeInTheDocument();
   });
 

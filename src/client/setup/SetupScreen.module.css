@@ -208,7 +208,8 @@
 }
 
 .add {
-  border-style: dashed;
+  border-color: transparent;
+  background: transparent;
 }
 
 .note {
@@ -433,8 +434,17 @@
   margin-top: 0.75rem;
 }
 
+/* "Who is riding", the bike and the devices: one card, 1 px lines inside (brand §5.3). */
+.whoCard {
+  padding: 1.25rem 1.25rem 0.375rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--s1);
+}
+
 .devices {
   margin-top: 0.75rem;
+  border-top: 1px solid var(--line);
 }
 
 .devices:empty {

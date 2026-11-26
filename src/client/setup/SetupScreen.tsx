@@ -667,7 +667,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
         </Card>
 
         <div className={styles.options}>
-          <section aria-labelledby="setup-who">
+          <section aria-labelledby="setup-who" className={styles.whoCard}>
             <h2 id="setup-who" className={styles.who}>
               {t('setup.who')}
             </h2>

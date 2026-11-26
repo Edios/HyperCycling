@@ -388,6 +388,26 @@ export function preferredKind(s: MusicSection): MatchKind {
 }
 
 /**
+ * The relation the planner plays in the part holding `blockId` (a leaf or a repeat), so the editor
+ * judges songs by the same rule: 2x in the warm-up and the cool-down, the comfort band's choice in
+ * the work. Undefined when the block is not in the workout.
+ */
+export function preferredKindAt(w: Workout, blockId: string): MatchKind | undefined {
+  const ids = new Set<string>();
+  const collect = (blocks: Workout['blocks'], inside: boolean): void => {
+    for (const b of blocks) {
+      const hit = inside || b.id === blockId;
+      if (hit) ids.add(b.id);
+      if (b.kind === 'repeat') collect(b.blocks, hit);
+    }
+  };
+  collect(w.blocks, false);
+  if (ids.size === 0) return undefined;
+  const s = sectionsOf(w).find((x) => x.blockRefs.some((r) => ids.has(r.blockId)));
+  return s ? preferredKind(s) : undefined;
+}
+
+/**
  * Energy fit 0..1 of a song for a part, or undefined when the song may not play there (spec §2b):
  * a hard part never takes a song 3 steps calmer, a calm part never one 3 steps stronger, the
  * warm-up never an energy 5 song and a climb never a light one (energy 1-2); elsewhere in the

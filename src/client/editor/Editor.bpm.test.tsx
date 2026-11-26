@@ -128,9 +128,9 @@ describe('BPM matching hint', () => {
   it('judges a typed BPM against the block cadence', async () => {
     const bpm = await pinTrack();
     fireEvent.change(bpm, { target: { value: '180' } });
-    expect(screen.getByTestId('bpm-match')).toHaveTextContent('Fits the cadence');
+    expect(screen.getByTestId('bpm-match')).toHaveTextContent('Fits 2×');
     fireEvent.change(bpm, { target: { value: '90' } });
-    expect(screen.getByTestId('bpm-match')).toHaveTextContent('half time');
+    expect(screen.getByTestId('bpm-match')).toHaveTextContent('Fits 1:1');
     fireEvent.change(bpm, { target: { value: '128' } });
     expect(screen.getByTestId('bpm-nomatch')).toBeInTheDocument();
   });
@@ -141,7 +141,7 @@ describe('BPM matching hint', () => {
     expect(screen.getByTestId('track-cadence')).toHaveTextContent('≈ 85–95 rpm');
     expect(screen.getByTestId('bpm-match')).toHaveAttribute('data-verdict', 'fit');
     fireEvent.change(bpm, { target: { value: '90' } });
-    expect(screen.getByTestId('track-cadence')).toHaveTextContent('half time ≈ 85–95 rpm');
+    expect(screen.getByTestId('track-cadence')).toHaveTextContent('1:1 ≈ 85–95 rpm');
     expect(screen.getByTestId('bpm-match')).toHaveAttribute('data-verdict', 'fit'); // 1:1 is the planner's pick at an easy 90 rpm
     fireEvent.change(bpm, { target: { value: '128' } });
     expect(screen.getByTestId('track-cadence')).toHaveTextContent('≈ 61–68 rpm');
@@ -211,7 +211,7 @@ describe('BPM matching hint', () => {
   it('shows a sensible hint for a sprint cadence (120 RPM has no exact target)', async () => {
     await openEditor(2);
     const hint = screen.getByTestId('bpm-target');
-    expect(hint).toHaveTextContent('about 120 BPM (half time)');
+    expect(hint).toHaveTextContent('about 120 BPM (1:1)');
     expect(hint).not.toHaveTextContent('240');
   });
 
