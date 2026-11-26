@@ -1,4 +1,5 @@
 import type { MessageKey } from '../i18n';
+import { webglLogText } from '../world/webgl-log';
 import type { DeviceInfo } from './device-info';
 import type { TestResult } from './recommendation';
 
@@ -11,13 +12,23 @@ export interface ReportInput {
   results: readonly TestResult[];
   /** Lines of the music log (which recording played or failed); empty = left out. */
   musicLog?: string;
+  /** Lines of the 3D background log (tries, losses, fallback); default: this visit's. */
+  webglLog?: string;
   t: Translate;
 }
 
 const n1 = (v: number): string => v.toFixed(1);
 
 /** Plain-text diagnostics report for pasting into a message or saving as a .txt file. */
-export function buildReport({ version, date, info, results, musicLog, t }: ReportInput): string {
+export function buildReport({
+  version,
+  date,
+  info,
+  results,
+  musicLog,
+  webglLog = webglLogText(),
+  t,
+}: ReportInput): string {
   const na = t('diagnostics.device.unavailable');
   const lines = [
     t('diagnostics.report.title'),
@@ -55,6 +66,7 @@ export function buildReport({ version, date, info, results, musicLog, t }: Repor
       );
     }
   }
+  if (webglLog) lines.push('', `${t('diagnostics.webglLog.title')}:`, webglLog);
   if (musicLog) lines.push('', `${t('diagnostics.music.title')}:`, musicLog);
   return lines.join('\n') + '\n';
 }

@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { createAutoQuality } from '../diagnostics/auto-quality';
 import { createRenderScaleController, SCALE_MIN } from './render-scale';
 import { readRenderStats } from './render-stats';
-import { clearWebglIssue, publishWebglIssue } from './webgl-log';
+import {
+  clearWebglIssue,
+  logWebglEvent,
+  publishWebglIssue,
+  type WebglEventKind,
+} from './webgl-log';
 import { buildWorldFrame } from './frame';
 import { createPathModel } from './path-model';
 import { createSway } from './sway';
@@ -30,7 +35,15 @@ export interface WorldCanvasProps {
    * the GPU is still busy at app start; `onUnavailable` is called only after the last one fails.
    */
   retryDelaysMs?: readonly number[];
+  /**
+   * How long (ms) a lost context may stay lost before the world starts over on a fresh canvas (a
+   * browser that never gives it back would otherwise leave a frozen picture for the whole ride).
+   */
+  restoreWaitMs?: number;
 }
+
+/** The browser usually gives a lost context back within a second or two. */
+export const DEFAULT_RESTORE_WAIT_MS = 3000;
 
 /** A busy GPU or a context limit is often gone a moment later: three more tries over ~6 s. */
 export const DEFAULT_RETRY_MS: readonly number[] = [400, 1500, 4000];
@@ -88,12 +101,18 @@ export function WorldCanvas(props: WorldCanvasProps) {
     let raf = 0;
     let world: WorldRenderer | undefined;
     let observer: ResizeObserver | undefined;
-    const unavailable = (): void => latest.current.onUnavailable?.();
     const delays = props.retryDelaysMs ?? DEFAULT_RETRY_MS;
+    const restoreWait = props.restoreWaitMs ?? DEFAULT_RESTORE_WAIT_MS;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let restoreTimer: ReturnType<typeof setTimeout> | undefined;
+    const unavailable = (reason: string): void => {
+      logWebglEvent('gave-up', reason);
+      latest.current.onUnavailable?.();
+    };
     /** Another try after the next delay; false when the delays are used up. */
-    const retryLater = (reason: string, again: () => void): boolean => {
+    const retryLater = (kind: WebglEventKind, reason: string, again: () => void): boolean => {
       publishWebglIssue(reason);
+      logWebglEvent(kind, reason);
       const delay = delays[tries.current];
       if (delay === undefined) return false;
       tries.current += 1;
@@ -103,9 +122,19 @@ export function WorldCanvas(props: WorldCanvasProps) {
     const onLost = (e: Event): void => {
       e.preventDefault(); // lets the browser restore the context
       publishWebglIssue('context lost');
+      logWebglEvent('lost');
+      clearTimeout(restoreTimer);
+      // Not given back in time: start over on a fresh canvas, as after a failed start.
+      restoreTimer = setTimeout(() => {
+        if (cancelled) return;
+        const reason = 'context not restored';
+        if (!retryLater('not-restored', reason, () => setEpoch((n) => n + 1))) unavailable(reason);
+      }, restoreWait);
     };
     const onRestored = (): void => {
+      clearTimeout(restoreTimer);
       clearWebglIssue();
+      logWebglEvent('restored');
       tries.current = 0;
       setEpoch((n) => n + 1);
     };
@@ -115,14 +144,16 @@ export function WorldCanvas(props: WorldCanvasProps) {
     const begin = (): void => {
       const probe = probeWebgl();
       if (!probe.ok) {
-        if (!retryLater(probe.reason, begin)) unavailable();
+        if (!retryLater('probe-failed', probe.reason, begin)) unavailable(probe.reason);
         return;
       }
       clearWebglIssue();
       start().catch((err: unknown) => {
         if (cancelled) return;
         console.warn('World: world could not be loaded', err);
-        unavailable();
+        unavailable(
+          `world could not be loaded: ${err instanceof Error ? err.message : String(err)}`,
+        );
       });
     };
 
@@ -137,11 +168,12 @@ export function WorldCanvas(props: WorldCanvasProps) {
         w.dispose();
         // A canvas whose context failed stays unusable: try again on a fresh one.
         const reason = `world init failed: ${err instanceof Error ? err.message : String(err)}`;
-        if (!retryLater(reason, () => setEpoch((n) => n + 1))) unavailable();
+        if (!retryLater('init-failed', reason, () => setEpoch((n) => n + 1))) unavailable(reason);
         return;
       }
       tries.current = 0;
       clearWebglIssue();
+      logWebglEvent('started');
       world = w;
       worldRef.current = w;
       w.setViewOffsetX(offsetRef.current);
@@ -202,6 +234,7 @@ export function WorldCanvas(props: WorldCanvasProps) {
     return () => {
       cancelled = true;
       clearTimeout(timer);
+      clearTimeout(restoreTimer);
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);
       cancelAnimationFrame(raf);

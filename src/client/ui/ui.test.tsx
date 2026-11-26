@@ -98,6 +98,13 @@ describe('Field, Modal, Toast', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Saved');
   });
 
+  it('Toast can carry one action button', () => {
+    const onClick = vi.fn();
+    render(<Toast message="Failed" onClose={() => {}} action={{ label: 'Try again', onClick }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
   it('ToastStack shows several toasts in one column', () => {
     render(
       <ToastStack>

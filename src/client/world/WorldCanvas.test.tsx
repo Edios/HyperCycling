@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_EFFORT_TABLE } from '../../domain/effort';
 import type { Segment } from '../../domain/segments';
 import { WorldCanvas } from './WorldCanvas';
-import { readWebglIssue } from './webgl-log';
+import { readWebglEvents, readWebglIssue, resetWebglLogForTests } from './webgl-log';
 import type { FrameInput } from './world';
 
 /** Minimal stand-in for the parts of three the Neon Tunnel touches; records disposal. */
@@ -239,6 +239,7 @@ beforeEach(() => {
   fake.log.pixelRatios.length = 0;
   fake.log.blooms.length = 0;
   frames = [];
+  resetWebglLogForTests();
   vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
   vi.stubGlobal('cancelAnimationFrame', vi.fn());
 });
@@ -328,6 +329,71 @@ describe('WorldCanvas', () => {
     canvas.dispatchEvent(new Event('webglcontextrestored'));
     await waitFor(() => expect(fake.log.renderers).toHaveLength(2));
     expect(readWebglIssue()).toBeNull();
+  });
+
+  it('starts over on a fresh canvas when a lost context is not given back', async () => {
+    mockWebgl();
+    const onUnavailable = vi.fn();
+    const { getByTestId } = render(
+      <WorldCanvas
+        getFrameInput={() => input}
+        quality="high"
+        onUnavailable={onUnavailable}
+        retryDelaysMs={[5]}
+        restoreWaitMs={20}
+      />,
+    );
+    await waitFor(() => expect(fake.log.renderers).toHaveLength(1));
+    const first = getByTestId('world-canvas');
+    first.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    await waitFor(() => expect(getByTestId('world-canvas')).not.toBe(first));
+    await waitFor(() => expect(fake.log.renderers).toHaveLength(2));
+    expect(onUnavailable).not.toHaveBeenCalled();
+    expect(readWebglEvents().map((e) => e.kind)).toEqual([
+      'started',
+      'lost',
+      'not-restored',
+      'started',
+    ]);
+  });
+
+  it('falls back when a lost context is not given back and no try is left', async () => {
+    mockWebgl();
+    const onUnavailable = vi.fn();
+    const { getByTestId } = render(
+      <WorldCanvas
+        getFrameInput={() => input}
+        quality="high"
+        onUnavailable={onUnavailable}
+        retryDelaysMs={[]}
+        restoreWaitMs={10}
+      />,
+    );
+    await waitFor(() => expect(fake.log.renderers).toHaveLength(1));
+    getByTestId('world-canvas').dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
+    expect(readWebglEvents().at(-1)).toMatchObject({
+      kind: 'gave-up',
+      reason: 'context not restored',
+    });
+  });
+
+  it('logs every refused try with its reason, for the diagnostics report', async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    render(
+      <WorldCanvas
+        getFrameInput={() => input}
+        quality="high"
+        retryDelaysMs={[5]}
+        onUnavailable={vi.fn()}
+      />,
+    );
+    await waitFor(() => expect(readWebglEvents().at(-1)?.kind).toBe('gave-up'));
+    expect(readWebglEvents().map((e) => [e.kind, e.reason])).toEqual([
+      ['probe-failed', 'getContext returned null'],
+      ['probe-failed', 'getContext returned null'],
+      ['gave-up', 'getContext returned null'],
+    ]);
   });
 
   it('reports unavailable when WebGL context creation fails', async () => {

@@ -1272,6 +1272,9 @@ export const en = {
     browseBody: 'Browse ready-made plans and start the one you like.',
   },
   diagnostics: {
+    webglLog: {
+      title: '3D background: recent events',
+    },
     music: {
       title: 'Music: recent attempts',
       hint: 'Which version of a song played and which failed. Helps find what is blocked on this device.',
@@ -1369,7 +1372,9 @@ export const en = {
     escape: 'Pause and ask to end the workout',
   },
   world: {
-    unavailable: 'This device does not support WebGL. Using the Basic background.',
+    unavailable:
+      'The 3D background (WebGL) did not start, so Basic is shown. The browser may have turned it off after a graphics error; trying again or restarting the browser helps.',
+    retry: 'Try again',
     neonTunnel: 'Neon tunnel',
     road: 'Road',
     scenes: 'Scenes',

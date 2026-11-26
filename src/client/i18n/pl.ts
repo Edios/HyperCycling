@@ -1278,6 +1278,9 @@ export const pl: Messages = {
     browseBody: 'Przejrzyj gotowe plany i zacznij ten, który Ci pasuje.',
   },
   diagnostics: {
+    webglLog: {
+      title: 'Tło 3D: ostatnie zdarzenia',
+    },
     music: {
       title: 'Muzyka: ostatnie próby',
       hint: 'Którą wersję utworu odtworzono, a która zawiodła. Pomaga ustalić, co zablokowano na tym urządzeniu.',
@@ -1375,7 +1378,9 @@ export const pl: Messages = {
     escape: 'Pauza i pytanie o zakończenie treningu',
   },
   world: {
-    unavailable: 'To urządzenie nie obsługuje grafiki 3D (WebGL). Używam tła Basic.',
+    unavailable:
+      'Tło 3D (WebGL) nie wystartowało, więc pokazuję tło Basic. Przeglądarka mogła je wyłączyć po błędzie grafiki; pomaga ponowna próba albo restart przeglądarki.',
+    retry: 'Spróbuj ponownie',
     neonTunnel: 'Neonowy tunel',
     road: 'Droga',
     scenes: 'Sceny',

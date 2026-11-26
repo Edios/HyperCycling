@@ -3,6 +3,7 @@ import { en } from '../i18n/en';
 import { collectDeviceInfo } from './device-info';
 import type { TestResult } from './recommendation';
 import { buildReport } from './report';
+import { logWebglEvent, resetWebglLogForTests } from '../world/webgl-log';
 
 const t = (key: string, vars?: Record<string, string | number>): string => {
   let cur: unknown = en;
@@ -55,5 +56,18 @@ describe('buildReport', () => {
     expect(text).toContain('1.2%');
     expect(text).toContain('1280x720');
     expect(text).not.toContain(en.diagnostics.report.noResults);
+  });
+
+  it('says why the 3D background fell back to Basic, and leaves the part out when nothing happened', () => {
+    resetWebglLogForTests();
+    const quiet = buildReport({ version: '2.0.0', date: new Date(0), info, results: [], t });
+    expect(quiet).not.toContain(en.diagnostics.webglLog.title);
+    logWebglEvent('probe-failed', 'getContext returned null', Date.UTC(2026, 10, 26, 7, 0, 1));
+    logWebglEvent('gave-up', 'getContext returned null', Date.UTC(2026, 10, 26, 7, 0, 7));
+    const text = buildReport({ version: '2.0.0', date: new Date(0), info, results: [], t });
+    expect(text).toContain(`${en.diagnostics.webglLog.title}:`);
+    expect(text).toContain('07:00:01 probe-failed: getContext returned null');
+    expect(text).toContain('07:00:07 gave-up: getContext returned null');
+    resetWebglLogForTests();
   });
 });
