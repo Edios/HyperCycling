@@ -331,6 +331,8 @@ export const pl: Messages = {
       mine: 'Moje',
       rest: 'Pozostałe treningi',
     },
+    groupAll: 'Wszystkie ({n})',
+    groupAllHint: '{n} z nich jest w innych grupach',
     showMore: 'Pokaż więcej ({n})',
     showLess: 'Pokaż mniej',
     heading: 'Treningi',

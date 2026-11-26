@@ -114,7 +114,8 @@ describe('new workout', () => {
     const saved = repo.put.mock.calls[0]?.[0] as Workout;
     expect(saved.source.kind).toBe('user');
     await waitFor(() => expect(router.state.location.pathname).toBe(`/editor/${saved.id}`));
-    expect(await screen.findByRole('button', { name: 'Save' })).toBeDisabled();
+    // The button turns disabled after the save settles; wait for it instead of checking once.
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled());
   });
 
   it('opens an imported workout as an unsaved draft', async () => {

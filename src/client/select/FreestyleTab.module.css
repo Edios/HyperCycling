@@ -12,7 +12,7 @@
 .count {
   flex: 1;
   color: var(--mut);
-  font-size: 0.9375rem;
+  font-size: max(12px, 0.9375rem);
 }
 
 .actions {
@@ -28,7 +28,7 @@
   color: var(--mut);
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 0.9375rem;
+  font-size: max(12px, 0.9375rem);
   padding: 0 0.75rem;
 }
 
@@ -87,7 +87,8 @@
 
 .chips button {
   flex: none;
-  height: 2.25rem;
+  /* The text stays small; the target is 44 px high (WCAG 2.5.5, phones on their side). */
+  height: max(44px, 2.25rem);
   min-width: 44px;
   padding: 0 0.125rem;
   border: 0;
@@ -134,6 +135,13 @@
 
 .group {
   min-width: 0;
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .groupTitle {
