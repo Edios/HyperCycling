@@ -86,17 +86,20 @@ test('an own song added before the catalog check says the catalog plays that vid
     },
   });
   expect(put.ok()).toBe(true);
-  await toWizard(page);
-  await page
-    .getByTestId('soundtrack-own')
-    .getByRole('button', { name: /My songs/ })
-    .click();
-  await expect(
-    page.getByTestId('soundtrack-own-song').filter({ hasText: 'Lovin You (mine)' }),
-  ).toContainText(
-    "In the catalog as “Kiss – I Was Made for Lovin' You”: it plays from there, not from this list.",
-  );
-  expect(errors).toEqual([]);
-  // The worker's database is shared with the other test here: leave it as found.
-  expect((await page.request.delete('/api/own-tracks/own-4b89j6IacN0')).ok()).toBe(true);
+  try {
+    await toWizard(page);
+    await page
+      .getByTestId('soundtrack-own')
+      .getByRole('button', { name: /My songs/ })
+      .click();
+    await expect(
+      page.getByTestId('soundtrack-own-song').filter({ hasText: 'Lovin You (mine)' }),
+    ).toContainText(
+      "In the catalog as “Kiss – I Was Made for Lovin' You”: it plays from there, not from this list.",
+    );
+    expect(errors).toEqual([]);
+  } finally {
+    // The worker's database is shared with the other test here: leave it as found, pass or fail.
+    expect((await page.request.delete('/api/own-tracks/own-4b89j6IacN0')).ok()).toBe(true);
+  }
 });

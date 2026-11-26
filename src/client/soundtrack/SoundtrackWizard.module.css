@@ -203,7 +203,7 @@
   flex-basis: 100%;
   order: 1;
   color: var(--mut);
-  font-size: 0.9375rem;
+  font-size: max(12px, 0.9375rem);
 }
 
 .ownForm {
