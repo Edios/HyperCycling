@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type Dispatch } from 'react';
 import { BPM_MAX, BPM_MIN, cadenceOfBpmRange, slotCadence } from '../../domain/bpm-match';
 import type { Lang } from '../../domain/lang';
+import { preferredKindAt } from '../../domain/soundtrack-plan';
 import {
   cooldownBlockOf,
   slotTracks,
@@ -218,6 +219,11 @@ function SongPanel({
   dispatch: Dispatch<EditorAction>;
 }) {
   const t = useT();
+  // The planner's relation where the song starts (2x in the warm-up and cool-down).
+  const prefer = useMemo(
+    () => preferredKindAt(workout, song.firstBlockId),
+    [workout, song.firstBlockId],
+  );
   const shownHint = readOnly ? (songHint(workout, song, lang) ?? '') : (song.hint ?? '');
   const [hint, setHint] = useState(shownHint);
   const [lo, setLo] = useState(song.bpm ? String(song.bpm[0]) : '');
@@ -355,8 +361,10 @@ function SongPanel({
           </small>
         )}
       </div>
-      {!readOnly && <SuggestedChips rpm={slotRpm(workout, song)} onPick={pickSuggested} />}
-      {!readOnly && <SongFinder rpm={slotRpm(workout, song)} onPick={pick} />}
+      {!readOnly && (
+        <SuggestedChips rpm={slotRpm(workout, song)} prefer={prefer} onPick={pickSuggested} />
+      )}
+      {!readOnly && <SongFinder rpm={slotRpm(workout, song)} prefer={prefer} onPick={pick} />}
       <TrackPin
         key={queue[0] ? `${queue[0].id}:${queue[0].title}` : 'none'}
         track={queue[0]}

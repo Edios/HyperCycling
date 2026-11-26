@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { cadenceFit, sortByCadence } from '../../domain/bpm-match';
+import { cadenceFit, sortByCadence, type MatchKind } from '../../domain/bpm-match';
 import { useT } from '../i18n';
 import { useBpmLookup, type SongCandidate, type SongProvider } from '../music/bpmLookup';
 import { BRAND, errorInfo, errorText, SITE, type ErrorInfo } from '../music/provider-labels';
@@ -21,9 +21,12 @@ type State =
  */
 export function SongFinder({
   rpm,
+  prefer,
   onPick,
 }: {
   rpm: number | undefined;
+  /** The relation the planner plays in this stretch (`preferredKindAt`). */
+  prefer?: MatchKind;
   onPick: (hit: SongCandidate) => void;
 }) {
   const t = useT();
@@ -69,10 +72,11 @@ export function SongFinder({
 
   // Best fit first (stable inside a group); the filter drops what does not fit the cadence.
   const hits = state.status === 'done' ? state.hits : [];
-  const ordered = rpm === undefined ? hits : sortByCadence(hits, (h) => cadenceFit(h.bpm, rpm));
+  const ordered =
+    rpm === undefined ? hits : sortByCadence(hits, (h) => cadenceFit(h.bpm, rpm, prefer));
   const shown =
     rpm !== undefined && onlyFitting
-      ? ordered.filter((h) => cadenceFit(h.bpm, rpm)?.verdict !== 'miss')
+      ? ordered.filter((h) => cadenceFit(h.bpm, rpm, prefer)?.verdict !== 'miss')
       : ordered;
   const hidden = hits.length - shown.length;
 
@@ -154,7 +158,7 @@ export function SongFinder({
       {state.status === 'done' && shown.length > 0 && (
         <ul className={styles.hits} data-testid="finder-results">
           {shown.map((h) => {
-            const fit = cadenceFit(h.bpm, rpm);
+            const fit = cadenceFit(h.bpm, rpm, prefer);
             const rpmText = cadenceText(t, h.bpm);
             const name = h.artist ? `${h.artist} – ${h.title}` : h.title;
             return (

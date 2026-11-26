@@ -191,15 +191,15 @@ describe('song finder (M19d)', () => {
     expect(screen.getByTestId('song-pill')).toHaveTextContent('Band – Fast One');
   });
 
-  it('marks hits that fit a typed range, also as half time, and keeps that range on pick', async () => {
+  it('marks hits that fit a typed range, also 1:1, and keeps that range on pick', async () => {
     const panel = await find(() => Promise.resolve([hit('Fast One', 172), hit('Slow One', 86)]));
     fireEvent.change(within(panel).getByTestId('song-bpm-min'), { target: { value: '170' } });
     fireEvent.change(within(panel).getByTestId('song-bpm-max'), { target: { value: '176' } });
     fireEvent.blur(within(panel).getByTestId('song-bpm-max'));
     fireEvent.click(within(panel).getByTestId('finder-search'));
     const list = await within(panel).findByTestId('finder-results');
-    expect(list).toHaveTextContent('fits the cadence');
-    expect(list).toHaveTextContent('fits in half time');
+    expect(list).toHaveTextContent('fits 2×');
+    expect(list).toHaveTextContent('fits 1:1');
     expect(list).toHaveTextContent('≈ 82–91 rpm');
     fireEvent.click(within(panel).getAllByTestId('finder-pick')[1] as HTMLElement);
     expect(within(panel).getByTestId('song-bpm-min')).toHaveValue('170');
@@ -219,12 +219,14 @@ describe('song finder (M19d)', () => {
       within(list)
         .getAllByRole('listitem')
         .map((li) => li.textContent ?? '');
-    expect(rows().map((r) => r.match(/(Fast|Slow|Off) One/)?.[1])).toEqual(['Fast', 'Slow', 'Off']);
+    // Block 'a' is easy work at 90 rpm, where the planner plays 1:1: the 86 BPM song fits as
+    // well as the 172 BPM one (2x always fits), so both keep their order ahead of the miss.
+    expect(rows().map((r) => r.match(/(Fast|Slow|Off) One/)?.[1])).toEqual(['Slow', 'Fast', 'Off']);
     expect(
       within(list)
         .getAllByTestId('finder-fit')
         .map((b) => b.getAttribute('data-verdict')),
-    ).toEqual(['fit', 'alt', 'miss']);
+    ).toEqual(['fit', 'fit', 'miss']);
     expect(within(list).getAllByTestId('finder-fit')[2]).toHaveTextContent(
       'does not fit the cadence',
     );

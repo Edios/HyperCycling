@@ -170,12 +170,20 @@ function DeviceRow({
       </div>
       <div className={styles.actions}>
         {connected || busy ? (
-          <Button className={styles.btn} onClick={() => store.disconnect(kind)}>
+          <Button
+            className={styles.btn}
+            variant={compact ? 'text' : 'default'}
+            onClick={() => store.disconnect(kind)}
+          >
             {t('devices.disconnect')}
           </Button>
         ) : lost ? (
           <>
-            <Button className={styles.btn} onClick={() => void store.reconnect(kind)}>
+            <Button
+              className={styles.btn}
+              variant={compact ? 'text' : 'default'}
+              onClick={() => void store.reconnect(kind)}
+            >
               {t('devices.reconnect')}
             </Button>
             {!compact && (
@@ -185,7 +193,12 @@ function DeviceRow({
             )}
           </>
         ) : (
-          <Button className={styles.btn} onClick={connect} data-testid={`connect-${kind}`}>
+          <Button
+            className={styles.btn}
+            variant={compact ? 'text' : 'default'}
+            onClick={connect}
+            data-testid={`connect-${kind}`}
+          >
             <Icon name="bluetooth" size={18} />
             {t(CONNECT[kind])}
           </Button>

@@ -224,7 +224,7 @@ describe('GetSongBPM lookup', () => {
     expect(lookup).toBe('song:Master of Puppets artist:Metallica');
     expect(apiKey).toBe('TEST-KEY');
     expect(screen.getByTestId('bpm-source')).toHaveTextContent('Source: GetSongBPM');
-    expect(screen.getByTestId('bpm-match')).toHaveTextContent('Fits the cadence');
+    expect(screen.getByTestId('bpm-match')).toHaveTextContent('Fits 2×');
     const link = within(screen.getByTestId('bpm-attribution-getsongbpm')).getByRole('link', {
       name: /GetSongBPM/,
     });
@@ -359,7 +359,7 @@ describe('GetSongBPM suggestions', () => {
     artist: { id: 'a', name: `Band ${n}` },
   });
 
-  it('lists songs for 2 x RPM and half time, with links, and credits the source', async () => {
+  it('lists songs for 2x and 1:1, with links, and credits the source', async () => {
     const asked: string[] = [];
     server.use(
       http.get('https://api.getsong.co/tempo/', ({ request }) => {
@@ -376,7 +376,7 @@ describe('GetSongBPM suggestions', () => {
     expect(asked).toEqual(['180', '90']);
     expect(list).toHaveTextContent('Song x180');
     expect(list).toHaveTextContent('Band x180');
-    expect(list).toHaveTextContent('half time');
+    expect(list).toHaveTextContent('About 90 BPM (1:1)');
     expect(within(list).getByRole('link', { name: /Song x180/ })).toHaveAttribute(
       'href',
       'https://getsongbpm.com/song/song-x180/x180',

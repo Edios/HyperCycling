@@ -23,9 +23,12 @@ const KIND_KEY = {
  */
 export function SuggestedChips({
   rpm,
+  prefer,
   onPick,
 }: {
   rpm: number | undefined;
+  /** The relation the planner plays in this block (`preferredKindAt`). */
+  prefer?: MatchKind;
   onPick: (track: LibraryTrack) => void;
 }) {
   const t = useT();
@@ -58,7 +61,7 @@ export function SuggestedChips({
           const fit = `${t(KIND_KEY[match.kind])}${match.fit === 'close' ? ` (${t('editor.suggest.close')})` : ''}`;
           const name = track.artist ? `${track.title} · ${track.artist}` : track.title;
           const rpmText = cadenceText(t, track.bpm);
-          const verdict = cadenceFit(track.bpm, rpm)?.verdict ?? 'fit';
+          const verdict = cadenceFit(track.bpm, rpm, prefer)?.verdict ?? 'fit';
           return (
             <li key={track.id}>
               <button

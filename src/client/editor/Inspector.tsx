@@ -1,4 +1,6 @@
-import { useEffect, useId, useRef, useState, type Dispatch, type RefObject } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type Dispatch, type RefObject } from 'react';
+import type { MatchKind } from '../../domain/bpm-match';
+import { preferredKindAt } from '../../domain/soundtrack-plan';
 import { effortRow, effortToFtpPct, type EffortLevel, type EffortTable } from '../../domain/effort';
 import {
   trackEndSec,
@@ -346,6 +348,8 @@ function LeafInspector({
   useEffect(() => {
     workoutRef.current = workout;
   });
+  // Songs are judged by the planner's rule for this part (2x in the warm-up and cool-down).
+  const prefer = useMemo(() => preferredKindAt(workout, id), [workout, id]);
   const patch = (p: Record<string, unknown>): void =>
     dispatch({ type: 'updateBlock', id, patch: p });
   const cue = workout.musicCues.find((c) => c.blockId === id && c.rep === 1);
@@ -458,6 +462,7 @@ function LeafInspector({
         cue={cue?.track}
         queue={cue?.queue ?? []}
         rpm={leaf.rpm}
+        prefer={prefer}
         getCue={() =>
           workoutRef.current.musicCues.find((c) => c.blockId === id && c.rep === 1)?.track
         }
@@ -491,6 +496,7 @@ function TrackField({
   cue,
   queue,
   rpm,
+  prefer,
   getCue,
   dispatch,
   focusRequested,
@@ -504,6 +510,8 @@ function TrackField({
   queue: TrackRef[];
   /** Cadence of the block this track is pinned to (for the BPM hint). */
   rpm: number | undefined;
+  /** The relation the planner plays in that block (2x in the warm-up, …). */
+  prefer?: MatchKind;
   /** The cue as it is now (after any later edits); used when an async check finishes. */
   getCue: () => TrackRef | undefined;
   dispatch: Dispatch<EditorAction>;
@@ -711,6 +719,7 @@ function TrackField({
       </div>
       <BpmField
         rpm={rpm}
+        prefer={prefer}
         track={cue}
         onChange={(bpm, source) => {
           const now = getCue();
@@ -728,7 +737,11 @@ function TrackField({
           });
         }}
       />
-      <SuggestedChips rpm={rpm} onPick={(lt) => place(toTrackRef(lt, startSec ?? 0))} />
+      <SuggestedChips
+        rpm={rpm}
+        prefer={prefer}
+        onPick={(lt) => place(toTrackRef(lt, startSec ?? 0))}
+      />
       <SpotifySearch
         onPick={(track) => {
           place({ ...track, startAtSec: startSec ?? 0 });

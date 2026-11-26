@@ -4,11 +4,11 @@ import styles from './Cadence.module.css';
 
 type T = ReturnType<typeof useT>;
 
-/** The glyph of a verdict. Half and double time get their own (not the ≈ of the rpm range). */
+/** The glyph of a verdict: fits (the planner's relation), fits another way, does not fit. */
 export function verdictMark(fit: CadenceFit): string {
   if (fit.verdict === 'fit') return '✓';
   if (fit.verdict === 'miss') return '✕';
-  return fit.kind === 'double' ? '×2' : '½';
+  return '~';
 }
 
 /**
@@ -32,9 +32,16 @@ export function cadenceText(t: T, bpm: number | undefined): string | undefined {
     .join(' · ');
 }
 
-/** Words for how a song fits a cadence. */
+/**
+ * Words for how a song fits a cadence, always with the relation the planner speaks of: 2× (two
+ * beats per pedal turn), 1:1 (one) or 4×.
+ */
 export function verdictText(t: T, fit: CadenceFit): string {
-  if (fit.verdict === 'fit') return t('editor.cadence.fit');
+  if (fit.verdict === 'fit') {
+    if (fit.kind === 'half') return t('editor.cadence.fitHalf');
+    if (fit.kind === 'double') return t('editor.cadence.fitDouble');
+    return t('editor.cadence.fitExact');
+  }
   if (fit.verdict === 'alt')
     return t(fit.kind === 'double' ? 'editor.cadence.double' : 'editor.cadence.half');
   return t('editor.cadence.miss');
@@ -42,7 +49,7 @@ export function verdictText(t: T, fit: CadenceFit): string {
 
 /**
  * A small mark that says whether a song fits the block's cadence: a glyph and words (never colour
- * alone), tinted green (fits), amber (half or double time) or red (does not fit).
+ * alone), tinted green (fits, the planner's 2× or 1:1), amber (fits another way) or red.
  */
 export function CadenceBadge({ fit, testId }: { fit: CadenceFit; testId?: string }) {
   const t = useT();

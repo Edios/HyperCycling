@@ -45,10 +45,13 @@ const SUGGESTIONS_PER_GROUP = 6;
  */
 export function BpmField({
   rpm,
+  prefer,
   track,
   onChange,
 }: {
   rpm: number | undefined;
+  /** The relation the planner plays in this block (`preferredKindAt`). */
+  prefer?: MatchKind;
   track: TrackRef | undefined;
   /** `source` is set for a looked-up value; any typed or tapped value arrives without it. */
   onChange: (bpm: number | undefined, source?: BpmSource) => void;
@@ -163,7 +166,7 @@ export function BpmField({
   };
 
   const match = value !== undefined && rpm !== undefined ? matchBpm(value, rpm) : undefined;
-  const fitInfo = cadenceFit(value, rpm);
+  const fitInfo = cadenceFit(value, rpm, prefer);
   const verdict = fitInfo?.verdict;
   const trackCadence = cadenceText(t, value);
   const targets = rpm === undefined ? [] : targetBpms(rpm);

@@ -36,9 +36,20 @@
 }
 
 .compact {
-  padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+  padding: 0.5rem 0;
   gap: 0.75rem;
+  border: 0;
+  border-radius: 0;
   background: transparent;
+}
+
+/* Compact rows sit inside the setup's "Who is riding" card: one 1 px line between them, no frames. */
+.rows:has(> .compact) {
+  gap: 0;
+}
+
+.compact + .compact {
+  border-top: 1px solid var(--line);
 }
 
 .icon {
