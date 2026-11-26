@@ -10,8 +10,9 @@
  *    and peak sections; nothing explicit in the cool-down, nor anywhere unless the rider allows it;
  *    no song twice in a ride; no energy 5 in the warm-up, nothing 3 steps calmer than a hard part
  *    asks for or 3 steps stronger than a calm one, nothing light (energy 1-2) on a climb (music
- *    energy spec §2b). Songs of the last rides cost a little (`history`, spec §3a), and a small
- *    seeded jitter reorders near-equal songs ("Shuffle").
+ *    energy spec §2b). Songs of the last rides cost a little (`history`, spec §3a), a song of the
+ *    last rides may rest (`ROTATION_REST_RIDES`, off for now), and a small seeded jitter reorders
+ *    near-equal songs ("Shuffle").
  * 2. Relaxation ladder, when the songs cannot fill a section (too few, or no queue that ends
  *    within the tolerances): a wider tempo window, the neighbour categories, any category (the
  *    owner accepts stretching the categories for a mixed cadence), and at last any tempo (with a
@@ -91,7 +92,17 @@ export interface SoundtrackPrefs {
    * before the chip).
    */
   polish?: boolean;
+  /**
+   * "How many of my songs" next to "Use my songs" (owner's decision of 2026-11-26): how strongly
+   * an own song is preferred where its tempo fits (`OWN_SHARE_BONUS`). Absent = 'half', the bonus
+   * own songs always had.
+   */
+  ownShare?: OwnShare;
 }
+
+/** The levels of "How many of my songs": few, half and half, mostly mine. */
+export const OWN_SHARES = ['few', 'half', 'most'] as const;
+export type OwnShare = (typeof OWN_SHARES)[number];
 
 export const DEFAULT_SOUNDTRACK_PREFS: SoundtrackPrefs = {
   v: 1,
@@ -204,6 +215,24 @@ export function fitWeights(s: Pick<MusicSection, 'profile' | 'role'>): {
  * song it wins. It never makes a song fit that does not (the hard rules and the tempo stay).
  */
 export const OWN_BONUS = 0.1;
+/**
+ * The own-song bonus of each "How many of my songs" level. Measured with ten own songs at tempos
+ * of 86-94 rpm on the 116 built-in workouts (first-visit kinds of music), as the share of the
+ * picks where an own song not yet played fits the tempo: 'few' about 13%, 'half' (today's bonus)
+ * about 54%, 'most' about 77% (one play per song and ride caps it near 78%). A negative bonus only
+ * lets a catalog song win the near-ties: an own song still plays where the catalog has nothing
+ * as good.
+ */
+export const OWN_SHARE_BONUS: Readonly<Record<OwnShare, number>> = {
+  few: -0.2,
+  half: OWN_BONUS,
+  most: 0.5,
+};
+
+/** The bonus an own song gets with these preferences. */
+export function ownBonus(prefs: Pick<SoundtrackPrefs, 'ownShare'>): number {
+  return OWN_SHARE_BONUS[prefs.ownShare ?? 'half'];
+}
 
 /** Category fit of a song from a neighbour category, and from any category (relaxed). */
 export const NEIGHBOUR_FIT = 0.7;
@@ -567,6 +596,8 @@ export interface Candidate {
    * charges a song shorter than `ROTATION_REF_SEC` the rest of it (see there).
    */
   rotation?: number;
+  /** The song played in one of the last `ROTATION_REST_RIDES` rides (see there). */
+  resting?: boolean;
 }
 
 /** Playable length of a song from its start offset (main upload), seconds. */
@@ -604,6 +635,25 @@ export const HISTORY_ARTIST_MAX = 0.2;
  * before.
  */
 export const ROTATION_REF_SEC = 240;
+/**
+ * OFF (0) until the catalog has more songs at 85-95 rpm (owner's decision of 2026-11-26): with
+ * today's catalog it costs too much tempo fit for what it rotates. With it off, plans are the same
+ * as before it. Measured and reviewed with 3 rides at 0.05 (below); its tests run again once it is
+ * above 0.
+ *
+ * A song of the last `ROTATION_REST_RIDES` rides rests (the mild variant): it costs `ROTATION_REST_COST` once per queue, whatever its length (a short song was the
+ * handy filler of every 5-minute warm-up), and a part that took one on the first step of the
+ * ladder also tries the wider tempo window, where fresh songs of the chosen kinds may win when they
+ * fit about as well. Never another kind of music for the rest (review of #170: the owner accepts a
+ * little off the tempo, not other genres). Where nothing else fits, the resting song still plays
+ * (never a gap instead). 580 first-visit rides with the app's history: the most played song went
+ * from 59% to 48% of the rides, the energy fit kept (84.3% -> 85.8% within one step), songs of
+ * other kinds 48 -> 35, for 15% fewer songs within 3% of the tempo. Within the chosen kinds the
+ * catalog has too few songs at 85-95 rpm to go lower (a cost of 0.15 gives 46%); letting the rest
+ * reach the neighbour kinds gave 30%, but with 1133 songs of other kinds in place of 48.
+ */
+export const ROTATION_REST_RIDES = 0;
+export const ROTATION_REST_COST = 0.05;
 /**
  * An add-on style (synthwave, drum and bass) is a supplement, never the backbone: each such song
  * costs this much, plus as much again for every one already in the ride.
@@ -662,12 +712,29 @@ interface PlanContext {
   /** What the last rides cost a song (by song key) and an artist (`historyPenalties`). */
   historySong: ReadonlyMap<string, number>;
   historyArtist: ReadonlyMap<string, number>;
+  /** Song keys of the last `ROTATION_REST_RIDES` rides. */
+  resting: ReadonlySet<string>;
   /**
    * Mixed into the shuffle with the seed: the workout id, so one seed breaks the near-ties of
    * every workout its own way (R1f: with one seed for all, a song was in nearly every first-visit
    * plan or in few, depending on a few seconds of another song).
    */
   shuffleSalt: string;
+}
+
+/** Song keys of the last `ROTATION_REST_RIDES` rides (newest first; unknown ids are skipped). */
+function restingSongs(
+  history: readonly (readonly string[])[],
+  byId: ReadonlyMap<string, CatalogTrack>,
+): Set<string> {
+  const out = new Set<string>();
+  for (const ride of history.slice(0, ROTATION_REST_RIDES)) {
+    for (const id of ride) {
+      const t = byId.get(id);
+      if (t) out.add(songKey(t));
+    }
+  }
+  return out;
 }
 
 /** The rotation penalties of the last rides (newest first, catalog ids; unknown ids are skipped). */
@@ -700,6 +767,7 @@ function scoredAt(
 ): Candidate[] {
   const out: Candidate[] = [];
   const { catalog, keys, prefs } = ctx;
+  const bonus = ownBonus(prefs);
   for (let i = 0; i < catalog.length; i++) {
     const t = catalog[i] as CatalogTrack;
     const key = keys[i] as string;
@@ -724,10 +792,19 @@ function scoredAt(
       sc.score +
       SHUFFLE_JITTER * shuffleValue(prefs.seed, ctx.shuffleSalt + t.id) -
       ARTIST_REPEAT_PENALTY * plays +
-      (t.own === true ? OWN_BONUS : 0) -
+      (t.own === true ? bonus : 0) -
       addOn -
       rotation;
-    out.push({ track: t, key, score, fit: sc.fit, rideRpm: sc.rideRpm, lenSec, rotation });
+    out.push({
+      track: t,
+      key,
+      score,
+      fit: sc.fit,
+      rideRpm: sc.rideRpm,
+      lenSec,
+      rotation,
+      ...(ctx.resting.has(key) ? { resting: true } : {}),
+    });
   }
   // Best first; ties by catalog id (deterministic whatever the catalog order).
   out.sort((a, b) => b.score - a.score || (a.track.id < b.track.id ? -1 : 1));
@@ -824,6 +901,7 @@ function addPenalty(st: BeamState, cand: Candidate): number {
   let penalty = st.penalty;
 
   if (st.lastArtist === cand.track.artist) penalty += SAME_ARTIST_COST;
+  if (cand.resting === true) penalty += ROTATION_REST_COST;
   if (
     st.lastRpm !== undefined &&
     cand.rideRpm !== undefined &&
@@ -1029,7 +1107,9 @@ function knapsackFill(
   const lo = Math.max(1, Math.ceil(durationSec - SLOT_TOLERANCE_SEC));
   const hi = Math.floor(durationSec + MAX_CUT_SEC);
   const width = hi + 1;
-  const best = new Float64Array(width).fill(-1);
+  // -Infinity = no set of songs adds up to this length (a set's value may be below 0: a resting
+  // song's cost, `ROTATION_REST_COST`, can outweigh its fit in a long part).
+  const best = new Float64Array(width).fill(-Infinity);
   best[0] = 0;
   const take = new Uint8Array(n * width);
   const lens: number[] = [];
@@ -1037,10 +1117,13 @@ function knapsackFill(
     const cand = candidates[i] as Candidate;
     const len = Math.max(1, Math.round(cand.lenSec));
     lens.push(len);
-    const w = cand.score * Math.min(cand.lenSec, durationSec) - rotationShortfall(cand);
+    const w =
+      cand.score * Math.min(cand.lenSec, durationSec) -
+      rotationShortfall(cand) -
+      (cand.resting === true ? ROTATION_REST_COST * durationSec : 0);
     for (let sec = hi; sec >= len; sec--) {
       const from = best[sec - len] as number;
-      if (from < 0) continue;
+      if (from === -Infinity) continue;
       if (from + w > (best[sec] as number)) {
         best[sec] = from + w;
         take[i * width + sec] = 1;
@@ -1050,7 +1133,8 @@ function knapsackFill(
   let at = -1;
   for (let sec = lo; sec <= hi; sec++) {
     // Most fit, then the smallest cut.
-    if ((best[sec] as number) >= 0 && (at < 0 || (best[sec] as number) > (best[at] as number))) {
+    const v = best[sec] as number;
+    if (v !== -Infinity && (at < 0 || v > (best[at] as number))) {
       at = sec;
     }
   }
@@ -1169,7 +1253,11 @@ function planSection(
       best = { candidates, relaxed, queue };
       bestValue = value;
     }
-    if (withinTolerance(queue) && candidates.length >= MIN_CANDIDATES) break;
+    // A queue with a resting song may also try the wider tempo window with fresh songs, never
+    // another kind of music (the owner accepts a little off the tempo, not other genres).
+    const resting = queue.picks.some((k) => (candidates[k] as Candidate).resting === true);
+    const tryWider = resting && (LADDER[i + 1] as LadderStep | undefined)?.relax === 'tolerance';
+    if (withinTolerance(queue) && candidates.length >= MIN_CANDIDATES && !tryWider) break;
   }
   return (
     best ?? {
@@ -1249,6 +1337,7 @@ export function planSoundtrack(
     near: neighboursOf(chosen),
     historySong: past.song,
     historyArtist: past.artist,
+    resting: restingSongs(opts.history ?? [], catalogById),
     shuffleSalt: `${workout.id}/`,
   };
   const ride: RideState = { used: new Set(), artists: new Map(), supplements: 0 };

@@ -299,6 +299,8 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
         <OwnTracksPanel
           use={prefs.includeLibrary}
           onUseChange={(includeLibrary) => changePrefs({ includeLibrary })}
+          share={prefs.ownShare ?? 'half'}
+          onShareChange={(ownShare) => changePrefs({ ownShare })}
           catalog={catalog}
         />
       </>

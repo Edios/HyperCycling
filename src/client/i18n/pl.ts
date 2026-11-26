@@ -680,6 +680,12 @@ export const pl: Messages = {
       use: 'Użyj moich utworów',
       useHelp:
         'Twoje utwory dochodzą do katalogu bez względu na rodzaj. Grają tam, gdzie tempo pasuje do kadencji (tak jak utwory z katalogu).',
+      share: 'Ile moich utworów',
+      shareFew: 'Mało',
+      shareHalf: 'Pół na pół',
+      shareMost: 'Głównie moje',
+      shareHelp:
+        'Działa tam, gdzie tempo Twoich utworów pasuje do kadencji. Każdy utwór gra najwyżej raz w jeździe.',
       empty: 'Nie masz jeszcze własnych utworów. Dodaj link z YouTube i tempo utworu.',
       list: 'Moje utwory',
       bpm: '{bpm} BPM',

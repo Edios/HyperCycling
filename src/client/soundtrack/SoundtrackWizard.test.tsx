@@ -42,6 +42,7 @@ import { SOUNDTRACK_HISTORY_KEY } from './history';
 import { SOUNDTRACK_PREFS_KEY } from './prefs';
 import { resetSoundtrackSessionForTests, useSoundtrackSession } from './session';
 import { SoundtrackWizard } from './SoundtrackWizard';
+import { resetOwnTracksForTests, useOwnTracks } from './own-tracks';
 
 function Where() {
   const loc = useLocation();
@@ -102,6 +103,36 @@ describe('step 1: what music', () => {
     expect(screen.getByRole('radio', { name: 'No gaps' })).toBeChecked();
     expect(screen.getByText(/when a song ends, the next one starts at once/)).toBeInTheDocument();
     expect(screen.getByTestId('soundtrack-hint')).toHaveTextContent(/^Best for this ride: .+\.$/);
+  });
+
+  it('remembers "how many of my songs" on this device (half and half the first time)', async () => {
+    useOwnTracks.setState({
+      loaded: true,
+      tracks: [
+        {
+          id: 'own-abcdefghijk',
+          schemaVersion: 1,
+          createdAt: '2026-11-20T10:01:00.000Z',
+          youtubeId: 'abcdefghijk',
+          title: 'Mine',
+          bpm: 180,
+        },
+      ],
+    });
+    try {
+      renderWizard();
+      await waitFor(() => expect(next()).toBeEnabled());
+      fireEvent.click(screen.getByRole('button', { name: /My songs/ }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Use my songs' }));
+      expect(screen.getByRole('radio', { name: 'Half and half' })).toBeChecked();
+      fireEvent.click(screen.getByRole('radio', { name: 'Mostly mine' }));
+      fireEvent.click(next());
+      await screen.findByRole('heading', { name: 'We suggest these songs' });
+      const stored = JSON.parse(localStorage.getItem(SOUNDTRACK_PREFS_KEY) ?? '{}');
+      expect(stored).toMatchObject({ includeLibrary: true, ownShare: 'most' });
+    } finally {
+      resetOwnTracksForTests();
+    }
   });
 
   it('dims the kinds with no songs at this tempo, but never presses them away', async () => {

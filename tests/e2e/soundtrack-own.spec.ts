@@ -42,6 +42,11 @@ test('own songs: added in step 1, picked in the plan, still there after a reload
   await expect(page.getByTestId('soundtrack-own-song')).toHaveCount(SONGS.length);
   // The first song turned the switch on.
   await expect(use).toBeChecked();
+  // "How many of my songs": half and half (the bonus own songs always had) until changed.
+  const share = page.getByRole('radiogroup', { name: 'How many of my songs' });
+  await expect(share.getByRole('radio', { name: 'Half and half' })).toBeChecked();
+  await share.getByText('Mostly mine').click();
+  await expect(share.getByRole('radio', { name: 'Mostly mine' })).toBeChecked();
 
   // Step 2: at least one own song is in the plan, with its tempo.
   await page.getByTestId('soundtrack-next').click();
@@ -64,6 +69,11 @@ test('own songs: added in step 1, picked in the plan, still there after a reload
   ).toHaveAttribute('aria-expanded', 'true');
   await expect(page.getByTestId('soundtrack-own-song')).toHaveCount(SONGS.length);
   await expect(page.getByRole('switch', { name: 'Use my songs' })).toBeChecked();
+  await expect(
+    page
+      .getByRole('radiogroup', { name: 'How many of my songs' })
+      .getByRole('radio', { name: 'Mostly mine' }),
+  ).toBeChecked();
   expect(errors).toEqual([]);
 });
 

@@ -16,6 +16,7 @@ import type { CatalogTrack } from './soundtrack-catalog';
 import type { OwnTrackRecord } from './soundtrack-own';
 import {
   DEFAULT_SOUNDTRACK_PREFS,
+  OWN_SHARES,
   planSoundtrack,
   type PlannedSection,
   type SoundtrackPlan,
@@ -35,6 +36,7 @@ export const FIRST_VISIT_PREFS: SoundtrackPrefs = {
   ...DEFAULT_SOUNDTRACK_PREFS,
   categories: ['electronic', 'pop'],
   polish: true,
+  ownShare: 'half',
 };
 
 /** A workout shorter than this has nothing to plan (spec §7.7). */
@@ -63,6 +65,7 @@ export function parseSoundtrackPrefs(raw: unknown): SoundtrackPrefs {
     allowHalfDouble: bool(o.allowHalfDouble, FIRST_VISIT_PREFS.allowHalfDouble),
     seed,
     polish: bool(o.polish, FIRST_VISIT_PREFS.polish === true),
+    ownShare: OWN_SHARES.find((x) => x === o.ownShare) ?? 'half',
   };
 }
 
@@ -295,5 +298,6 @@ export function wizardPlanKey(prefs: SoundtrackPrefs, own: readonly OwnTrackReco
           )
           .join(',')
       : '';
-  return `${prefs.categories.join(',')}|${prefs.polish === true ? 'pl' : ''}|${prefs.continuity}|${mine}`;
+  const share = mine === '' ? '' : (prefs.ownShare ?? 'half');
+  return `${prefs.categories.join(',')}|${prefs.polish === true ? 'pl' : ''}|${prefs.continuity}|${share}|${mine}`;
 }

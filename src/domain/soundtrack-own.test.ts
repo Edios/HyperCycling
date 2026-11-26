@@ -14,7 +14,15 @@ import {
   toCatalogTrack,
   type OwnTrackRecord,
 } from './soundtrack-own';
-import { planSoundtrack } from './soundtrack-plan';
+import { matchBpm } from './bpm-match';
+import { sectionsOf } from './soundtrack';
+import {
+  OWN_BONUS,
+  OWN_SHARE_BONUS,
+  ownBonus,
+  planSoundtrack,
+  type OwnShare,
+} from './soundtrack-plan';
 import { soundtrackPlanRecordSchema, planRecord } from './soundtrack-store';
 import { FIRST_VISIT_PREFS } from './soundtrack-wizard';
 
@@ -176,5 +184,84 @@ describe('review of #153', () => {
       expect(r.bpmSource).toBe('catalog');
     // Without the own songs the plan has a hole it says so (the ride setup shows it as stale).
     expect(compilePlan(plan, workout, { catalog }).missing.some(isOwnTrackId)).toBe(true);
+  });
+});
+
+describe('how many of my songs (owner decision of 2026-11-26)', () => {
+  // Ten own songs at tempos that fit the usual 86-94 rpm, energy 3 or 4.
+  const mine = [172, 174, 176, 178, 180, 182, 184, 186, 188, 180].map((bpm, i) =>
+    own({
+      youtubeId: `share${i}abcdef`.slice(0, 11),
+      title: `Mine ${i}`,
+      artist: `Me ${i}`,
+      bpm,
+      energy: i % 2 === 0 ? 3 : 4,
+      durationSec: 180 + 10 * i,
+    }),
+  );
+  const tracks = withOwnTracks(catalog, mine);
+  const ownSongs = mine.map(toCatalogTrack);
+
+  /** Share of own songs among the picks where an own song not yet played fits the tempo. */
+  function shareOf(ownShare: OwnShare | undefined): number {
+    let chances = 0;
+    let taken = 0;
+    for (const w of builtinWorkouts) {
+      const sections = new Map(sectionsOf(w).map((s) => [s.id, s]));
+      const prefs = {
+        ...FIRST_VISIT_PREFS,
+        includeLibrary: true,
+        ...(ownShare ? { ownShare } : {}),
+      };
+      const plan = planSoundtrack(w, tracks, prefs);
+      const played = new Set<string>();
+      for (const s of plan.sections) {
+        const rpm = sections.get(s.sectionId)!.rpmMean;
+        for (const p of s.picks) {
+          const free = ownSongs.some(
+            (t) => !played.has(t.id) && matchBpm(t.bpm!, rpm) !== undefined,
+          );
+          if (p.ref.kind === 'own') played.add(p.ref.id);
+          if (!free) continue;
+          chances += 1;
+          if (p.ref.kind === 'own') taken += 1;
+        }
+      }
+    }
+    return taken / chances;
+  }
+
+  it('keeps the bonus of today on "half and half", the default', () => {
+    expect(OWN_SHARE_BONUS.half).toBe(OWN_BONUS);
+    expect(ownBonus({ ...FIRST_VISIT_PREFS })).toBe(OWN_BONUS);
+    expect(ownBonus({ ...FIRST_VISIT_PREFS, ownShare: 'few' })).toBeLessThan(OWN_BONUS);
+    expect(ownBonus({ ...FIRST_VISIT_PREFS, ownShare: 'most' })).toBeGreaterThan(OWN_BONUS);
+  });
+
+  it('plays about 10% / 50% / 80% own songs where their tempo fits (10 songs, 116 workouts)', () => {
+    const few = shareOf('few');
+    const half = shareOf(undefined);
+    const most = shareOf('most');
+    // Measured on the shipped catalog: 12.6% / 53.9% / 76.9% (one play per song and ride caps
+    // "mostly mine" near 78%).
+    expect(few).toBeGreaterThan(0.05);
+    expect(few).toBeLessThan(0.18);
+    expect(half).toBeGreaterThan(0.42);
+    expect(half).toBeLessThan(0.6);
+    expect(shareOf('half')).toBe(half);
+    expect(most).toBeGreaterThan(0.72);
+  }, 60_000);
+
+  it('changes nothing without own songs, whatever the level', () => {
+    const workout = builtinWorkouts.find((w) => w.id === 'class-endurance-45')!;
+    const plain = planSoundtrack(workout, catalog, FIRST_VISIT_PREFS);
+    for (const ownShare of ['few', 'half', 'most'] as const) {
+      const p = planSoundtrack(workout, catalog, {
+        ...FIRST_VISIT_PREFS,
+        includeLibrary: true,
+        ownShare,
+      });
+      expect(p.sections).toEqual(plain.sections);
+    }
   });
 });

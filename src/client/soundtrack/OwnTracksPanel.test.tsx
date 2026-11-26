@@ -181,4 +181,57 @@ describe('OwnTracksPanel', () => {
     expect(await screen.findByText('Added: Late')).toBeTruthy();
     expect(db.records.get('own-abcdefghijk')).toMatchObject({ startSec: 200, durationSec: 300 });
   });
+
+  it('asks how many of my songs while they are on: few, half and half, mostly mine', () => {
+    useOwnTracks.setState({
+      loaded: true,
+      tracks: [
+        {
+          id: 'own-abcdefghijk',
+          schemaVersion: 1,
+          createdAt: '2026-11-20T10:01:00.000Z',
+          youtubeId: 'abcdefghijk',
+          title: 'Mine',
+          bpm: 120,
+        },
+      ],
+    });
+    const onShare = vi.fn();
+    const { rerender } = render(
+      <OwnTracksPanel use onUseChange={() => {}} share="half" onShareChange={onShare} />,
+    );
+    const group = screen.getByRole('radiogroup', { name: 'How many of my songs' });
+    expect(group).toBeTruthy();
+    expect(screen.getByRole('radio', { name: 'Half and half' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Few' })).not.toBeChecked();
+    fireEvent.click(screen.getByRole('radio', { name: 'Mostly mine' }));
+    expect(onShare).toHaveBeenCalledWith('most');
+    // Off: nothing to set.
+    rerender(
+      <OwnTracksPanel use={false} onUseChange={() => {}} share="half" onShareChange={onShare} />,
+    );
+    expect(screen.queryByRole('radiogroup', { name: 'How many of my songs' })).toBeNull();
+  });
+
+  it('names the levels in Polish', () => {
+    setLang('pl');
+    useOwnTracks.setState({
+      loaded: true,
+      tracks: [
+        {
+          id: 'own-abcdefghijk',
+          schemaVersion: 1,
+          createdAt: '2026-11-20T10:01:00.000Z',
+          youtubeId: 'abcdefghijk',
+          title: 'Mine',
+          bpm: 120,
+        },
+      ],
+    });
+    render(<OwnTracksPanel use onUseChange={() => {}} share="few" onShareChange={() => {}} />);
+    expect(screen.getByRole('radiogroup', { name: 'Ile moich utworów' })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: 'Mało' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Pół na pół' })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: 'Głównie moje' })).toBeTruthy();
+  });
 });
