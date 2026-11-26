@@ -82,7 +82,7 @@
 
 .music {
   margin: 0.875rem 0 0;
-  font-size: 0.875rem;
+  font-size: max(12px, 0.875rem);
   color: var(--mut);
 }
 

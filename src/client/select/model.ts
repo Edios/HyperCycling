@@ -52,6 +52,35 @@ export function filterLibrary(
   });
 }
 
+export type GroupId = 'recommended' | 'short' | 'hiit' | 'mine' | 'rest';
+
+/** The order of the groups on screen (audit N-09); the rest comes last. */
+export const GROUP_IDS: readonly GroupId[] = ['recommended', 'short', 'hiit', 'mine', 'rest'];
+
+/** Rows a group shows before "Show more". */
+export const GROUP_LIMIT = 5;
+
+/**
+ * The unfiltered library in groups, each workout in exactly one (so rows and keyboard focus stay
+ * unique): own workouts in Mine; ready classes with music in Recommended; then HIIT; then up to
+ * 30 minutes in Short; everything else in Rest. Library order inside a group; empty groups dropped.
+ */
+export function groupLibrary(workouts: readonly Workout[]): { id: GroupId; workouts: Workout[] }[] {
+  const of = (w: Workout): GroupId => {
+    if (w.source.kind === 'user' || w.tags.includes('mine')) return 'mine';
+    if (w.tags.includes('music')) return 'recommended';
+    if (w.tags.includes('hiit')) return 'hiit';
+    if (totalDurationSec(w) <= SHORT_WORKOUT_SEC) return 'short';
+    return 'rest';
+  };
+  const by = new Map<GroupId, Workout[]>(GROUP_IDS.map((g) => [g, []]));
+  for (const w of workouts) by.get(of(w))?.push(w);
+  return GROUP_IDS.flatMap((id) => {
+    const list = by.get(id) ?? [];
+    return list.length > 0 ? [{ id, workouts: list }] : [];
+  });
+}
+
 /** Tags in priority order for the label on a card. */
 const TAG_PRIORITY = [
   'hiit',

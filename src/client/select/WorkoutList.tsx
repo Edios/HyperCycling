@@ -6,7 +6,7 @@ import { localizedText } from '../data/localized';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT } from '../i18n';
 import { ProfileChart } from '../ui/ProfileChart';
-import { difficultyOf, minutesOf, primaryTag, tagKey } from './model';
+import { minutesOf, primaryTag, tagKey } from './model';
 import styles from './WorkoutList.module.css';
 
 /** Ten ticks, the first `value` lit. */
@@ -38,7 +38,6 @@ export const WorkoutRow = memo(function WorkoutRow({
     () => flattenWorkout(workout, settings.effortTable, resolveResistanceMode(settings)),
     [workout, settings],
   );
-  const difficulty = useMemo(() => difficultyOf(segments), [segments]);
   return (
     <div
       role="option"
@@ -63,7 +62,6 @@ export const WorkoutRow = memo(function WorkoutRow({
       <div className={styles.strip}>
         <ProfileChart segments={segments} height="1.5rem" />
       </div>
-      <DifficultyTicks value={difficulty} />
       <span className={styles.dur}>
         {minutesOf(workout)} {t('common.min')}
       </span>
@@ -71,25 +69,32 @@ export const WorkoutRow = memo(function WorkoutRow({
   );
 });
 
-/** Hairline-separated list of workouts; focus stays on the listbox and the active row follows. */
+/**
+ * Hairline-separated list of workouts; focus stays on the listbox and the active row follows.
+ * A row is name, profile and time (audit N-09: no difficulty ticks; they stay in the preview).
+ */
 export function WorkoutList({
   workouts,
   activeId,
   onSelect,
   onKeyDown,
+  label,
 }: {
   workouts: readonly Workout[];
   activeId: string | null;
   onSelect: (id: string) => void;
   onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void;
+  /** Accessible name; a group's title when the list is one of several. */
+  label?: string;
 }) {
   const t = useT();
+  const active = activeId !== null && workouts.some((w) => w.id === activeId);
   return (
     <div
       role="listbox"
       tabIndex={0}
-      aria-label={t('free.listLabel')}
-      aria-activedescendant={activeId === null ? undefined : `wk-${activeId}`}
+      aria-label={label ?? t('free.listLabel')}
+      aria-activedescendant={active ? `wk-${activeId}` : undefined}
       className={styles.list}
       onKeyDown={onKeyDown}
     >

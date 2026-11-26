@@ -173,6 +173,10 @@
   padding-top: 1rem;
 }
 
+.setup > summary .subTitle {
+  margin: 0;
+}
+
 .setup > summary {
   display: flex;
   align-items: center;
@@ -268,6 +272,13 @@
   font-weight: 600;
   font-size: 1.3125rem;
   cursor: pointer;
+}
+
+/* Touch screens and a phone on its side (rem is small there): 44 px targets. */
+@media (pointer: coarse), (max-height: 500px) {
+  .navItem {
+    min-height: 44px;
+  }
 }
 
 .navItem:hover {

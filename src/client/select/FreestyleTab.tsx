@@ -10,6 +10,9 @@ import {
   countsAsRide,
   filterLibrary,
   FILTER_IDS,
+  GROUP_LIMIT,
+  groupLibrary,
+  type GroupId,
   rotationHint,
   tagKey,
   type FilterId,
@@ -58,14 +61,24 @@ export function FreestyleTab() {
     () => filterLibrary(workouts, filter, query, lang),
     [workouts, filter, query, lang],
   );
+  // The whole library (no chip, no search) comes in groups of a few rows each (audit N-09).
+  const groups = useMemo(
+    () => (filter === 'all' && query.trim() === '' ? groupLibrary(shown) : null),
+    [shown, filter, query],
+  );
+  const [expanded, setExpanded] = useState<ReadonlySet<GroupId>>(() => new Set());
+  const groupRows = (id: GroupId, list: Workout[]): Workout[] =>
+    expanded.has(id) ? list : list.slice(0, GROUP_LIMIT);
+  // The rows on screen, top to bottom: what the arrow keys walk through.
+  const visible = groups ? groups.flatMap((g) => groupRows(g.id, g.workouts)) : shown;
   // The pane always shows something on wide screens; on phones only a tapped row is selected.
   const activeId =
-    selectedId !== null && shown.some((w) => w.id === selectedId)
+    selectedId !== null && visible.some((w) => w.id === selectedId)
       ? selectedId
       : narrow
         ? null
-        : (shown[0]?.id ?? null);
-  const active = shown.find((w) => w.id === activeId);
+        : (visible[0]?.id ?? null);
+  const active = visible.find((w) => w.id === activeId);
   const sheetShown = narrow && sheetOpen && active !== undefined;
 
   useEffect(() => {
@@ -83,23 +96,33 @@ export function FreestyleTab() {
   };
 
   const onListKey = (e: KeyboardEvent<HTMLDivElement>): void => {
-    if (shown.length === 0) return;
-    const idx = shown.findIndex((w) => w.id === activeId);
+    if (visible.length === 0) return;
+    const idx = visible.findIndex((w) => w.id === activeId);
     let next = -1;
-    if (e.key === 'ArrowDown') next = Math.min(shown.length - 1, idx + 1);
+    if (e.key === 'ArrowDown') next = Math.min(visible.length - 1, idx + 1);
     else if (e.key === 'ArrowUp') next = Math.max(0, idx < 0 ? 0 : idx - 1);
     else if (e.key === 'Home') next = 0;
-    else if (e.key === 'End') next = shown.length - 1;
+    else if (e.key === 'End') next = visible.length - 1;
     else if (e.key === 'Enter' && active) {
       e.preventDefault();
       void navigate(`/setup/${encodeURIComponent(active.id)}`);
       return;
     } else return;
     e.preventDefault();
-    const w = shown[next] as Workout;
+    const w = visible[next] as Workout;
     setSelectedId(w.id);
-    document.getElementById(`wk-${w.id}`)?.scrollIntoView?.({ block: 'nearest' });
+    const row = document.getElementById(`wk-${w.id}`);
+    row?.scrollIntoView?.({ block: 'nearest' });
+    // Into the next or previous group: its list takes the focus.
+    const list = row?.closest<HTMLElement>('[role="listbox"]');
+    if (list && list !== e.currentTarget) list.focus();
   };
+  const toggleGroup = (id: GroupId): void =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
 
   return (
     <div className={styles.page}>
@@ -180,12 +203,51 @@ export function FreestyleTab() {
         </div>
       ) : (
         <div className={styles.layout}>
-          <WorkoutList
-            workouts={shown}
-            activeId={activeId}
-            onSelect={select}
-            onKeyDown={onListKey}
-          />
+          {groups ? (
+            <div className={styles.groups}>
+              {groups.map((g) => {
+                const title = t(`free.groups.${g.id}`);
+                const more = g.workouts.length - GROUP_LIMIT;
+                return (
+                  <section
+                    key={g.id}
+                    className={styles.group}
+                    aria-labelledby={`grp-${g.id}`}
+                    data-testid={`group-${g.id}`}
+                  >
+                    <h2 id={`grp-${g.id}`} className={styles.groupTitle}>
+                      {title} <span className={styles.groupCount}>{g.workouts.length}</span>
+                    </h2>
+                    <WorkoutList
+                      workouts={groupRows(g.id, g.workouts)}
+                      activeId={activeId}
+                      onSelect={select}
+                      onKeyDown={onListKey}
+                      label={title}
+                    />
+                    {more > 0 && (
+                      <Button
+                        variant="text"
+                        className={styles.more}
+                        aria-expanded={expanded.has(g.id)}
+                        data-testid={`group-more-${g.id}`}
+                        onClick={() => toggleGroup(g.id)}
+                      >
+                        {expanded.has(g.id) ? t('free.showLess') : t('free.showMore', { n: more })}
+                      </Button>
+                    )}
+                  </section>
+                );
+              })}
+            </div>
+          ) : (
+            <WorkoutList
+              workouts={shown}
+              activeId={activeId}
+              onSelect={select}
+              onKeyDown={onListKey}
+            />
+          )}
           {active && !narrow && (
             <aside className={styles.pane} aria-label={t('free.previewLabel')}>
               <WorkoutPreview key={active.id} workout={active} />

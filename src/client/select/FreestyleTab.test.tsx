@@ -28,6 +28,7 @@ vi.setConfig({ testTimeout: 60_000 });
 
 import { builtinWorkouts } from '../data/builtin';
 import { FreestyleTab } from './FreestyleTab';
+import { GROUP_LIMIT, groupLibrary } from './model';
 
 function Where() {
   return <div data-testid="at">{useLocation().pathname}</div>;
@@ -70,11 +71,31 @@ describe('FreestyleTab', () => {
     expect(screen.queryByTestId('rotation-hint')).toBeNull();
   });
 
-  it('shows every built-in workout by default', async () => {
+  it('shows the library in groups of a few rows, each with Show more (audit N-09)', async () => {
     renderTab();
     await screen.findAllByTestId('workout-card');
-    expect(cards()).toHaveLength(builtinWorkouts.length);
     expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
+    const groups = groupLibrary(builtinWorkouts);
+    expect(groups.map((g) => g.id)).toEqual(['recommended', 'short', 'hiit', 'rest']);
+    const onScreen = groups.reduce((n, g) => n + Math.min(GROUP_LIMIT, g.workouts.length), 0);
+    expect(cards()).toHaveLength(onScreen);
+    const rest = screen.getByTestId('group-rest');
+    expect(within(rest).getByRole('heading', { level: 2 })).toHaveTextContent('More workouts');
+    const restSize = groups.find((g) => g.id === 'rest')?.workouts.length ?? 0;
+    fireEvent.click(
+      within(rest).getByRole('button', { name: `Show ${restSize - GROUP_LIMIT} more` }),
+    );
+    expect(within(rest).getAllByTestId('workout-card')).toHaveLength(restSize);
+    fireEvent.click(within(rest).getByRole('button', { name: 'Show less' }));
+    expect(within(rest).getAllByTestId('workout-card')).toHaveLength(GROUP_LIMIT);
+  });
+
+  it('a row is the name, the profile and the time, without difficulty ticks', async () => {
+    renderTab();
+    await screen.findAllByTestId('workout-card');
+    const row = cards()[0] as HTMLElement;
+    expect(within(row).queryByRole('img', { name: /^Difficulty/ })).toBeNull();
+    expect(row).toHaveTextContent(/\d+ min$/);
   });
 
   it('filters by chip and restores on All', async () => {
@@ -86,7 +107,7 @@ describe('FreestyleTab', () => {
     expect(cards()).toHaveLength(hiitCount);
     expect(screen.getByRole('button', { name: 'HIIT' })).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(screen.getByRole('button', { name: 'All' }));
-    expect(cards()).toHaveLength(builtinWorkouts.length);
+    expect(screen.getByTestId('group-recommended')).toBeInTheDocument();
   });
 
   it('searches by name', async () => {
@@ -105,7 +126,7 @@ describe('FreestyleTab', () => {
     expect(screen.queryAllByTestId('workout-card')).toHaveLength(0);
     expect(screen.getByText('Nothing matches “zzzzqqq”')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear search' }));
-    expect(cards()).toHaveLength(builtinWorkouts.length);
+    expect(screen.getByTestId('group-recommended')).toBeInTheDocument();
   });
 
   it('the first row is selected and the preview Ride button links to setup', async () => {
@@ -120,7 +141,7 @@ describe('FreestyleTab', () => {
   it('clicking a row moves the preview; arrows move the selection and Enter rides', async () => {
     renderTab();
     await screen.findAllByTestId('workout-card');
-    const list = screen.getByRole('listbox');
+    const list = within(screen.getByTestId('group-recommended')).getByRole('listbox');
     fireEvent.click(cards()[2] as HTMLElement);
     expect(cards()[2]).toHaveAttribute('aria-selected', 'true');
     fireEvent.keyDown(list, { key: 'ArrowUp' });
@@ -133,10 +154,20 @@ describe('FreestyleTab', () => {
     await waitFor(() => expect(screen.getByTestId('at')).toHaveTextContent(/^\/setup\//));
   });
 
-  it('shows the difficulty ticks on each row', async () => {
+  it('the arrows walk from one group into the next', async () => {
     renderTab();
     await screen.findAllByTestId('workout-card');
-    expect(within(cards()[0] as HTMLElement).getByRole('img', { name: /^Difficulty \d+\/10$/ }));
+    const first = within(screen.getByTestId('group-recommended')).getByRole('listbox');
+    fireEvent.keyDown(first, { key: 'End' });
+    fireEvent.keyDown(first, { key: 'ArrowUp' });
+    const last = cards()[GROUP_LIMIT - 1] as HTMLElement;
+    fireEvent.click(last);
+    fireEvent.keyDown(first, { key: 'ArrowDown' });
+    const next = within(screen.getByTestId('group-short')).getAllByTestId('workout-card')[0];
+    expect(next).toHaveAttribute('aria-selected', 'true');
+    expect(document.activeElement).toBe(
+      within(screen.getByTestId('group-short')).getByRole('listbox'),
+    );
   });
 
   it('New workout opens the editor draft', async () => {

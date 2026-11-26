@@ -28,7 +28,8 @@ test('freestyle tab filters and searches', async ({ page }) => {
   await page.goto('./#/freestyle');
   const cards = page.getByTestId('workout-card');
   await expect(cards.first()).toBeVisible();
-  const all = await cards.count();
+  // "All" shows the library in groups of a few rows; the counter has the whole number.
+  const all = Number((await page.getByText(/^Workouts: \d+$/).textContent())?.replace(/\D/g, ''));
   await page.getByRole('button', { name: 'HIIT', exact: true }).click();
   const hiit = await cards.count();
   expect(hiit).toBeGreaterThan(0);
