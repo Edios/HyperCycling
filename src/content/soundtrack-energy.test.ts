@@ -287,7 +287,8 @@ describe('what a first visit gets on every built-in workout (no history yet)', (
       ).length;
     const counts = [1, 2, 3, 4, 5].map(feel);
     expect(Math.max(...counts) - Math.min(...counts), counts.join(' ')).toBeLessThanOrEqual(20);
-  });
+    // Five plans of every built-in workout: ~2 s alone, past 5 s under a full parallel run.
+  }, 30_000);
 });
 
 describe('rotation over ten rides of every built-in workout (R1f)', () => {

@@ -66,8 +66,14 @@ describe('buildReport', () => {
     logWebglEvent('gave-up', 'getContext returned null', Date.UTC(2026, 10, 26, 7, 0, 7));
     const text = buildReport({ version: '2.0.0', date: new Date(0), info, results: [], t });
     expect(text).toContain(`${en.diagnostics.webglLog.title}:`);
-    expect(text).toContain('07:00:01 probe-failed: getContext returned null');
-    expect(text).toContain('07:00:07 gave-up: getContext returned null');
+    // Local time first (what the rider's clock said), UTC next to it.
+    const local = (ms: number): string =>
+      [new Date(ms).getHours(), new Date(ms).getMinutes(), new Date(ms).getSeconds()]
+        .map((n) => String(n).padStart(2, '0'))
+        .join(':');
+    const at1 = Date.UTC(2026, 10, 26, 7, 0, 1);
+    expect(text).toContain(`${local(at1)} (07:00:01 UTC) probe-failed: getContext returned null`);
+    expect(text).toContain('(07:00:07 UTC) gave-up: getContext returned null');
     resetWebglLogForTests();
   });
 });

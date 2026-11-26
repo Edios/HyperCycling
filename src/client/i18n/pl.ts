@@ -1381,6 +1381,8 @@ export const pl: Messages = {
     unavailable:
       'Tło 3D (WebGL) nie wystartowało, więc pokazuję tło Basic. Przeglądarka mogła je wyłączyć po błędzie grafiki; pomaga ponowna próba albo restart przeglądarki.',
     retry: 'Spróbuj ponownie',
+    failedHint: 'Tło 3D nie wystartowało w tej jeździe.',
+    retryWorld: 'Spróbuj 3D jeszcze raz',
     neonTunnel: 'Neonowy tunel',
     road: 'Droga',
     scenes: 'Sceny',
