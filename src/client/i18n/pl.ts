@@ -332,6 +332,10 @@ export const pl: Messages = {
       rest: 'Pozostałe treningi',
     },
     groupAll: 'Wszystkie ({n})',
+    groupAllLabel: {
+      hiit: 'Wszystkie ({n}): treningi HIIT',
+      short: 'Wszystkie ({n}): krótkie treningi',
+    },
     groupAllHint: '{n} z nich jest w innych grupach',
     showMore: 'Pokaż więcej ({n})',
     showLess: 'Pokaż mniej',

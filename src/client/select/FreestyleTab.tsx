@@ -227,6 +227,8 @@ export function FreestyleTab() {
                           variant="text"
                           className={styles.more}
                           data-testid={`group-all-${g.id}`}
+                          // Starts with the visible text (axe label-content-name-mismatch).
+                          aria-label={t(`free.groupAllLabel.${chip}`, { n: total })}
                           title={t('free.groupAllHint', {
                             n: total - g.workouts.length,
                           })}
