@@ -69,6 +69,12 @@ export interface CandidateEvent {
 export interface MusicDirector {
   /** Mute/unmute: 0..1. Applies to the current track and to those that follow. */
   setVolume(v: number): void;
+  /**
+   * "Next song": the song playing now ends here, as if its recording had ended (the rest of its
+   * queue moves up, then the gap is filled like any other). The workout is untouched. False when
+   * nothing plays, or the song is over within 2 s anyway.
+   */
+  skip(): boolean;
   start(): void;
   dispose(): void;
 }
@@ -570,6 +576,14 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       if (playing && !disposed) {
         void quietly('volume', () => playing.provider.setVolume(volume));
       }
+    },
+
+    skip() {
+      if (!started || disposed) return false;
+      const now = desiredNow(options.getState());
+      if (!now || !endEarly(now.key, now.offsetSec)) return false;
+      void reconcile();
+      return true;
     },
 
     start() {

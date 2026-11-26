@@ -1390,6 +1390,13 @@ export const en = {
     fullscreen: 'Full screen',
     mute: 'Mute or unmute sounds',
     escape: 'Pause and ask to end the workout',
+    nextSong: 'Next song',
+    harder: 'Harder (trainer in ERG)',
+    easier: 'Easier (trainer in ERG)',
+    help: 'Show these shortcuts',
+    remotes:
+      'Media keys and presentation remotes work too, as do the play, pause and next buttons of Bluetooth headphones where the browser passes them on.',
+    close: 'Close',
   },
   world: {
     unavailable:

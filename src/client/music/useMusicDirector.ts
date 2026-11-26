@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { effectiveMusicCues, type TrackRef } from '../../domain/workout';
 import {
   subscribeSessionEvents,
@@ -12,6 +12,7 @@ import { createMusicProviders } from './providers';
 /**
  * Runs the music director for the loaded session when its config has music on and the workout
  * has something to play. Otherwise it does nothing. `onWarning` is told about unplayable tracks.
+ * Returns `skip` ("next song"): false when no music plays.
  */
 export function useMusicDirector(
   runtime: SessionRuntime,
@@ -27,7 +28,7 @@ export function useMusicDirector(
      */
     getPlayerSlot?: () => HTMLElement | null;
   } = {},
-): void {
+): { skip(): boolean } {
   const volume = options.volume ?? 1;
   const warningRef = useRef(onWarning);
   const playingRef = useRef(options.onPlaying);
@@ -79,4 +80,7 @@ export function useMusicDirector(
       providers.dispose();
     };
   }, [enabled, segments, cues, fallback, silenceLastSec]);
+
+  const skip = useCallback(() => directorRef.current?.skip() ?? false, []);
+  return { skip };
 }

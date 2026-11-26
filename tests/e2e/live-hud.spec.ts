@@ -91,6 +91,16 @@ test('trainer mode: watts in the ring, ERG holds the target, ±5 %, ERG off, no 
   const harder = await targetOf(page);
   expect(Math.abs(harder - target * 1.05)).toBeLessThanOrEqual(1);
   await expect(page.getByTestId('trainer-power')).toHaveText(String(harder), { timeout: 10_000 });
+  // The same from the keyboard or a remote: ↑ / + is harder, ↓ / - easier.
+  await page.locator('body').focus();
+  await page.keyboard.press('ArrowUp');
+  await expect(page.getByTestId('erg-bias')).toHaveText('+10%');
+  await page.keyboard.press('Minus');
+  await expect(page.getByTestId('erg-bias')).toHaveText('+5%');
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByTestId('erg-bias')).toHaveCount(0); // back to the plan: no mark
+  await page.keyboard.press('Equal');
+  await expect(page.getByTestId('erg-bias')).toHaveText('+5%');
 
   // ERG off by hand: free ride on a flat road.
   await page.getByTestId('erg-toggle').click();
