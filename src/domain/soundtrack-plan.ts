@@ -11,8 +11,8 @@
  *    no song twice in a ride; no energy 5 in the warm-up, nothing 3 steps calmer than a hard part
  *    asks for or 3 steps stronger than a calm one, nothing light (energy 1-2) on a climb (music
  *    energy spec §2b). Songs of the last rides cost a little (`history`, spec §3a), a song of the
- *    last three rides rests (`ROTATION_REST_RIDES`), and a small seeded jitter reorders near-equal
- *    songs ("Shuffle").
+ *    last rides may rest (`ROTATION_REST_RIDES`, off for now), and a small seeded jitter reorders
+ *    near-equal songs ("Shuffle").
  * 2. Relaxation ladder, when the songs cannot fill a section (too few, or no queue that ends
  *    within the tolerances): a wider tempo window, the neighbour categories, any category (the
  *    owner accepts stretching the categories for a mixed cadence), and at last any tempo (with a
@@ -636,8 +636,12 @@ export const HISTORY_ARTIST_MAX = 0.2;
  */
 export const ROTATION_REF_SEC = 240;
 /**
- * A song of the last `ROTATION_REST_RIDES` rides rests (owner's decision of 2026-11-26, the mild
- * variant): it costs `ROTATION_REST_COST` once per queue, whatever its length (a short song was the
+ * OFF (0) until the catalog has more songs at 85-95 rpm (owner's decision of 2026-11-26): with
+ * today's catalog it costs too much tempo fit for what it rotates. With it off, plans are the same
+ * as before it. Measured and reviewed with 3 rides at 0.05 (below); its tests run again once it is
+ * above 0.
+ *
+ * A song of the last `ROTATION_REST_RIDES` rides rests (the mild variant): it costs `ROTATION_REST_COST` once per queue, whatever its length (a short song was the
  * handy filler of every 5-minute warm-up), and a part that took one on the first step of the
  * ladder also tries the wider tempo window, where fresh songs of the chosen kinds may win when they
  * fit about as well. Never another kind of music for the rest (review of #170: the owner accepts a
@@ -648,7 +652,7 @@ export const ROTATION_REF_SEC = 240;
  * catalog has too few songs at 85-95 rpm to go lower (a cost of 0.15 gives 46%); letting the rest
  * reach the neighbour kinds gave 30%, but with 1133 songs of other kinds in place of 48.
  */
-export const ROTATION_REST_RIDES = 3;
+export const ROTATION_REST_RIDES = 0;
 export const ROTATION_REST_COST = 0.05;
 /**
  * An add-on style (synthwave, drum and bass) is a supplement, never the backbone: each such song

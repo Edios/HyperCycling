@@ -616,60 +616,69 @@ describe('planSoundtrack', () => {
     expect(planSoundtrack(ride, catalog, p, { history: [['no-such-song']] })).toEqual(first);
   });
 
-  describe('a song of the last rides rests (owner decision of 2026-11-26)', () => {
-    // 10 minutes at 90 rpm, Electronic chosen: three electronic songs right on the beat, three more
-    // electronic songs 6.1% off the tempo (only the wider window takes them), and three house songs
-    // (the neighbour category) right on the beat.
-    const part = workout([steady('a', 600, 3, 90)]);
-    const own = ['e1', 'e2', 'e3'].map((id) => song(id, { sec: 200, categories: ['electronic'] }));
-    const wide = ['w1', 'w2', 'w3'].map((id) =>
-      song(id, { bpm: 191, sec: 200, categories: ['electronic'] }),
-    );
-    const near = ['h1', 'h2', 'h3'].map((id) => song(id, { sec: 200, categories: ['house'] }));
-    const p = prefs({ categories: ['electronic'] });
-    const ids = (pl: SoundtrackPlan) =>
-      allPicks(pl)
-        .map((x) => x.ref.id)
-        .sort();
+  // Off until the catalog has more songs at 85-95 rpm (owner, 2026-11-26): runs again once
+  // ROTATION_REST_RIDES is above 0 (measured and reviewed with 3).
+  describe.skipIf(ROTATION_REST_RIDES === 0)(
+    'a song of the last rides rests (after the 85-95 rpm catalog addition)',
+    () => {
+      // 10 minutes at 90 rpm, Electronic chosen: three electronic songs right on the beat, three more
+      // electronic songs 6.1% off the tempo (only the wider window takes them), and three house songs
+      // (the neighbour category) right on the beat.
+      const part = workout([steady('a', 600, 3, 90)]);
+      const own = ['e1', 'e2', 'e3'].map((id) =>
+        song(id, { sec: 200, categories: ['electronic'] }),
+      );
+      const wide = ['w1', 'w2', 'w3'].map((id) =>
+        song(id, { bpm: 191, sec: 200, categories: ['electronic'] }),
+      );
+      const near = ['h1', 'h2', 'h3'].map((id) => song(id, { sec: 200, categories: ['house'] }));
+      const p = prefs({ categories: ['electronic'] });
+      const ids = (pl: SoundtrackPlan) =>
+        allPicks(pl)
+          .map((x) => x.ref.id)
+          .sort();
 
-    it('takes fresh songs a little further from the tempo over the songs of the last ride', () => {
-      expect(ids(planSoundtrack(part, [...own, ...wide, ...near], p))).toEqual(['e1', 'e2', 'e3']);
-      const plan = planSoundtrack(part, [...own, ...wide, ...near], p, {
-        history: [['e1', 'e2', 'e3']],
+      it('takes fresh songs a little further from the tempo over the songs of the last ride', () => {
+        expect(ids(planSoundtrack(part, [...own, ...wide, ...near], p))).toEqual([
+          'e1',
+          'e2',
+          'e3',
+        ]);
+        const plan = planSoundtrack(part, [...own, ...wide, ...near], p, {
+          history: [['e1', 'e2', 'e3']],
+        });
+        expect(ids(plan)).toEqual(['w1', 'w2', 'w3']);
+        expect(plan.sections[0]!.report.relaxed).toEqual(['tolerance']);
       });
-      expect(ids(plan)).toEqual(['w1', 'w2', 'w3']);
-      expect(plan.sections[0]!.report.relaxed).toEqual(['tolerance']);
-    });
 
-    it('never takes another kind of music for the rest: the resting songs play instead', () => {
-      // Three rides of rest.
-      expect(ROTATION_REST_RIDES).toBe(3);
-      for (let k = 0; k < ROTATION_REST_RIDES; k++) {
-        const history = [...Array.from({ length: k }, () => ['other']), ['e1', 'e2', 'e3']];
-        const plan = planSoundtrack(part, [...own, ...near], p, { history });
-        expect(ids(plan), `ride ${k + 1} back`).toEqual(['e1', 'e2', 'e3']);
-        expect(plan.sections[0]!.report.relaxed).toEqual([]);
-      }
-    });
+      it('never takes another kind of music for the rest: the resting songs play instead', () => {
+        for (let k = 0; k < ROTATION_REST_RIDES; k++) {
+          const history = [...Array.from({ length: k }, () => ['other']), ['e1', 'e2', 'e3']];
+          const plan = planSoundtrack(part, [...own, ...near], p, { history });
+          expect(ids(plan), `ride ${k + 1} back`).toEqual(['e1', 'e2', 'e3']);
+          expect(plan.sections[0]!.report.relaxed).toEqual([]);
+        }
+      });
 
-    it('lets a song play again once the rest is over', () => {
-      const history = [
-        ...Array.from({ length: ROTATION_REST_RIDES }, () => ['other']),
-        ['e1', 'e2', 'e3'],
-      ];
-      expect(ids(planSoundtrack(part, [...own, ...near], p, { history }))).toEqual([
-        'e1',
-        'e2',
-        'e3',
-      ]);
-    });
+      it('lets a song play again once the rest is over', () => {
+        const history = [
+          ...Array.from({ length: ROTATION_REST_RIDES }, () => ['other']),
+          ['e1', 'e2', 'e3'],
+        ];
+        expect(ids(planSoundtrack(part, [...own, ...near], p, { history }))).toEqual([
+          'e1',
+          'e2',
+          'e3',
+        ]);
+      });
 
-    it('still plays a resting song where nothing else fits (no gap instead)', () => {
-      const plan = planSoundtrack(part, own, p, { history: [['e1', 'e2', 'e3']] });
-      expect(ids(plan)).toEqual(['e1', 'e2', 'e3']);
-      expect(plan.sections[0]!.report.gapSec).toBeLessThanOrEqual(10);
-    });
-  });
+      it('still plays a resting song where nothing else fits (no gap instead)', () => {
+        const plan = planSoundtrack(part, own, p, { history: [['e1', 'e2', 'e3']] });
+        expect(ids(plan)).toEqual(['e1', 'e2', 'e3']);
+        expect(plan.sections[0]!.report.gapSec).toBeLessThanOrEqual(10);
+      });
+    },
+  );
 
   it('leaves a locked section alone (the workout has its cool-down track)', () => {
     const cooldownTrack: TrackRef = {
