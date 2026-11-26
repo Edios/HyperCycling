@@ -216,7 +216,8 @@ function Summary({ result }: { result: LastResult }) {
 
         {showFtp && testKind && <FtpCard key={testKind} kind={testKind} />}
 
-        <SongOrderCard workoutId={result.workout.id} />
+        {/* Only a ride with its music on: an order nobody heard is not offered for saving. */}
+        {result.config.music && <SongOrderCard workoutId={result.workout.id} />}
 
         <div className={styles.buttons}>
           <Button onClick={() => leave(setupPath(result), false)}>{t('summary.again')}</Button>

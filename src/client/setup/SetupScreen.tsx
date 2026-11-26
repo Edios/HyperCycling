@@ -389,21 +389,23 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
                     ? t('soundtrack.setup.error')
                     : t('soundtrack.setup.none')}
           </p>
-          {hasSaved && (soundtrack.state === 'ready' || drawn) && (
+          {musicOn && hasSaved && (soundtrack.state === 'ready' || drawn) && (
             <div className={styles.matchOrder} data-testid="setup-song-order">
-              <Segmented
-                label={t('soundtrack.setup.order')}
-                value={drawn ? 'new' : 'last'}
-                options={[
-                  { value: 'last', label: t('soundtrack.setup.orderLast') },
-                  {
-                    value: 'new',
-                    label: t('soundtrack.setup.orderNew'),
-                    disabled: orderCatalog.status !== 'ready',
-                  },
-                ]}
-                onChange={(v) => (v === 'new' ? drawOrder() : replaySavedOrder(workout.id))}
-              />
+              <div className={styles.orderSeg}>
+                <Segmented
+                  label={t('soundtrack.setup.order')}
+                  value={drawn ? 'new' : 'last'}
+                  options={[
+                    { value: 'last', label: t('soundtrack.setup.orderLast') },
+                    {
+                      value: 'new',
+                      label: t('soundtrack.setup.orderNew'),
+                      disabled: orderCatalog.status !== 'ready',
+                    },
+                  ]}
+                  onChange={(v) => (v === 'new' ? drawOrder() : replaySavedOrder(workout.id))}
+                />
+              </div>
               <p className={styles.note}>
                 {t(drawn ? 'soundtrack.setup.orderNewHelp' : 'soundtrack.setup.orderLastHelp')}
               </p>

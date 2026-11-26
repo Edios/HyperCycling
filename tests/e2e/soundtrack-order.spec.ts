@@ -33,6 +33,9 @@ test('song order: draw a new one in the setup, save it after the ride, it plays 
     await page.reload();
     const row = page.getByTestId('setup-soundtrack');
     await expect(row).toHaveAttribute('data-state', 'ready');
+    // The choice is there while the music of this ride is on.
+    const musicSwitch = page.getByRole('switch', { name: 'Music in this ride' });
+    if (!(await musicSwitch.isChecked())) await musicSwitch.check();
     const order = row.getByRole('radiogroup', { name: 'Song order' });
     await expect(order.getByRole('radio', { name: 'Last order' })).toBeChecked();
     await expect(row).toContainText('The saved order of songs plays again.');
@@ -65,11 +68,15 @@ test('song order: draw a new one in the setup, save it after the ride, it plays 
     await page.goto(`./#/setup/${WORKOUT}`);
     await page.reload();
     await expect(page.getByTestId('setup-soundtrack')).toHaveAttribute('data-state', 'ready');
+    if (!(await musicSwitch.isChecked())) await musicSwitch.check();
     await expect(
       page
         .getByRole('radiogroup', { name: 'Song order' })
         .getByRole('radio', { name: 'Last order' }),
     ).toBeChecked();
+    // Music off for this ride: no order to choose (nobody would hear it).
+    await musicSwitch.uncheck();
+    await expect(page.getByRole('radiogroup', { name: 'Song order' })).toHaveCount(0);
     expect(errors).toEqual([]);
   } finally {
     // The worker's database is shared with other tests: leave it as found, pass or fail.

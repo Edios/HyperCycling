@@ -40,7 +40,7 @@ const workout = builtinWorkouts.find((w) => w.id === 'class-endurance-45')!;
 const saved = planSoundtrack(workout, catalog, { ...DEFAULT_SOUNDTRACK_PREFS, seed: 4 });
 const drawn = planSoundtrack(workout, catalog, { ...DEFAULT_SOUNDTRACK_PREFS, seed: 77 });
 
-function rideWith(drawnOrder: boolean): void {
+function rideWith(drawnOrder: boolean, music = true): void {
   useSoundtrackSession.setState({
     plans: { [workout.id]: drawnOrder ? drawn : saved },
     saved: { [workout.id]: saved },
@@ -51,7 +51,7 @@ function rideWith(drawnOrder: boolean): void {
       workout,
       riddenSec: 600,
       completed: false,
-      config: { background: 'basic', hud: 'solo', playerIds: [], music: true },
+      config: { background: 'basic', hud: 'solo', playerIds: [], music },
       players: [],
       startedAt: '2026-11-26T10:00:00.000Z',
     },
@@ -98,6 +98,12 @@ describe('the summary after a ride on a new song order', () => {
     db.fail = false;
     fireEvent.click(screen.getByRole('button', { name: 'Save the song order' }));
     await waitFor(() => expect(db.plans.has(workout.id)).toBe(true));
+  });
+
+  it('offers nothing after a ride with the music off (an order nobody heard)', async () => {
+    rideWith(true, false);
+    await screen.findByTestId('summary-screen');
+    expect(screen.queryByTestId('summary-song-order')).not.toBeInTheDocument();
   });
 
   it('offers nothing after a ride on the saved order', async () => {
