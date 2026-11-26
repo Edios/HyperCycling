@@ -14,6 +14,7 @@ import {
   replaceSong,
   shufflePlan,
   toggleCategory,
+  wizardPlanKey,
 } from '../../domain/soundtrack-wizard';
 import { totalDurationSec, type Workout } from '../../domain/workout';
 import { localizedText } from '../data/localized';
@@ -135,11 +136,8 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
     setPrefs((p) => ({ ...p, ...patch }));
   };
 
-  // Own songs count only while there are some: the switch stays on with an emptied list.
-  const ownCount = useOwnTracks((s) => s.tracks.length);
-  const useOwn = prefs.includeLibrary && ownCount > 0;
-  const planKey = (p: SoundtrackPrefs): string =>
-    `${p.categories.join(',')}|${p.polish === true ? 'pl' : ''}|${p.continuity}|${useOwn ? `own${catalog.length}` : ''}`;
+  const ownTracks = useOwnTracks((s) => s.tracks);
+  const planKey = (p: SoundtrackPrefs): string => wizardPlanKey(p, ownTracks);
 
   const goPlan = (): void => {
     saveSoundtrackPrefs(prefs);

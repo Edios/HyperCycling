@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import raw from '../content/soundtrack/catalog.json';
 import { builtinWorkouts } from '../client/data/builtin';
 import { parseCatalog } from './soundtrack-catalog';
+import { compilePlan } from './soundtrack-compile';
 import {
   DEFAULT_OWN_DURATION_SEC,
   DEFAULT_OWN_ENERGY,
@@ -141,5 +142,39 @@ describe('planning with own songs', () => {
       includeLibrary: true,
     });
     expect(withOption.sections).toEqual(plain.sections);
+  });
+});
+
+describe('review of #153', () => {
+  it('keeps the start of the link as the start of the song', () => {
+    const r = own({ startSec: 30 });
+    expect(r.startSec).toBe(30);
+    expect(ownTrackRecordSchema.safeParse(r).success).toBe(true);
+    expect(toCatalogTrack(r).startOffsetSec).toBe(30);
+    expect(own({ startSec: 0 })).not.toHaveProperty('startSec');
+  });
+
+  it('leaves out an own song whose video is a catalog upload (one video, one song)', () => {
+    const upload = catalog[0]!.youtube[0]!.id;
+    const tracks = withOwnTracks(catalog, [own({ youtubeId: upload }), own()]);
+    expect(tracks.filter((t) => t.own === true).map((t) => t.id)).toEqual([own().id]);
+  });
+
+  it('compiles an own song with a typed tempo: no catalog source', () => {
+    const workout = builtinWorkouts.find((w) => w.id === 'class-endurance-45')!;
+    const mine = [170, 176, 180, 88, 90].map((bpm, i) =>
+      own({ youtubeId: `zzown${i}abcdef`, title: `Mine ${i}`, artist: `A${i}`, bpm }),
+    );
+    const tracks = withOwnTracks(catalog, mine);
+    const plan = planSoundtrack(workout, tracks, { ...FIRST_VISIT_PREFS, includeLibrary: true });
+    const out = compilePlan(plan, workout, { catalog: tracks });
+    const refs = out.cues.flatMap((c) => [c.track, ...(c.queue ?? [])]);
+    const ownRefs = refs.filter((r) => r.id.startsWith('zzown'));
+    expect(ownRefs.length).toBeGreaterThan(0);
+    for (const r of ownRefs) expect(r).not.toHaveProperty('bpmSource');
+    for (const r of refs.filter((x) => !x.id.startsWith('zzown') && x.bpm !== undefined))
+      expect(r.bpmSource).toBe('catalog');
+    // Without the own songs the plan has a hole it says so (the ride setup shows it as stale).
+    expect(compilePlan(plan, workout, { catalog }).missing.some(isOwnTrackId)).toBe(true);
   });
 });

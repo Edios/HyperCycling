@@ -13,6 +13,7 @@ import {
   type MusicSection,
 } from './soundtrack';
 import type { CatalogTrack } from './soundtrack-catalog';
+import type { OwnTrackRecord } from './soundtrack-own';
 import {
   DEFAULT_SOUNDTRACK_PREFS,
   planSoundtrack,
@@ -276,4 +277,23 @@ export function replaceSong(
     history,
   );
   return { plan: next, excluded };
+}
+
+/**
+ * What the plan on screen was made for: another key in step 1 plans again. The own songs count by
+ * what the planner reads of them (video, tempo, energy, length, start), so a song removed and added
+ * again with a corrected tempo gives a new plan even though the count stays (#153 B1). They count
+ * only while "use my songs" is on and there are some.
+ */
+export function wizardPlanKey(prefs: SoundtrackPrefs, own: readonly OwnTrackRecord[]): string {
+  const mine =
+    prefs.includeLibrary && own.length > 0
+      ? own
+          .map(
+            (t) =>
+              `${t.youtubeId}:${t.bpm}:${t.energy ?? ''}:${t.durationSec ?? ''}:${t.startSec ?? ''}`,
+          )
+          .join(',')
+      : '';
+  return `${prefs.categories.join(',')}|${prefs.polish === true ? 'pl' : ''}|${prefs.continuity}|${mine}`;
 }

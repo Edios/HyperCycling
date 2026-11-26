@@ -41,6 +41,8 @@ export interface OwnTrackRecord {
   energy?: TrackEnergy;
   /** Length in seconds, when the rider gave it. */
   durationSec?: number;
+  /** Where the song starts in the video, seconds (the link's `?t=`). */
+  startSec?: number;
 }
 
 export interface OwnTrackInput {
@@ -50,6 +52,7 @@ export interface OwnTrackInput {
   bpm: number;
   energy?: TrackEnergy | undefined;
   durationSec?: number | undefined;
+  startSec?: number | undefined;
 }
 
 export function isOwnTrackId(id: string): boolean {
@@ -69,6 +72,7 @@ export const ownTrackRecordSchema = z
       .union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)])
       .optional(),
     durationSec: z.number().int().min(MIN_SEC).max(MAX_SEC).optional(),
+    startSec: z.number().int().min(1).max(MAX_SEC).optional(),
   })
   .strict() as unknown as z.ZodType<OwnTrackRecord>;
 
@@ -85,6 +89,9 @@ export function ownTrackRecord(input: OwnTrackInput, now: Date): OwnTrackRecord 
     bpm: Math.round(input.bpm),
     ...(input.energy !== undefined ? { energy: input.energy } : {}),
     ...(input.durationSec !== undefined ? { durationSec: Math.round(input.durationSec) } : {}),
+    ...(input.startSec !== undefined && input.startSec >= 1
+      ? { startSec: Math.min(MAX_SEC, Math.round(input.startSec)) }
+      : {}),
   };
 }
 
@@ -106,6 +113,7 @@ export function toCatalogTrack(r: OwnTrackRecord): CatalogTrack {
     bpm: r.bpm,
     durationSec,
     youtube: [{ id: r.youtubeId, durationSec }],
+    ...(r.startSec !== undefined && r.startSec < durationSec ? { startOffsetSec: r.startSec } : {}),
     categories: [],
     roles: catalogRpm(r.bpm) >= ROLE_SPRINT_RPM ? ['intervals'] : [...ANY_ROLE],
     energy: r.energy ?? DEFAULT_OWN_ENERGY,
@@ -119,16 +127,20 @@ export function toCatalogTrack(r: OwnTrackRecord): CatalogTrack {
 /**
  * The songs the planner and the ride read: the catalog and the rider's own songs (the planner
  * leaves the own ones out unless `includeLibrary` is on). The catalog itself when there are none.
+ * An own song whose video is a catalog upload is left out: the catalog song is the same recording
+ * with a checked tempo, and one video never plays twice in a ride.
  */
 export function withOwnTracks(
   catalog: readonly CatalogTrack[],
   own: readonly OwnTrackRecord[],
 ): readonly CatalogTrack[] {
   if (own.length === 0) return catalog;
+  const uploads = new Set(catalog.flatMap((t) => t.youtube.map((u) => u.id)));
   const seen = new Set<string>();
   const mine: CatalogTrack[] = [];
   for (const r of own) {
     if (mine.length >= MAX_OWN_TRACKS) break;
+    if (uploads.has(r.youtubeId)) continue;
     const t = toCatalogTrack(r);
     if (seen.has(t.id)) continue;
     seen.add(t.id);

@@ -55,6 +55,13 @@ describe('own songs on the device', () => {
     expect(db.records.size).toBe(0);
   });
 
+  it('keeps a song on the list when the device refuses to remove it', async () => {
+    await addOwnTrack(song);
+    db.fail = true;
+    expect(await removeOwnTrack('own-abcdefghijk')).toBe(false);
+    expect(useOwnTracks.getState().tracks.map((t) => t.id)).toEqual(['own-abcdefghijk']);
+  });
+
   it('reads a failing storage as no songs, and says when a save failed', async () => {
     db.fail = true;
     await loadOwnTracks();

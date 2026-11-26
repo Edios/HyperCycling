@@ -62,17 +62,17 @@ export async function addOwnTrack(input: OwnTrackInput, now = new Date()): Promi
   return 'added';
 }
 
-/** Removes a song from the list and from the device. */
+/** Removes a song from the device and then from the list (it stays when the device refused). */
 export async function removeOwnTrack(id: string): Promise<boolean> {
-  useOwnTracks.setState((s) => ({ tracks: s.tracks.filter((t) => t.id !== id) }));
   try {
     const repos = await getRepositories();
     await repos.ownTracks.remove(id);
-    return true;
   } catch (err) {
     console.warn('Removing the own song failed', err);
     return false;
   }
+  useOwnTracks.setState((s) => ({ tracks: s.tracks.filter((t) => t.id !== id) }));
+  return true;
 }
 
 export function resetOwnTracksForTests(): void {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { ChainOptions } from '../../domain/music-chain';
 import { compilePlan, withSoundtrack } from '../../domain/soundtrack-compile';
+import { isOwnTrackId } from '../../domain/soundtrack-own';
 import type { Workout } from '../../domain/workout';
 import { loadSavedPlan, useSoundtrackSession } from './session';
 import { useSoundtrackCatalog } from './useCatalog';
@@ -10,7 +11,8 @@ export interface SoundtrackOverlay {
   workout: Workout;
   /**
    * none: nothing matched. loading / error: the catalog is on its way / failed. stale: the ride
-   * changed after the match, so the plan is not applied. ready: the music is on the workout.
+   * changed after the match (or an own song of the plan was removed), so the plan is not applied.
+   * ready: the music is on the workout.
    */
   state: 'none' | 'loading' | 'error' | 'stale' | 'ready';
   songs: number;
@@ -35,7 +37,9 @@ export function useSoundtrackOverlay(
     if (catalog.status === 'error') return { workout: base, state: 'error', songs: 0 };
     if (catalog.status !== 'ready') return { workout: base, state: 'loading', songs: 0 };
     const compiled = compilePlan(plan, base, { catalog: catalog.catalog, chain });
-    if (compiled.stale) return { workout: base, state: 'stale', songs: 0 };
+    // A removed own song leaves a hole the rider did not choose: match again, as for a changed ride.
+    if (compiled.stale || compiled.missing.some(isOwnTrackId))
+      return { workout: base, state: 'stale', songs: 0 };
     const songs = compiled.cues.reduce((n, c) => n + 1 + (c.queue?.length ?? 0), 0);
     return { workout: withSoundtrack(base, compiled), state: 'ready', songs };
   }, [plan, catalog.status, catalog.catalog, base, chain]);

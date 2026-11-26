@@ -77,6 +77,7 @@ export function OwnTracksPanel({
       bpm: tempo,
       energy: energy === '' ? undefined : (Number(energy) as TrackEnergy),
       durationSec: len,
+      startSec: video.startSec > 0 ? video.startSec : undefined,
     });
     setBusy(false);
     if (result === 'added') {
@@ -91,6 +92,13 @@ export function OwnTracksPanel({
       if (tracks.length === 0) onUseChange(true);
     } else {
       setStatus({ text: t(`soundtrack.own.${RESULT_ERROR[result]}`), error: true });
+    }
+  };
+
+  const remove = async (id: string): Promise<void> => {
+    setStatus(undefined);
+    if (!(await removeOwnTrack(id))) {
+      setStatus({ text: t('soundtrack.own.errRemove'), error: true });
     }
   };
 
@@ -127,7 +135,7 @@ export function OwnTracksPanel({
                 </span>
                 <Button
                   aria-label={t('soundtrack.own.removeLabel', { title: tr.title })}
-                  onClick={() => void removeOwnTrack(tr.id)}
+                  onClick={() => void remove(tr.id)}
                 >
                   {t('soundtrack.own.remove')}
                 </Button>
