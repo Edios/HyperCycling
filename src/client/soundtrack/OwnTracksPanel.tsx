@@ -1,18 +1,21 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { BPM_MAX, BPM_MIN } from '../../domain/bpm-match';
 import type { CatalogTrack, TrackEnergy } from '../../domain/soundtrack-catalog';
+import { OWN_SHARES, type OwnShare } from '../../domain/soundtrack-plan';
 import { useT } from '../i18n';
 import { formatClock } from '../training/format';
 import { loadSoundtrackCatalog } from '../data/soundtrack-catalog';
 import { Button } from '../ui/Button';
 import { Disclosure } from '../ui/Disclosure';
 import { Field } from '../ui/Field';
+import { Segmented } from '../ui/Segmented';
 import { Toggle } from '../ui/Toggle';
 import { parseYoutubeUrl } from '../youtube/parseYoutubeUrl';
 import { addOwnTrack, removeOwnTrack, useOwnTracks, type AddOwnResult } from './own-tracks';
 import styles from './SoundtrackWizard.module.css';
 
 const ENERGIES: TrackEnergy[] = [1, 2, 3, 4, 5];
+const SHARE_LABEL = { few: 'shareFew', half: 'shareHalf', most: 'shareMost' } as const;
 
 /** "3:45" or "225" as seconds; undefined when it is neither. */
 export function parseLength(raw: string): number | undefined {
@@ -50,16 +53,22 @@ const RESULT_ERROR: Record<
 
 /**
  * Step 1 of the wizard, "My songs" (Soundtrack Match PR 6): the switch that lets the planner take
- * the rider's own songs, their list, and a form to add one (a YouTube link, a title, a typed
- * tempo; energy and length optional). Nothing is looked up online.
+ * the rider's own songs, "How many of my songs" while it is on, their list, and a form to add
+ * one (a YouTube link, a title, a typed tempo; energy and length optional). Nothing is looked up
+ * online.
  */
 export function OwnTracksPanel({
   use,
   onUseChange,
+  share = 'half',
+  onShareChange,
   catalog = [],
 }: {
   use: boolean;
   onUseChange: (use: boolean) => void;
+  /** "How many of my songs": shown while the switch is on and there are songs. */
+  share?: OwnShare;
+  onShareChange?: (share: OwnShare) => void;
   /** The song catalog: a video already in it is not added again (it plays from there). */
   catalog?: readonly CatalogTrack[];
 }) {
@@ -162,6 +171,20 @@ export function OwnTracksPanel({
           onChange={onUseChange}
         />
         <p className={styles.help}>{t('soundtrack.own.useHelp')}</p>
+        {use && tracks.length > 0 && onShareChange && (
+          <div className={styles.continuity} data-testid="soundtrack-own-share">
+            <Segmented
+              label={t('soundtrack.own.share')}
+              value={share}
+              options={OWN_SHARES.map((value) => ({
+                value,
+                label: t(`soundtrack.own.${SHARE_LABEL[value]}`),
+              }))}
+              onChange={onShareChange}
+            />
+            <p className={styles.help}>{t('soundtrack.own.shareHelp')}</p>
+          </div>
+        )}
         {tracks.length === 0 ? (
           <p className={styles.help}>{t('soundtrack.own.empty')}</p>
         ) : (

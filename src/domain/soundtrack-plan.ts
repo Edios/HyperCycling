@@ -91,7 +91,17 @@ export interface SoundtrackPrefs {
    * before the chip).
    */
   polish?: boolean;
+  /**
+   * "How many of my songs" next to "Use my songs" (owner's decision of 2026-11-26): how strongly
+   * an own song is preferred where its tempo fits (`OWN_SHARE_BONUS`). Absent = 'half', the bonus
+   * own songs always had.
+   */
+  ownShare?: OwnShare;
 }
+
+/** The levels of "How many of my songs": few, half and half, mostly mine. */
+export const OWN_SHARES = ['few', 'half', 'most'] as const;
+export type OwnShare = (typeof OWN_SHARES)[number];
 
 export const DEFAULT_SOUNDTRACK_PREFS: SoundtrackPrefs = {
   v: 1,
@@ -204,6 +214,24 @@ export function fitWeights(s: Pick<MusicSection, 'profile' | 'role'>): {
  * song it wins. It never makes a song fit that does not (the hard rules and the tempo stay).
  */
 export const OWN_BONUS = 0.1;
+/**
+ * The own-song bonus of each "How many of my songs" level. Measured with ten own songs at tempos
+ * of 86-94 rpm on the 116 built-in workouts (first-visit kinds of music), as the share of the
+ * picks where an own song not yet played fits the tempo: 'few' about 13%, 'half' (today's bonus)
+ * about 54%, 'most' about 77% (one play per song and ride caps it near 78%). A negative bonus only
+ * lets a catalog song win the near-ties: an own song still plays where the catalog has nothing
+ * as good.
+ */
+export const OWN_SHARE_BONUS: Readonly<Record<OwnShare, number>> = {
+  few: -0.2,
+  half: OWN_BONUS,
+  most: 0.5,
+};
+
+/** The bonus an own song gets with these preferences. */
+export function ownBonus(prefs: Pick<SoundtrackPrefs, 'ownShare'>): number {
+  return OWN_SHARE_BONUS[prefs.ownShare ?? 'half'];
+}
 
 /** Category fit of a song from a neighbour category, and from any category (relaxed). */
 export const NEIGHBOUR_FIT = 0.7;
@@ -700,6 +728,7 @@ function scoredAt(
 ): Candidate[] {
   const out: Candidate[] = [];
   const { catalog, keys, prefs } = ctx;
+  const bonus = ownBonus(prefs);
   for (let i = 0; i < catalog.length; i++) {
     const t = catalog[i] as CatalogTrack;
     const key = keys[i] as string;
@@ -724,7 +753,7 @@ function scoredAt(
       sc.score +
       SHUFFLE_JITTER * shuffleValue(prefs.seed, ctx.shuffleSalt + t.id) -
       ARTIST_REPEAT_PENALTY * plays +
-      (t.own === true ? OWN_BONUS : 0) -
+      (t.own === true ? bonus : 0) -
       addOn -
       rotation;
     out.push({ track: t, key, score, fit: sc.fit, rideRpm: sc.rideRpm, lenSec, rotation });

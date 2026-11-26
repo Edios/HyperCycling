@@ -9,7 +9,7 @@
 import { z } from 'zod';
 import { MUSIC_CATEGORIES } from './soundtrack';
 import { YOUTUBE_ID } from './experience';
-import type { SoundtrackPlan } from './soundtrack-plan';
+import { OWN_SHARES, type SoundtrackPlan } from './soundtrack-plan';
 
 export const SOUNDTRACK_RECORD_VERSION = 1;
 
@@ -68,6 +68,7 @@ const prefsSchema = z.object({
     .min(0)
     .max(2 ** 31),
   polish: z.boolean().optional(),
+  ownShare: z.enum(OWN_SHARES).optional(),
 });
 
 export const soundtrackPlanSchema = z.object({

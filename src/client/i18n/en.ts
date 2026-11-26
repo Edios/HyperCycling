@@ -674,6 +674,12 @@ export const en = {
       use: 'Use my songs',
       useHelp:
         'Your songs join the catalog whatever the kind of music. They play where their tempo fits the cadence (like the catalog songs).',
+      share: 'How many of my songs',
+      shareFew: 'Few',
+      shareHalf: 'Half and half',
+      shareMost: 'Mostly mine',
+      shareHelp:
+        'Applies where the tempo of your songs fits the cadence. Each song plays at most once in a ride.',
       empty: 'You have no songs of your own yet. Add a YouTube link and the song’s tempo.',
       list: 'My songs',
       bpm: '{bpm} BPM',

@@ -48,6 +48,13 @@ describe('parseSoundtrackPrefs', () => {
     expect(parseSoundtrackPrefs({ categories: ['rock'], polish: 'yes' }).polish).toBe(true);
   });
 
+  it('keeps "how many of my songs" as stored; half and half when missing or damaged', () => {
+    expect(parseSoundtrackPrefs({ ownShare: 'few' }).ownShare).toBe('few');
+    expect(parseSoundtrackPrefs({ ownShare: 'most' }).ownShare).toBe('most');
+    expect(parseSoundtrackPrefs({ ownShare: 'all' }).ownShare).toBe('half');
+    expect(parseSoundtrackPrefs({}).ownShare).toBe('half');
+  });
+
   it('keeps what a good entry says', () => {
     const p = parseSoundtrackPrefs({
       v: 1,
@@ -329,5 +336,15 @@ describe('wizardPlanKey', () => {
     expect(wizardPlanKey(FIRST_VISIT_PREFS, [song('aaaaaaaaaaa', 180)])).toBe(off);
     expect(wizardPlanKey(on, [])).toBe(off);
     expect(wizardPlanKey({ ...FIRST_VISIT_PREFS, continuity: 'gapsOk' }, [])).not.toBe(off);
+  });
+
+  it('changes with "how many of my songs" only while own songs play', () => {
+    const songs = [song('aaaaaaaaaaa', 180)];
+    const half = wizardPlanKey(on, songs);
+    expect(wizardPlanKey({ ...on, ownShare: 'half' }, songs)).toBe(half);
+    expect(wizardPlanKey({ ...on, ownShare: 'most' }, songs)).not.toBe(half);
+    expect(wizardPlanKey({ ...on, ownShare: 'few' }, songs)).not.toBe(half);
+    const off = wizardPlanKey(FIRST_VISIT_PREFS, songs);
+    expect(wizardPlanKey({ ...FIRST_VISIT_PREFS, ownShare: 'most' }, songs)).toBe(off);
   });
 });
