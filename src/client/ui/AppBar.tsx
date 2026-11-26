@@ -1,5 +1,8 @@
+import { useRef } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { LogoMark, ModeIcon, Wordmark, type Mode } from '../brand';
+import { toggleDiagnostics } from '../diagnostics/GlobalDiagnostics';
+import { createTapCounter } from '../diagnostics/toggle';
 import { GuideIcon } from '../guide/GuideIcons';
 import { useT } from '../i18n';
 import styles from './AppBar.module.css';
@@ -8,13 +11,23 @@ import { Icon } from './Icon';
 /** Top bar of the select screens: logo, Plan | Freestyle | Experience tabs, Players and Settings links. */
 export function AppBar() {
   const t = useT();
+  // Five quick taps on the logo switch diagnostics mode (the phone way to reach it anywhere).
+  const tap = useRef(createTapCounter());
   const tab =
     (mode: Mode) =>
     ({ isActive }: { isActive: boolean }): string =>
       `${styles.tab} ${styles[mode]} ${isActive ? styles.on : ''}`;
   return (
     <header className={styles.bar}>
-      <Link to="/" className={styles.logo} title={t('nav.mainMenu')}>
+      <Link
+        to="/"
+        className={styles.logo}
+        title={t('nav.mainMenu')}
+        data-testid="app-logo"
+        onClick={() => {
+          if (tap.current(performance.now())) toggleDiagnostics();
+        }}
+      >
         <LogoMark size={30} />
         <Wordmark />
       </Link>

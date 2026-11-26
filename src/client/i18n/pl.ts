@@ -1325,7 +1325,7 @@ export const pl: Messages = {
     title: 'Diagnostyka',
     enable: 'Tryb diagnostyczny',
     enableHint:
-      'Pokazuje licznik FPS podczas treningu oraz odblokowuje informacje o urządzeniu i test wydajności.',
+      'Pokazuje nakładkę na każdym ekranie, także w jeździe (FPS, rozmiar ekranu, Bluetooth, błędy, muzyka), oraz odblokowuje informacje o urządzeniu i test wydajności. Włączysz go i wyłączysz wszędzie: Ctrl+Shift+D, pięć stuknięć w logo albo ?diag w adresie.',
     device: {
       title: 'To urządzenie',
       userAgent: 'Przeglądarka',
@@ -1385,6 +1385,18 @@ export const pl: Messages = {
       noResults: 'Nie uruchomiono testu wydajności.',
       resultLine:
         '{world} / {quality}: śr. {avg} fps, najgorsze 5% {p5} fps, wolne klatki {slow}, render {size}',
+      masked:
+        'Klucze, tokeny i linki do prywatnych playlist są zamaskowane. Nic nie jest nigdzie wysyłane.',
+      screen: 'Ekran',
+      viewport: 'Okno',
+      settings: 'Ustawienia (bez sekretów)',
+      bluetooth: 'Bluetooth',
+      btSupport: 'Web Bluetooth',
+      trainer: 'Trenażer',
+      hr: 'Pas tętna',
+      noBle: 'Brak zdarzeń Bluetooth.',
+      errors: 'Błędy i ostrzeżenia',
+      noErrors: 'Nie zapisano błędów.',
     },
     overlay: {
       gpu: 'GPU {ms} ms | {calls} wywołań | {tris}k trójkątów | {mpx} Mpx',
@@ -1394,6 +1406,12 @@ export const pl: Messages = {
       quality: 'jakość',
       scene: 'scena',
       webgl: 'WebGL: {reason}',
+      bt: 'BT trenażer {trainer} | HR {hr}',
+      errors: 'błędy {n}',
+      lastError: 'ostatni: {text}',
+      music: 'muzyka: {line}',
+      actions: 'Diagnostyka: kopiuj lub zapisz raport',
+      off: 'Wyłącz diagnostykę',
     },
     autoLowered: 'Obniżono jakość dla płynności',
   },

@@ -7,7 +7,7 @@ import {
   useState,
   type CSSProperties,
 } from 'react';
-import { DiagnosticsOverlay } from '../diagnostics/DiagnosticsOverlay';
+import { publishDiagScene } from '../diagnostics/scene';
 import { WorldCanvas } from '../world/WorldCanvas';
 import { resolveWorld } from '../world/world-options';
 import type { FrameInput, WorldTheme } from '../world/world';
@@ -802,6 +802,18 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     [toggle, skipSong, hasMusic],
   );
 
+  // The global Diagnostics overlay (Root) shows what is drawn behind the HUD; nothing when off.
+  const diagOn = settings.diagnostics === true;
+  const diagScene = world
+    ? `${t('setup.backgroundWorld')} / ${resolveWorld(worldId)}`
+    : t(youtube !== null ? 'setup.backgroundYoutube' : 'setup.backgroundBasic');
+  const diagQuality = world ? effectiveQuality : undefined;
+  useEffect(() => {
+    if (!diagOn) return;
+    publishDiagScene({ scene: diagScene, quality: diagQuality });
+    return () => publishDiagScene(null);
+  }, [diagOn, diagScene, diagQuality]);
+
   if (!view) return null;
 
   const status = state.status;
@@ -1047,16 +1059,6 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
               />
             ) : undefined
           }
-        />
-      )}
-      {settings.diagnostics === true && (
-        <DiagnosticsOverlay
-          scene={
-            world
-              ? `${t('setup.backgroundWorld')} / ${resolveWorld(worldId)}`
-              : t(youtube !== null ? 'setup.backgroundYoutube' : 'setup.backgroundBasic')
-          }
-          quality={world ? effectiveQuality : undefined}
         />
       )}
       <EdgeFlash trigger={flash} color={view.color} reducedMotion={reducedMotion} />

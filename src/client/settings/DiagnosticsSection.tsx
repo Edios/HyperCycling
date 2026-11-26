@@ -5,10 +5,10 @@ import { triggerDownload, type DownloadFn } from '../data/import-export';
 import { browserDeviceEnv, collectDeviceInfo, UNAVAILABLE } from '../diagnostics/device-info';
 import { PerformanceTestModal, testDurationMs } from '../diagnostics/PerformanceTestModal';
 import { recommendQuality, type TestResult } from '../diagnostics/recommendation';
-import { buildReport } from '../diagnostics/report';
+import { collectFullReport, reportFileName } from '../diagnostics/collect';
 import { useTestResults } from '../diagnostics/results-store';
 import { WORLD_CHOICES } from '../world/world-options';
-import { clearMusicLog, formatMusicLog, getMusicLog, subscribeMusicLog } from '../music/play-log';
+import { clearMusicLog, getMusicLog, subscribeMusicLog } from '../music/play-log';
 import { useT, type MessageKey } from '../i18n';
 import { Button } from '../ui/Button';
 import { Toast } from '../ui/Toast';
@@ -17,7 +17,6 @@ import { useSave } from './save';
 import styles from './Diagnostics.module.css';
 import settingsStyles from './Settings.module.css';
 
-const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? 'dev';
 const ALLOW_OVERRIDE = import.meta.env.DEV || import.meta.env.VITE_E2E === '1';
 
 const REC_KEY = {
@@ -51,15 +50,7 @@ export function DiagnosticsSection({ download = triggerDownload }: DiagnosticsSe
   const info = useMemo(() => (on ? collectDeviceInfo(browserDeviceEnv()) : undefined), [on]);
 
   const say = (kind: Notice): void => setNotice({ kind, id: Date.now() });
-  const report = (): string =>
-    buildReport({
-      version: APP_VERSION,
-      date: new Date(),
-      info: info ?? collectDeviceInfo(browserDeviceEnv()),
-      results,
-      musicLog: formatMusicLog(musicLog.slice(-30)),
-      t,
-    });
+  const report = (): string => collectFullReport(t, results);
 
   const copy = async (): Promise<void> => {
     try {
@@ -71,8 +62,7 @@ export function DiagnosticsSection({ download = triggerDownload }: DiagnosticsSe
   };
   const saveFile = async (): Promise<void> => {
     const blob = new Blob([report()], { type: 'text/plain;charset=utf-8' });
-    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    await download(blob, `hypercycling-diagnostics-${stamp}.txt`);
+    await download(blob, reportFileName());
     say('saved');
   };
 
