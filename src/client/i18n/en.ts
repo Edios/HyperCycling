@@ -328,6 +328,10 @@ export const en = {
       rest: 'More workouts',
     },
     groupAll: 'All {n}',
+    groupAllLabel: {
+      hiit: 'All {n}: HIIT workouts',
+      short: 'All {n}: short workouts',
+    },
     groupAllHint: '{n} of them sit in other groups',
     showMore: 'Show {n} more',
     showLess: 'Show less',

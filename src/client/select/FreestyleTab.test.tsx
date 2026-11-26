@@ -96,6 +96,7 @@ describe('FreestyleTab', () => {
     const hiitTotal = builtinWorkouts.filter((w) => w.tags.includes('hiit')).length;
     const all = screen.getByTestId('group-all-hiit');
     expect(all).toHaveTextContent(`All ${hiitTotal}`);
+    expect(all).toHaveAccessibleName(`All ${hiitTotal}: HIIT workouts`);
     fireEvent.click(all);
     expect(screen.getByRole('button', { name: 'HIIT' })).toHaveAttribute('aria-pressed', 'true');
     expect(cards()).toHaveLength(hiitTotal);
