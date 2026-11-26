@@ -69,7 +69,9 @@ test('own songs: added in step 1, picked in the plan, still there after a reload
 
 test('an own song added before the catalog check says the catalog plays that video', async ({
   page,
-}) => {
+}, info) => {
+  // The record goes in through the server's API: the local build only.
+  test.skip(info.project.name !== 'local', 'needs the server API');
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   // A record from before #155, when a catalog video could still be added as an own song.
