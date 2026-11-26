@@ -66,3 +66,35 @@ test('own songs: added in step 1, picked in the plan, still there after a reload
   await expect(page.getByRole('switch', { name: 'Use my songs' })).toBeChecked();
   expect(errors).toEqual([]);
 });
+
+test('an own song added before the catalog check says the catalog plays that video', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  // A record from before #155, when a catalog video could still be added as an own song.
+  const put = await page.request.put('/api/own-tracks/own-4b89j6IacN0', {
+    data: {
+      id: 'own-4b89j6IacN0',
+      schemaVersion: 1,
+      createdAt: '2026-11-25T10:00:00.000Z',
+      youtubeId: '4b89j6IacN0',
+      title: 'Lovin You (mine)',
+      bpm: 128,
+    },
+  });
+  expect(put.ok()).toBe(true);
+  await toWizard(page);
+  await page
+    .getByTestId('soundtrack-own')
+    .getByRole('button', { name: /My songs/ })
+    .click();
+  await expect(
+    page.getByTestId('soundtrack-own-song').filter({ hasText: 'Lovin You (mine)' }),
+  ).toContainText(
+    "In the catalog as “Kiss – I Was Made for Lovin' You”: it plays from there, not from this list.",
+  );
+  expect(errors).toEqual([]);
+  // The worker's database is shared with the other test here: leave it as found.
+  expect((await page.request.delete('/api/own-tracks/own-4b89j6IacN0')).ok()).toBe(true);
+});

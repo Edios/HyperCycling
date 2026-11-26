@@ -1,8 +1,9 @@
-import { useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { BPM_MAX, BPM_MIN } from '../../domain/bpm-match';
 import type { CatalogTrack, TrackEnergy } from '../../domain/soundtrack-catalog';
 import { useT } from '../i18n';
 import { formatClock } from '../training/format';
+import { loadSoundtrackCatalog } from '../data/soundtrack-catalog';
 import { Button } from '../ui/Button';
 import { Disclosure } from '../ui/Disclosure';
 import { Field } from '../ui/Field';
@@ -26,6 +27,18 @@ type FormError =
   'errLink' | 'errTitle' | 'errTempo' | 'errLength' | 'errStartNoLength' | 'errStartLate';
 /** A start this close to the end leaves too little of the song to plan with. */
 const MIN_PLAY_SEC = 30;
+/** The catalog songs by their video ids (the rider's own songs left out: they are not "the catalog"). */
+function catalogByVideo(catalog: readonly CatalogTrack[]): Map<string, CatalogTrack> {
+  const out = new Map<string, CatalogTrack>();
+  for (const c of catalog) {
+    if (c.own === true) continue;
+    for (const u of c.youtube) if (!out.has(u.id)) out.set(u.id, c);
+  }
+  return out;
+}
+
+const catalogName = (c: CatalogTrack): string => `${c.artist} – ${c.title}`;
+
 const RESULT_ERROR: Record<
   Exclude<AddOwnResult, 'added'>,
   'errDuplicate' | 'errFull' | 'errSave'
@@ -59,6 +72,9 @@ export function OwnTracksPanel({
   const [energy, setEnergy] = useState('');
   const [length, setLength] = useState('');
   const [errors, setErrors] = useState<Partial<Record<FormError, true>>>({});
+  // The start the last check read from the link: the error names it even if the link changes.
+  const [checkedStart, setCheckedStart] = useState(0);
+  const byVideo = useMemo(() => catalogByVideo(catalog), [catalog]);
   const [status, setStatus] = useState<{ text: string; error: boolean } | undefined>();
   const [busy, setBusy] = useState(false);
 
@@ -80,21 +96,22 @@ export function OwnTracksPanel({
       else if (start > len - MIN_PLAY_SEC) next.errStartLate = true;
     }
     setErrors(next);
+    setCheckedStart(start);
     setStatus(undefined);
     if (!video || Object.keys(next).length > 0) return;
-    const inCatalog = catalog.find(
-      (c) => c.own !== true && c.youtube.some((u) => u.id === video.videoId),
-    );
+    setBusy(true);
+    // Before the catalog is there (none given yet), wait for it: the check must not be skipped.
+    const known =
+      byVideo.size > 0 ? byVideo : catalogByVideo(await loadSoundtrackCatalog().catch(() => []));
+    const inCatalog = known.get(video.videoId);
     if (inCatalog) {
+      setBusy(false);
       setStatus({
-        text: t('soundtrack.own.errInCatalog', {
-          name: `${inCatalog.artist} – ${inCatalog.title}`,
-        }),
+        text: t('soundtrack.own.errInCatalog', { name: catalogName(inCatalog) }),
         error: true,
       });
       return;
     }
-    setBusy(true);
     const result = await addOwnTrack({
       youtubeId: video.videoId,
       title,
@@ -149,23 +166,32 @@ export function OwnTracksPanel({
           <p className={styles.help}>{t('soundtrack.own.empty')}</p>
         ) : (
           <ul className={styles.ownList} aria-label={t('soundtrack.own.list')}>
-            {tracks.map((tr) => (
-              <li key={tr.id} data-testid="soundtrack-own-song">
-                <span className={styles.ownName}>
-                  {tr.artist ? `${tr.artist} – ${tr.title}` : tr.title}
-                </span>
-                <span className={styles.ownMeta}>
-                  {t('soundtrack.own.bpm', { bpm: tr.bpm })}
-                  {tr.energy !== undefined ? ` · ${energyLabel(tr.energy)}` : ''}
-                </span>
-                <Button
-                  aria-label={t('soundtrack.own.removeLabel', { title: tr.title })}
-                  onClick={() => void remove(tr.id)}
-                >
-                  {t('soundtrack.own.remove')}
-                </Button>
-              </li>
-            ))}
+            {tracks.map((tr) => {
+              // A song added before the catalog check: the planner plays the catalog's one instead.
+              const inCatalog = byVideo.get(tr.youtubeId);
+              return (
+                <li key={tr.id} data-testid="soundtrack-own-song">
+                  <span className={styles.ownName}>
+                    {tr.artist ? `${tr.artist} – ${tr.title}` : tr.title}
+                  </span>
+                  <span className={styles.ownMeta}>
+                    {t('soundtrack.own.bpm', { bpm: tr.bpm })}
+                    {tr.energy !== undefined ? ` · ${energyLabel(tr.energy)}` : ''}
+                  </span>
+                  {inCatalog && (
+                    <span className={styles.ownNote}>
+                      {t('soundtrack.own.inCatalog', { name: catalogName(inCatalog) })}
+                    </span>
+                  )}
+                  <Button
+                    aria-label={t('soundtrack.own.removeLabel', { title: tr.title })}
+                    onClick={() => void remove(tr.id)}
+                  >
+                    {t('soundtrack.own.remove')}
+                  </Button>
+                </li>
+              );
+            })}
           </ul>
         )}
         <form className={styles.ownForm} onSubmit={(e) => void submit(e)} noValidate>
@@ -258,7 +284,7 @@ export function OwnTracksPanel({
                       errors.errStartLate
                         ? 'soundtrack.own.errStartLate'
                         : 'soundtrack.own.errStartNoLength',
-                      { start: formatClock(parseYoutubeUrl(link)?.startSec ?? 0) },
+                      { start: formatClock(checkedStart) },
                     )
                   : undefined
             }

@@ -693,6 +693,7 @@ export const en = {
       errLength: 'Type a length from 0:30 to 60:00 as m:ss, e.g. 3:45.',
       errInCatalog:
         'This video is already in the catalog as “{name}”: it plays from there (with its checked tempo) when its kind of music is chosen.',
+      inCatalog: 'In the catalog as “{name}”: it plays from there, not from this list.',
       errStartNoLength:
         'The link starts at {start}: type the song’s length too, so the plan knows how much of it plays.',
       errStartLate: 'The link starts at {start}, less than 30 seconds before the end of the song.',
