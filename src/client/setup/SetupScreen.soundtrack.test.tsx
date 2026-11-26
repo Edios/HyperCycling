@@ -129,6 +129,47 @@ describe('the ride setup with matched music', () => {
     expect(cues.length).toBe(plan.sections.length);
   });
 
+  it('plays the saved order again, or draws a new one for this ride only', async () => {
+    const plan = planSoundtrack(workout, catalog, { ...DEFAULT_SOUNDTRACK_PREFS, seed: 4 });
+    const record = planRecord(plan, new Date('2026-11-23T09:00:00.000Z'));
+    db.saved.set(workout.id, record);
+    renderSetup();
+    const row = await screen.findByTestId('setup-soundtrack');
+    await waitFor(() => expect(row).toHaveAttribute('data-state', 'ready'));
+    const order = within(row).getByRole('radiogroup', { name: 'Song order' });
+    expect(within(order).getByRole('radio', { name: 'Last order' })).toBeChecked();
+    expect(row).toHaveTextContent('The saved order of songs plays again.');
+    const ids = () =>
+      useSoundtrackSession
+        .getState()
+        .plans[workout.id]!.sections.flatMap((x) => x.picks.map((p) => p.ref.id));
+    const savedIds = ids();
+
+    fireEvent.click(within(order).getByRole('radio', { name: 'New order' }));
+    await waitFor(() => expect(ids()).not.toEqual(savedIds));
+    expect(row).toHaveTextContent(
+      'A new order of songs for this ride. You can save it after the ride.',
+    );
+    expect(db.saved.get(workout.id)).toBe(record);
+    const firstDraw = ids();
+    fireEvent.click(within(row).getByRole('button', { name: 'Draw another' }));
+    await waitFor(() => expect(ids()).not.toEqual(firstDraw));
+
+    fireEvent.click(within(order).getByRole('radio', { name: 'Last order' }));
+    await waitFor(() => expect(ids()).toEqual(savedIds));
+    expect(within(row).queryByRole('button', { name: 'Draw another' })).not.toBeInTheDocument();
+  });
+
+  it('offers no song order choice for music not saved on this device', async () => {
+    useSoundtrackSession
+      .getState()
+      .setPlan(workout.id, planSoundtrack(workout, catalog, { ...DEFAULT_SOUNDTRACK_PREFS }));
+    renderSetup();
+    const row = await screen.findByTestId('setup-soundtrack');
+    await waitFor(() => expect(row).toHaveAttribute('data-state', 'ready'));
+    expect(within(row).queryByRole('radiogroup', { name: 'Song order' })).not.toBeInTheDocument();
+  });
+
   it('removing the matched music removes the saved plan too, for good', async () => {
     const plan = planSoundtrack(workout, catalog);
     db.saved.set(workout.id, planRecord(plan, new Date('2026-11-23T09:00:00.000Z')));

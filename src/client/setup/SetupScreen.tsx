@@ -26,7 +26,13 @@ import { deadRecordings, type ResultMap } from '../music/preflight';
 import { useSpotifyConnected } from '../music/spotify/useSpotify';
 import { WORLD_CHOICES } from '../world/world-options';
 import { useSessionStore } from '../training/session-store';
-import { forgetPlan, useSoundtrackSession } from '../soundtrack/session';
+import {
+  drawNewOrder,
+  forgetPlan,
+  replaySavedOrder,
+  useSoundtrackSession,
+} from '../soundtrack/session';
+import { useSoundtrackCatalog } from '../soundtrack/useCatalog';
 import { useSoundtrackOverlay } from '../soundtrack/useSoundtrackOverlay';
 import { formatClock } from '../training/format';
 import { AppBar } from '../ui/AppBar';
@@ -214,6 +220,13 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
   // The music matched in this visit ("Match music") goes on top; an Experience has its own.
   const soundtrack = useSoundtrackOverlay(scaledBase, chainOpts);
   const saveFailed = useSoundtrackSession((s) => s.saveFailed);
+  // The song order of this ride: the saved one again, or a new one drawn (kept after the ride).
+  const hasSaved = useSoundtrackSession((s) => s.saved[workout.id] !== undefined);
+  const drawn = useSoundtrackSession((s) => s.drawn[workout.id] === true);
+  const orderCatalog = useSoundtrackCatalog(hasSaved);
+  const drawOrder = (): void => {
+    if (orderCatalog.status === 'ready') drawNewOrder(scaledBase, orderCatalog.catalog);
+  };
   const scaled = useMemo(
     () =>
       experience ? withUserMusic(scaledBase, experience, matched, chainOpts) : soundtrack.workout,
@@ -376,6 +389,31 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
                     ? t('soundtrack.setup.error')
                     : t('soundtrack.setup.none')}
           </p>
+          {hasSaved && (soundtrack.state === 'ready' || drawn) && (
+            <div className={styles.matchOrder} data-testid="setup-song-order">
+              <Segmented
+                label={t('soundtrack.setup.order')}
+                value={drawn ? 'new' : 'last'}
+                options={[
+                  { value: 'last', label: t('soundtrack.setup.orderLast') },
+                  {
+                    value: 'new',
+                    label: t('soundtrack.setup.orderNew'),
+                    disabled: orderCatalog.status !== 'ready',
+                  },
+                ]}
+                onChange={(v) => (v === 'new' ? drawOrder() : replaySavedOrder(workout.id))}
+              />
+              <p className={styles.note}>
+                {t(drawn ? 'soundtrack.setup.orderNewHelp' : 'soundtrack.setup.orderLastHelp')}
+              </p>
+              {drawn && (
+                <Button onClick={drawOrder} data-testid="setup-song-order-again">
+                  {t('soundtrack.setup.orderAgain')}
+                </Button>
+              )}
+            </div>
+          )}
           {saveFailed && (
             <p className={styles.note} role="status" data-testid="setup-soundtrack-unsaved">
               {t('soundtrack.setup.unsaved')}

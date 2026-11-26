@@ -230,6 +230,20 @@
   margin: 0;
 }
 
+/* The song order of a saved match: the last one again, or a new one for this ride. */
+.matchOrder {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.matchOrder > button {
+  height: 2.75rem;
+  padding: 0 1rem;
+}
+
 .matchActions {
   display: flex;
   gap: 0.5rem;

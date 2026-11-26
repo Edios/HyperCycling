@@ -36,8 +36,11 @@ import { builtinWorkouts } from '../data/builtin';
 import { loadSoundtrackHistory, SOUNDTRACK_HISTORY_KEY } from './history';
 import {
   confirmPlan,
+  drawNewOrder,
   forgetPlan,
   loadSavedPlan,
+  replaySavedOrder,
+  saveSongOrder,
   resetSoundtrackSessionForTests,
   useSoundtrackSession,
 } from './session';
@@ -157,5 +160,66 @@ describe('forgetPlan', () => {
     db.fail = true;
     expect(await forgetPlan(workout.id)).toBe(false);
     expect(plans()).toEqual({});
+  });
+});
+
+describe('the song order of the next ride (play the last one again, or draw a new one)', () => {
+  const ids = (p: { sections: { picks: { ref: { id: string } }[] }[] }) =>
+    p.sections.flatMap((s) => s.picks.map((x) => x.ref.id));
+  const drawn = () => useSoundtrackSession.getState().drawn;
+
+  it('draws a new order in memory only: the saved plan and its record stay', async () => {
+    await confirmPlan(plan, NOW);
+    expect(drawNewOrder(workout, catalog)).toBe(true);
+    const fresh = plans()[workout.id]!;
+    expect(fresh).not.toBe(plan);
+    expect(fresh.prefs.seed).not.toBe(plan.prefs.seed);
+    // The same choices (kinds of music, continuity), another order of songs.
+    expect({ ...fresh.prefs, seed: 0 }).toEqual({ ...plan.prefs, seed: 0 });
+    expect(ids(fresh)).not.toEqual(ids(plan));
+    expect(drawn()[workout.id]).toBe(true);
+    expect((db.records.get(workout.id) as SoundtrackPlanRecord).plan).toEqual(plan);
+    expect(useSoundtrackSession.getState().saved[workout.id]).toBe(plan);
+  });
+
+  it('does nothing for a workout with no matched music', () => {
+    expect(drawNewOrder(workout, catalog)).toBe(false);
+    expect(plans()).toEqual({});
+  });
+
+  it('plays the saved order again', async () => {
+    await confirmPlan(plan, NOW);
+    drawNewOrder(workout, catalog);
+    replaySavedOrder(workout.id);
+    expect(plans()[workout.id]).toBe(plan);
+    expect(drawn()[workout.id]).toBeUndefined();
+  });
+
+  it('a saved plan read from the device can be played again after a draw', async () => {
+    db.records.set(workout.id, planRecord(plan, NOW));
+    await loadSavedPlan(workout.id);
+    drawNewOrder(workout, catalog);
+    replaySavedOrder(workout.id);
+    expect(plans()[workout.id]).toEqual(plan);
+  });
+
+  it('after the ride, saves the drawn order as the order of the workout', async () => {
+    await confirmPlan(plan, NOW);
+    drawNewOrder(workout, catalog);
+    const fresh = plans()[workout.id]!;
+    expect(await saveSongOrder(workout.id, NOW)).toBe(true);
+    expect((db.records.get(workout.id) as SoundtrackPlanRecord).plan).toEqual(fresh);
+    expect(useSoundtrackSession.getState().saved[workout.id]).toBe(fresh);
+    expect(drawn()[workout.id]).toBeUndefined();
+    // Nothing drawn: nothing to save.
+    expect(await saveSongOrder('no-such-workout', NOW)).toBe(false);
+  });
+
+  it('forgetting the plan forgets the saved order and the draw too', async () => {
+    await confirmPlan(plan, NOW);
+    drawNewOrder(workout, catalog);
+    await forgetPlan(workout.id);
+    expect(drawn()[workout.id]).toBeUndefined();
+    expect(useSoundtrackSession.getState().saved[workout.id]).toBeUndefined();
   });
 });

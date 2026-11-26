@@ -12,6 +12,7 @@ import { getRepositories } from '../data/repositories';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT, type MessageKey } from '../i18n';
 import { formatClock } from '../training/format';
+import { saveSongOrder, useSoundtrackSession } from '../soundtrack/session';
 import { useLastResult, type LastResult } from '../training/last-result';
 import { NoticePage } from '../screens/NoticePage';
 import { AppBar } from '../ui/AppBar';
@@ -215,6 +216,8 @@ function Summary({ result }: { result: LastResult }) {
 
         {showFtp && testKind && <FtpCard key={testKind} kind={testKind} />}
 
+        <SongOrderCard workoutId={result.workout.id} />
+
         <div className={styles.buttons}>
           <Button onClick={() => leave(setupPath(result), false)}>{t('summary.again')}</Button>
           <Button variant="primary" onClick={() => leave('/plan', true)}>
@@ -223,6 +226,43 @@ function Summary({ result }: { result: LastResult }) {
         </div>
       </div>
     </main>
+  );
+}
+
+/**
+ * After a ride on a new song order (drawn in the ride setup): "Save the song order" makes it the
+ * workout's saved music, the order the next ride plays again. Nothing shows after a ride on the
+ * saved order. The card stays after saving, to say it was saved.
+ */
+function SongOrderCard({ workoutId }: { workoutId: string }) {
+  const t = useT();
+  const drawn = useSoundtrackSession((s) => s.drawn[workoutId] === true);
+  const [status, setStatus] = useState<'idle' | 'busy' | 'saved' | 'failed'>('idle');
+  if (!drawn && status !== 'saved') return null;
+  const save = async (): Promise<void> => {
+    setStatus('busy');
+    setStatus((await saveSongOrder(workoutId)) ? 'saved' : 'failed');
+  };
+  return (
+    <Card className={styles.count} data-testid="summary-song-order">
+      <p className={styles.detail}>{t('summary.songOrder.body')}</p>
+      {status === 'saved' ? (
+        <p className={styles.detail} role="status">
+          {t('summary.songOrder.saved')}
+        </p>
+      ) : (
+        <>
+          <Button onClick={() => void save()} disabled={status === 'busy'}>
+            {t('summary.songOrder.save')}
+          </Button>
+          {status === 'failed' && (
+            <p role="alert" className={styles.error}>
+              {t('summary.songOrder.failed')}
+            </p>
+          )}
+        </>
+      )}
+    </Card>
   );
 }
 
