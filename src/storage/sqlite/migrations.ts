@@ -20,6 +20,10 @@ export const MIGRATIONS: readonly string[] = [
   `
   CREATE TABLE soundtrackPlans (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
   `,
+  // 4: the rider's own songs (Soundtrack Match PR 6).
+  `
+  CREATE TABLE ownTracks (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
+  `,
 ];
 
 export function migrate(db: Database): void {

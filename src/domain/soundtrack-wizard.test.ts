@@ -6,6 +6,7 @@ import { DEFAULT_SOUNDTRACK_PREFS, planSoundtrack, type SoundtrackPlan } from '.
 import {
   categoryChips,
   FIRST_VISIT_PREFS,
+  wizardPlanKey,
   isOffTempo,
   isStretched,
   makePlan,
@@ -18,6 +19,7 @@ import {
   toggleCategory,
 } from './soundtrack-wizard';
 import raw from '../content/soundtrack/catalog.json';
+import { ownTrackRecord, type OwnTrackInput } from './soundtrack-own';
 
 const catalog: CatalogTrack[] = parseCatalog(raw).tracks;
 const workout = (id: string) => {
@@ -80,8 +82,10 @@ describe('parseSoundtrackPrefs', () => {
     expect(parseSoundtrackPrefs({ seed: 2 ** 40 }).seed).toBe(FIRST_VISIT_PREFS.seed);
   });
 
-  it('never takes the library from storage (the rider own songs come later)', () => {
-    expect(parseSoundtrackPrefs({ includeLibrary: true }).includeLibrary).toBe(false);
+  it('remembers "use my songs" (PR 6), off on a first visit or a broken value', () => {
+    expect(parseSoundtrackPrefs({ includeLibrary: true }).includeLibrary).toBe(true);
+    expect(parseSoundtrackPrefs({ includeLibrary: 'yes' }).includeLibrary).toBe(false);
+    expect(parseSoundtrackPrefs({}).includeLibrary).toBe(false);
   });
 });
 
@@ -300,5 +304,30 @@ describe('the wizard on the built-in workouts', () => {
     expect(
       makePlan(w, catalog, { ...FIRST_VISIT_PREFS, categories: [], polish: false }).sections,
     ).toEqual(planSoundtrack(w, catalog, { ...DEFAULT_SOUNDTRACK_PREFS, categories: [] }).sections);
+  });
+});
+
+describe('wizardPlanKey', () => {
+  const at = new Date('2026-11-26T10:00:00.000Z');
+  const song = (youtubeId: string, bpm: number, extra: Partial<OwnTrackInput> = {}) =>
+    ownTrackRecord({ youtubeId, title: 'Mine', bpm, ...extra }, at);
+  const on = { ...FIRST_VISIT_PREFS, includeLibrary: true };
+
+  it('changes when an own song is swapped for one with another tempo, video, energy or length', () => {
+    const base = wizardPlanKey(on, [song('aaaaaaaaaaa', 180)]);
+    // Removed and added again with the tempo corrected: the same count, another plan (B1, #153).
+    expect(wizardPlanKey(on, [song('aaaaaaaaaaa', 90)])).not.toBe(base);
+    expect(wizardPlanKey(on, [song('bbbbbbbbbbb', 180)])).not.toBe(base);
+    expect(wizardPlanKey(on, [song('aaaaaaaaaaa', 180, { energy: 5 })])).not.toBe(base);
+    expect(wizardPlanKey(on, [song('aaaaaaaaaaa', 180, { durationSec: 300 })])).not.toBe(base);
+    expect(wizardPlanKey(on, [song('aaaaaaaaaaa', 180, { startSec: 30 })])).not.toBe(base);
+    expect(wizardPlanKey(on, [song('aaaaaaaaaaa', 180)])).toBe(base);
+  });
+
+  it('ignores the own songs while the switch is off, or while there are none', () => {
+    const off = wizardPlanKey(FIRST_VISIT_PREFS, []);
+    expect(wizardPlanKey(FIRST_VISIT_PREFS, [song('aaaaaaaaaaa', 180)])).toBe(off);
+    expect(wizardPlanKey(on, [])).toBe(off);
+    expect(wizardPlanKey({ ...FIRST_VISIT_PREFS, continuity: 'gapsOk' }, [])).not.toBe(off);
   });
 });

@@ -14,6 +14,7 @@ import {
   replaceSong,
   shufflePlan,
   toggleCategory,
+  wizardPlanKey,
 } from '../../domain/soundtrack-wizard';
 import { totalDurationSec, type Workout } from '../../domain/workout';
 import { localizedText } from '../data/localized';
@@ -27,6 +28,8 @@ import { Button } from '../ui/Button';
 import { Chip } from '../ui/Chip';
 import { ProfileChart } from '../ui/ProfileChart';
 import { Segmented } from '../ui/Segmented';
+import { OwnTracksPanel } from './OwnTracksPanel';
+import { useOwnTracks } from './own-tracks';
 import { PartCard } from './PartCard';
 import { freshSeed, historyIds, loadSoundtrackHistory } from './history';
 import { loadSoundtrackPrefs, saveSoundtrackPrefs } from './prefs';
@@ -133,8 +136,8 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
     setPrefs((p) => ({ ...p, ...patch }));
   };
 
-  const planKey = (p: SoundtrackPrefs): string =>
-    `${p.categories.join(',')}|${p.polish === true ? 'pl' : ''}|${p.continuity}`;
+  const ownTracks = useOwnTracks((s) => s.tracks);
+  const planKey = (p: SoundtrackPrefs): string => wizardPlanKey(p, ownTracks);
 
   const goPlan = (): void => {
     saveSoundtrackPrefs(prefs);
@@ -293,6 +296,10 @@ function Wizard({ workout, from }: { workout: Workout; from: string | null }) {
             )}
           </p>
         </div>
+        <OwnTracksPanel
+          use={prefs.includeLibrary}
+          onUseChange={(includeLibrary) => changePrefs({ includeLibrary })}
+        />
       </>
     );
   } else if (step === 2 && plan && summary) {

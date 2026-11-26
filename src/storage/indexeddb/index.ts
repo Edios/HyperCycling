@@ -6,21 +6,25 @@ import type { RideRecord } from '../../domain/ride';
 import type { CollectionRepo, Repositories, SingletonRepo } from '../../domain/repositories';
 import type { ActiveSession, SessionLog } from '../../domain/session-log';
 import type { Settings } from '../../domain/settings';
+import type { OwnTrackRecord } from '../../domain/soundtrack-own';
 import type { SoundtrackPlanRecord } from '../../domain/soundtrack-store';
 import type { Workout } from '../../domain/workout';
 import { byId, schemas, validate, validateBundle } from '../validation';
 
 /**
  * 1: first schema. 2: `rides` store (T6). 3: `soundtrackPlans` store (Soundtrack Match).
+ * 4: `ownTracks` store (the rider's own songs, Soundtrack Match PR 6).
  *
  * Upgrades are one way: a browser that opened version 2 cannot be opened by an older build
  * (VersionError). If a change is ever rolled back, never lower this number or remove an upgrade
  * step; ship the rollback as a new, higher version instead. The same holds for the SQLite
  * migrations (an older server refuses a newer database).
  */
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const COLLECTIONS = ['workouts', 'players', 'planProgress', 'sessionLogs'] as const;
-type CollectionName = (typeof COLLECTIONS)[number] | 'rides' | 'soundtrackPlans';
+type CollectionName = (typeof COLLECTIONS)[number] | 'rides' | 'soundtrackPlans' | 'ownTracks';
+/** Exported, and replaced only when a backup has them. */
+const SHARED = ['soundtrackPlans', 'ownTracks'] as const;
 
 interface TutorDb extends DBSchema {
   workouts: { key: string; value: Workout };
@@ -29,6 +33,7 @@ interface TutorDb extends DBSchema {
   sessionLogs: { key: string; value: SessionLog };
   rides: { key: string; value: RideRecord };
   soundtrackPlans: { key: string; value: SoundtrackPlanRecord };
+  ownTracks: { key: string; value: OwnTrackRecord };
   singletons: { key: string; value: Settings | ActiveSession };
 }
 
@@ -96,6 +101,7 @@ export async function createIndexedDbRepositories(
       }
       if (oldVersion < 2) d.createObjectStore('rides', { keyPath: 'id' });
       if (oldVersion < 3) d.createObjectStore('soundtrackPlans', { keyPath: 'id' });
+      if (oldVersion < 4) d.createObjectStore('ownTracks', { keyPath: 'id' });
     },
   });
 
@@ -113,20 +119,22 @@ export async function createIndexedDbRepositories(
     soundtrackPlans: collection(db, 'soundtrackPlans', (v) =>
       validate('soundtrack plan', schemas.soundtrackPlans, v),
     ),
+    ownTracks: collection(db, 'ownTracks', (v) => validate('own song', schemas.ownTracks, v)),
     settings: singleton(db, 'settings', (v) => validate('settings', schemas.settings, v)),
     activeSession: singleton(db, 'activeSession', (v) =>
       validate('active session', schemas.activeSession, v),
     ),
 
     async exportAll() {
-      const tx = db.transaction([...COLLECTIONS, 'soundtrackPlans', 'singletons'], 'readonly');
-      const [workouts, players, planProgress, sessionLogs, soundtrackPlans, settings] =
+      const tx = db.transaction([...COLLECTIONS, ...SHARED, 'singletons'], 'readonly');
+      const [workouts, players, planProgress, sessionLogs, soundtrackPlans, ownTracks, settings] =
         await Promise.all([
           tx.objectStore('workouts').getAll(),
           tx.objectStore('players').getAll(),
           tx.objectStore('planProgress').getAll(),
           tx.objectStore('sessionLogs').getAll(),
           tx.objectStore('soundtrackPlans').getAll(),
+          tx.objectStore('ownTracks').getAll(),
           tx.objectStore('singletons').get('settings'),
         ]);
       return {
@@ -138,13 +146,14 @@ export async function createIndexedDbRepositories(
         planProgress: planProgress.sort(byId),
         sessionLogs: sessionLogs.sort(byId),
         soundtrackPlans: soundtrackPlans.sort(byId),
+        ownTracks: ownTracks.sort(byId),
         settings: (settings as Settings | undefined) ?? null,
       };
     },
 
     async replaceAll(input) {
       const b = validateBundle(input); // fully validated before any write
-      const tx = db.transaction([...COLLECTIONS, 'soundtrackPlans', 'singletons'], 'readwrite');
+      const tx = db.transaction([...COLLECTIONS, ...SHARED, 'singletons'], 'readwrite');
       const writes: Promise<unknown>[] = [];
       try {
         for (const name of COLLECTIONS) {
@@ -157,6 +166,11 @@ export async function createIndexedDbRepositories(
           const plans = tx.objectStore('soundtrackPlans');
           writes.push(plans.clear());
           for (const item of b.soundtrackPlans) writes.push(plans.put(item));
+        }
+        if (b.ownTracks) {
+          const own = tx.objectStore('ownTracks');
+          writes.push(own.clear());
+          for (const item of b.ownTracks) writes.push(own.put(item));
         }
         const singletons = tx.objectStore('singletons');
         writes.push(

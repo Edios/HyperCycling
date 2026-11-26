@@ -22,6 +22,7 @@ const COLLECTIONS = {
   'session-logs': 'sessionLogs',
   rides: 'rides',
   'soundtrack-plans': 'soundtrackPlans',
+  'own-tracks': 'ownTracks',
 } as const;
 type UrlCollection = keyof typeof COLLECTIONS;
 

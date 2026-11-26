@@ -74,7 +74,7 @@ describe('indexeddb version 1 → 2 (rides store, T6)', () => {
   });
 });
 
-describe('indexeddb version 2 → 3 (music plans store, Soundtrack Match)', () => {
+describe('indexeddb version 2 → current (music plans and own songs stores, Soundtrack Match)', () => {
   it('adds the plans store and keeps the data of a version 2 database', async () => {
     const name = `upgrade-db-${++n}`;
     await new Promise<void>((resolve, reject) => {
@@ -103,6 +103,7 @@ describe('indexeddb version 2 → 3 (music plans store, Soundtrack Match)', () =
     expect(await repos.players.get('p1')).toEqual({ id: 'p1', name: 'Ola', ftp: 200 });
     expect(await repos.rides.get('r1')).toEqual(ride('r1'));
     expect(await repos.soundtrackPlans.list()).toEqual([]);
+    expect(await repos.ownTracks.list()).toEqual([]);
     await repos.soundtrackPlans.put(planRecord('w1'));
     expect(await repos.soundtrackPlans.get('w1')).toEqual(planRecord('w1'));
     repos.close();

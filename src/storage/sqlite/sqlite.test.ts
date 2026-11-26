@@ -64,7 +64,7 @@ describe('sqlite migrations and persistence', () => {
     await repos.soundtrackPlans.put(planRecord('w1'));
     expect(await repos.soundtrackPlans.get('w1')).toEqual(planRecord('w1'));
     repos.close();
-    expect(pragma(path, 'user_version')).toBe(3);
+    expect(pragma(path, 'user_version')).toBe(MIGRATIONS.length);
     // Reopened, nothing is migrated twice and the plan is still there.
     const again = createSqliteRepositories(path);
     expect(await again.soundtrackPlans.get('w1')).toEqual(planRecord('w1'));
@@ -94,6 +94,7 @@ describe('sqlite migrations and persistence', () => {
         'singletons',
         'rides',
         'soundtrackPlans',
+        'ownTracks',
       ]),
     );
   });

@@ -108,7 +108,8 @@ export type PickFit = 'on-beat' | 'close' | 'half' | 'double' | 'off' | 'nobeat'
 
 /** One song of a section's queue. */
 export interface PlanPick {
-  ref: { kind: 'catalog'; id: string };
+  /** 'own' = a song the rider added (PR 6); its id starts with `own-`. */
+  ref: { kind: 'catalog' | 'own'; id: string };
   /** The YouTube upload to play first (the others stay its backups). */
   upload: string;
   /** Where playback starts in the song, seconds (above 0 only for a repeated ending, rule R3). */
@@ -180,6 +181,12 @@ export const WEIGHTS = {
   category: 0.1,
   trust: 0.05,
 } as const;
+
+/**
+ * Added to an own song's score (PR 6): the rider picked it, so where it fits as well as a catalog
+ * song it wins. It never makes a song fit that does not (the hard rules and the tempo stay).
+ */
+export const OWN_BONUS = 0.1;
 
 /** Category fit of a song from a neighbour category, and from any category (relaxed). */
 export const NEIGHBOUR_FIT = 0.7;
@@ -589,7 +596,8 @@ function categoryFit(
   step: LadderStep,
   polish: boolean,
 ): number | undefined {
-  if (chosen.size === 0) return 1;
+  // The rider's own songs have no category: asking for them is asking for any of them.
+  if (chosen.size === 0 || t.own === true) return 1;
   let fit: number | undefined;
   for (const c of t.categories) {
     if (chosen.has(c)) return 1;
@@ -658,6 +666,7 @@ function scoredAt(
     const t = catalog[i] as CatalogTrack;
     const key = keys[i] as string;
     if (ride.used.has(key)) continue;
+    if (t.own === true && !prefs.includeLibrary) continue;
     if (!t.clean && !prefs.explicit) continue;
     const cat = categoryFit(t, ctx.chosen, ctx.near, step, prefs.polish === true);
     if (cat === undefined) continue;
@@ -676,7 +685,8 @@ function scoredAt(
     const score =
       sc.score +
       SHUFFLE_JITTER * shuffleValue(prefs.seed, ctx.shuffleSalt + t.id) -
-      ARTIST_REPEAT_PENALTY * plays -
+      ARTIST_REPEAT_PENALTY * plays +
+      (t.own === true ? OWN_BONUS : 0) -
       addOn -
       rotation;
     out.push({ track: t, key, score, fit: sc.fit, rideRpm: sc.rideRpm, lenSec, rotation });
@@ -1318,7 +1328,7 @@ export function planSoundtrack(
         scoreTrack(track, s, { tolerance: BPM_RELAXED, ignoreBpm: true })?.fit ??
         'off';
       picks.push({
-        ref: { kind: 'catalog', id: track.id },
+        ref: { kind: track.own === true ? 'own' : 'catalog', id: track.id },
         upload: ref.id,
         startAtSec: ref.startAtSec,
         atSec: at,

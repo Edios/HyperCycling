@@ -3,6 +3,7 @@ import { planProgressSchema, type PlanProgress } from './plan';
 import { atMostOneMe, playerSchema, type Player } from './player';
 import { sessionLogSchema, type SessionLog } from './session-log';
 import { settingsSchema, type Settings } from './settings';
+import { ownTrackRecordSchema, type OwnTrackRecord } from './soundtrack-own';
 import { soundtrackPlanRecordSchema, type SoundtrackPlanRecord } from './soundtrack-store';
 import { workoutSchema, type Workout } from './workout';
 
@@ -22,6 +23,8 @@ export interface ExportBundle {
   sessionLogs: SessionLog[];
   /** Absent in a backup made before the music plans were stored (and in what such a build exports). */
   soundtrackPlans?: SoundtrackPlanRecord[];
+  /** The rider's own songs (Soundtrack Match PR 6); absent in a backup of an older build. */
+  ownTracks?: OwnTrackRecord[];
   settings: Settings | null;
 }
 
@@ -43,6 +46,7 @@ export const exportBundleSchema: z.ZodType<ExportBundle> = z
     planProgress: z.array(planProgressSchema),
     sessionLogs: z.array(sessionLogSchema),
     soundtrackPlans: z.array(soundtrackPlanRecordSchema).optional(),
+    ownTracks: z.array(ownTrackRecordSchema).optional(),
     settings: settingsSchema.nullable(),
   })
   .superRefine((b, ctx) => {
@@ -59,6 +63,7 @@ export const exportBundleSchema: z.ZodType<ExportBundle> = z
       'planProgress',
       'sessionLogs',
       'soundtrackPlans',
+      'ownTracks',
     ] as const) {
       const seen = new Set<string>();
       (b[key] ?? []).forEach((item, i) => {

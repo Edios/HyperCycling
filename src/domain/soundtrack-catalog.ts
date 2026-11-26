@@ -109,6 +109,8 @@ export interface CatalogTrack extends QueueItem {
   supplement?: true;
   /** Day the uploads were last checked, ISO date. */
   verified: string;
+  /** A song the rider added (`soundtrack-own.ts`), never in the catalog file. */
+  own?: true;
 }
 
 export interface SoundtrackCatalog {

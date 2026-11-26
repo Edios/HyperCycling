@@ -61,9 +61,10 @@ function pickRecordings(
       ? t
       : { ...t, startAtSec: Math.max(0, (t.durationSec ?? track.durationSec) - playSec) },
   );
-  // The tempo is the catalog's own, checked by hand (spec §5.7).
+  // The tempo is the catalog's own, checked by hand (spec §5.7). An own song's tempo was typed by
+  // the rider, and a typed tempo carries no source (as in the editor's BPM field).
   const [first, ...rest] = refs.map((t) =>
-    t.bpm === undefined ? t : { ...t, bpmSource: 'catalog' as const },
+    t.bpm === undefined || track.own === true ? t : { ...t, bpmSource: 'catalog' as const },
   );
   if (!first) return undefined;
   return rest.length > 0 ? { ...first, alternates: rest } : first;
