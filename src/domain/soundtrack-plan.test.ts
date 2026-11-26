@@ -616,7 +616,7 @@ describe('planSoundtrack', () => {
     expect(planSoundtrack(ride, catalog, p, { history: [['no-such-song']] })).toEqual(first);
   });
 
-  describe('a song of the last rides rests (owner decision of 2026-11-26: one song in at most 25% of rides)', () => {
+  describe('a song of the last rides rests (owner decision of 2026-11-26)', () => {
     // 10 minutes at 90 rpm, Electronic chosen: three electronic songs right on the beat, and three
     // house songs (the neighbour category) as good in tempo.
     const part = workout([steady('a', 600, 3, 90)]);
@@ -630,8 +630,8 @@ describe('planSoundtrack', () => {
 
     it('takes fresh songs of a neighbour category over the songs of one of the last rides', () => {
       expect(ids(planSoundtrack(part, [...own, ...near], p))).toEqual(['e1', 'e2', 'e3']);
-      // Four rides of rest: a song plays in at most one ride of five.
-      expect(ROTATION_REST_RIDES).toBe(4);
+      // Three rides of rest.
+      expect(ROTATION_REST_RIDES).toBe(3);
       for (let k = 0; k < ROTATION_REST_RIDES; k++) {
         const history = [...Array.from({ length: k }, () => ['other']), ['e1', 'e2', 'e3']];
         const plan = planSoundtrack(part, [...own, ...near], p, { history });

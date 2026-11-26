@@ -11,8 +11,8 @@
  *    no song twice in a ride; no energy 5 in the warm-up, nothing 3 steps calmer than a hard part
  *    asks for or 3 steps stronger than a calm one, nothing light (energy 1-2) on a climb (music
  *    energy spec §2b). Songs of the last rides cost a little (`history`, spec §3a), a song of the
- *    last four rides rests (`ROTATION_REST_RIDES`: one song in at most 25% of the rides), and a
- *    small seeded jitter reorders near-equal songs ("Shuffle").
+ *    last three rides rests (`ROTATION_REST_RIDES`), and a small seeded jitter reorders near-equal
+ *    songs ("Shuffle").
  * 2. Relaxation ladder, when the songs cannot fill a section (too few, or no queue that ends
  *    within the tolerances): a wider tempo window, the neighbour categories, any category (the
  *    owner accepts stretching the categories for a mixed cadence), and at last any tempo (with a
@@ -636,15 +636,19 @@ export const HISTORY_ARTIST_MAX = 0.2;
  */
 export const ROTATION_REF_SEC = 240;
 /**
- * One song in at most 25% of the rides (owner's decision of 2026-11-26; before it Flume - Holdin
- * On played in 403 of 580 first-visit rides). A song of the last `ROTATION_REST_RIDES` rides
- * rests: it costs `ROTATION_REST_COST` once per queue, whatever its length (a short song was the
+ * A song of the last `ROTATION_REST_RIDES` rides rests (owner's decision of 2026-11-26, the mild
+ * variant): it costs `ROTATION_REST_COST` once per queue, whatever its length (a short song was the
  * handy filler of every 5-minute warm-up), and a part that took one does not stop on the first
  * step of the ladder that fills it: a wider tempo window or a neighbour category with fresh songs
- * may win. Where nothing else fits, the resting song still plays (never a gap instead).
+ * may win when they fit about as well. Where nothing else fits, the resting song still plays
+ * (never a gap instead). 580 first-visit rides with the app's history: the most played song went
+ * from 59% to 30.5% of the rides, the energy fit kept (84.3% -> 85.6% within one step) for 12%
+ * fewer songs within 3% of the tempo. A stronger rest (4 rides, 0.2) reached 24%, but at 81% within
+ * one step of energy and 2.5 times the songs 6-10% off the tempo; more songs at 85-95 rpm in the
+ * catalog are the way to go lower.
  */
-export const ROTATION_REST_RIDES = 4;
-export const ROTATION_REST_COST = 0.2;
+export const ROTATION_REST_RIDES = 3;
+export const ROTATION_REST_COST = 0.05;
 /**
  * An add-on style (synthwave, drum and bass) is a supplement, never the backbone: each such song
  * costs this much, plus as much again for every one already in the ride.
