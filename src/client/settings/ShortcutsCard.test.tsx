@@ -9,7 +9,9 @@ describe('ShortcutsCard', () => {
     const card = screen.getByTestId('shortcuts-card');
     expect(within(card).getByText('Keyboard shortcuts')).toBeInTheDocument();
     expect(within(card).getAllByRole('listitem')).toHaveLength(TRAINING_SHORTCUTS.length);
-    expect(within(card).getByText('Space')).toBeInTheDocument();
+    expect(within(card).getByText('Space · ⏯')).toBeInTheDocument();
+    expect(within(card).getByText('N · ⏭')).toBeInTheDocument();
+    expect(within(card).getByText(/presentation remotes work too/)).toBeInTheDocument();
     expect(within(card).getByText('Start, pause or resume')).toBeInTheDocument();
   });
 });

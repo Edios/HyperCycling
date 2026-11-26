@@ -1408,6 +1408,13 @@ export const pl: Messages = {
     fullscreen: 'Pełny ekran',
     mute: 'Wycisz lub włącz dźwięki',
     escape: 'Pauza i pytanie o zakończenie treningu',
+    nextSong: 'Następny utwór',
+    harder: 'Trudniej (trenażer w ERG)',
+    easier: 'Łatwiej (trenażer w ERG)',
+    help: 'Pokaż te skróty',
+    remotes:
+      'Działają też klawisze multimedialne i piloty do prezentacji, a także przyciski odtwarzania, pauzy i następnego utworu w słuchawkach Bluetooth, jeśli przeglądarka je przekazuje.',
+    close: 'Zamknij',
   },
   world: {
     unavailable:

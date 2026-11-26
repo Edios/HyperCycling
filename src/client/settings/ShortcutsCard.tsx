@@ -14,12 +14,13 @@ export function ShortcutsCard() {
       <p className={settingsStyles.note}>{t('shortcuts.hint')}</p>
       <ul className={styles.list}>
         {TRAINING_SHORTCUTS.map((s) => (
-          <li key={s.code} className={styles.row}>
+          <li key={s.action} className={styles.row}>
             <kbd className={styles.key}>{s.keys}</kbd>
             <span>{t(s.labelKey)}</span>
           </li>
         ))}
       </ul>
+      <p className={settingsStyles.note}>{t('shortcuts.remotes')}</p>
     </section>
   );
 }

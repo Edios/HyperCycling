@@ -78,6 +78,8 @@ import { CoachOverlay } from './hud/CoachOverlay';
 import { Countdown } from './hud/Countdown';
 import { EdgeFlash } from './hud/EdgeFlash';
 import { bindTrainingKeys } from './keyboard';
+import { bindMediaSession, browserMediaSession } from './media-session';
+import { ShortcutsHelp } from './ShortcutsHelp';
 import { useLastResult, type LastResult } from './last-result';
 import { BasicPlayers } from './layouts/BasicPlayers';
 import { BasicSolo } from './layouts/BasicSolo';
@@ -251,7 +253,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     },
     [updateSettings],
   );
-  useMusicDirector(runtime, onMusicWarning, {
+  const music = useMusicDirector(runtime, onMusicWarning, {
     volume: musicAudible ? 1 : 0,
     onPlaying: setNowPlaying,
     getPlayerSlot: () => playerSlot.current,
@@ -740,8 +742,20 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     );
   };
 
+  // ± the trainer's load from the keys and remotes: only while the ±5 % buttons show (ERG on).
+  const ergStatus = ergSnap?.status;
+  const ergEnabled = ergSnap?.enabled === true;
+  const nudgeOk =
+    trainerHud !== undefined &&
+    ergEnabled &&
+    ergStatus !== 'unsupported' &&
+    ergStatus !== 'blocked' &&
+    ergStatus !== 'ftpInvalid';
+  const [helpOpen, setHelpOpen] = useState(false);
+  const skipSong = music.skip;
+
   useEffect(() => {
-    if (confirmEnd) return;
+    if (confirmEnd || helpOpen) return;
     const store = useSessionStore.getState;
     return bindTrainingKeys(window, {
       toggle,
@@ -751,10 +765,42 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       cycleLayout,
       fullscreen: toggleFullscreen,
       mute: () => store().toggleMute(),
+      nextSong: () => void skipSong(),
+      ...(nudgeOk && erg ? { harder: () => erg.nudge(1), easier: () => erg.nudge(-1) } : {}),
+      help: () => setHelpOpen(true),
       // Esc closes the quick settings first; with nothing open it asks how to leave.
       escape: quickOpen ? () => setQuickOpen(false) : openEnd,
     });
-  }, [confirmEnd, quickOpen, toggle, togglePlayers, cycleLayout, toggleFullscreen, openEnd]);
+  }, [
+    confirmEnd,
+    helpOpen,
+    quickOpen,
+    toggle,
+    togglePlayers,
+    cycleLayout,
+    toggleFullscreen,
+    openEnd,
+    skipSong,
+    nudgeOk,
+    erg,
+  ]);
+
+  // Bluetooth remotes, headphone buttons and the system media controls (Media Session API).
+  const hasMusic = runtime.config.music;
+  useEffect(
+    () =>
+      bindMediaSession(browserMediaSession(), {
+        play: () => {
+          const st = useSessionStore.getState().state.status;
+          if (st === 'idle' || st === 'paused') toggle();
+        },
+        pause: () => {
+          if (useSessionStore.getState().state.status === 'running') toggle();
+        },
+        nextSong: hasMusic ? () => void skipSong() : undefined,
+      }),
+    [toggle, skipSong, hasMusic],
+  );
 
   if (!view) return null;
 
@@ -1097,6 +1143,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         />
       )}
       {dataRouter && <LeaveGuard shouldBlock={shouldBlockNav} onBlocked={onNavBlocked} />}
+      {helpOpen && !confirmEnd && <ShortcutsHelp onClose={() => setHelpOpen(false)} />}
       {confirmEnd && (
         <EndDialog
           onResume={resumeFromDialog}

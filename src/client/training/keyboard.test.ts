@@ -142,14 +142,102 @@ describe('TRAINING_SHORTCUTS', () => {
       fullscreen: () => calls.push('fullscreen'),
       mute: () => calls.push('mute'),
       escape: () => calls.push('escape'),
+      nextSong: () => calls.push('nextSong'),
+      harder: () => calls.push('harder'),
+      easier: () => calls.push('easier'),
+      help: () => calls.push('help'),
     };
     const unbind = bindTrainingKeys(window, actions);
     for (const s of TRAINING_SHORTCUTS) {
-      calls.length = 0;
-      press(s.code);
-      expect(calls, s.code).toEqual([s.action]);
+      for (const code of s.codes) {
+        calls.length = 0;
+        press(code);
+        expect(calls, code).toEqual([s.action]);
+      }
+      for (const key of s.chars ?? []) {
+        calls.length = 0;
+        press('Unidentified', { key });
+        expect(calls, key).toEqual([s.action]);
+      }
     }
     unbind();
-    expect(TRAINING_SHORTCUTS.length).toBe(8);
+    expect(TRAINING_SHORTCUTS.length).toBe(12);
+  });
+});
+
+describe('ride remotes and media keys', () => {
+  function bind(extra: Partial<TrainingKeyActions> = {}) {
+    const actions: TrainingKeyActions = {
+      toggle: vi.fn(),
+      prev: vi.fn(),
+      next: vi.fn(),
+      togglePlayers: vi.fn(),
+      fullscreen: vi.fn(),
+      mute: vi.fn(),
+      escape: vi.fn(),
+      nextSong: vi.fn(),
+      harder: vi.fn(),
+      easier: vi.fn(),
+      help: vi.fn(),
+      ...extra,
+    };
+    return { actions, unbind: bindTrainingKeys(window, actions) };
+  }
+
+  it('play/pause, next song and the trainer load from keys, media keys and remotes', () => {
+    const { actions, unbind } = bind();
+    press('MediaPlayPause', { key: 'MediaPlayPause' });
+    press('MediaTrackNext', { key: 'MediaTrackNext' });
+    press('KeyN', { key: 'n' });
+    press('ArrowUp');
+    press('Equal', { key: '+', shiftKey: true });
+    press('NumpadAdd', { key: '+' });
+    press('ArrowDown');
+    press('Minus', { key: '-' });
+    press('NumpadSubtract', { key: '-' });
+    expect(actions.toggle).toHaveBeenCalledTimes(1);
+    expect(actions.nextSong).toHaveBeenCalledTimes(2);
+    expect(actions.harder).toHaveBeenCalledTimes(3);
+    expect(actions.easier).toHaveBeenCalledTimes(3);
+    unbind();
+  });
+
+  it('"?" opens the help, on any layout (by the character typed)', () => {
+    const { actions, unbind } = bind();
+    press('Slash', { key: '?', shiftKey: true });
+    press('Comma', { key: '?', shiftKey: true }); // another keyboard layout
+    expect(actions.help).toHaveBeenCalledTimes(2);
+    // "/" alone is not "?".
+    press('Slash', { key: '/' });
+    expect(actions.help).toHaveBeenCalledTimes(2);
+    unbind();
+  });
+
+  it('keeps typing in a field to the field', () => {
+    const { actions, unbind } = bind();
+    const input = document.createElement('input');
+    document.body.append(input);
+    for (const [code, key] of [
+      ['KeyN', 'n'],
+      ['Minus', '-'],
+      ['Slash', '?'],
+      ['ArrowUp', 'ArrowUp'],
+    ] as const) {
+      input.dispatchEvent(new KeyboardEvent('keydown', { code, key, bubbles: true }));
+    }
+    expect(actions.nextSong).not.toHaveBeenCalled();
+    expect(actions.easier).not.toHaveBeenCalled();
+    expect(actions.help).not.toHaveBeenCalled();
+    expect(actions.harder).not.toHaveBeenCalled();
+    input.remove();
+    unbind();
+  });
+
+  it('lists every key once, and no key does two things', () => {
+    const codes = TRAINING_SHORTCUTS.flatMap((s) => s.codes);
+    expect(new Set(codes).size).toBe(codes.length);
+    for (const code of ['MediaPlayPause', 'MediaTrackNext', 'KeyN', 'ArrowUp', 'ArrowDown']) {
+      expect(codes).toContain(code);
+    }
   });
 });

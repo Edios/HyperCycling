@@ -1169,3 +1169,34 @@ describe('music director: a recording that ends before the planned end (ENDED)',
     expect(warnings.map((w) => w.id)).toEqual(['A']);
   });
 });
+
+describe('music director: next song (the rider skips)', () => {
+  const queued: MusicCue = {
+    blockId: 'b',
+    rep: 1,
+    track: track('Q1', 'spotify', 120),
+    queue: [track('Q2', 'spotify', 100)],
+  };
+
+  it('ends the song now: the next one of the queue starts from its beginning', async () => {
+    const d = make({ cues: [queued], fallback: [track('F')] });
+    d.start();
+    await runAt(130);
+    expect(spotify.log).toEqual(['play:Q1@30']);
+    expect(d.skip()).toBe(true);
+    await advance(1500);
+    expect(spotify.log.filter((l) => l.startsWith('play:'))).toEqual(['play:Q1@30', 'play:Q2@0']);
+    // The rest of the slot moved up: after Q2 the fallback fills the time to the next cue.
+    await runAt(230);
+    await advance(1500);
+    expect(spotify.log.filter((l) => l.startsWith('play:'))).toContain('play:F@0');
+  });
+
+  it('skips nothing when nothing plays, or the song ends within 2 s anyway', async () => {
+    const d = make({ cues: [queued] });
+    d.start();
+    expect(d.skip()).toBe(false); // idle
+    await runAt(218.5);
+    expect(d.skip()).toBe(false);
+  });
+});
