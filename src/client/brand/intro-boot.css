@@ -3,7 +3,28 @@
  * data-intro on <html>. Everything is CSS animation of transform/opacity (compositor, no JS per
  * frame) and the overlay removes itself from view at the end, so it needs no script to finish.
  * Timings: src/client/brand/intro-timeline.ts (INTRO_TIMING); 1.25 s + 0.25 s fade = 1.5 s.
+ *
+ * The still logo (#boot-logo in #root): on a visit without the intro, the page shows it instead of
+ * the fallback text for crawlers (.boot-seo) until React replaces #root. public/intro-boot.js sets
+ * data-boot on <html> whenever it runs, so without JavaScript the text stays. No animation, no
+ * minimum time: it lasts exactly as long as React takes to start.
  */
+#boot-logo {
+  display: none;
+}
+
+html[data-boot] #root > .boot-seo {
+  display: none;
+}
+
+html[data-boot] #boot-logo {
+  --u: calc(min(100vw, 100vh * 16 / 9) / 1280);
+  display: grid;
+  position: fixed;
+  inset: 0;
+  place-items: center;
+  background: #0b0e13;
+}
 #boot-intro {
   --u: calc(min(100vw, 100vh * 16 / 9) / 1280);
   display: none;
@@ -19,14 +40,16 @@ html[data-intro] #boot-intro {
   display: grid;
 }
 
-#boot-intro .row {
+#boot-intro .row,
+#boot-logo .row {
   display: flex;
   align-items: center;
   gap: calc(var(--u) * 64);
   transform: translateY(calc(var(--u) * -20));
 }
 
-#boot-intro .mark {
+#boot-intro .mark,
+#boot-logo .mark {
   width: calc(var(--u) * 360);
   height: calc(var(--u) * 360);
   overflow: visible;
@@ -39,7 +62,8 @@ html[data-intro] #boot-intro {
   will-change: transform, opacity;
 }
 
-#boot-intro .name {
+#boot-intro .name,
+#boot-logo .name {
   display: flex;
   flex-direction: column;
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
@@ -50,12 +74,14 @@ html[data-intro] #boot-intro {
   letter-spacing: 0.03em;
 }
 
-#boot-intro .w1 {
+#boot-intro .w1,
+#boot-logo .w1 {
   font-weight: 600;
   color: var(--mut, #9aa3b2);
 }
 
-#boot-intro .w2 {
+#boot-intro .w2,
+#boot-logo .w2 {
   font-weight: 800;
   color: var(--fg, #e8ecf2);
 }

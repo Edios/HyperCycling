@@ -51,20 +51,29 @@
       <span class="hint"></span>
     </div>
     <div id="root">
-      <!-- Fallback content for crawlers and no-JS: React replaces it on start. -->
-      <h1>HyperCycling</h1>
-      <p>
-        Indoor cycling workouts guided by a 1-10 effort scale, timed to your own Spotify or YouTube
-        music. Free, runs in your browser, no account. Turn on JavaScript to ride.
-      </p>
-      <p>
-        Dane o tempie utworów:
-        <a href="https://getsongbpm.com" target="_blank" rel="noopener">GetSongBPM</a>
-      </p>
-      <p>
-        Open source (AGPL-3.0):
-        <a href="https://github.com/Edios/HyperCycling" target="_blank" rel="noopener">GitHub</a>
-      </p>
+      <!-- Until React starts (it replaces all of #root): the still logo while public/intro-boot.js
+           runs, the text below for crawlers and without JavaScript (src/client/brand/intro-boot.css). -->
+      <div id="boot-logo" aria-hidden="true">
+        <div class="row">
+          <svg class="mark" viewBox="0 0 100 100" focusable="false"><!--INTRO_TICKS--></svg>
+          <div class="name"><span class="w1">Hyper</span><span class="w2">Cycling</span></div>
+        </div>
+      </div>
+      <div class="boot-seo">
+        <h1>HyperCycling</h1>
+        <p>
+          Indoor cycling workouts guided by a 1-10 effort scale, timed to your own Spotify or
+          YouTube music. Free, runs in your browser, no account. Turn on JavaScript to ride.
+        </p>
+        <p>
+          Dane o tempie utworów:
+          <a href="https://getsongbpm.com" target="_blank" rel="noopener">GetSongBPM</a>
+        </p>
+        <p>
+          Open source (AGPL-3.0):
+          <a href="https://github.com/Edios/HyperCycling" target="_blank" rel="noopener">GitHub</a>
+        </p>
+      </div>
     </div>
     <script type="module" src="/src/client/main.tsx"></script>
   </body>
