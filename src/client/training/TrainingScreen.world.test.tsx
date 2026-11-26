@@ -6,6 +6,7 @@ import { flattenWorkout } from '../../domain/segments';
 import { DEFAULT_SETTINGS, type Settings, type SessionConfig } from '../../domain/settings';
 import type { Workout } from '../../domain/workout';
 import { resetSettingsForTests } from '../data/useSettings';
+import { readDiagScene } from '../diagnostics/scene';
 import { useLastResult } from './last-result';
 import {
   configureSessionSideEffects,
@@ -67,7 +68,7 @@ function load(hud: SessionConfig['hud'], withPlayers = false): void {
 }
 
 async function renderScreen() {
-  render(
+  const view = render(
     <MemoryRouter initialEntries={['/train']}>
       <Routes>
         <Route path="/train" element={<TrainingScreen />} />
@@ -77,6 +78,7 @@ async function renderScreen() {
     </MemoryRouter>,
   );
   await screen.findByTestId('training-screen');
+  return view;
 }
 
 function key(code: string): void {
@@ -293,20 +295,20 @@ describe('overlay layout rules', () => {
 });
 
 describe('diagnostics and automatic quality', () => {
-  it('shows no overlay unless diagnostics mode is on', async () => {
+  // The overlay itself is global (GlobalDiagnostics in Root); the screen only tells it the scene.
+  it('publishes no scene unless diagnostics mode is on', async () => {
     load('immersive');
     await renderScreen();
-    expect(screen.queryByTestId('diagnostics-overlay')).toBeNull();
+    expect(readDiagScene()).toBeNull();
   });
 
-  it('shows the hidden overlay with the effective quality when diagnostics is on', async () => {
+  it('publishes the scene with the effective quality when diagnostics is on', async () => {
     stored = { ...DEFAULT_SETTINGS, diagnostics: true, hyperrideQuality: 'low' };
     load('immersive');
-    await renderScreen();
-    const overlay = screen.getByTestId('diagnostics-overlay');
-    expect(overlay).toHaveAttribute('aria-hidden', 'true');
-    expect(overlay).toHaveTextContent('low');
-    expect(overlay).toHaveTextContent('World / neon-tunnel');
+    const { unmount } = await renderScreen();
+    expect(readDiagScene()).toEqual({ scene: 'World / neon-tunnel', quality: 'low' });
+    unmount();
+    expect(readDiagScene()).toBeNull();
   });
 
   it('passes automatic quality through and toasts once when it lowers', async () => {
@@ -314,9 +316,9 @@ describe('diagnostics and automatic quality', () => {
     load('immersive');
     await renderScreen();
     expect(lastCanvas().quality).toBe('auto');
-    expect(screen.getByTestId('diagnostics-overlay')).toHaveTextContent('high');
+    expect(readDiagScene()?.quality).toBe('high');
     act(() => lastCanvas().onAutoLowered?.());
     expect(screen.getByText('Lowered quality for smoothness')).toBeInTheDocument();
-    expect(screen.getByTestId('diagnostics-overlay')).toHaveTextContent('low');
+    expect(readDiagScene()?.quality).toBe('low');
   });
 });

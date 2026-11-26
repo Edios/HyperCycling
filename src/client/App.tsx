@@ -1,5 +1,6 @@
 import { createHashRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
 import { Intro } from './brand/Intro';
+import { GlobalDiagnostics } from './diagnostics/GlobalDiagnostics';
 import { EditorScreen } from './editor/EditorScreen';
 import { ExperiencePicker } from './experience/ExperiencePicker';
 import { HowItWorks } from './guide/HowItWorks';
@@ -36,6 +37,7 @@ function Root() {
       <ResumePrompt />
       <KnobPrompt />
       <Outlet />
+      <GlobalDiagnostics />
     </>
   );
 }

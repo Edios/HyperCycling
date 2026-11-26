@@ -1,18 +1,72 @@
 /* Corner readout: small, quiet, never over the main numbers (they sit in the centre and bottom). */
-.overlay {
+.root {
   position: fixed;
-  top: 0;
-  left: 0.8vh;
-  z-index: 20;
+  top: env(safe-area-inset-top, 0px);
+  left: calc(env(safe-area-inset-left, 0px) + 0.8vh);
+  /* Above the HUD and quick settings, under dialogs and toasts (60). */
+  z-index: 59;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.overlay {
   padding: 0.2vh 0.8vh;
   border-radius: 0.5vh;
   background: color-mix(in srgb, var(--bg) 55%, transparent);
   color: var(--mut);
   font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
-  font-size: max(11px, 1.35vh);
+  font-size: max(12px, 1.35vh);
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  pointer-events: none;
   user-select: none;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.more,
+.item {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--mut) 40%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  color: var(--fg);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.more {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.more:focus-visible,
+.item:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+
+/* Phones: the readout wraps instead of pushing the menu button off the screen. */
+@media (max-width: 640px) {
+  .overlay {
+    max-width: calc(100vw - 72px);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 }
