@@ -19,11 +19,36 @@ vi.mock('../data/repositories', () => ({
     }),
 }));
 
+// The catalog the panel loads itself when it was given none yet (the check at save).
+const shelf = vi.hoisted(() => ({ tracks: [] as unknown[] }));
+vi.mock('../data/soundtrack-catalog', () => ({
+  loadSoundtrackCatalog: () => Promise.resolve(shelf.tracks),
+}));
+
+import type { CatalogTrack } from '../../domain/soundtrack-catalog';
 import { setLang } from '../i18n';
 import { OwnTracksPanel, parseLength } from './OwnTracksPanel';
-import { resetOwnTracksForTests } from './own-tracks';
+import { resetOwnTracksForTests, useOwnTracks } from './own-tracks';
+
+const CATALOG: CatalogTrack[] = [
+  {
+    id: 'band-hit',
+    artist: 'Band',
+    title: 'Hit',
+    bpm: 128,
+    durationSec: 200,
+    youtube: [{ id: 'catalog0001' }],
+    categories: ['rock'],
+    roles: ['steady'],
+    energy: 3,
+    beat: 'steady',
+    clean: true,
+    verified: '2026-11-01',
+  },
+];
 
 beforeEach(() => {
+  shelf.tracks = [];
   db.records.clear();
   resetOwnTracksForTests();
   setLang('en');
@@ -81,23 +106,7 @@ describe('OwnTracksPanel', () => {
   });
 
   it('does not add a video the catalog has, and says where it plays from', async () => {
-    const catalog = [
-      {
-        id: 'band-hit',
-        artist: 'Band',
-        title: 'Hit',
-        bpm: 128,
-        durationSec: 200,
-        youtube: [{ id: 'catalog0001' }],
-        categories: ['rock' as const],
-        roles: ['steady' as const],
-        energy: 3 as const,
-        beat: 'steady' as const,
-        clean: true,
-        verified: '2026-11-01',
-      },
-    ];
-    render(<OwnTracksPanel use={false} onUseChange={() => {}} catalog={catalog} />);
+    render(<OwnTracksPanel use={false} onUseChange={() => {}} catalog={CATALOG} />);
     fireEvent.click(screen.getByRole('button', { name: /My songs/ }));
     fill('soundtrack-own-link', 'https://youtu.be/catalog0001');
     fill('soundtrack-own-title', 'Hit');
@@ -105,6 +114,48 @@ describe('OwnTracksPanel', () => {
     fireEvent.click(screen.getByTestId('soundtrack-own-add'));
     expect(await screen.findByText(/already in the catalog as “Band – Hit”/)).toBeTruthy();
     expect(db.records.size).toBe(0);
+  });
+
+  it('checks the catalog at save when it was not there yet', async () => {
+    shelf.tracks = CATALOG;
+    render(<OwnTracksPanel use={false} onUseChange={() => {}} catalog={[]} />);
+    fireEvent.click(screen.getByRole('button', { name: /My songs/ }));
+    fill('soundtrack-own-link', 'https://youtu.be/catalog0001');
+    fill('soundtrack-own-title', 'Hit');
+    fill('soundtrack-own-bpm', '128');
+    fireEvent.click(screen.getByTestId('soundtrack-own-add'));
+    expect(await screen.findByText(/already in the catalog as “Band – Hit”/)).toBeTruthy();
+    expect(db.records.size).toBe(0);
+  });
+
+  it('marks a song of the list whose video the catalog has (added before the check)', () => {
+    useOwnTracks.setState({
+      loaded: true,
+      tracks: [
+        {
+          id: 'own-catalog0001',
+          schemaVersion: 1,
+          createdAt: '2026-11-20T10:00:00.000Z',
+          youtubeId: 'catalog0001',
+          title: 'Hit (mine)',
+          bpm: 130,
+        },
+        {
+          id: 'own-abcdefghijk',
+          schemaVersion: 1,
+          createdAt: '2026-11-20T10:01:00.000Z',
+          youtubeId: 'abcdefghijk',
+          title: 'Mine only',
+          bpm: 120,
+        },
+      ],
+    });
+    render(<OwnTracksPanel use onUseChange={() => {}} catalog={CATALOG} />);
+    const [dup, mine] = screen.getAllByTestId('soundtrack-own-song');
+    expect(dup?.textContent).toMatch(
+      /In the catalog as “Band – Hit”: it plays from there, not from this list\./,
+    );
+    expect(mine?.textContent).not.toMatch(/In the catalog/);
   });
 
   it('asks for the length when the link starts later, and refuses a start near the end', async () => {
@@ -117,6 +168,10 @@ describe('OwnTracksPanel', () => {
     expect(
       await screen.findByText(/The link starts at 3:20: type the song’s length too/),
     ).toBeTruthy();
+    // A link changed after the error does not change the start the error names.
+    fill('soundtrack-own-link', 'https://youtu.be/abcdefghijk');
+    expect(screen.getByText(/The link starts at 3:20: type the song’s length too/)).toBeTruthy();
+    fill('soundtrack-own-link', 'https://youtu.be/abcdefghijk?t=200');
     fill('soundtrack-own-length', '3:30');
     fireEvent.click(screen.getByTestId('soundtrack-own-add'));
     expect(await screen.findByText(/less than 30 seconds before the end of the song/)).toBeTruthy();

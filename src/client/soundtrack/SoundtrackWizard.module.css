@@ -199,6 +199,13 @@
   margin-right: auto;
 }
 
+.ownNote {
+  flex-basis: 100%;
+  order: 1;
+  color: var(--mut);
+  font-size: max(12px, 0.9375rem);
+}
+
 .ownForm {
   margin-top: 1rem;
   display: grid;
