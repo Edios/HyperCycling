@@ -35,7 +35,7 @@ describe('SuggestedChips', () => {
       'Fast one · A180 BPM · GetSongBPM · fits 2×≈ 85–95 rpm',
       // 3.3% off scores 0.96 now (flat to 3%, then gently down: spec §9 A), above 1:1.
       'Close one186 BPM · typed · fits 2× (close)≈ 88–98 rpm',
-      'Slow one · B90 BPM · Deezer · 1:11:1 ≈ 85–95 rpm',
+      'Slow one · B90 BPM · Deezer · 1:11:1 ≈ 85–96 rpm',
     ]);
     fireEvent.click(chips[0] as HTMLElement);
     expect(onPick).toHaveBeenCalledWith(expect.objectContaining({ id: 'exact', bpm: 180 }));

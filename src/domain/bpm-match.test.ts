@@ -15,6 +15,8 @@ import {
   CADENCE_HINT_MIN,
   GENRES,
   genresForRpm,
+  KIND_TOLERANCE,
+  kindTolerance,
   matchBpm,
   nearestKind,
   parseBpmFromName,
@@ -192,10 +194,10 @@ describe('cadenceHints (a song tempo as rpm)', () => {
     expect(cadenceHints(180)).toEqual([{ kind: 'exact', lo: 85, hi: 95 }]);
   });
 
-  it('adds half time (BPM = RPM) when that cadence is rideable', () => {
+  it('adds half time (BPM = RPM) when that cadence is rideable, in its own window (6.5%)', () => {
     expect(cadenceHints(120)).toEqual([
       { kind: 'exact', lo: 57, hi: 63 },
-      { kind: 'half', lo: 114, hi: 127 },
+      { kind: 'half', lo: 113, hi: 128 },
     ]);
   });
 
@@ -292,6 +294,37 @@ describe('cadenceHints is the exact inverse of matchBpm (review B1)', () => {
     expect(cadenceFit(128, 60)?.verdict).toBe('miss');
     expect(cadenceFit(128, 61)?.verdict).toBe('fit');
     expect(cadenceFit(120, 56)?.verdict).toBe('miss');
+  });
+});
+
+describe('a window of its own for 1:1, 2x and 4x (spec §9 A, R1e-3)', () => {
+  it('gives 2x the full window, 1:1 a little more, 4x less', () => {
+    expect(kindTolerance('exact')).toBeCloseTo(BPM_CLOSE, 10);
+    expect(kindTolerance('half')).toBeCloseTo(0.065, 10);
+    expect(kindTolerance('double')).toBeCloseTo(0.04, 10);
+    expect(kindTolerance('half', BPM_RELAXED)).toBeGreaterThan(BPM_RELAXED);
+    expect(KIND_TOLERANCE.exact).toBe(1);
+  });
+
+  it('matches a 1:1 song 6.3% off, but not a 2x song as far off', () => {
+    expect(matchBpm(84.33, 90)?.kind).toBe('half'); // 90 rpm wants 90 BPM in 1:1: 6.3% off
+    expect(matchBpm(168.66, 90)).toBeUndefined(); // and 180 BPM in 2x: 6.3% off
+  });
+
+  it('matches a 4x song only within 4%', () => {
+    expect(matchBpm(207, 50)?.kind).toBe('double'); // 200 BPM wanted: 3.5% off
+    expect(matchBpm(210, 50)).toBeUndefined(); // 5% off
+  });
+
+  it('keeps the editor hints the exact inverse of the planner in the relaxed window too', () => {
+    for (let bpm = BPM_MIN; bpm <= BPM_MAX; bpm++) {
+      const hints = cadenceHints(bpm, BPM_RELAXED);
+      for (let rpm = CADENCE_HINT_MIN; rpm <= CADENCE_HINT_MAX; rpm++) {
+        const m = matchBpm(bpm, rpm, { tolerance: BPM_RELAXED });
+        const inside = hints.filter((h) => rpm >= h.lo && rpm <= h.hi).map((h) => h.kind);
+        expect(inside.length > 0, `${bpm} BPM at ${rpm} rpm`).toBe(m !== undefined);
+      }
+    }
   });
 });
 

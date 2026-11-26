@@ -54,11 +54,38 @@ export const BPM_CLOSE = 0.06;
 /** Wider window the soundtrack planner may fall back to when a section has too few songs. */
 export const BPM_RELAXED = 0.1;
 
+/**
+ * Share of a window (`BPM_CLOSE`, `BPM_RELAXED` or a caller's) each relation gets (spec §9 A). The
+ * literature's synchronisation window (~2.5-3%, `BPM_ON_BEAT`) is a share of the cadence, so it
+ * does not depend on the relation; what does is how sure a song's tempo is and how well a rider
+ * can follow it:
+ * - 2x (one beat per pedal stroke, the owner's rule): the full window, 6% (10% relaxed).
+ * - 1:1 (one beat per revolution, songs of 80-100 BPM): 6.5% (10.8%). A catalog or tapped tempo is
+ *   a whole BPM, +-1 BPM off, which is ~1.1% of a 90 BPM song but ~0.55% of a 180 BPM one; the
+ *   extra half point keeps a slow song that is really as close as a fast one in the window. On the
+ *   580 rides it lifts the energy fit (84.2% -> 85.2% within one step) and thins the most played
+ *   songs; narrower 1:1 windows left gaps over 30 s and pushed Maanam up (12 -> 41 at 4%).
+ * - 4x (a beat per quarter revolution, 200+ BPM songs at 50-55 rpm): 4% (6.7%). Nobody follows
+ *   four beats a revolution; the song only fits if it is close. No catalog pick uses it today.
+ * The planner (`matchBpm`) and the editor's cadence hints (`cadenceHints`) read the same shares.
+ */
+export const KIND_TOLERANCE: Readonly<Record<MatchKind, number>> = {
+  exact: 1,
+  half: 13 / 12,
+  double: 2 / 3,
+};
+
+/** The window of one relation: `tolerance` (default `BPM_CLOSE`) times its share. */
+export function kindTolerance(kind: MatchKind, tolerance: number = BPM_CLOSE): number {
+  return tolerance * KIND_TOLERANCE[kind];
+}
+
 export interface MatchOptions {
   /**
-   * Widest relative distance that still counts as a match (default `BPM_CLOSE`, 6%; the planner
-   * also uses `BPM_RELAXED`). A match within `BPM_ON_BEAT` (or the tolerance, if smaller) is
-   * 'on-beat'; a deviation past it is 'close', and its score falls along `bpmCurve`.
+   * Widest relative distance that still counts as a match in 2x (default `BPM_CLOSE`, 6%; the
+   * planner also uses `BPM_RELAXED`); 1:1 and 4x get their share of it (`KIND_TOLERANCE`). A
+   * match within `BPM_ON_BEAT` (or the relation's window, if smaller) is 'on-beat'; a deviation
+   * past it is 'close', and its score falls along `bpmCurve`.
    */
   tolerance?: number;
   /**
@@ -89,12 +116,14 @@ export function matchBpm(bpm: number, rpm: number, opts?: MatchOptions): BpmMatc
   if (!validNumber(bpm) || !validNumber(rpm)) return undefined;
   const tol = opts?.tolerance;
   const close = tol !== undefined && Number.isFinite(tol) && tol >= 0 ? tol : BPM_CLOSE;
-  const onBeat = Math.min(BPM_ON_BEAT, close);
   const prefer = opts?.prefer ?? 'exact';
   let best: BpmMatch | undefined;
   for (const target of targetBpms(rpm)) {
+    const window = kindTolerance(target.kind, close);
+    const onBeat = Math.min(BPM_ON_BEAT, window);
     const deviation = Math.abs(bpm - target.bpm) / target.bpm;
-    if (deviation > close) continue;
+    // The same hair of slack as `cadenceHints`: 6% x 2/3 must not lose a song exactly 4% off.
+    if (deviation > window + 1e-9) continue;
     const fit: MatchFit = deviation <= onBeat ? 'on-beat' : 'close';
     const score = bpmCurve(deviation) * (target.kind === prefer ? 1 : KIND_WEIGHT_OTHER);
     if (!best || score > best.score || (score === best.score && deviation < best.deviation)) {
@@ -155,8 +184,9 @@ export interface CadenceHint {
 
 /**
  * The whole rpm a song tempo suits, as the exact inverse of `matchBpm`: a cadence is in the window
- * of a kind when its target tempo (rpm x 2, x 1 or x 4) is within `tolerance` (default `BPM_CLOSE`)
- * of the song's, so lo = ceil(c / (1 + tol)) and hi = floor(c / (1 - tol)) with c = bpm / multiplier.
+ * of a kind when its target tempo (rpm x 2, x 1 or x 4) is within that kind's window of the song's
+ * (`kindTolerance` of `tolerance`, default `BPM_CLOSE`), so lo = ceil(c / (1 + tol)) and
+ * hi = floor(c / (1 - tol)) with c = bpm / multiplier.
  * Windows are cut to the cadences nobody is warned about (50-130 rpm) and to the tempo range
  * `targetBpms` knows; empty ones are left out. Exact first. Empty for an invalid tempo.
  */
@@ -167,14 +197,15 @@ export function cadenceHints(bpm: number, tolerance: number = BPM_CLOSE): Cadenc
   for (const kind of kinds) {
     const mult = MULTIPLIER[kind];
     const centre = bpm / mult;
+    const tol = kindTolerance(kind, tolerance);
     // A hair of slack keeps 1 +- tolerance products from losing a whole cadence to rounding.
     const lo = Math.max(
-      Math.ceil(centre / (1 + tolerance) - 1e-9),
+      Math.ceil(centre / (1 + tol) - 1e-9),
       CADENCE_HINT_MIN,
       Math.ceil(BPM_MIN / mult),
     );
     const hi = Math.min(
-      Math.floor(centre / (1 - tolerance) + 1e-9),
+      Math.floor(centre / (1 - tol) + 1e-9),
       CADENCE_HINT_MAX,
       Math.floor(BPM_MAX / mult),
     );
