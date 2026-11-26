@@ -6,6 +6,7 @@ import { summarizeRide, type RideRecord } from '../domain/ride';
 import type { CollectionRepo, Repositories } from '../domain/repositories';
 import type { ActiveSession, SessionLog } from '../domain/session-log';
 import { DEFAULT_SETTINGS, type SessionConfig, type Settings } from '../domain/settings';
+import type { SongFeedbackRecord } from '../domain/song-feedback';
 import type { OwnTrackRecord } from '../domain/soundtrack-own';
 import type { SoundtrackPlanRecord } from '../domain/soundtrack-store';
 import type { Workout } from '../domain/workout';
@@ -176,6 +177,27 @@ export function ownTrack(id: string, bpm = 128): OwnTrackRecord {
   };
 }
 
+/** A thumb for a song in a ride, stored under `id`. */
+export function feedback(id: string, rating: 'up' | 'down' = 'up'): SongFeedbackRecord {
+  return {
+    id,
+    schemaVersion: 1,
+    updatedAt: '2026-11-26T18:00:00.000Z',
+    rideStartedAt: '2026-11-26T17:40:00.000Z',
+    workoutId: 'w1',
+    track: { provider: 'youtube', id: 'abcdefghijk', title: 'Song' },
+    context: {
+      segmentKind: 'steady',
+      effort: 6,
+      ftpPct: 85,
+      targetRpm: 90,
+      bpm: 176,
+      relation: 'exact',
+    },
+    rating,
+  };
+}
+
 export function bundle(): ExportBundle {
   return {
     app: APP_ID,
@@ -187,6 +209,7 @@ export function bundle(): ExportBundle {
     sessionLogs: [log('l1')],
     soundtrackPlans: [planRecord('w1')],
     ownTracks: [ownTrack('a')],
+    songFeedback: [feedback('f1')],
     settings: settings(),
   };
 }
@@ -255,6 +278,13 @@ const collections: CollectionCase[] = [
     make: (id) => ownTrack(id),
     changed: (id) => ownTrack(id, 90),
     bad: (id) => ({ ...ownTrack(id), bpm: 999 }) as unknown as OwnTrackRecord,
+  },
+  {
+    label: 'songFeedback',
+    repo: (r) => r.songFeedback,
+    make: (id) => feedback(id),
+    changed: (id) => feedback(id, 'down'),
+    bad: (id) => ({ ...feedback(id), rating: 'meh' }) as unknown as SongFeedbackRecord,
   },
 ];
 
@@ -387,6 +417,7 @@ export function runRepositoryContract(name: string, makeRepos: () => Promise<Rep
         for (const l of src.sessionLogs) await repos.sessionLogs.put(l);
         for (const p of src.soundtrackPlans ?? []) await repos.soundtrackPlans.put(p);
         for (const t of src.ownTracks ?? []) await repos.ownTracks.put(t);
+        for (const f of src.songFeedback ?? []) await repos.songFeedback.put(f);
         await repos.settings.put(settings());
         await repos.activeSession.put(active());
         const out = await repos.exportAll();
@@ -504,6 +535,16 @@ export function runRepositoryContract(name: string, makeRepos: () => Promise<Rep
         expect((await repos.ownTracks.list()).map((t) => t.id)).toEqual(['b']);
         const out = await repos.exportAll();
         expect(out.ownTracks).toEqual([ownTrack('b')]);
+      });
+
+      it('keeps the song feedback when a backup has none, replaces it when it has', async () => {
+        await repos.songFeedback.put(feedback('keep'));
+        const old = bundle();
+        delete old.songFeedback;
+        await repos.replaceAll(old);
+        expect((await repos.songFeedback.list()).map((f) => f.id)).toEqual(['keep']);
+        await repos.replaceAll({ ...bundle(), songFeedback: [feedback('b', 'down')] });
+        expect((await repos.exportAll()).songFeedback).toEqual([feedback('b', 'down')]);
       });
 
       it('clears the active session when replacing data', async () => {

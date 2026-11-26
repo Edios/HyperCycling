@@ -1,0 +1,49 @@
+/*
+ * Three small icons (32 px) whose touch targets are 44 x 44 px: the ::before layer reaches 6 px
+ * past each side, and the 12 px gap keeps the neighbours' targets from overlapping. So the icons
+ * can sit in a one-line label without making it taller (see NowPlaying), and a thumb is still
+ * easy to hit during a ride.
+ */
+.rate {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  /* The touch floor (tokens.css) is met by the ::before target, not by the drawn icon. */
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--sub, rgba(255, 255, 255, 0.6));
+  cursor: pointer;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+.btn[aria-pressed='true'] {
+  color: var(--fg, #fff);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--act, #fff);
+  outline-offset: 2px;
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+}

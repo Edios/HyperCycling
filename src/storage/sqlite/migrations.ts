@@ -24,6 +24,10 @@ export const MIGRATIONS: readonly string[] = [
   `
   CREATE TABLE ownTracks (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
   `,
+  // 5: the owner's per-song thumbs during rides (energy matching spec §9 J).
+  `
+  CREATE TABLE songFeedback (id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at TEXT NOT NULL);
+  `,
 ];
 
 export function migrate(db: Database): void {

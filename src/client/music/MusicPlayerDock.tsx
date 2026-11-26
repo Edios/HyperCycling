@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import type { TrackRef } from '../../domain/workout';
 import { useT } from '../i18n';
 import { Icon } from '../ui/Icon';
@@ -15,6 +15,8 @@ export interface MusicPlayerDockProps {
   onHide?: () => void;
   /** Another look for a small screen (the wizard's preview uses the same dock). */
   variant?: 'ride' | 'inline';
+  /** Shown in the caption next to the title (the ride's song thumbs). */
+  extra?: ReactNode;
 }
 
 /**
@@ -30,6 +32,7 @@ export function MusicPlayerDock({
   slotRef,
   onHide,
   variant = 'ride',
+  extra,
 }: MusicPlayerDockProps) {
   const t = useT();
   const visible = shown && track !== null && track.provider === 'youtube';
@@ -48,6 +51,7 @@ export function MusicPlayerDock({
           {track?.title || t('music.unknownTrack')}
           {track?.artist ? <small>{track.artist}</small> : null}
         </span>
+        {visible && extra ? <span className={styles.extra}>{extra}</span> : null}
         {onHide && (
           <button
             type="button"

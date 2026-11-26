@@ -783,6 +783,10 @@ export const pl: Messages = {
   },
   music: {
     nowPlaying: 'Teraz gra',
+    rateLabel: 'Oceń utwór (do strojenia doboru muzyki)',
+    rateUp: 'Pasuje',
+    rateDown: 'Nie pasuje',
+    rateLove: 'Ulubiony',
     nowPlayingMuted: 'wyciszone',
     player: {
       label: 'Odtwarzacz muzyki',

@@ -6,6 +6,7 @@ import type { RideRecord } from '../../domain/ride';
 import type { CollectionRepo, Repositories, SingletonRepo } from '../../domain/repositories';
 import type { ActiveSession, SessionLog } from '../../domain/session-log';
 import type { Settings } from '../../domain/settings';
+import type { SongFeedbackRecord } from '../../domain/song-feedback';
 import type { OwnTrackRecord } from '../../domain/soundtrack-own';
 import type { SoundtrackPlanRecord } from '../../domain/soundtrack-store';
 import type { Workout } from '../../domain/workout';
@@ -14,17 +15,19 @@ import { byId, schemas, validate, validateBundle } from '../validation';
 /**
  * 1: first schema. 2: `rides` store (T6). 3: `soundtrackPlans` store (Soundtrack Match).
  * 4: `ownTracks` store (the rider's own songs, Soundtrack Match PR 6).
+ * 5: `songFeedback` store (the owner's per-song thumbs, energy matching spec §9 J).
  *
  * Upgrades are one way: a browser that opened version 2 cannot be opened by an older build
  * (VersionError). If a change is ever rolled back, never lower this number or remove an upgrade
  * step; ship the rollback as a new, higher version instead. The same holds for the SQLite
  * migrations (an older server refuses a newer database).
  */
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 const COLLECTIONS = ['workouts', 'players', 'planProgress', 'sessionLogs'] as const;
-type CollectionName = (typeof COLLECTIONS)[number] | 'rides' | 'soundtrackPlans' | 'ownTracks';
+type CollectionName =
+  (typeof COLLECTIONS)[number] | 'rides' | 'soundtrackPlans' | 'ownTracks' | 'songFeedback';
 /** Exported, and replaced only when a backup has them. */
-const SHARED = ['soundtrackPlans', 'ownTracks'] as const;
+const SHARED = ['soundtrackPlans', 'ownTracks', 'songFeedback'] as const;
 
 interface TutorDb extends DBSchema {
   workouts: { key: string; value: Workout };
@@ -34,6 +37,7 @@ interface TutorDb extends DBSchema {
   rides: { key: string; value: RideRecord };
   soundtrackPlans: { key: string; value: SoundtrackPlanRecord };
   ownTracks: { key: string; value: OwnTrackRecord };
+  songFeedback: { key: string; value: SongFeedbackRecord };
   singletons: { key: string; value: Settings | ActiveSession };
 }
 
@@ -102,6 +106,7 @@ export async function createIndexedDbRepositories(
       if (oldVersion < 2) d.createObjectStore('rides', { keyPath: 'id' });
       if (oldVersion < 3) d.createObjectStore('soundtrackPlans', { keyPath: 'id' });
       if (oldVersion < 4) d.createObjectStore('ownTracks', { keyPath: 'id' });
+      if (oldVersion < 5) d.createObjectStore('songFeedback', { keyPath: 'id' });
     },
   });
 
@@ -120,6 +125,9 @@ export async function createIndexedDbRepositories(
       validate('soundtrack plan', schemas.soundtrackPlans, v),
     ),
     ownTracks: collection(db, 'ownTracks', (v) => validate('own song', schemas.ownTracks, v)),
+    songFeedback: collection(db, 'songFeedback', (v) =>
+      validate('song feedback', schemas.songFeedback, v),
+    ),
     settings: singleton(db, 'settings', (v) => validate('settings', schemas.settings, v)),
     activeSession: singleton(db, 'activeSession', (v) =>
       validate('active session', schemas.activeSession, v),
@@ -127,16 +135,25 @@ export async function createIndexedDbRepositories(
 
     async exportAll() {
       const tx = db.transaction([...COLLECTIONS, ...SHARED, 'singletons'], 'readonly');
-      const [workouts, players, planProgress, sessionLogs, soundtrackPlans, ownTracks, settings] =
-        await Promise.all([
-          tx.objectStore('workouts').getAll(),
-          tx.objectStore('players').getAll(),
-          tx.objectStore('planProgress').getAll(),
-          tx.objectStore('sessionLogs').getAll(),
-          tx.objectStore('soundtrackPlans').getAll(),
-          tx.objectStore('ownTracks').getAll(),
-          tx.objectStore('singletons').get('settings'),
-        ]);
+      const [
+        workouts,
+        players,
+        planProgress,
+        sessionLogs,
+        soundtrackPlans,
+        ownTracks,
+        songFeedback,
+        settings,
+      ] = await Promise.all([
+        tx.objectStore('workouts').getAll(),
+        tx.objectStore('players').getAll(),
+        tx.objectStore('planProgress').getAll(),
+        tx.objectStore('sessionLogs').getAll(),
+        tx.objectStore('soundtrackPlans').getAll(),
+        tx.objectStore('ownTracks').getAll(),
+        tx.objectStore('songFeedback').getAll(),
+        tx.objectStore('singletons').get('settings'),
+      ]);
       return {
         app: APP_ID,
         schemaVersion: 1,
@@ -147,6 +164,7 @@ export async function createIndexedDbRepositories(
         sessionLogs: sessionLogs.sort(byId),
         soundtrackPlans: soundtrackPlans.sort(byId),
         ownTracks: ownTracks.sort(byId),
+        songFeedback: songFeedback.sort(byId),
         settings: (settings as Settings | undefined) ?? null,
       };
     },
@@ -171,6 +189,11 @@ export async function createIndexedDbRepositories(
           const own = tx.objectStore('ownTracks');
           writes.push(own.clear());
           for (const item of b.ownTracks) writes.push(own.put(item));
+        }
+        if (b.songFeedback) {
+          const fb = tx.objectStore('songFeedback');
+          writes.push(fb.clear());
+          for (const item of b.songFeedback) writes.push(fb.put(item));
         }
         const singletons = tx.objectStore('singletons');
         writes.push(

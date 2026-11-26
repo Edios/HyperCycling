@@ -777,6 +777,10 @@ export const en = {
   },
   music: {
     nowPlaying: 'Now playing',
+    rateLabel: 'Rate this song (for tuning the music match)',
+    rateUp: 'Good fit',
+    rateDown: 'Poor fit',
+    rateLove: 'Favourite',
     nowPlayingMuted: 'muted',
     player: {
       label: 'Music player',

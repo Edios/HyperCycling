@@ -78,6 +78,17 @@
     background: linear-gradient(transparent, rgb(0 0 0 / 0.78));
   }
 
+  /* The extra (the song thumbs) lies over the upper left corner, like the hide button opposite. */
+  .ride .extra {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 6px 10px;
+    background: rgb(0 0 0 / 0.45);
+    border-radius: 0 0 10px 0;
+    color: #fff;
+  }
+
   .ride .hide {
     position: absolute;
     top: 0;
@@ -104,6 +115,7 @@
 
 .bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
   min-height: 44px;
@@ -130,6 +142,14 @@
   color: var(--sub, rgba(255, 255, 255, 0.6));
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* The extra (the ride's song thumbs) gets a row of its own, so the title keeps the caption. */
+.extra {
+  order: 1;
+  flex-basis: 100%;
+  display: flex;
+  padding: 0 0 6px;
 }
 
 .hide {

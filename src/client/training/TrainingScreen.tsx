@@ -68,7 +68,10 @@ import { useLang, useT } from '../i18n';
 import { localizedText } from '../data/localized';
 import { ControlsBar } from './ControlsBar';
 import { EndDialog } from './EndDialog';
+import type { Segment } from '../../domain/segments';
 import { NowPlaying } from './NowPlaying';
+import { RateButtons, type RateTap } from './RateButtons';
+import { clearSongFeedback, rateSong, trackKey, useSongFeedback } from './song-feedback';
 import { QuickSettings } from './QuickSettings';
 import { withLiveChoice, youtubeUrlFor } from './quick-settings';
 import { CoachOverlay } from './hud/CoachOverlay';
@@ -228,6 +231,9 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     [t],
   );
   const [nowPlaying, setNowPlaying] = useState<TrackRef | null>(null);
+  const songFeedback = useSongFeedback((s) => s.byTrack);
+  // A new ride screen starts with no thumbs on screen (the earlier ride's stay on the device).
+  useEffect(() => clearSongFeedback(), []);
   // Beeps, cues and world are per ride (Setup / quick settings); Settings only supplies defaults.
   const soundsOn = runtime.options?.sounds ?? settings.sounds;
   const coachOn = runtime.options?.coach ?? settings.coach;
@@ -268,6 +274,21 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       startedAt.current = new Date().toISOString();
     }
   }, [state.status]);
+  // The owner's song thumbs (spec §9 J): each tap is written with the song's context.
+  const rate = useCallback(
+    (track: TrackRef, segment: Segment, tap: RateTap): void => {
+      void rateSong(
+        {
+          rideStartedAt: startedAt.current ?? new Date().toISOString(),
+          workoutId: runtime.workout.id,
+          track,
+          segment,
+        },
+        tap,
+      );
+    },
+    [runtime.workout.id],
+  );
 
   // The store is emptied only once the screen is gone, so leaving never bounces through "/".
   useEffect(
@@ -739,6 +760,8 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
 
   const status = state.status;
   const hideControls = controlsIdle && status === 'running';
+  // The song thumbs come with the controls, so the HUD stays clean while riding.
+  const rateOn = !hideControls && status !== 'idle';
   const countdownN =
     status === 'countdown' &&
     (state.startCountdown === 3 || state.startCountdown === 2 || state.startCountdown === 1)
@@ -952,7 +975,17 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
         )}
       </ToastStack>
       {runtime.config.music && nowPlaying && (
-        <NowPlaying track={nowPlaying} muted={!musicAudible} />
+        <NowPlaying
+          track={nowPlaying}
+          muted={!musicAudible}
+          // The thumbs come with the controls, so the HUD stays clean while riding.
+          {...(rateOn
+            ? {
+                feedback: songFeedback[trackKey(nowPlaying)],
+                onRate: (tap: RateTap) => rate(nowPlaying, view.segment, tap),
+              }
+            : {})}
+        />
       )}
       {runtime.config.music && (
         <MusicPlayerDock
@@ -960,6 +993,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           shown={playerShown}
           slotRef={playerSlot}
           onHide={() => setPlayerShown(false)}
+          extra={
+            rateOn && nowPlaying ? (
+              <RateButtons
+                feedback={songFeedback[trackKey(nowPlaying)]}
+                onRate={(tap) => rate(nowPlaying, view.segment, tap)}
+              />
+            ) : undefined
+          }
         />
       )}
       {settings.diagnostics === true && (

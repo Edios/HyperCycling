@@ -95,6 +95,7 @@ describe('sqlite migrations and persistence', () => {
         'rides',
         'soundtrackPlans',
         'ownTracks',
+        'songFeedback',
       ]),
     );
   });

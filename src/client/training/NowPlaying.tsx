@@ -3,20 +3,23 @@ import { useT } from '../i18n';
 import hud from './hud/hud.module.css';
 import styles from './NowPlaying.module.css';
 import { Icon } from '../ui/Icon';
+import { RateButtons, type RateTap } from './RateButtons';
 
 export interface NowPlayingProps {
   track: TrackRef;
   muted: boolean;
+  /** The owner's thumbs for this song (spec §9 J); the buttons show only with `onRate`. */
+  feedback?: { rating?: 'up' | 'down'; love?: true } | undefined;
+  onRate?: ((tap: RateTap) => void) | undefined;
 }
 
-/** Group S: small label with the track that plays right now (title and artist when known). */
-export function NowPlaying({ track, muted }: NowPlayingProps) {
+export function NowPlaying({ track, muted, feedback, onRate }: NowPlayingProps) {
   const t = useT();
   const provider = track.provider === 'spotify' ? 'Spotify' : 'YouTube';
   const title = track.title || t('music.unknownTrack');
   return (
     <div
-      className={`${hud.panel} ${styles.root}`}
+      className={`${hud.panel} ${styles.root}${onRate ? ` ${styles.rated}` : ''}`}
       data-g="S"
       data-testid="now-playing"
       data-provider={track.provider}
@@ -48,6 +51,7 @@ export function NowPlaying({ track, muted }: NowPlayingProps) {
           {muted ? ` · ${t('music.nowPlayingMuted')}` : ''}
         </span>
       </span>
+      {onRate && <RateButtons className={styles.rate} feedback={feedback} onRate={onRate} />}
     </div>
   );
 }
