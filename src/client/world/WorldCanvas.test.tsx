@@ -378,6 +378,37 @@ describe('WorldCanvas', () => {
     });
   });
 
+  it('stays on Basic after too many restarts in a short time, and says why', async () => {
+    mockWebgl();
+    const onUnavailable = vi.fn();
+    const { getByTestId } = render(
+      <WorldCanvas
+        getFrameInput={() => input}
+        quality="high"
+        onUnavailable={onUnavailable}
+        retryDelaysMs={[]}
+        restartLimit={{ max: 2, windowMs: 60_000 }}
+      />,
+    );
+    // A context lost and given back again and again (a sick driver): two restarts, then Basic.
+    for (let n = 1; n <= 2; n++) {
+      await waitFor(() => expect(fake.log.renderers).toHaveLength(n));
+      const c = getByTestId('world-canvas');
+      c.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+      c.dispatchEvent(new Event('webglcontextrestored'));
+    }
+    await waitFor(() => expect(fake.log.renderers).toHaveLength(3));
+    const c = getByTestId('world-canvas');
+    c.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    c.dispatchEvent(new Event('webglcontextrestored'));
+    await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
+    expect(fake.log.renderers).toHaveLength(3);
+    expect(readWebglEvents().at(-1)).toMatchObject({
+      kind: 'gave-up',
+      reason: 'too many restarts (3 in 60 s): context restored',
+    });
+  });
+
   it('logs every refused try with its reason, for the diagnostics report', async () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     render(

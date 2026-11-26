@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Player } from '../../domain/player';
@@ -250,6 +250,18 @@ describe('overlay layouts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(screen.getByTestId('world-canvas')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+  });
+
+  it('keeps "Try again" in the quick settings after the notice is gone', async () => {
+    load('immersive');
+    await renderScreen();
+    act(() => lastCanvas().onUnavailable?.());
+    expect(screen.queryByTestId('world-canvas')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Quick settings' }));
+    const panel = screen.getByTestId('quick-settings');
+    expect(panel).toHaveTextContent('The 3D background did not start');
+    fireEvent.click(within(panel).getByRole('button', { name: 'Try 3D again' }));
+    expect(screen.getByTestId('world-canvas')).toBeInTheDocument();
   });
 
   it('does not sway when effects are off', async () => {

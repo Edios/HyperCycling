@@ -1040,6 +1040,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           {...(runtime.config.music
             ? { musicPlayer: playerShown, onMusicPlayer: setPlayerShown }
             : {})}
+          {...(wantsWorld && worldFailed
+            ? {
+                onRetryWorld: () => {
+                  setWorldFailed(false);
+                  setUnavailableDismissed(false);
+                },
+              }
+            : {})}
           onBackground={changeBackground}
           onLayout={changeLayout}
           onSounds={(on) => useSessionStore.getState().setOptions({ sounds: on })}

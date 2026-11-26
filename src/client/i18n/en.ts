@@ -1384,6 +1384,8 @@ export const en = {
     unavailable:
       'The 3D background (WebGL) did not start, so Basic is shown. The browser may have turned it off after a graphics error; trying again or restarting the browser helps.',
     retry: 'Try again',
+    failedHint: 'The 3D background did not start in this ride.',
+    retryWorld: 'Try 3D again',
     neonTunnel: 'Neon tunnel',
     road: 'Road',
     scenes: 'Scenes',

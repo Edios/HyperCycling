@@ -115,3 +115,15 @@
     transform: translateY(0.5rem);
   }
 }
+
+.retry {
+  min-height: 44px;
+  margin-top: 0.25rem;
+  padding: 0 0.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}

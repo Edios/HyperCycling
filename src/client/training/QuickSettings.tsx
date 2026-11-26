@@ -35,6 +35,8 @@ export interface QuickSettingsProps {
   /** The music player on screen (YouTube's terms); only offered when the ride has music. */
   musicPlayer?: boolean;
   onMusicPlayer?: (on: boolean) => void;
+  /** The 3D background failed in this ride: offered to try it again (after the notice is gone). */
+  onRetryWorld?: () => void;
   onBackground(b: Background): void;
   onLayout(l: LayoutKind): void;
   onRiders(on: boolean): void;
@@ -153,6 +155,14 @@ export function QuickSettings(p: QuickSettingsProps) {
         }))}
         onChange={p.onBackground}
       />
+      {p.onRetryWorld && (
+        <p className={styles.hint} data-testid="quick-world-failed">
+          {t('world.failedHint')}{' '}
+          <button type="button" className={styles.retry} onClick={p.onRetryWorld}>
+            {t('world.retryWorld')}
+          </button>
+        </p>
+      )}
       {!p.youtubeAvailable && p.background !== 'youtube' && (
         <p className={styles.hint} data-testid="quick-youtube-hint">
           {t('training.quickYoutubeNone')}

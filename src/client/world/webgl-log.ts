@@ -28,12 +28,19 @@ export function logWebglEvent(kind: WebglEventKind, reason?: string, at = Date.n
 
 export const readWebglEvents = (): readonly WebglEvent[] => events;
 
-/** One line per event ("12:03:04 probe-failed: getContext returned null"); empty when none. */
+const two = (n: number): string => String(n).padStart(2, '0');
+
+/**
+ * One line per event, the rider's local time first and UTC next to it
+ * ("13:03:04 (12:03:04 UTC) probe-failed: getContext returned null"); empty when none.
+ */
 export function webglLogText(list: readonly WebglEvent[] = events): string {
   return list
     .map((e) => {
-      const time = new Date(e.at).toISOString().slice(11, 19);
-      return `${time} ${e.kind}${e.reason ? `: ${e.reason}` : ''}`;
+      const d = new Date(e.at);
+      const local = `${two(d.getHours())}:${two(d.getMinutes())}:${two(d.getSeconds())}`;
+      const utc = d.toISOString().slice(11, 19);
+      return `${local} (${utc} UTC) ${e.kind}${e.reason ? `: ${e.reason}` : ''}`;
     })
     .join('\n');
 }
