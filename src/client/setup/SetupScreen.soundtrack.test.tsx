@@ -69,6 +69,12 @@ function renderSetup(id = workout.id) {
   );
 }
 
+/** The ride's music on (a plan read from the device leaves it as the last ride had it). */
+function musicOnInThisRide(): void {
+  const sw = screen.getByRole('switch', { name: 'Music in this ride' });
+  if (!(sw as HTMLInputElement).checked) fireEvent.click(sw);
+}
+
 beforeEach(() => {
   localStorage.setItem('hypercycling.setup.advanced', '1');
   db.settings = { ...DEFAULT_SETTINGS };
@@ -136,6 +142,7 @@ describe('the ride setup with matched music', () => {
     renderSetup();
     const row = await screen.findByTestId('setup-soundtrack');
     await waitFor(() => expect(row).toHaveAttribute('data-state', 'ready'));
+    musicOnInThisRide();
     const order = within(row).getByRole('radiogroup', { name: 'Song order' });
     expect(within(order).getByRole('radio', { name: 'Last order' })).toBeChecked();
     expect(row).toHaveTextContent('The saved order of songs plays again.');
@@ -158,6 +165,20 @@ describe('the ride setup with matched music', () => {
     fireEvent.click(within(order).getByRole('radio', { name: 'Last order' }));
     await waitFor(() => expect(ids()).toEqual(savedIds));
     expect(within(row).queryByRole('button', { name: 'Draw another' })).not.toBeInTheDocument();
+  });
+
+  it('offers no song order choice while the music of this ride is off', async () => {
+    const plan = planSoundtrack(workout, catalog, { ...DEFAULT_SOUNDTRACK_PREFS, seed: 4 });
+    db.saved.set(workout.id, planRecord(plan, new Date('2026-11-23T09:00:00.000Z')));
+    renderSetup();
+    const row = await screen.findByTestId('setup-soundtrack');
+    await waitFor(() => expect(row).toHaveAttribute('data-state', 'ready'));
+    musicOnInThisRide();
+    expect(within(row).getByRole('radiogroup', { name: 'Song order' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('switch', { name: 'Music in this ride' }));
+    await waitFor(() =>
+      expect(within(row).queryByRole('radiogroup', { name: 'Song order' })).not.toBeInTheDocument(),
+    );
   });
 
   it('offers no song order choice for music not saved on this device', async () => {

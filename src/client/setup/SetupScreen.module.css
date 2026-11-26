@@ -240,8 +240,18 @@
 }
 
 .matchOrder > button {
-  height: 2.75rem;
+  height: auto;
+  min-height: max(44px, 2.75rem);
   padding: 0 1rem;
+}
+
+/* The choice keeps its words on one line (a phone held sideways squeezed it to 64 px). */
+.orderSeg {
+  flex: none;
+}
+
+.orderSeg label {
+  white-space: nowrap;
 }
 
 .matchActions {
