@@ -7,6 +7,7 @@ import type { CatalogTrack, TrackRole } from './soundtrack-catalog';
 import {
   buildQueue,
   DEFAULT_SOUNDTRACK_PREFS,
+  fitWeights,
   MAX_PICKS,
   planSoundtrack,
   preferredKindAt,
@@ -14,6 +15,7 @@ import {
   scoreTrack,
   shuffleValue,
   soundtrackFingerprint,
+  WEIGHTS,
   type Candidate,
   type PlanPick,
   type SoundtrackPlan,
@@ -877,5 +879,29 @@ describe('preferredKindAt (the editor judges songs by the planner rule)', () => 
       verdict: 'fit',
       kind: 'exact',
     });
+  });
+});
+
+describe('in intervals and at the peak the energy outweighs the tempo (spec §9 A, R1e-3)', () => {
+  // On the beat but one step calmer, against the right energy 5.6% off the beat (190 BPM at 90 rpm).
+  const onBeat = song('onbeat', { bpm: 180, energy: 4, roles: ['intervals'] });
+  const energetic = song('energetic', { bpm: 190, energy: 5, roles: ['intervals'] });
+  const scoreIn = (t: CatalogTrack, s: MusicSection) => scoreTrack(t, s)!.score;
+
+  it('shifts weight from the tempo to the energy in intervals and peaks only', () => {
+    const steady = fitWeights(section());
+    expect(steady).toEqual({ bpm: WEIGHTS.bpm, energy: WEIGHTS.energy });
+    for (const s of [section({ role: 'peak' }), section({ profile: 'intervals', role: 'hard' })]) {
+      const w = fitWeights(s);
+      expect(w.energy).toBeGreaterThan(WEIGHTS.energy);
+      expect(w.bpm + w.energy).toBeCloseTo(WEIGHTS.bpm + WEIGHTS.energy, 10);
+    }
+  });
+
+  it('prefers the energetic song at the peak, the on-beat one in a long hard part', () => {
+    const peak = section({ role: 'peak', energy: 5, workEffort: 9 });
+    const hard = section({ role: 'hard', energy: 5, workEffort: 8 });
+    expect(scoreIn(energetic, peak)).toBeGreaterThan(scoreIn(onBeat, peak));
+    expect(scoreIn(onBeat, hard)).toBeGreaterThan(scoreIn(energetic, hard));
   });
 });

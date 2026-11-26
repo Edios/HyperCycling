@@ -183,6 +183,23 @@ export const WEIGHTS = {
 } as const;
 
 /**
+ * In short hard intervals and at the peak the song's energy counts more than its tempo (spec §9 A,
+ * D): the work phases are too short to lock the cadence to the beat (literature #10, #13), while
+ * energetic music lifts power from the first repetition. A soft shift of `DRIVE_SHIFT` from the
+ * tempo to the energy weight; the sum stays 1.
+ */
+export const DRIVE_SHIFT = 0.1;
+
+/** Tempo and energy weights of a part: `WEIGHTS`, shifted towards energy in intervals and peaks. */
+export function fitWeights(s: Pick<MusicSection, 'profile' | 'role'>): {
+  bpm: number;
+  energy: number;
+} {
+  const drive = s.profile === 'intervals' || s.role === 'peak' ? DRIVE_SHIFT : 0;
+  return { bpm: WEIGHTS.bpm - drive, energy: WEIGHTS.energy + drive };
+}
+
+/**
  * Added to an own song's score (PR 6): the rider picked it, so where it fits as well as a catalog
  * song it wins. It never makes a song fit that does not (the hard rules and the tempo stay).
  */
@@ -479,13 +496,14 @@ export function scoreTrack(
       ? BAND_BONUS
       : 0;
   const slowWork = workPart(s) && t.energy <= 2 ? SLOW_WORK_PENALTY : 0;
+  const w = fitWeights(s);
   const score =
     band -
     slowWork +
     grooveTerm(t, s) +
     moodTerm(t, s) +
-    WEIGHTS.bpm * bpmFit +
-    WEIGHTS.energy * eFit +
+    w.bpm * bpmFit +
+    w.energy * eFit +
     WEIGHTS.role * roleFit(t, s) +
     WEIGHTS.category * (opts.categoryFit ?? 1) +
     WEIGHTS.trust -
