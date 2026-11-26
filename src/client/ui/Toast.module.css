@@ -27,6 +27,18 @@
   box-shadow: 0 0.5rem 1.875rem rgb(0 0 0 / 0.4);
 }
 
+.action {
+  margin-left: 0.75rem;
+  min-height: 44px;
+  padding: 0 0.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
 /*
  * A ride on a phone in portrait: the controls and the timeline fill the bottom third, so a toast
  * sits above them instead of covering the chart.

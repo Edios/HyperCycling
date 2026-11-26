@@ -242,6 +242,16 @@ describe('overlay layouts', () => {
     expect(screen.getByTestId('layout-solo')).toBeInTheDocument();
   });
 
+  it('tries the 3D background again from the notice', async () => {
+    load('immersive');
+    await renderScreen();
+    act(() => lastCanvas().onUnavailable?.());
+    expect(screen.queryByTestId('world-canvas')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(screen.getByTestId('world-canvas')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+  });
+
   it('does not sway when effects are off', async () => {
     stored = { ...DEFAULT_SETTINGS, effectsIntensity: 0 };
     load('immersive');

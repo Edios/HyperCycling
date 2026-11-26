@@ -6,6 +6,8 @@ export interface ToastProps {
   onClose: () => void;
   /** Auto-dismiss delay; 0 keeps it until the owner removes it. */
   durationMs?: number;
+  /** One button next to the message (e.g. "Try again"). */
+  action?: { label: string; onClick: () => void };
 }
 
 const InStack = createContext(false);
@@ -19,7 +21,7 @@ export function ToastStack({ children }: { children: ReactNode }) {
   );
 }
 
-export function Toast({ message, onClose, durationMs = 4000 }: ToastProps) {
+export function Toast({ message, onClose, durationMs = 4000, action }: ToastProps) {
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -33,6 +35,11 @@ export function Toast({ message, onClose, durationMs = 4000 }: ToastProps) {
   const body = (
     <div role="status" className={styles.toast}>
       {message}
+      {action && (
+        <button type="button" className={styles.action} onClick={action.onClick}>
+          {action.label}
+        </button>
+      )}
     </div>
   );
   return inStack ? body : <ToastStack>{body}</ToastStack>;

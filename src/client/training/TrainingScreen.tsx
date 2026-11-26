@@ -913,7 +913,19 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           <Toast message={t('training.erg.autoPaused')} onClose={() => setAutoPauseNotice(false)} />
         )}
         {wantsWorld && worldFailed && !unavailableDismissed && (
-          <Toast message={t('world.unavailable')} onClose={() => setUnavailableDismissed(true)} />
+          <Toast
+            message={t('world.unavailable')}
+            onClose={() => setUnavailableDismissed(true)}
+            durationMs={10_000}
+            action={{
+              label: t('world.retry'),
+              // A fresh canvas with fresh tries (WorldCanvas mounts again).
+              onClick: () => {
+                setWorldFailed(false);
+                setUnavailableDismissed(false);
+              },
+            }}
+          />
         )}
         {wantsYoutube && youtube === null && !youtubeToastDismissed && (
           <Toast
