@@ -327,6 +327,8 @@ export const en = {
       mine: 'Mine',
       rest: 'More workouts',
     },
+    groupAll: 'All {n}',
+    groupAllHint: '{n} of them sit in other groups',
     showMore: 'Show {n} more',
     showLess: 'Show less',
     heading: 'Workouts',

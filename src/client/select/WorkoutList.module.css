@@ -112,7 +112,7 @@
 .dur {
   text-align: right;
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: max(12px, 0.9375rem);
   color: var(--mut);
   white-space: nowrap;
 }

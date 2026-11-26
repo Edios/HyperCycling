@@ -208,6 +208,9 @@ export function FreestyleTab() {
               {groups.map((g) => {
                 const title = t(`free.groups.${g.id}`);
                 const more = g.workouts.length - GROUP_LIMIT;
+                // HIIT and Short leave the music classes to Recommended: the chip has them all.
+                const chip = g.id === 'hiit' || g.id === 'short' ? g.id : undefined;
+                const total = chip ? filterLibrary(shown, chip, '', lang).length : 0;
                 return (
                   <section
                     key={g.id}
@@ -215,9 +218,24 @@ export function FreestyleTab() {
                     aria-labelledby={`grp-${g.id}`}
                     data-testid={`group-${g.id}`}
                   >
-                    <h2 id={`grp-${g.id}`} className={styles.groupTitle}>
-                      {title} <span className={styles.groupCount}>{g.workouts.length}</span>
-                    </h2>
+                    <div className={styles.groupHead}>
+                      <h2 id={`grp-${g.id}`} className={styles.groupTitle}>
+                        {title} <span className={styles.groupCount}>{g.workouts.length}</span>
+                      </h2>
+                      {chip && total > g.workouts.length && (
+                        <Button
+                          variant="text"
+                          className={styles.more}
+                          data-testid={`group-all-${g.id}`}
+                          title={t('free.groupAllHint', {
+                            n: total - g.workouts.length,
+                          })}
+                          onClick={() => setFilter(chip)}
+                        >
+                          {t('free.groupAll', { n: total })}
+                        </Button>
+                      )}
+                    </div>
                     <WorkoutList
                       workouts={groupRows(g.id, g.workouts)}
                       activeId={activeId}

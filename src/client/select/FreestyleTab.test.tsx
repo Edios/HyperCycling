@@ -90,6 +90,17 @@ describe('FreestyleTab', () => {
     expect(within(rest).getAllByTestId('workout-card')).toHaveLength(GROUP_LIMIT);
   });
 
+  it('HIIT and Short link to their chip with the whole count (the classes sit in Recommended)', async () => {
+    renderTab();
+    await screen.findAllByTestId('workout-card');
+    const hiitTotal = builtinWorkouts.filter((w) => w.tags.includes('hiit')).length;
+    const all = screen.getByTestId('group-all-hiit');
+    expect(all).toHaveTextContent(`All ${hiitTotal}`);
+    fireEvent.click(all);
+    expect(screen.getByRole('button', { name: 'HIIT' })).toHaveAttribute('aria-pressed', 'true');
+    expect(cards()).toHaveLength(hiitTotal);
+  });
+
   it('a row is the name, the profile and the time, without difficulty ticks', async () => {
     renderTab();
     await screen.findAllByTestId('workout-card');
