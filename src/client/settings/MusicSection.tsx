@@ -377,7 +377,9 @@ export function MusicSection() {
 
       {/* Read once when connecting Spotify: collapsed (audit N-10). */}
       <details className={styles.setup}>
-        <summary className={styles.subTitle}>{t('settings.music.setupTitle')}</summary>
+        <summary>
+          <h3 className={styles.subTitle}>{t('settings.music.setupTitle')}</h3>
+        </summary>
         <ol className={styles.steps}>
           <li>{t('settings.music.setupSteps.dashboard')}</li>
           <li>

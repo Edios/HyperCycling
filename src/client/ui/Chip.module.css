@@ -8,7 +8,7 @@
   background: transparent;
   color: var(--mut);
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: max(12px, 0.9375rem);
   font-weight: 500;
   cursor: pointer;
 }

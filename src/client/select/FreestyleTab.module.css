@@ -124,6 +124,48 @@
   align-items: start;
 }
 
+/* The whole library in groups (audit N-09): a title, a few rows, "Show more". */
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  min-width: 0;
+}
+
+.group {
+  min-width: 0;
+}
+
+.groupTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0 0 0.25rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.groupCount {
+  color: var(--mut);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: max(12px, 0.875rem);
+}
+
+.more {
+  margin-top: 0.25rem;
+  padding: 0 0.75rem;
+  height: auto;
+  min-height: max(44px, 2.5rem);
+  font-size: 1.0625rem;
+  color: var(--mut);
+}
+
+.more:hover:not(:disabled) {
+  color: var(--fg);
+}
+
 .pane {
   position: sticky;
   top: 1rem;
@@ -203,7 +245,7 @@
 .loading {
   margin: 0 0 0.5rem;
   color: var(--mut);
-  font-size: 0.875rem;
+  font-size: max(12px, 0.875rem);
 }
 
 .ghost {

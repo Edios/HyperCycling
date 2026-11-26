@@ -6,6 +6,7 @@ import {
   countsAsRide,
   difficultyOf,
   filterLibrary,
+  groupLibrary,
   normalizeText,
   primaryTag,
   rotationHint,
@@ -117,5 +118,30 @@ describe('countsAsRide (R4b review)', () => {
     expect(countsAsRide({ completed: false, riddenSec: 10 })).toBe(false);
     expect(countsAsRide({ completed: false, riddenSec: 600 })).toBe(true);
     expect(countsAsRide({ completed: true, riddenSec: 30 })).toBe(true);
+  });
+});
+
+describe('groupLibrary (audit N-09)', () => {
+  it('puts each workout in exactly one group, in screen order, without empty groups', () => {
+    const music = make({ id: 'm', tags: ['music', 'hiit'], blocks: block(1200) });
+    const hiit = make({ id: 'h', tags: ['hiit'], blocks: block(1200) });
+    const short = make({ id: 's', tags: ['endurance'], blocks: block(1500) });
+    const long = make({ id: 'l', tags: ['endurance'], blocks: block(3600) });
+    const mine = make({ id: 'u', tags: ['music'], source: { kind: 'user' }, blocks: block(600) });
+    const groups = groupLibrary([long, mine, short, hiit, music]);
+    expect(groups.map((g) => [g.id, g.workouts.map((w) => w.id)])).toEqual([
+      ['recommended', ['m']],
+      ['short', ['s']],
+      ['hiit', ['h']],
+      ['mine', ['u']],
+      ['rest', ['l']],
+    ]);
+    expect(groupLibrary([long]).map((g) => g.id)).toEqual(['rest']);
+  });
+
+  it('covers the whole built-in library once', () => {
+    const ids = groupLibrary(builtinWorkouts).flatMap((g) => g.workouts.map((w) => w.id));
+    expect(ids).toHaveLength(builtinWorkouts.length);
+    expect(new Set(ids).size).toBe(builtinWorkouts.length);
   });
 });

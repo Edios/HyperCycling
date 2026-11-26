@@ -320,6 +320,15 @@ export const en = {
     statusOpen: 'open',
   },
   free: {
+    groups: {
+      recommended: 'Recommended',
+      short: 'Short',
+      hiit: 'HIIT',
+      mine: 'Mine',
+      rest: 'More workouts',
+    },
+    showMore: 'Show {n} more',
+    showLess: 'Show less',
     heading: 'Workouts',
     ride: 'Ride',
     count: 'Workouts: {n}',

@@ -324,6 +324,15 @@ export const pl: Messages = {
     statusOpen: 'do zrobienia',
   },
   free: {
+    groups: {
+      recommended: 'Polecane',
+      short: 'Krótkie',
+      hiit: 'HIIT',
+      mine: 'Moje',
+      rest: 'Pozostałe treningi',
+    },
+    showMore: 'Pokaż więcej ({n})',
+    showLess: 'Pokaż mniej',
     heading: 'Treningi',
     ride: 'Jedź',
     count: 'Treningi: {n}',
