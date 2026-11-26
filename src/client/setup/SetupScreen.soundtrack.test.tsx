@@ -185,6 +185,27 @@ describe('the ride setup with matched music', () => {
     expect(effectiveMusicCues(useSessionStore.getState().runtime!.workout)).toHaveLength(0);
   });
 
+  it('says that an own song of the plan was removed (not that the ride changed)', async () => {
+    const plan = planSoundtrack(workout, catalog);
+    const at = plan.sections.findIndex((x) => x.picks.length > 0);
+    const sections = plan.sections.map((x, i) =>
+      i === at
+        ? {
+            ...x,
+            picks: x.picks.map((p, j) =>
+              j === 0 ? { ...p, ref: { kind: 'own' as const, id: 'own-abcdefghijk' } } : p,
+            ),
+          }
+        : x,
+    );
+    useSoundtrackSession.getState().setPlan(workout.id, { ...plan, sections });
+    renderSetup();
+    const row = await screen.findByTestId('setup-soundtrack');
+    await waitFor(() => expect(row).toHaveAttribute('data-state', 'stale'));
+    expect(row).toHaveTextContent('A song of yours in this music was removed from My songs.');
+    expect(row).not.toHaveTextContent('The ride changed');
+  });
+
   it('is not offered for an Experience (it has its own music)', async () => {
     render(
       <MemoryRouter initialEntries={['/setup/class-neon-grid-45?exp=neon-grid-45']}>

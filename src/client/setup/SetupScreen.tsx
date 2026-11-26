@@ -365,7 +365,11 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
             {soundtrack.state === 'ready'
               ? t('soundtrack.setup.on', { songs: soundtrack.songs })
               : soundtrack.state === 'stale'
-                ? t('soundtrack.setup.stale')
+                ? t(
+                    soundtrack.staleReason === 'ownSongGone'
+                      ? 'soundtrack.setup.staleOwnSong'
+                      : 'soundtrack.setup.stale',
+                  )
                 : soundtrack.state === 'loading'
                   ? t('soundtrack.setup.loading')
                   : soundtrack.state === 'error'

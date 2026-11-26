@@ -686,6 +686,11 @@ export const pl: Messages = {
       errTitle: 'Wpisz tytuł.',
       errTempo: 'Wpisz tempo od {min} do {max} BPM.',
       errLength: 'Wpisz długość od 0:30 do 60:00 jako m:ss, np. 3:45.',
+      errInCatalog:
+        'Ten film już jest w katalogu jako „{name}”: zagra stamtąd (ze sprawdzonym tempem), gdy wybierzesz jego rodzaj muzyki.',
+      errStartNoLength:
+        'Link zaczyna się od {start}: podaj też długość utworu, żeby plan wiedział, ile z niego zagra.',
+      errStartLate: 'Link zaczyna się od {start}, mniej niż 30 sekund przed końcem utworu.',
       errRemove: 'Nie udało się usunąć utworu z tego urządzenia.',
       errDuplicate: 'Ten film już jest na liście.',
       errFull: 'Lista jest pełna.',
@@ -751,6 +756,8 @@ export const pl: Messages = {
       none: 'Dobierz utwory do tej jazdy.',
       on: 'Dobrane: {songs} utworów.',
       stale: 'Trening zmienił się po dobraniu muzyki. Dobierz ją ponownie.',
+      staleOwnSong:
+        'Jeden z Twoich utworów w tej muzyce został usunięty z listy „Moje utwory”. Dobierz muzykę ponownie.',
       loading: 'Wczytuję dobrane utwory…',
       error: 'Nie udało się wczytać dobranych utworów.',
       change: 'Zmień',
