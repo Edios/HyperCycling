@@ -638,14 +638,15 @@ export const ROTATION_REF_SEC = 240;
 /**
  * A song of the last `ROTATION_REST_RIDES` rides rests (owner's decision of 2026-11-26, the mild
  * variant): it costs `ROTATION_REST_COST` once per queue, whatever its length (a short song was the
- * handy filler of every 5-minute warm-up), and a part that took one does not stop on the first
- * step of the ladder that fills it: a wider tempo window or a neighbour category with fresh songs
- * may win when they fit about as well. Where nothing else fits, the resting song still plays
+ * handy filler of every 5-minute warm-up), and a part that took one on the first step of the
+ * ladder also tries the wider tempo window, where fresh songs of the chosen kinds may win when they
+ * fit about as well. Never another kind of music for the rest (review of #170: the owner accepts a
+ * little off the tempo, not other genres). Where nothing else fits, the resting song still plays
  * (never a gap instead). 580 first-visit rides with the app's history: the most played song went
- * from 59% to 30.5% of the rides, the energy fit kept (84.3% -> 85.6% within one step) for 12%
- * fewer songs within 3% of the tempo. A stronger rest (4 rides, 0.2) reached 24%, but at 81% within
- * one step of energy and 2.5 times the songs 6-10% off the tempo; more songs at 85-95 rpm in the
- * catalog are the way to go lower.
+ * from 59% to 48% of the rides, the energy fit kept (84.3% -> 85.8% within one step), songs of
+ * other kinds 48 -> 35, for 15% fewer songs within 3% of the tempo. Within the chosen kinds the
+ * catalog has too few songs at 85-95 rpm to go lower (a cost of 0.15 gives 46%); letting the rest
+ * reach the neighbour kinds gave 30%, but with 1133 songs of other kinds in place of 48.
  */
 export const ROTATION_REST_RIDES = 3;
 export const ROTATION_REST_COST = 0.05;
@@ -1248,9 +1249,11 @@ function planSection(
       best = { candidates, relaxed, queue };
       bestValue = value;
     }
-    // A queue with a resting song: the next steps may fill the part with fresh songs.
+    // A queue with a resting song may also try the wider tempo window with fresh songs, never
+    // another kind of music (the owner accepts a little off the tempo, not other genres).
     const resting = queue.picks.some((k) => (candidates[k] as Candidate).resting === true);
-    if (withinTolerance(queue) && candidates.length >= MIN_CANDIDATES && !resting) break;
+    const tryWider = resting && (LADDER[i + 1] as LadderStep | undefined)?.relax === 'tolerance';
+    if (withinTolerance(queue) && candidates.length >= MIN_CANDIDATES && !tryWider) break;
   }
   return (
     best ?? {
