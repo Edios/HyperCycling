@@ -1,4 +1,4 @@
-import { Script } from 'node:vm';
+import { createContext, Script } from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import { publicShellFiles, serviceWorkerSource } from './service-worker';
 
@@ -47,5 +47,74 @@ describe('service worker', () => {
       ]),
     );
     expect(files.some((f) => f.startsWith('docs/') || f.startsWith('deezer-bridge'))).toBe(false);
+  });
+
+  describe('fetch handler', () => {
+    type Handler = (event: { request: Req; respondWith: (p: Promise<unknown>) => void }) => void;
+    interface Req {
+      url: string;
+      method: string;
+      mode: string;
+    }
+    /** Runs the generated worker with fake caches and fetch; returns its fetch handler. */
+    function load(online: boolean) {
+      const matches: { url: string; options: unknown }[] = [];
+      const fetched: string[] = [];
+      const handlers: Record<string, Handler> = {};
+      const cached = { url: 'cached' };
+      const sandbox = {
+        URL,
+        Response: { error: () => ({ url: 'error' }) },
+        self: {
+          location: { origin: 'https://hypercycling.app' },
+          registration: { scope: 'https://hypercycling.app/' },
+          addEventListener: (type: string, h: Handler) => (handlers[type] = h),
+        },
+        caches: {
+          match: (r: Req | string, options: unknown) => {
+            matches.push({ url: typeof r === 'string' ? r : r.url, options });
+            return Promise.resolve(cached);
+          },
+          open: () => Promise.resolve({ put: () => Promise.resolve() }),
+        },
+        fetch: (r: Req) => {
+          fetched.push(r.url);
+          return online
+            ? Promise.resolve({ ok: true, type: 'basic', url: 'network', clone: () => ({}) })
+            : Promise.reject(new Error('offline'));
+        },
+      };
+      new Script(source).runInContext(createContext(sandbox));
+      const run = async (path: string, mode = 'no-cors'): Promise<unknown> => {
+        let out: Promise<unknown> | undefined;
+        handlers.fetch!({
+          request: { url: `https://hypercycling.app/${path}`, method: 'GET', mode },
+          respondWith: (p) => (out = p),
+        });
+        return out;
+      };
+      return { run, matches, fetched };
+    }
+
+    it('hashed files come from the cache first, matched with ignoreVary', async () => {
+      const w = load(true);
+      expect(await w.run('assets/app-abc.js', 'cors')).toEqual({ url: 'cached' });
+      expect(w.fetched).toEqual([]);
+      expect(w.matches[0]?.options).toEqual({ ignoreVary: true });
+    });
+
+    it('public files without a hash follow the network while online', async () => {
+      const w = load(true);
+      expect(await w.run('intro-boot.js')).toMatchObject({ url: 'network' });
+      expect(w.matches).toEqual([]);
+    });
+
+    it('offline, public files and pages fall back to the cache, ignoring Vary', async () => {
+      const w = load(false);
+      expect(await w.run('fonts/Barlow-Regular.woff2', 'cors')).toEqual({ url: 'cached' });
+      expect(await w.run('', 'navigate')).toEqual({ url: 'cached' });
+      expect(w.matches.map((m) => m.options)).toEqual([{ ignoreVary: true }, { ignoreVary: true }]);
+      expect(w.matches[1]?.url).toBe('https://hypercycling.app/index.html');
+    });
   });
 });
