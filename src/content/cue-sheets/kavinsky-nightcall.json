@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "artist": "Kavinsky",
+  "title": "Nightcall",
+  "bpm": 91.0,
+  "beatsPerBar": 4,
+  "downbeatSec": 0.92,
+  "recordings": [
+    {
+      "id": "MV_3Dpw-BRY",
+      "durationSec": 257
+    },
+    {
+      "id": "46qo_V1zcOM",
+      "durationSec": 260,
+      "shiftSec": 0.95
+    },
+    {
+      "id": "ahienBeHUWw",
+      "durationSec": 257,
+      "shiftSec": 0.05
+    },
+    {
+      "id": "Gl8SUy1C9JY",
+      "durationSec": 257
+    }
+  ],
+  "sections": [
+    {
+      "t": 0,
+      "kind": "intro"
+    },
+    {
+      "t": 243.55,
+      "kind": "outro"
+    }
+  ]
+}

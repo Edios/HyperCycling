@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { LANGS, type Lang } from './lang';
 import { BPM_MAX, BPM_MIN } from './bpm-match';
+import { cueSheetSchema, slotAnchorSchema, type CueSheet, type SlotAnchor } from './choreography';
 import {
   MAX_ALTERNATES,
   songDurationSec,
@@ -90,6 +91,11 @@ export interface MusicHint extends SongSuggestion {
   version?: SongVersion;
   /** Instrumental song whose ending may be played again to close a short gap (gap rule R3). */
   loopable?: boolean;
+  /**
+   * Choreography: the part of this (first) song that starts with a block (e.g. the chorus with the
+   * first standing block). The song is moved, the plan is not; needs the song's cue sheet.
+   */
+  anchor?: SlotAnchor;
   /** The songs that follow this one in the slot, in order (the authored queue is this + these). */
   queue?: QueueItem[];
   /**
@@ -121,6 +127,8 @@ export interface Experience {
   musicFallback?: TrackRef[];
   /** Song suggestions per slot; the rider turns them into pins with their own Spotify. Optional. */
   musicHints?: MusicHint[];
+  /** Beat grids and parts of the hinted songs (choreography); songs without one ride as before. */
+  cueSheets?: CueSheet[];
   worldTheme: WorldTheme;
   /** Fixed route; absent = a new seed per session. */
   seed?: number;
@@ -169,6 +177,7 @@ const musicHintSchema = suggestionSchema.extend({
   noBeat: z.boolean().optional(),
   explicit: z.boolean().optional(),
   loopable: z.boolean().optional(),
+  anchor: slotAnchorSchema.optional(),
   queue: z.array(queueItemSchema).max(8).optional(),
   alternatives: z.array(queueItemSchema).max(5).optional(),
 });
@@ -218,6 +227,7 @@ export const experienceSchema: z.ZodType<Experience> = z
       .max(4)
       .optional(),
     musicHints: z.array(musicHintSchema).max(32).optional(),
+    cueSheets: z.array(cueSheetSchema).max(64).optional(),
     worldTheme: z.object({
       // an unknown theme (newer file, older app) falls back to the abstract look
       theme: z.preprocess(knownTheme, z.enum(THEME_IDS)),
@@ -307,7 +317,8 @@ export function duplicateHintSlots(e: Experience): [number, number][] {
 
 /** The authored queue of a hint: the song itself, then `queue`. */
 export function hintQueue(h: MusicHint): QueueItem[] {
-  const { slot: _s, queue, alternatives: _a, noBeat: _n, explicit: _e, ...first } = h;
+  const { slot: _s, queue, alternatives: _a, noBeat: _n, explicit: _e, anchor: _an, ...first } = h;
+  void _an;
   void _s;
   void _a;
   void _n;

@@ -720,18 +720,32 @@ describe('class-format workouts', () => {
     }
   });
 
+  // Owner decision (2026-11-26): the 30's sprint slot plays a song on the sprint cadence (105 BPM
+  // at 105 rpm) instead of one on the recoveries between them; there every sprint is on the beat.
+  const SPRINT_TEMPO_SLOTS = new Set(['class-neon-grid-30-s6']);
+
   it('slot tempo suits the cadence for at least half of its time (2 BPM = 1 RPM, half or double time)', () => {
     for (const w of classes) {
       for (const song of w.songs ?? []) {
         const mid = ((song.bpm?.[0] ?? 0) + (song.bpm?.[1] ?? 0)) / 2;
         let ok = 0;
         let all = 0;
+        let sprintOk = 0;
+        let sprints = 0;
         for (const seg of flattenWorkout(w)) {
           if (slotOfBlock(w, seg.blockId)?.id !== song.id || seg.rpm === undefined) continue;
           all += seg.durationSec;
-          if (matchBpm(mid, seg.rpm)) ok += seg.durationSec;
+          const fits = matchBpm(mid, seg.rpm) !== undefined;
+          if (fits) ok += seg.durationSec;
+          if (seg.label === '@sprint') {
+            sprints += seg.durationSec;
+            if (fits) sprintOk += seg.durationSec;
+          }
         }
-        expect(ok / all, `${w.id} ${song.id}`).toBeGreaterThanOrEqual(0.5);
+        if (SPRINT_TEMPO_SLOTS.has(song.id)) {
+          expect(sprints, `${w.id} ${song.id}`).toBeGreaterThan(0);
+          expect(sprintOk, `${w.id} ${song.id}`).toBe(sprints);
+        } else expect(ok / all, `${w.id} ${song.id}`).toBeGreaterThanOrEqual(0.5);
       }
     }
   });

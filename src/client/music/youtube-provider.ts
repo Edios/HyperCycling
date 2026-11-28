@@ -12,6 +12,10 @@ import type { MusicProvider } from './types';
 export interface YTMusicPlayer extends YTPlayer {
   loadVideoById(options: { videoId: string; startSeconds?: number }): void;
   setVolume(volume: number): void;
+  /** Song clock: seconds into the loaded video (optional so older stubs still type). */
+  getCurrentTime?(): number;
+  getPlayerState?(): number;
+  getVideoData?(): { video_id?: string } | undefined;
 }
 
 const STATE_ENDED = 0;
@@ -81,6 +85,8 @@ export function createYoutubeMusicProvider(
   let instance = 0;
   /** False while the track should be silent (paused, faded out, timed out, disposed). */
   let wantPlaying = false;
+  /** Id of the video the latest `play` asked for (the song clock reads only that one). */
+  let playingId: string | undefined;
   let failureHandler: ((err: Error) => void) | undefined;
   let endHandler: (() => void) | undefined;
   let stallTimer: ReturnType<typeof setTimeout> | undefined;
@@ -263,6 +269,7 @@ export function createYoutubeMusicProvider(
       const startSec = Math.max(0, Math.floor(offsetSec));
       const YT = api;
       wantPlaying = true;
+      playingId = track.id;
       const playback = waitForPlayback();
       const start = (async (): Promise<void> => {
         if (!playerReady) {
@@ -328,6 +335,21 @@ export function createYoutubeMusicProvider(
 
     isReady() {
       return api !== undefined;
+    },
+
+    position() {
+      const p = player;
+      if (!p || !wantPlaying || pending || !p.getCurrentTime || !p.getPlayerState) return undefined;
+      try {
+        if (p.getPlayerState() !== STATE_PLAYING) return undefined;
+        // An advert or another video in the player: the song clock is not this song's.
+        const shown = p.getVideoData?.()?.video_id;
+        if (shown !== undefined && shown !== '' && shown !== playingId) return undefined;
+        const t = p.getCurrentTime();
+        return Number.isFinite(t) && t >= 0 ? t : undefined;
+      } catch {
+        return undefined;
+      }
     },
 
     setFailureHandler(handler) {

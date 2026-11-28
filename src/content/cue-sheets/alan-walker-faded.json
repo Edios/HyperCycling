@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "artist": "Alan Walker",
+  "title": "Faded",
+  "bpm": 90.0,
+  "beatsPerBar": 4,
+  "downbeatSec": 0.59,
+  "recordings": [
+    {
+      "id": "60ItHLz5WEA",
+      "durationSec": 212
+    },
+    {
+      "id": "psn_rs_a5O0",
+      "durationSec": 213,
+      "shiftSec": -0.42
+    },
+    {
+      "id": "zbxl4aiJo3M",
+      "durationSec": 213,
+      "shiftSec": -0.35
+    },
+    {
+      "id": "qdpXxGPqW-Y",
+      "durationSec": 213,
+      "shiftSec": -0.37
+    }
+  ],
+  "sections": [
+    {
+      "t": 0,
+      "kind": "intro"
+    },
+    {
+      "t": 203.26,
+      "kind": "outro"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "artist": "M83",
+  "title": "Midnight City",
+  "bpm": 104.99,
+  "beatsPerBar": 4,
+  "downbeatSec": 1.85,
+  "recordings": [
+    {
+      "id": "dX3k_QDnzHE",
+      "durationSec": 243
+    },
+    {
+      "id": "PuzvORd7wiM",
+      "durationSec": 242,
+      "shiftSec": 1.37
+    },
+    {
+      "id": "ij8W7Z3Sbs8",
+      "durationSec": 244,
+      "shiftSec": -0.05
+    }
+  ],
+  "sections": [
+    {
+      "t": 0,
+      "kind": "intro"
+    },
+    {
+      "t": 10.99,
+      "kind": "build",
+      "id": "build-1"
+    },
+    {
+      "t": 20.13,
+      "kind": "chorus",
+      "id": "chorus-1"
+    },
+    {
+      "t": 38.42,
+      "kind": "build",
+      "id": "build-2"
+    },
+    {
+      "t": 56.71,
+      "kind": "chorus",
+      "id": "chorus-2"
+    },
+    {
+      "t": 74.99,
+      "kind": "verse"
+    },
+    {
+      "t": 111.57,
+      "kind": "chorus",
+      "id": "chorus-3"
+    },
+    {
+      "t": 221.29,
+      "kind": "verse"
+    },
+    {
+      "t": 230.43,
+      "kind": "outro"
+    }
+  ]
+}

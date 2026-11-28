@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "artist": "Eric Prydz",
+  "title": "Pjanoo",
+  "bpm": 125.99,
+  "beatsPerBar": 4,
+  "downbeatSec": 0.63,
+  "recordings": [
+    {
+      "id": "HUvovrkygZg",
+      "durationSec": 451
+    },
+    {
+      "id": "f-Nd5aWM2Ks",
+      "durationSec": 451,
+      "shiftSec": 0.07
+    }
+  ],
+  "sections": [
+    {
+      "t": 0,
+      "kind": "intro"
+    },
+    {
+      "t": 46.34,
+      "kind": "drop",
+      "id": "drop-1"
+    },
+    {
+      "t": 61.58,
+      "kind": "break",
+      "id": "break-1"
+    },
+    {
+      "t": 107.3,
+      "kind": "build",
+      "id": "build-1"
+    },
+    {
+      "t": 114.92,
+      "kind": "drop",
+      "id": "drop-2"
+    },
+    {
+      "t": 168.25,
+      "kind": "break",
+      "id": "break-2"
+    },
+    {
+      "t": 175.87,
+      "kind": "build",
+      "id": "build-2"
+    },
+    {
+      "t": 183.49,
+      "kind": "drop",
+      "id": "drop-3"
+    },
+    {
+      "t": 229.21,
+      "kind": "break",
+      "id": "break-3"
+    },
+    {
+      "t": 335.88,
+      "kind": "drop",
+      "id": "drop-4"
+    },
+    {
+      "t": 427.31,
+      "kind": "break",
+      "id": "break-4"
+    },
+    {
+      "t": 442.55,
+      "kind": "outro"
+    }
+  ]
+}

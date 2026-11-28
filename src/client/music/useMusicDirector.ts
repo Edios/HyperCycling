@@ -28,7 +28,11 @@ export function useMusicDirector(
      */
     getPlayerSlot?: () => HTMLElement | null;
   } = {},
-): { skip(): boolean } {
+): {
+  skip(): boolean;
+  /** The song clock (see MusicDirector.songPosition); null without music. */
+  songPosition(): { track: TrackRef; sec: number } | null;
+} {
   const volume = options.volume ?? 1;
   const warningRef = useRef(onWarning);
   const playingRef = useRef(options.onPlaying);
@@ -82,5 +86,6 @@ export function useMusicDirector(
   }, [enabled, segments, cues, fallback, silenceLastSec]);
 
   const skip = useCallback(() => directorRef.current?.skip() ?? false, []);
-  return { skip };
+  const songPosition = useCallback(() => directorRef.current?.songPosition() ?? null, []);
+  return { skip, songPosition };
 }

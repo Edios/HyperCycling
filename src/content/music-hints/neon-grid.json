@@ -1347,7 +1347,11 @@
           "label": "official video",
           "durationSec": 198
         }
-      ]
+      ],
+      "anchor": {
+        "blockId": "ng9-c",
+        "section": "drop-3"
+      }
     },
     {
       "slot": 4,
@@ -1393,47 +1397,62 @@
     },
     {
       "slot": 5,
-      "artist": "Sub Focus",
-      "title": "Tidal Wave",
-      "bpm": 174,
-      "durationSec": 232,
+      "artist": "M83",
+      "title": "Midnight City",
+      "bpm": 105,
+      "durationSec": 244,
+      "anchor": {
+        "blockId": "ng10-s2",
+        "section": "chorus-3"
+      },
       "alternatives": [
         {
-          "artist": "Green Day",
-          "title": "Basket Case",
-          "bpm": 175
+          "artist": "Survivor",
+          "title": "Eye of the Tiger",
+          "bpm": 109,
+          "durationSec": 245,
+          "youtube": [
+            {
+              "id": "btPJPFnesV4",
+              "label": "official",
+              "durationSec": 245
+            },
+            {
+              "id": "_qDML_BCju8",
+              "label": "re-upload, lyrics (7clouds)",
+              "durationSec": 243
+            }
+          ]
         },
         {
-          "artist": "Pendulum",
-          "title": "Tarantula",
-          "bpm": 174
-        },
-        {
-          "artist": "Sub Focus",
-          "title": "Rock It",
-          "bpm": 174
+          "artist": "The Midnight",
+          "title": "Days of Thunder",
+          "bpm": 109,
+          "durationSec": 313,
+          "youtube": [
+            {
+              "id": "UiSB2Fbw9gs",
+              "label": "official",
+              "durationSec": 313
+            }
+          ]
         }
       ],
       "youtube": [
         {
-          "id": "B8vlk1UR99k",
-          "label": "official (VEVO)",
-          "durationSec": 232
+          "id": "dX3k_QDnzHE",
+          "label": "official video",
+          "durationSec": 244
         },
         {
-          "id": "Fsk7j_cnUh0",
-          "label": "official",
-          "durationSec": 181
+          "id": "PuzvORd7wiM",
+          "label": "re-upload (MusicIsLife)",
+          "durationSec": 242
         },
         {
-          "id": "xNThiulE25M",
-          "label": "re-upload, lyrics (BeastyLovesChi)",
-          "durationSec": 233
-        },
-        {
-          "id": "Jyk3YIe3NxM",
-          "label": "re-upload (benni ali)",
-          "durationSec": 232
+          "id": "ij8W7Z3Sbs8",
+          "label": "re-upload, lyrics (Echopusle)",
+          "durationSec": 245
         }
       ]
     },

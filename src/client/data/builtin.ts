@@ -22,6 +22,12 @@ const hintFiles = import.meta.glob<unknown>('../../content/music-hints/*.json', 
   import: 'default',
 });
 
+// Beat grids and parts of songs (choreography), one file per song.
+const cueSheetFiles = import.meta.glob<unknown>('../../content/cue-sheets/*.json', {
+  eager: true,
+  import: 'default',
+});
+
 /** experience id -> suggestions, merged from every hints file; an experience's own list wins. */
 function loadHints(): Record<string, unknown> {
   const out: Record<string, unknown> = {};
@@ -36,13 +42,19 @@ function loadHints(): Record<string, unknown> {
 
 const withHints = (files: Record<string, unknown>): Record<string, unknown> => {
   const hints = loadHints();
+  const sheets = Object.entries(cueSheetFiles)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, raw]) => raw);
   return Object.fromEntries(
     Object.entries(files).map(([file, raw]) => {
       const id = (raw as { id?: unknown } | null)?.id;
       const own = (raw as { musicHints?: unknown } | null)?.musicHints;
-      return typeof id === 'string' && own === undefined && hints[id] !== undefined
-        ? [file, { ...(raw as object), musicHints: hints[id] }]
-        : [file, raw];
+      const withOwnHints =
+        typeof id === 'string' && own === undefined && hints[id] !== undefined
+          ? { ...(raw as object), musicHints: hints[id] }
+          : raw;
+      // Every song of the catalogue shares one cue sheet; the experience picks it by name.
+      return [file, sheets.length > 0 ? { ...(withOwnHints as object), cueSheets: sheets } : withOwnHints];
     }),
   );
 };

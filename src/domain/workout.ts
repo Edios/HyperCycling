@@ -74,6 +74,18 @@ export interface TrackRef {
    * them one by one, from the same position of the song (each carries its own `startAtSec`).
    */
   alternates?: TrackRef[];
+  /** Beat grid and parts of THIS recording (a song with a cue sheet); absent = no choreography. */
+  choreo?: TrackChoreo;
+}
+
+/** Beat grid and song parts of one recording, in seconds into that recording. */
+export interface TrackChoreo {
+  bpm: number;
+  /** A bar line (beat 1). */
+  downbeatSec: number;
+  beatsPerBar: number;
+  /** Starts of the song's parts, in time order. */
+  marks: { t: number; kind: 'intro' | 'verse' | 'build' | 'chorus' | 'drop' | 'break' | 'outro' }[];
 }
 
 export interface MusicCue {
@@ -192,6 +204,23 @@ const plainTrackSchema = z.object({
   // An unknown source (from a newer build) is dropped, not a reason to refuse the whole workout.
   bpmSource: z.enum(['getsongbpm', 'deezer', 'catalog']).optional().catch(undefined),
   notEmbeddable: z.boolean().optional(),
+  // A malformed grid (newer build) only turns the choreography off for this track.
+  choreo: z
+    .object({
+      bpm: z.number().min(BPM_MIN).max(BPM_MAX),
+      downbeatSec: z.number().min(0),
+      beatsPerBar: z.number().int().min(2).max(8),
+      marks: z
+        .array(
+          z.object({
+            t: z.number().min(0),
+            kind: z.enum(['intro', 'verse', 'build', 'chorus', 'drop', 'break', 'outro']),
+          }),
+        )
+        .max(64),
+    })
+    .optional()
+    .catch(undefined),
 });
 
 /** Most other recordings a track may carry. */

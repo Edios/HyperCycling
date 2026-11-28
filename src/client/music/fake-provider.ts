@@ -35,6 +35,8 @@ export interface FakeMusicProvider extends MusicProvider {
   breakDown(error?: Error): void;
   /** Simulates the started track playing to its end: calls the end handler (once). */
   end(): void;
+  /** What `position` (the song clock) answers; undefined = the player cannot tell. */
+  setPosition(sec: number | undefined): void;
 }
 
 /** In-memory provider for tests: records calls and fails on demand. */
@@ -47,6 +49,7 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
   let failError: Error | undefined;
   let onFailure: ((err: Error) => void) | undefined;
   let onEnd: (() => void) | undefined;
+  let clock: number | undefined;
   const calls: FakeCall[] = [];
   const log: string[] = [];
   const record = (call: FakeCall, line: string): void => {
@@ -79,6 +82,12 @@ export function createFakeMusicProvider(options: FakeMusicProviderOptions = {}):
     },
     setEndHandler(handler) {
       onEnd = handler;
+    },
+    setPosition(sec) {
+      clock = sec;
+    },
+    position() {
+      return clock;
     },
     end() {
       const handler = onEnd;
