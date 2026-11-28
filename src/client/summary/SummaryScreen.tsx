@@ -133,6 +133,12 @@ function Summary({ result }: { result: LastResult }) {
   const name = experience
     ? experienceText(experience, lang).title
     : localizedText(result.workout, lang).name;
+  // Back to where the ride came from: an Experience, a plan, or the Freestyle list.
+  const back: { to: string; key: MessageKey } = experience
+    ? { to: '/experiences', key: 'summary.backToExperience' }
+    : result.plan !== undefined
+      ? { to: '/plan', key: 'summary.backToPlan' }
+      : { to: '/freestyle', key: 'summary.backToFreestyle' };
   const testKind = ftpTestKindOf(result.workout.id);
   const showFtp = testKind !== undefined && settings.equipment.showsWatts && !restored;
 
@@ -221,8 +227,8 @@ function Summary({ result }: { result: LastResult }) {
 
         <div className={styles.buttons}>
           <Button onClick={() => leave(setupPath(result), false)}>{t('summary.again')}</Button>
-          <Button variant="primary" onClick={() => leave('/plan', true)}>
-            {t('summary.backToPlan')}
+          <Button variant="primary" onClick={() => leave(back.to, true)} data-testid="summary-back">
+            {t(back.key)}
           </Button>
         </div>
       </div>

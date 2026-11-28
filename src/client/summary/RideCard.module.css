@@ -85,7 +85,50 @@
 }
 
 .fit {
-  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.fit .actions {
+  margin-top: 0;
+}
+
+.more {
+  margin-top: 1rem;
+  color: var(--mut);
+  font-size: 0.875rem;
+}
+
+.more > summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  list-style: none;
+}
+
+.more > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A flex summary loses the native marker: draw the same small triangle. */
+.more > summary::before {
+  content: '▸';
+  transition: transform 0.15s ease-out;
+}
+
+.more[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .more > summary::before {
+    transition: none;
+  }
+}
+
+.more .actions {
+  margin-top: 0.25rem;
 }
 
 .fitHint {

@@ -166,7 +166,8 @@ export const en = {
       zones: 'Time in heart rate zones',
       zone: 'Zone {n}',
       download: 'Download ride (JSON)',
-      downloadFit: 'Download FIT',
+      downloadFit: 'Download FIT for Strava',
+      more: 'More',
       fitHr: 'Heart rate in the FIT file',
       fitHint:
         'The .fit file opens in Strava, Garmin Connect (Import Data), intervals.icu and most training apps.',
@@ -185,6 +186,8 @@ export const en = {
     ended: 'Ended early',
     ridden: 'Time ridden',
     backToPlan: 'Back to plan',
+    backToFreestyle: 'Back to Freestyle',
+    backToExperience: 'Back to Experience',
     again: 'Ride again',
     countTitle: 'Count toward plan',
     countDetail: '{plan} · week {week} · {slot}',
