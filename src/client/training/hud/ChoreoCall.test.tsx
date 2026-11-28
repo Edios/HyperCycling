@@ -50,7 +50,14 @@ const run = (ms: number) => act(() => vi.advanceTimersByTime(ms));
 
 beforeEach(() => {
   vi.useFakeTimers({
-    toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance', 'Date'],
+    toFake: [
+      'requestAnimationFrame',
+      'cancelAnimationFrame',
+      'setInterval',
+      'clearInterval',
+      'performance',
+      'Date',
+    ],
   });
 });
 
@@ -155,5 +162,26 @@ describe('ChoreoCall', () => {
     answer = null;
     run(400);
     expect(screen.queryByTestId('choreo')).toBeNull();
+  });
+
+  it('runs no animation frames while the song has no grid, and keeps the live region mounted', () => {
+    setEngine({ segmentRemainingSec: 20 });
+    const raf = vi.spyOn(globalThis, 'requestAnimationFrame');
+    const plain = { ...song, choreo: undefined };
+    let answer: { track: TrackRef; sec: number } | null = { track: plain, sec: 40 };
+    render(<ChoreoCall getSongPosition={() => answer} segments={segments} color="#0ff" />);
+    run(1000);
+    expect(raf).not.toHaveBeenCalled();
+    const live = screen.getByRole('status');
+    expect(live).toHaveTextContent('');
+    // 1.5 s before the standing block, which starts on the chorus: the call is on.
+    setEngine({ segmentRemainingSec: 1.5 });
+    answer = { track: song, sec: 58.5 };
+    run(300);
+    expect(raf).toHaveBeenCalled();
+    // The same element announces the call: it was there before the call came.
+    expect(screen.getByRole('status')).toBe(live);
+    expect(live).toHaveTextContent(/\S/);
+    raf.mockRestore();
   });
 });

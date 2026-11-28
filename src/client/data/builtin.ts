@@ -47,14 +47,20 @@ const withHints = (files: Record<string, unknown>): Record<string, unknown> => {
     .map(([, raw]) => raw);
   return Object.fromEntries(
     Object.entries(files).map(([file, raw]) => {
-      const id = (raw as { id?: unknown } | null)?.id;
-      const own = (raw as { musicHints?: unknown } | null)?.musicHints;
+      const { choreography, ...rest } = raw as { choreography?: unknown; [key: string]: unknown };
+      const id = rest.id;
       const withOwnHints =
-        typeof id === 'string' && own === undefined && hints[id] !== undefined
-          ? { ...(raw as object), musicHints: hints[id] }
-          : raw;
-      // Every song of the catalogue shares one cue sheet; the experience picks it by name.
-      return [file, sheets.length > 0 ? { ...(withOwnHints as object), cueSheets: sheets } : withOwnHints];
+        typeof id === 'string' && rest.musicHints === undefined && hints[id] !== undefined
+          ? { ...rest, musicHints: hints[id] }
+          : rest;
+      // Cue sheets only for an experience that asks for them ("choreography": true): its blocks
+      // are anchored to the songs' parts. Elsewhere "stand up 4..1" could land on a seated block.
+      return [
+        file,
+        choreography === true && sheets.length > 0
+          ? { ...withOwnHints, cueSheets: sheets }
+          : withOwnHints,
+      ];
     }),
   );
 };

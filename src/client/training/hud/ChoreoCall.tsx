@@ -67,87 +67,109 @@ export function ChoreoCall({
   useEffect(() => {
     let raf = 0;
     let reading: Reading | null = null;
-    let lastRead = -Infinity;
     let shown = '';
-    const tick = (): void => {
-      raf = requestAnimationFrame(tick);
-      const now = performance.now();
-      const state = useSessionStore.getState().state;
-      let next: ChoreoFrame | null = null;
-      if (state.status === 'running') {
-        if (now - lastRead >= SONG_CLOCK_POLL_MS) {
-          lastRead = now;
-          const pos = getRef.current();
-          reading = pos?.track.choreo ? { choreo: pos.track.choreo, sec: pos.sec, at: now } : null;
-        }
-        const cur = segments[state.segmentIndex];
-        if (reading && cur && now - reading.at < SONG_CLOCK_STALE_MS) {
-          const songSec = reading.sec + (now - reading.at) / 1000;
-          next = choreoFrame(
-            reading.choreo,
-            songSec,
-            cur,
-            segments[state.segmentIndex + 1],
-            state.segmentRemainingSec,
-          );
-        }
-      } else {
-        reading = null;
-        lastRead = -Infinity;
-      }
+    const show = (next: ChoreoFrame | null): void => {
       const key = frameKey(next);
       if (key !== shown) {
         shown = key;
         setFrame(next);
       }
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const frameAt = (now: number): ChoreoFrame | null => {
+      const state = useSessionStore.getState().state;
+      const cur = segments[state.segmentIndex];
+      if (state.status !== 'running' || !reading || !cur) return null;
+      if (now - reading.at >= SONG_CLOCK_STALE_MS) return null;
+      const songSec = reading.sec + (now - reading.at) / 1000;
+      return choreoFrame(
+        reading.choreo,
+        songSec,
+        cur,
+        segments[state.segmentIndex + 1],
+        state.segmentRemainingSec,
+      );
+    };
+    // Frames run only while a song with a grid plays; a ride without choreography costs a
+    // clock read every 250 ms and nothing per frame.
+    const tick = (): void => {
+      const next = frameAt(performance.now());
+      show(next);
+      raf = next ? requestAnimationFrame(tick) : 0;
+    };
+    const poll = (): void => {
+      const now = performance.now();
+      const running = useSessionStore.getState().state.status === 'running';
+      const pos = running ? getRef.current() : null;
+      reading = pos?.track.choreo ? { choreo: pos.track.choreo, sec: pos.sec, at: now } : null;
+      if (!reading) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        show(null);
+      } else if (raf === 0) {
+        tick();
+      }
+    };
+    poll();
+    const timer = setInterval(poll, SONG_CLOCK_POLL_MS);
+    return () => {
+      clearInterval(timer);
+      cancelAnimationFrame(raf);
+    };
   }, [segments]);
 
-  if (!frame) return null;
-  const call = frame.call;
+  const call = frame?.call;
   const label = call ? t(CALL_KEYS[call.move][call.on ?? 'plain']) : '';
   const style: CSSProperties & Record<'--c' | '--beat', string> = {
     '--c': color,
-    '--beat': `${Math.round(frame.countSec * 1000)}ms`,
+    '--beat': `${Math.round((frame?.countSec ?? 0) * 1000)}ms`,
   };
+  // The live region is always mounted (empty when quiet), so even the first call is announced.
+  const live = (
+    <span role="status" aria-live="polite" className={styles.srOnly}>
+      {label}
+    </span>
+  );
   return (
-    <div
-      className={styles.root}
-      style={style}
-      data-testid="choreo"
-      data-section={frame.section}
-      data-on-beat={frame.onBeat ? 'true' : 'false'}
-    >
-      {frame.onBeat && !reducedMotion && (
-        <span
-          key={frame.beat}
-          className={`${styles.beat} ${frame.beatInBar === 0 ? styles.downbeat : ''}`}
-          data-testid="choreo-beat"
-          aria-hidden="true"
-          title={t('training.choreo.beat')}
-        />
-      )}
-      {call && (
+    <>
+      {frame && (
         <div
-          className={styles.call}
-          data-testid="choreo-call"
-          data-move={call.move}
-          data-on={call.on}
-          data-count={call.count}
-          aria-hidden="true"
+          className={styles.root}
+          style={style}
+          data-testid="choreo"
+          data-section={frame.section}
+          data-on-beat={frame.onBeat ? 'true' : 'false'}
         >
-          <span className={styles.label}>{label}</span>
-          <span key={call.count} className={`${styles.count} ${reducedMotion ? '' : styles.tick}`}>
-            {call.count}
-          </span>
+          {frame.onBeat && !reducedMotion && (
+            <span
+              key={frame.beat}
+              className={`${styles.beat} ${frame.beatInBar === 0 ? styles.downbeat : ''}`}
+              data-testid="choreo-beat"
+              aria-hidden="true"
+              title={t('training.choreo.beat')}
+            />
+          )}
+          {call && (
+            <div
+              className={styles.call}
+              data-testid="choreo-call"
+              data-move={call.move}
+              data-on={call.on}
+              data-count={call.count}
+              aria-hidden="true"
+            >
+              <span className={styles.label}>{label}</span>
+              <span
+                key={call.count}
+                className={`${styles.count} ${reducedMotion ? '' : styles.tick}`}
+              >
+                {call.count}
+              </span>
+            </div>
+          )}
         </div>
       )}
-      {/* Said once per call, not on every beat. */}
-      <span role="status" aria-live="polite" className={styles.srOnly}>
-        {label}
-      </span>
-    </div>
+      {/* Said once per call, not on every beat; outside the HUD so it is never remounted. */}
+      {live}
+    </>
   );
 }

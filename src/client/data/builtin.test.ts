@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { planSchema } from '../../domain/plan';
-import { builtinPlans, builtinWorkouts, getWorkout } from './builtin';
+import { builtinPlans, builtinWorkouts, getExperience, getWorkout } from './builtin';
 
 describe('built-in content', () => {
   it('ships at least one workout', () => {
@@ -49,5 +49,12 @@ describe('built-in content', () => {
     const first = builtinWorkouts[0];
     expect(first && getWorkout(first.id)).toBe(first);
     expect(getWorkout('does-not-exist')).toBeUndefined();
+  });
+
+  it('only an experience that asks for choreography gets the cue sheets (Neon Grid 30)', () => {
+    expect(getExperience('neon-grid-30')?.cueSheets?.length).toBeGreaterThan(0);
+    // Neon Grid 45 plays some of the same songs, but its blocks are not anchored to them.
+    expect(getExperience('neon-grid-45')?.cueSheets).toBeUndefined();
+    expect(getExperience('neon-grid-45-light')?.cueSheets).toBeUndefined();
   });
 });
