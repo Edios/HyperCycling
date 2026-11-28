@@ -8,33 +8,35 @@ under "What's new" (Polish texts for recent changes are written by hand).
 
 ### 2026-11-28
 
+- New: **pwa:** Install as an app, offline rides, a quiet "new version" line ([#184](https://github.com/Edios/HyperCycling/pull/184))
 - Fixed: **hud:** One scale per ride; the % FTP waits behind a tap ([#181](https://github.com/Edios/HyperCycling/pull/181))
 - New: **freestyle:** Each kind says what it does; "Easy start" filter ([#180](https://github.com/Edios/HyperCycling/pull/180))
-- New: **ride-import:** Own FIT decoder for ride files, in a Web Worker ([#179](https://github.com/Edios/HyperCycling/pull/179))
-- New: **soundtrack:** 35 songs at 85-95 rpm; switch on the rest between rides ([#178](https://github.com/Edios/HyperCycling/pull/178))
+- New: **ride-import:** Ride files (FIT) are read right in your browser. ([#179](https://github.com/Edios/HyperCycling/pull/179))
+- New: **soundtrack:** 35 new songs for the most common cadence, and more variety between rides. ([#178](https://github.com/Edios/HyperCycling/pull/178))
 - Fixed: **setup:** One way into the ride settings, the music chip says its state ([#177](https://github.com/Edios/HyperCycling/pull/177))
 - Fixed: **summary:** FIT for Strava first, the JSON file under More, back to where the ride came from ([#176](https://github.com/Edios/HyperCycling/pull/176))
 - Fixed: **devices:** On an iPhone the ride setup names Bluefy, with a link to the help ([#175](https://github.com/Edios/HyperCycling/pull/175))
 - Fixed: **plans:** The plan wizard skips the FTP step for a bike without watts ([#174](https://github.com/Edios/HyperCycling/pull/174))
+- New: **experience:** Choreography in Neon Grid 30 (stand on the drop, sprint on the chorus, pedal on the beat) ([#173](https://github.com/Edios/HyperCycling/pull/173))
 - Fixed: **hud:** No riders column for a single rider on Classic; watts never clipped ([#172](https://github.com/Edios/HyperCycling/pull/172))
 
 ### 2026-11-26
 
-- Fixed: **brand:** The still logo instead of the fallback text before React starts ([#171](https://github.com/Edios/HyperCycling/pull/171))
-- New: **soundtrack:** "How many of my songs" (few / half / mostly mine); song rest between rides ready but off ([#170](https://github.com/Edios/HyperCycling/pull/170))
-- New: **diagnostics:** Diagnostics mode on every screen, with one masked report ([#169](https://github.com/Edios/HyperCycling/pull/169))
+- Fixed: **brand:** The logo shows while the app starts. ([#171](https://github.com/Edios/HyperCycling/pull/171))
+- New: **soundtrack:** "How many of my songs": few, half and half, or mostly mine. ([#170](https://github.com/Edios/HyperCycling/pull/170))
+- New: **diagnostics:** Diagnostics on every screen, with one report that hides private data. ([#169](https://github.com/Edios/HyperCycling/pull/169))
 - Fixed: **training:** The shortcut list closes from anywhere, and "next song" never skips into silence. ([#168](https://github.com/Edios/HyperCycling/pull/168))
 - Fixed: **soundtrack:** The song order choice shows only with the ride's music on; a bigger "Draw another" button. ([#167](https://github.com/Edios/HyperCycling/pull/167))
-- New: **training:** Ride shortcuts for media keys, remotes and headphones; next song, ± ERG, "?" help ([#166](https://github.com/Edios/HyperCycling/pull/166))
+- New: **training:** Ride shortcuts for media keys, remotes and headphones: next song, ERG power up and down, help under "?". ([#166](https://github.com/Edios/HyperCycling/pull/166))
 - New: **soundtrack:** Play the last song order again or draw a new one, save it after the ride ([#165](https://github.com/Edios/HyperCycling/pull/165))
-- New: **soundtrack:** Own BPM window for 1:1, 2x and 4x; energy over tempo in intervals and peaks ([#164](https://github.com/Edios/HyperCycling/pull/164))
+- New: **soundtrack:** Music matching hits the tempo better (1:1, 2x and 4x), and in intervals and peaks the song's energy counts more. ([#164](https://github.com/Edios/HyperCycling/pull/164))
 - Fixed: **soundtrack:** Your own songs: a catalog note, a check when saving and a clearer error message. ([#163](https://github.com/Edios/HyperCycling/pull/163))
 - Fixed: **freestyle:** Freestyle preview: clearer details and bigger buttons. ([#162](https://github.com/Edios/HyperCycling/pull/162))
-- New: **music:** Owner's per-song thumbs and heart during a ride ([#161](https://github.com/Edios/HyperCycling/pull/161))
+- New: **music:** Rate songs during a ride: thumbs up, thumbs down or a heart. ([#161](https://github.com/Edios/HyperCycling/pull/161))
 - Fixed: **freestyle:** Freestyle: bigger text and filters that are easier to tap. ([#160](https://github.com/Edios/HyperCycling/pull/160))
-- Fixed: **world:** WebGL restart limit, Try 3D again in quick settings, local time in the log ([#159](https://github.com/Edios/HyperCycling/pull/159))
+- Fixed: **world:** 3D world: "Try 3D again" in quick settings when the graphics turned off. ([#159](https://github.com/Edios/HyperCycling/pull/159))
 - New: **freestyle:** Freestyle: workouts grouped into a clearer list. ([#158](https://github.com/Edios/HyperCycling/pull/158))
-- Fixed: **world:** Retry and log WebGL fallbacks, recover a context that never returns, Try again ([#157](https://github.com/Edios/HyperCycling/pull/157))
+- Fixed: **world:** The 3D world tries to come back by itself after losing its graphics, and offers "Try again" if needed. ([#157](https://github.com/Edios/HyperCycling/pull/157))
 - New: **settings:** Settings are tidier and easier to scan. ([#156](https://github.com/Edios/HyperCycling/pull/156))
 - Fixed: **soundtrack:** Your own songs: a clear message for a removed song and the right start time. ([#155](https://github.com/Edios/HyperCycling/pull/155))
 - New: **ui:** Clearer screens, and 1:1 and 2x cadence labels next to songs. ([#154](https://github.com/Edios/HyperCycling/pull/154))
@@ -42,53 +44,53 @@ under "What's new" (Polish texts for recent changes are written by hand).
 
 ### 2026-11-25
 
-- New: **soundtrack:** Groove and mood weights, one 1:1 vs 2x rule for planner and editor ([#152](https://github.com/Edios/HyperCycling/pull/152))
+- New: **soundtrack:** Music matching takes the rhythm and mood of a song into account. ([#152](https://github.com/Edios/HyperCycling/pull/152))
 - Fixed: **experience:** Experience: music without repeats and without dead entries in the queue. ([#151](https://github.com/Edios/HyperCycling/pull/151))
 - Fixed: Small fixes to plans, the position countdown and the rotation hint. ([#150](https://github.com/Edios/HyperCycling/pull/150))
 - New: **freestyle:** Rotation hint from the last ride ([#148](https://github.com/Edios/HyperCycling/pull/148))
 - New: **hud:** 'Standing in X s' countdown on the position badge ([#147](https://github.com/Edios/HyperCycling/pull/147))
 - New: **content:** A 'why' sentence in every workout description ([#146](https://github.com/Edios/HyperCycling/pull/146))
 - New: **plans:** Build Form week 8 defaults to sweet spot, FTP test as alternative ([#145](https://github.com/Edios/HyperCycling/pull/145))
-- New: **soundtrack:** Groove 1-3, mood and the finisher role for the 229 songs ([#143](https://github.com/Edios/HyperCycling/pull/143))
+- New: **soundtrack:** Songs in the catalog are described by rhythm, mood and a role for the finale. ([#143](https://github.com/Edios/HyperCycling/pull/143))
 - New: **soundtrack:** More variety in the music from one workout to the next. ([#142](https://github.com/Edios/HyperCycling/pull/142))
 
 ### 2026-11-24
 
-- New: **content:** Add 50 owner-approved songs to the soundtrack catalog (179 -> 229) ([#141](https://github.com/Edios/HyperCycling/pull/141))
+- New: **content:** 50 new songs in the music catalog (229 instead of 179). ([#141](https://github.com/Edios/HyperCycling/pull/141))
 - New: **soundtrack:** Songs follow ramps and pyramids ([#140](https://github.com/Edios/HyperCycling/pull/140))
-- New: **soundtrack:** Literature rules in the fit: tempo curve, comfort band, slow-work penalty, climb 2x ([#139](https://github.com/Edios/HyperCycling/pull/139))
+- New: **soundtrack:** Music matching based on research: a comfortable tempo, and a 2x rhythm on climbs. ([#139](https://github.com/Edios/HyperCycling/pull/139))
 - New: **editor:** Cadence next to BPM, fit mark and cadence filter for songs ([#138](https://github.com/Edios/HyperCycling/pull/138))
-- New: **soundtrack:** Asymmetric energy, rotation with ride history, Polish chip ([#137](https://github.com/Edios/HyperCycling/pull/137))
-- Fixed: **world:** Retry WebGL instead of dropping to Basic at the first refusal ([#136](https://github.com/Edios/HyperCycling/pull/136))
+- New: **soundtrack:** Music fits the energy better, repeats songs from recent rides less often, and a new "Polish" choice. ([#137](https://github.com/Edios/HyperCycling/pull/137))
+- Fixed: **world:** The 3D world tries its graphics again instead of switching to the simple view at once. ([#136](https://github.com/Edios/HyperCycling/pull/136))
 
 ### 2026-11-23
 
-- New: **soundtrack:** Energy tagging by ear for all 179 songs ([#134](https://github.com/Edios/HyperCycling/pull/134))
+- New: **soundtrack:** Every song in the catalog has its energy rated by ear. ([#134](https://github.com/Edios/HyperCycling/pull/134))
 
 ### 2026-11-22
 
-- New: **soundtrack:** Rate interval sections by their work phase ([#133](https://github.com/Edios/HyperCycling/pull/133))
+- New: **soundtrack:** In intervals, the music follows the work phase. ([#133](https://github.com/Edios/HyperCycling/pull/133))
 - New: **content:** Standing sprints in Freestyle; 105 rpm standing limit for short sprints ([#132](https://github.com/Edios/HyperCycling/pull/132))
 - New: **training:** Pause the ride when the app leaves the screen on a phone ([#131](https://github.com/Edios/HyperCycling/pull/131))
 - Fixed: **training:** Timeline playhead after skip + animated seated/standing call ([#130](https://github.com/Edios/HyperCycling/pull/130))
 - Fixed: Music player off by default on mobile; watts number always readable in the Power ring ([#129](https://github.com/Edios/HyperCycling/pull/129))
 - New: **export:** FIT export of a recorded ride ([#128](https://github.com/Edios/HyperCycling/pull/128))
-- Fixed: **training:** Phone in portrait with the music player: the HUD is laid out above it ([#126](https://github.com/Edios/HyperCycling/pull/126))
+- Fixed: **training:** Phone in portrait with the music player: the ride screen is laid out above it. ([#126](https://github.com/Edios/HyperCycling/pull/126))
 - New: **soundtrack:** Save the matched music plan on the device ([#125](https://github.com/Edios/HyperCycling/pull/125))
 - New: **soundtrack:** Match music wizard and a visible music player ([#124](https://github.com/Edios/HyperCycling/pull/124))
-- New: **domain:** Soundtrack planner and plan compiler ([#123](https://github.com/Edios/HyperCycling/pull/123))
-- New: **content:** Cool-down, beatless and fallback songs; coverage share 0.5 ([#121](https://github.com/Edios/HyperCycling/pull/121))
+- New: **domain:** The app plans music for the shape of your workout. ([#123](https://github.com/Edios/HyperCycling/pull/123))
+- New: **content:** Calm songs for the cool-down. ([#121](https://github.com/Edios/HyperCycling/pull/121))
 - New: **training:** Ride recording, ride card and JSON export ([#120](https://github.com/Edios/HyperCycling/pull/120))
-- New: **content:** Soundtrack catalog of 159 approved songs ([#119](https://github.com/Edios/HyperCycling/pull/119))
+- New: **content:** A music catalog of 159 checked songs. ([#119](https://github.com/Edios/HyperCycling/pull/119))
 - New: **setup:** A lighter ride setup screen. ([#118](https://github.com/Edios/HyperCycling/pull/118))
 
 ### 2026-11-21
 
 - New: **ui:** Lighter layouts on a phone. ([#117](https://github.com/Edios/HyperCycling/pull/117))
-- New: **domain:** Music sections of a workout for Soundtrack Match ([#116](https://github.com/Edios/HyperCycling/pull/116))
+- New: **domain:** Workouts split into music parts, the base of matching the music. ([#116](https://github.com/Edios/HyperCycling/pull/116))
 - New: **hud:** Range bars, execution score, device stop pauses the ride ([#115](https://github.com/Edios/HyperCycling/pull/115))
 - New: **devices:** Copy or download the Bluetooth log from Settings ([#114](https://github.com/Edios/HyperCycling/pull/114))
-- New: **erg:** ERG control and trainer-mode HUD (watts ring, ERG chip, ±5%, auto-pause) ([#113](https://github.com/Edios/HyperCycling/pull/113))
+- New: **erg:** ERG mode: the trainer sets the power, with a watts ring, ±5% and auto-pause. ([#113](https://github.com/Edios/HyperCycling/pull/113))
 
 ### 2026-11-20
 
@@ -103,13 +105,13 @@ under "What's new" (Polish texts for recent changes are written by hand).
 
 ### 2026-11-19
 
-- Fixed: **training:** Music chip in portrait, round controls with a gear icon, HUD fits the visible viewport ([#104](https://github.com/Edios/HyperCycling/pull/104))
+- Fixed: **training:** Riding on a phone in portrait: a clear music chip, round buttons, everything fits on the screen. ([#104](https://github.com/Edios/HyperCycling/pull/104))
 - New: **experience:** Series card, lean setup, advanced settings with help rows ([#100](https://github.com/Edios/HyperCycling/pull/100))
-- New: **ux:** How it works page with menu entry (PL+EN) ([#98](https://github.com/Edios/HyperCycling/pull/98))
+- New: **ux:** A new "How it works" page. ([#98](https://github.com/Edios/HyperCycling/pull/98))
 - New: **setup:** Ask only who is riding, advanced settings accordion, sticky Start bar ([#97](https://github.com/Edios/HyperCycling/pull/97))
 - Fixed: **experience:** Coach cue no longer overlaps the controls (phone, portrait) ([#96](https://github.com/Edios/HyperCycling/pull/96))
 - New: **bike:** Resistance as a relative cue during the ride instead of knob steps. ([#95](https://github.com/Edios/HyperCycling/pull/95))
-- New: **ux:** Hero B, podpis Experience, ikony SVG zamiast emoji ([#94](https://github.com/Edios/HyperCycling/pull/94))
+- New: **ux:** A new start page, and icons instead of emoji. ([#94](https://github.com/Edios/HyperCycling/pull/94))
 - Fixed: **neon-grid:** Neon Grid: no short scrap of a song at the end. ([#92](https://github.com/Edios/HyperCycling/pull/92))
 - New: **ux:** Experience in the menu and a clearer scenario. ([#91](https://github.com/Edios/HyperCycling/pull/91))
 
@@ -119,41 +121,41 @@ under "What's new" (Polish texts for recent changes are written by hand).
 - Fixed: **intro:** The intro shows from the first frame, at most once a week, with a choice in Settings. ([#87](https://github.com/Edios/HyperCycling/pull/87))
 - New: **music:** A queue of songs for each music slot. ([#86](https://github.com/Edios/HyperCycling/pull/86))
 - New: **experience:** Songs picked for Neon Grid. ([#85](https://github.com/Edios/HyperCycling/pull/85))
-- New: **experience:** Dopasuj utwory ze Spotify do podpowiedzi scenariusza ([#83](https://github.com/Edios/HyperCycling/pull/83))
+- New: **experience:** Match Spotify songs to the scenario's song suggestions. ([#83](https://github.com/Edios/HyperCycling/pull/83))
 - New: **bike:** The calibration of your knob steps adjusts the cues and the ride screen. ([#81](https://github.com/Edios/HyperCycling/pull/81))
-- New: **music:** Import playlisty, masowe tagowanie BPM i chipy Sugerowane ([#80](https://github.com/Edios/HyperCycling/pull/80))
+- New: **music:** Import a playlist, set the BPM of many songs at once, and "Suggested" chips. ([#80](https://github.com/Edios/HyperCycling/pull/80))
 - New: **home:** A footer with project info, GitHub, privacy and licence. ([#79](https://github.com/Edios/HyperCycling/pull/79))
 - New: **experience:** Experience: terrain, gates and landmarks. ([#78](https://github.com/Edios/HyperCycling/pull/78))
 - Faster: **ui:** Menus and panels open faster. ([#77](https://github.com/Edios/HyperCycling/pull/77))
 - New: **experience:** World constructions in Neon Grid. ([#76](https://github.com/Edios/HyperCycling/pull/76))
-- New: **experience:** Neon Grid 30 i Lekki 45, picker m:ss, powitanie 30 s ([#75](https://github.com/Edios/HyperCycling/pull/75))
-- New: **domain:** Dosing rules as one pure function + editor/class card warnings ([#73](https://github.com/Edios/HyperCycling/pull/73))
+- New: **experience:** Neon Grid 30 and Light 45, a minutes-and-seconds picker, a 30-second welcome. ([#75](https://github.com/Edios/HyperCycling/pull/75))
+- New: **domain:** The editor and the class card warn when a workout is too hard. ([#73](https://github.com/Edios/HyperCycling/pull/73))
 - New: **coach:** Clearer coach cues and quiet at the end of a ride. ([#71](https://github.com/Edios/HyperCycling/pull/71))
 - Fixed: **hud:** Experience on a phone in landscape and a simpler menu. ([#69](https://github.com/Edios/HyperCycling/pull/69))
-- New: **experience:** Neon Grid chapters as seven distinct worlds (trip channels) ([#68](https://github.com/Edios/HyperCycling/pull/68))
+- New: **experience:** Neon Grid chapters as seven different worlds. ([#68](https://github.com/Edios/HyperCycling/pull/68))
 - New: **setup:** An optional "Your bike" step with knob calibration. ([#67](https://github.com/Edios/HyperCycling/pull/67))
 
 ### 2026-11-07
 
 - New: **experience:** Neon Grid 45 end to end ([#66](https://github.com/Edios/HyperCycling/pull/66))
 - New: **music:** Song finder by artist and title ([#65](https://github.com/Edios/HyperCycling/pull/65))
-- Faster: **scenes:** Continuous render-scale ladder, ribbon merge ([#64](https://github.com/Edios/HyperCycling/pull/64))
+- Faster: **scenes:** Smoother 3D graphics that adapt to your device. ([#64](https://github.com/Edios/HyperCycling/pull/64))
 - New: **ui:** Easier to read on a phone, clearer texts and better accessibility. ([#63](https://github.com/Edios/HyperCycling/pull/63))
-- New: **music:** Keyless Deezer BPM lookup ([#62](https://github.com/Edios/HyperCycling/pull/62))
-- New: **experience:** Data model, loader, picker and Scenes theme engine ([#61](https://github.com/Edios/HyperCycling/pull/61))
-- New: **editor:** Song lane, class card, cool-down music lane ([#60](https://github.com/Edios/HyperCycling/pull/60))
-- New: **music:** GetSongBPM integration ([#59](https://github.com/Edios/HyperCycling/pull/59))
+- New: **music:** Song tempo lookup from Deezer, no account needed. ([#62](https://github.com/Edios/HyperCycling/pull/62))
+- New: **experience:** Experience scenes with their own look. ([#61](https://github.com/Edios/HyperCycling/pull/61))
+- New: **editor:** A song lane, a class card and music for the cool-down. ([#60](https://github.com/Edios/HyperCycling/pull/60))
+- New: **music:** Song tempo lookup from GetSongBPM. ([#59](https://github.com/Edios/HyperCycling/pull/59))
 - Fixed: **music:** Fixes to the BPM field. ([#58](https://github.com/Edios/HyperCycling/pull/58))
 - Fixed: **M16:** Fixes to song slots, BPM and workout scaling. ([#57](https://github.com/Edios/HyperCycling/pull/57))
-- Changed: UI/UX quick wins (contrast, Start scrim, HUD title, stepped timeline, badge) ([#56](https://github.com/Edios/HyperCycling/pull/56))
+- Changed: Better contrast and a clearer ride screen. ([#56](https://github.com/Edios/HyperCycling/pull/56))
 - New: **music:** BPM matching ([#55](https://github.com/Edios/HyperCycling/pull/55))
 - New: **M16:** Four class-format workouts ([#54](https://github.com/Edios/HyperCycling/pull/54))
-- Fixed: **ux:** HR wizard labels, Editor menu entry, Duplicate and edit ([#53](https://github.com/Edios/HyperCycling/pull/53))
-- New: **home:** Start page with hero and mode dock ([#52](https://github.com/Edios/HyperCycling/pull/52))
-- New: **M16:** Song slots in the workout model ([#51](https://github.com/Edios/HyperCycling/pull/51))
+- Fixed: **ux:** Clearer heart rate setup, the editor in the menu, and "Duplicate and edit". ([#53](https://github.com/Edios/HyperCycling/pull/53))
+- New: **home:** A start page with the ways to ride. ([#52](https://github.com/Edios/HyperCycling/pull/52))
+- New: **M16:** Song slots in workouts. ([#51](https://github.com/Edios/HyperCycling/pull/51))
 - Faster: **world:** A smoother 3D world on weaker devices. ([#50](https://github.com/Edios/HyperCycling/pull/50))
 - New: Heart-rate zones ([#49](https://github.com/Edios/HyperCycling/pull/49))
-- New: **M15:** Stepped effort (Knob) and first-class position ([#48](https://github.com/Edios/HyperCycling/pull/48))
+- New: **M15:** Effort in knob steps, and the seated or standing position. ([#48](https://github.com/Edios/HyperCycling/pull/48))
 
 ### 2026-11-06
 
@@ -161,18 +163,16 @@ under "What's new" (Polish texts for recent changes are written by hand).
 - New: **onboarding:** Welcome screen instead of 'no plan' ([#46](https://github.com/Edios/HyperCycling/pull/46))
 - New: **freestyle:** Readable phone layout ([#44](https://github.com/Edios/HyperCycling/pull/44))
 - New: **plans:** Optional training weekdays ([#43](https://github.com/Edios/HyperCycling/pull/43))
-- New: **brand:** Swap blue/green on the effort scale ([#42](https://github.com/Edios/HyperCycling/pull/42))
-- Fixed: **pages:** Serve from hypercycling.app root (base path /) ([#41](https://github.com/Edios/HyperCycling/pull/41))
+- New: **brand:** Clearer colours on the effort scale. ([#42](https://github.com/Edios/HyperCycling/pull/42))
 
 ### 2026-11-01
 
-- Fixed: **hud:** Cockpit panel style (tilted text, label gap, clipped top line) ([#40](https://github.com/Edios/HyperCycling/pull/40))
-- New: **brand:** Intro v2 (current logo, no digit, slower, always shown) ([#39](https://github.com/Edios/HyperCycling/pull/39))
+- Fixed: **hud:** A clearer cockpit panel during the ride. ([#40](https://github.com/Edios/HyperCycling/pull/40))
+- New: **brand:** A new intro with the current logo. ([#39](https://github.com/Edios/HyperCycling/pull/39))
 - Fixed: **hud:** Riders panel clipped on phone ([#35](https://github.com/Edios/HyperCycling/pull/35))
 - New: **freestyle:** Light list with preview pane ([#34](https://github.com/Edios/HyperCycling/pull/34))
 - Fixed: **hud:** Effort ring label overlap ([#33](https://github.com/Edios/HyperCycling/pull/33))
-- Fixed: Pages URL in Spotify settings (HyperCycling) ([#19](https://github.com/Edios/HyperCycling/pull/19))
-- Changed: Settings, navigation, i18n/a11y, 20-min FTP test, security hardening ([#10](https://github.com/Edios/HyperCycling/pull/10))
-- Changed: Music (director, YouTube + Spotify, music UI) ([#9](https://github.com/Edios/HyperCycling/pull/9))
-- Changed: Plans, freestyle library, setup, summary, players (+ HUD fixes, parsers, editor state) ([#7](https://github.com/Edios/HyperCycling/pull/7))
-- Changed: Basic training screen — session store, HUD, layouts, sounds, keyboard ([#6](https://github.com/Edios/HyperCycling/pull/6))
+- Changed: Settings, Polish and English, accessibility and a 20-minute FTP test. ([#10](https://github.com/Edios/HyperCycling/pull/10))
+- Changed: Music from YouTube and Spotify during a ride. ([#9](https://github.com/Edios/HyperCycling/pull/9))
+- Changed: Plans, the Freestyle library, ride setup, summary and riders. ([#7](https://github.com/Edios/HyperCycling/pull/7))
+- Changed: The training screen with cues, sounds and keyboard control. ([#6](https://github.com/Edios/HyperCycling/pull/6))

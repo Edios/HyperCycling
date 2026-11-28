@@ -115,6 +115,10 @@ describe('titles a rider must not see as they are (review of #182)', () => {
       'Poprawki po recenzji',
       'Experience w menu, czytelny scenariusz',
       'Kolejka utworów w slocie',
+      'Hero B, podpis Experience, ikony SVG zamiast emoji',
+      'Dopasuj utwory ze Spotify do podpowiedzi scenariusza',
+      'Import playlisty, masowe tagowanie BPM i chipy Sugerowane',
+      'Neon Grid 30 i Lekki 45, picker m:ss, powitanie 30 s',
     ]) {
       expect(needsText(t), t).toBe(true);
     }

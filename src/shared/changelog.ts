@@ -72,7 +72,8 @@ function stripCodes(text: string): string {
 const REVIEW_WORDS = /\b(?:review|nits?|audit|follow-?ups?|recenzj\w*|audyt\w*|poprawki po)\b/i;
 const PR_REFERENCE = /#\d+/;
 const CODE_ANYWHERE = /\b(?!VO2\b)[A-Z]{1,2}\d+[a-z]?(?:[-.][A-Z]?\d*[a-z]?)*\b|\b[A-Z]-\d+\b/;
-const POLISH = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]|\b(?:w|z|na|nie|oraz|bez|dla|po|się|już)\b/;
+const POLISH =
+  /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]|\b(?:i|w|z|ze|do|od|na|nie|oraz|bez|dla|po|przy|zamiast|się|już|jest|są)\b|\b\w+(?:anie|enie|acji|ości|ych|owe|owa|owy|ami)\b/;
 
 /** True when a title needs a hand-written English text before a rider sees it. */
 export function needsText(title: string): boolean {
