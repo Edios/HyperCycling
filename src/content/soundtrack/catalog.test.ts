@@ -13,6 +13,7 @@ import {
 import {
   catalogProblems,
   catalogRpm,
+  HALF_FROM_BPM,
   ENERGY_NOTE_MAX,
   isSprintTrack,
   parseCatalog,
@@ -306,6 +307,13 @@ describe('the 85-95 rpm batch of 2026-11-28', () => {
       expect(rpm, t.id).toBeGreaterThanOrEqual(85);
       expect(rpm, t.id).toBeLessThanOrEqual(96);
     }
+  });
+
+  it('records the calm songs (energy 1-3) at their slow pulse, 1:1 (review of #178)', () => {
+    const fast = batch.filter((t) => t.energy <= 3 && (t.bpm as number) >= HALF_FROM_BPM);
+    expect(fast.map((t) => `${t.id} ${t.bpm}`)).toEqual([]);
+    for (const t of batch.filter((x) => (x.bpm as number) >= HALF_FROM_BPM))
+      expect(t.energy, t.id).toBeGreaterThanOrEqual(4);
   });
 
   it('gives every choice of kind more songs, Polish ones too', () => {

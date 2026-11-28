@@ -57,3 +57,25 @@ test('each kind says what it does; "Easy start" keeps no hard workouts', async (
     expect(kind).not.toMatch(/^(HIIT|Tests|Climbs|Sprints|Threshold|VO2)\b/);
   }
 });
+
+test('the effect of every kind is readable on a phone in landscape (844 x 390)', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto('./#/freestyle');
+  await expect(page.getByTestId('workout-card').first()).toBeVisible();
+  // Review of #180: 14 of 20 kinds were cut with an ellipsis. Two lines now; nothing clipped.
+  const clipped = await page
+    .getByTestId('workout-kind')
+    .evaluateAll((els) =>
+      els
+        .filter(
+          (el) => el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1,
+        )
+        .map((el) => el.textContent),
+    );
+  expect(clipped).toEqual([]);
+  for (const el of await page.getByTestId('workout-kind').all()) {
+    expect(await el.getAttribute('title')).toContain(' · ');
+  }
+});

@@ -71,11 +71,18 @@
 .cat {
   font-size: max(12px, 0.8125rem);
   color: var(--mut);
-  /* "Zone 2 · easy and long, builds the base": one line, cut at the end on a narrow row. */
-  white-space: nowrap;
+  /*
+   * "Zone 2 · easy and long, builds the base": up to two lines, so the effect stays readable on a
+   * narrow row (review of #180: 14 of 20 were cut on a phone in landscape); the full text is the
+   * title if a longer translation still needs more.
+   */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
   min-width: 0;
+  line-height: 1.3;
 }
 
 .effect {

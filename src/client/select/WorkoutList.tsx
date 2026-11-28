@@ -57,7 +57,11 @@ export const WorkoutRow = memo(function WorkoutRow({
             </span>
           )}
         </span>
-        <span className={styles.cat} data-testid="workout-kind">
+        <span
+          className={styles.cat}
+          data-testid="workout-kind"
+          title={`${t(tagKey(primaryTag(workout)))} · ${t(tagEffectKey(primaryTag(workout)))}`}
+        >
           {t(tagKey(primaryTag(workout)))}
           <span className={styles.effect}> · {t(tagEffectKey(primaryTag(workout)))}</span>
         </span>
