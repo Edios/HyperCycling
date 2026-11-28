@@ -4,7 +4,7 @@ import { expect, test } from './fixtures';
 import { DEFAULT_SETTINGS } from '../../src/domain/settings';
 import { seedSettings } from './seed-settings';
 
-// The ride setup: one question ("Who is riding?"), the rest in "Advanced settings", and a sticky Start bar.
+// The ride setup: one question ("Who is riding?"), the rest in "Ride settings", and a sticky Start bar.
 // Nothing here starts a ride, so no sound is ever played.
 
 const FLAG = 'hypercycling.setup.advanced';
@@ -132,8 +132,9 @@ test.describe('phone 390x844', () => {
     const bar = page.getByTestId('start-bar');
     await expect(bar).toBeVisible();
 
-    // demo-mixed has no pinned tracks: the music shortcut says so by being off and disabled.
+    // demo-mixed has no pinned tracks: the music shortcut says so in words and is disabled.
     await expect(bar.getByTestId('bar-music')).toBeDisabled();
+    await expect(bar.getByTestId('bar-music')).toHaveText('No music');
 
     await bar.getByTestId('bar-layout').click();
     const dialog = page.getByRole('dialog', { name: 'Screen layout' });
@@ -185,7 +186,7 @@ test('a manual-knob bike is never asked for watts when adding a rider', async ({
   const chip = page.getByRole('button', { name: 'Kasia' });
   await expect(chip).toHaveAttribute('aria-pressed', 'true');
   await expect(chip).not.toContainText(' W');
-  await page.getByTestId('advanced-toggle').click();
+  await page.getByTestId('bar-more').click();
   await expect(page.getByTestId('setup-bike-edit')).toContainText('Manual knob');
 });
 
@@ -268,7 +269,8 @@ test.describe('Polish labels', () => {
     await page.goto('./#/setup/demo-mixed');
     const bar = page.getByTestId('start-bar');
     await expect(bar).toBeVisible();
-    await expect(bar.getByTestId('bar-music')).toContainText('Muzyka');
+    await expect(bar.getByTestId('bar-music')).toHaveText('Bez muzyki');
+    await expect(bar.getByTestId('bar-more')).toHaveText('Ustawienia jazdy');
     for (const width of [390, 360, 320]) {
       await page.setViewportSize({ width, height: 844 });
       const cut = await bar

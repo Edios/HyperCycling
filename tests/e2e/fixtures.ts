@@ -105,7 +105,7 @@ export const test = base.extend<
   },
 
   /**
-   * The ride setup keeps "Advanced settings" closed until the rider opens it (and remembers that).
+   * The ride setup keeps "Ride settings" closed until the rider opens it (and remembers that).
    * Most tests work with the options inside it, so they start with it open; the specs about the
    * closed layout reset the stored flag in their own init script (see setup-flow.spec.ts).
    */

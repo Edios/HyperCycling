@@ -796,7 +796,10 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
         variant={experience ? 'status' : 'shortcuts'}
         status={musicStatus}
         music={{
-          label: t('setup.music'),
+          // The state in words: a greyed-out chip alone did not say whether music was off or missing.
+          label: t(
+            !hasCues ? 'setup.musicChipNone' : musicOn ? 'setup.musicChipOn' : 'setup.musicChipOff',
+          ),
           icon: musicOn ? 'volume' : 'mute',
           pressed: musicOn,
           disabled: !hasCues,

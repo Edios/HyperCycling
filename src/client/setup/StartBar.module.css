@@ -52,7 +52,10 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  /* Two words may take two lines ("Ustawienia / jazdy" on a narrow phone) instead of an ellipsis. */
+  line-height: 1.1;
+  text-align: center;
+  overflow-wrap: normal;
 }
 
 .chip:focus-visible {
@@ -164,5 +167,12 @@
 
   .wrap .start {
     height: 44px;
+  }
+}
+
+/* Narrow phones: "Ride settings" is the longest label, so its chip gives up the icon, not the words. */
+@media (max-width: 400px) {
+  .chips > .chip:last-child:not(:first-child) svg {
+    display: none;
   }
 }
