@@ -68,6 +68,8 @@ test('trainer mode: watts in the ring, ERG holds the target, ±5 %, ERG off, no 
   // One rider on the Classic tiles: no riders column, the ring carries the target.
   await expect(page.getByTestId('players-list')).toHaveCount(0);
   await expect(page.getByTestId('layout-solo')).toBeVisible();
+  // One scale: watts and the target, no E-level in the name.
+  await expect(page.getByTestId('effort-name').first()).not.toContainText('(E');
   await expect(
     page.getByTestId('effort-ring-word').or(page.getByTestId('effort-caption')),
   ).toHaveText('Power');

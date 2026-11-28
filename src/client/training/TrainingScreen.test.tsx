@@ -306,7 +306,8 @@ describe('TrainingScreen', () => {
     expect(screen.queryByTestId('players-list')).toBeNull();
     // effort 3 = 62 % FTP of 250 W
     expect(screen.getByTestId('effort-name')).toHaveTextContent('target 155 W');
-    expect(screen.getByTestId('effort-name')).not.toHaveTextContent('% FTP');
+    // The % FTP waits behind a tap (one scale on screen).
+    expect(screen.getByTestId('effort-name')).toHaveAttribute('data-pct', 'hidden');
     expect(screen.queryByRole('button', { name: 'Players' })).toBeNull();
     key('KeyG');
     expect(screen.getByTestId('layout-solo')).toBeInTheDocument();

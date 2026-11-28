@@ -67,7 +67,7 @@ export const en = {
     finish: 'Finish',
     elapsedOf: '{elapsed} / {total}',
     remaining: 'remaining {time}',
-    playersTarget: 'Target for block · ~{pct}% FTP',
+    playersTarget: 'Target for block',
     watts: 'W',
     playerFtp: 'FTP {w} W',
     playerFtpMissing: 'FTP —',

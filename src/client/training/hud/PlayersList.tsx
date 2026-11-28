@@ -40,9 +40,13 @@ export function PlayersList({
       data-g="R"
       className={`${hud.panel} ${styles.root}${className ? ` ${className}` : ''}`}
     >
-      <div className={`${hud.lbl} ${styles.header}`}>
+      <div
+        className={`${hud.lbl} ${styles.header}`}
+        title={showsWatts ? t('training.ftpApprox', { pct: Math.round(ftpPct) }) : undefined}
+      >
+        {/* Each row already shows watts: the % FTP stays in the tooltip, not a second scale. */}
         {showsWatts
-          ? t('training.playersTarget', { pct: Math.round(ftpPct) })
+          ? t('training.playersTarget')
           : t('training.playersTargetEffort', { effort: Math.round(effort) })}
       </div>
       <ul className={styles.list}>

@@ -71,7 +71,7 @@ export const pl: Messages = {
     finish: 'Meta',
     elapsedOf: '{elapsed} / {total}',
     remaining: 'pozostało {time}',
-    playersTarget: 'Cel w bloku · ~{pct}% FTP',
+    playersTarget: 'Cel w bloku',
     watts: 'W',
     playerFtp: 'FTP {w} W',
     playerFtpMissing: 'FTP —',

@@ -30,9 +30,8 @@ function pctOf(view: TrainingView): number {
 export function FocusRest({ view, active, reducedMotion, showFtp = true }: FocusRestProps) {
   const t = useT();
   const name = t(`effort.${view.labelKey}`);
-  const label = showFtp
-    ? `${name} · ${t('training.ftpApprox', { pct: Math.round(view.ftpPct) })}`
-    : name;
+  // One scale: the rest screen names the effort; the % FTP is only in the tooltip.
+  const pct = showFtp ? t('training.ftpApprox', { pct: Math.round(view.ftpPct) }) : undefined;
   return (
     <div
       className={`${styles.root} ${active ? styles.on : ''}`}
@@ -50,7 +49,9 @@ export function FocusRest({ view, active, reducedMotion, showFtp = true }: Focus
             numColor="var(--zone)"
             numberTestId="focus-rest-effort"
           />
-          <div className={styles.name}>{label}</div>
+          <div className={styles.name} title={pct}>
+            {name}
+          </div>
           <PositionBadge
             position={view.position}
             upcoming={view.upcomingPosition}

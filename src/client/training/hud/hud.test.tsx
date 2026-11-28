@@ -1,10 +1,11 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Segment } from '../../../domain/segments';
 import { CoachOverlay } from './CoachOverlay';
 import { Countdown } from './Countdown';
 import { EdgeFlash } from './EdgeFlash';
 import { EffortGroup } from './EffortGroup';
+import type { TrainerHud } from './ErgControls';
 import { fitCqw } from './fit';
 import { MeasuresGroup } from './MeasuresGroup';
 import { PlayersList } from './PlayersList';
@@ -49,12 +50,41 @@ describe('EffortGroup ring label', () => {
 });
 
 describe('EffortGroup', () => {
-  it('shows the ring with the value, the name and % FTP', () => {
+  it('shows the ring with the value and the name; the % FTP waits behind a tap', () => {
     render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" />);
     const root = screen.getByTestId('effort-value');
     expect(within(root).getByTestId('effort-ring')).toHaveAttribute('data-effort', '7');
     expect(screen.getByTestId('effort-value-number')).toHaveTextContent('07');
-    expect(root).toHaveTextContent('Hard · ~92% FTP');
+    const name = screen.getByTestId('effort-name');
+    expect(name).toHaveAttribute('data-pct', 'hidden');
+    expect(name).toHaveAttribute('title', expect.stringContaining('~92% FTP'));
+    // Screen readers still get the % in the name; on screen it is one word.
+    expect(name.firstChild).toHaveTextContent(/^Hard$/);
+    fireEvent.click(name);
+    expect(name).toHaveTextContent(/^Hard · ~92% FTP$/);
+    fireEvent.click(name);
+    expect(name).toHaveAttribute('data-pct', 'hidden');
+  });
+  it('a trainer ride reads in watts only: no E-level and no % FTP in the name', () => {
+    render(
+      <EffortGroup
+        effort={2}
+        ftpPct={55}
+        labelKey="easy"
+        trainer={
+          {
+            watts: 137,
+            targetW: 138,
+            level: 2,
+            targetLevel: 2,
+            status: 'erg',
+          } as unknown as TrainerHud
+        }
+      />,
+    );
+    const name = screen.getByTestId('effort-name');
+    expect(name).toHaveTextContent(/^Easy · target 138 W$/);
+    expect(name).toHaveAttribute('title', 'Easy (E2)');
   });
   it('without watts shows the effort word alone, with no % FTP', () => {
     render(<EffortGroup effort={7} ftpPct={92} labelKey="hard" showFtp={false} />);
@@ -347,7 +377,8 @@ describe('PlayersList', () => {
   it('shows target watts per player', () => {
     render(<PlayersList players={players} ftpPct={92} effort={6} showsWatts />);
     const root = screen.getByTestId('players-list');
-    expect(root).toHaveTextContent('Target for block · ~92% FTP');
+    expect(root).toHaveTextContent('Target for block');
+    expect(root).not.toHaveTextContent('% FTP');
     expect(root).toHaveTextContent('Ann');
     expect(root).toHaveTextContent('FTP 200 W');
     expect(root).toHaveTextContent('184 W');

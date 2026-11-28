@@ -19,7 +19,8 @@ describe('FocusRest', () => {
     expect(root).toHaveAttribute('data-active', 'true');
     expect(root).not.toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByTestId('focus-rest-effort')).toHaveTextContent('07');
-    expect(root).toHaveTextContent('Hard · ~92% FTP');
+    expect(root).toHaveTextContent('Hard');
+    expect(root).not.toHaveTextContent('% FTP');
     expect(root).toHaveTextContent('2:41');
   });
 
