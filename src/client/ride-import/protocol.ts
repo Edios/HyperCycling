@@ -3,8 +3,8 @@
  * function (so tests can run it without a Worker).
  */
 
-import { readRideBytes } from '../../domain/ride-import/read';
-import type { RideReadResult } from '../../domain/ride-import/types';
+import { importRideBytes } from '../../domain/ride-import/read';
+import type { RideImportResult } from '../../domain/ride-import/types';
 
 export interface RideImportRequest {
   id: number;
@@ -15,9 +15,18 @@ export interface RideImportRequest {
 
 export interface RideImportResponse {
   id: number;
-  result: RideReadResult;
+  result: RideImportResult;
 }
 
-export function handleRideImportRequest(req: RideImportRequest): RideImportResponse {
-  return { id: req.id, result: readRideBytes(req.fileName, new Uint8Array(req.buffer)) };
+export async function handleRideImportRequest(req: RideImportRequest): Promise<RideImportResponse> {
+  return { id: req.id, result: await importRideBytes(req.fileName, new Uint8Array(req.buffer)) };
+}
+
+/** The buffers of the series' columns, to hand back without a copy. */
+export function transferablesOf(res: RideImportResponse): ArrayBuffer[] {
+  if (!res.result.ok) return [];
+  const s = res.result.series;
+  return [s.power, s.cadence, s.heartRate, s.speed, s.altitude, s.distance].map(
+    (c) => c.buffer as ArrayBuffer,
+  );
 }

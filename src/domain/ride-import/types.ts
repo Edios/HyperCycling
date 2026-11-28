@@ -89,10 +89,20 @@ export type RideImportErrorCode =
   | 'fitCorrupt'
   /** A FIT plan, course or other non-activity file (`fileType` says which). */
   | 'fitNotActivity'
+  /** A TCX or GPX file that is not well-formed XML (or has a DOCTYPE). */
+  | 'xmlInvalid'
+  /** A TCX course or workout, or a GPX route: a plan of a ride, not a ride. */
+  | 'notARide'
   /** No timed readings in the file. */
   | 'noSamples'
-  /** More readings than a 12 hour ride can have. */
+  /** Longer than 12 hours of riding (or more readings than that can have). */
   | 'tooLong'
+  /** Less than 5 minutes of riding: too little to build a workout from. */
+  | 'tooShort'
+  /** A .gz file in a browser that cannot unpack it (the user unpacks it and tries again). */
+  | 'gzipUnsupported'
+  /** A .gz file that is damaged or unpacks to more than the limit. */
+  | 'gzipFailed'
   /** A reader failed in a way it should not (a bug or a hostile file). */
   | 'parseFailed'
   /** The browser could not read the file. */
@@ -118,7 +128,39 @@ export type RideImportWarning =
   /** Some readings had no time and were left out. */
   | 'samplesWithoutTime'
   /** The file is a run or another sport; the import still works. */
-  | 'notCycling';
+  | 'notCycling'
+  /** Impossible readings (power over 2000 W, heart rate 0 or over 230, ...) were left out. */
+  | 'implausibleValues';
+
+/**
+ * A ride on an even 1 Hz axis of riding time: pauses are cut out (and listed), each second holds
+ * the readings of that second, short gaps are filled in, longer ones are NaN. This is what the
+ * workout builder reads, whatever the file format was.
+ */
+export interface RideSeries {
+  format: RideFormat;
+  /** Seconds of riding (the length of every column). */
+  durationSec: number;
+  /** Watts, rpm, bpm, m/s, metres, metres from the start; NaN = no reading that second. */
+  power: Float32Array;
+  cadence: Float32Array;
+  heartRate: Float32Array;
+  speed: Float32Array;
+  altitude: Float32Array;
+  distance: Float32Array;
+  /** Share of the seconds (0..1) that have a reading, per column. */
+  coverage: Record<'power' | 'cadence' | 'heartRate' | 'speed' | 'altitude' | 'distance', number>;
+  /** Cut-out stops: at this second of riding, for this many seconds of wall time. */
+  pauses: { atSec: number; durationSec: number }[];
+  /** Laps as seconds of riding (start inclusive, end exclusive). */
+  laps: { startSec: number; endSec: number }[];
+  meta: RideMeta;
+  hints: RideHints;
+}
+
+export type RideImportResult =
+  | { ok: true; series: RideSeries; warnings: RideImportWarning[] }
+  | { ok: false; error: RideImportError };
 
 export type RideReadResult =
   | { ok: true; ride: RawRide; warnings: RideImportWarning[] }

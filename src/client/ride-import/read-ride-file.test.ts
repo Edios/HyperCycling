@@ -1,17 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
 import { encodeRideToFit } from '../../domain/fit/encode-ride';
 import { summarizeRide, type RideRecord } from '../../domain/ride';
-import { handleRideImportRequest, type RideImportRequest } from './protocol';
+import { handleRideImportRequest, transferablesOf, type RideImportRequest } from './protocol';
 import { readRideFile, type FileLike, type WorkerLike } from './read-ride-file';
 
 function fitBytes(): Uint8Array {
+  // 400 s at 1 Hz: long enough to make a workout from.
+  const n = 400;
   const samples = {
-    timeMs: [1000, 2000],
-    power: [200, 210],
-    cadence: [90, 91],
-    heartRate: [120, 121],
-    targetW: [200, 200],
-    segmentIndex: [0, 0],
+    timeMs: Array.from({ length: n }, (_, i) => (i + 1) * 1000),
+    power: Array.from({ length: n }, (_, i) => (i < 2 ? 200 + i * 10 : 220)),
+    cadence: Array.from({ length: n }, () => 90),
+    heartRate: Array.from({ length: n }, () => 120),
+    targetW: Array.from({ length: n }, () => 200),
+    segmentIndex: Array.from({ length: n }, () => 0),
   };
   const ride: RideRecord = {
     id: 'r',
@@ -48,18 +50,17 @@ function fakeWorker(mode: 'answer' | 'silent' | 'crash' | 'otherId' = 'answer') 
     terminated: false,
     postMessage(message, transfer) {
       posted.push({ message, transfer });
-      queueMicrotask(() => {
+      void (async () => {
         if (mode === 'crash') worker.onerror?.(new ErrorEvent('error'));
         if (mode === 'otherId') {
-          const reply = handleRideImportRequest(message);
+          const reply = await handleRideImportRequest(message);
           worker.onmessage?.(new MessageEvent('message', { data: { ...reply, id: -1 } }));
         }
         if (mode === 'answer') {
-          worker.onmessage?.(
-            new MessageEvent('message', { data: handleRideImportRequest(message) }),
-          );
+          const reply = await handleRideImportRequest(message);
+          worker.onmessage?.(new MessageEvent('message', { data: reply }));
         }
-      });
+      })();
     },
     terminate() {
       worker.terminated = true;
@@ -72,7 +73,8 @@ describe('readRideFile', () => {
   it('reads a FIT file in the worker, hands over the bytes and stops the worker', async () => {
     const { worker, posted } = fakeWorker();
     const r = await readRideFile(file('ride.fit', fitBytes()), { createWorker: () => worker });
-    expect(r.ok && r.ride.samples.map((s) => s.power)).toEqual([200, 210]);
+    expect(r.ok && r.series.durationSec).toBe(400);
+    expect(r.ok && Array.from(r.series.power.slice(0, 3))).toEqual([200, 210, 220]);
     expect(posted[0]?.message.fileName).toBe('ride.fit');
     expect(posted[0]?.transfer).toEqual([posted[0]?.message.buffer]);
     expect(worker.terminated).toBe(true);
@@ -126,5 +128,17 @@ describe('readRideFile', () => {
       expect(r).toEqual({ ok: false, error: { code: 'timeout' } });
       expect(slow.worker.terminated).toBe(true);
     }
+  });
+});
+
+describe('transferablesOf', () => {
+  it('hands back the six column buffers of a series, nothing for an error', async () => {
+    const buffer = fitBytes().slice().buffer;
+    const ok = await handleRideImportRequest({ id: 1, fileName: 'a.fit', buffer });
+    const buffers = transferablesOf(ok);
+    expect(buffers).toHaveLength(6);
+    expect(buffers.every((b) => b instanceof ArrayBuffer)).toBe(true);
+    const bad = await handleRideImportRequest({ id: 2, fileName: 'a.zwo', buffer });
+    expect(transferablesOf(bad)).toEqual([]);
   });
 });
