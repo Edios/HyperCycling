@@ -2,6 +2,8 @@ import type { Segment } from '../../domain/segments';
 import { describe, expect, it } from 'vitest';
 import type { Workout } from '../../domain/workout';
 import { builtinWorkouts } from '../data/builtin';
+import { en } from '../i18n/en';
+import { pl } from '../i18n/pl';
 import {
   countsAsRide,
   difficultyOf,
@@ -55,6 +57,34 @@ describe('filterLibrary', () => {
     const long = make({ id: 'long', blocks: block(3600) });
     const short = make({ id: 'short', blocks: block(1800) });
     expect(filterLibrary([long, short], 'short', '', 'en').map((w) => w.id)).toEqual(['short']);
+  });
+
+  it('"Easy start" keeps up to 45 minutes and none of the hard kinds', () => {
+    const easy = make({ id: 'easy', tags: ['endurance'], blocks: block(40 * 60) });
+    const long = make({ id: 'long', tags: ['endurance'], blocks: block(50 * 60) });
+    const hard = make({ id: 'hard', tags: ['hiit'], blocks: block(20 * 60) });
+    const test = make({ id: 'test', tags: ['test'], blocks: block(20 * 60) });
+    expect(filterLibrary([easy, long, hard, test], 'start', '', 'en').map((w) => w.id)).toEqual([
+      'easy',
+    ]);
+  });
+
+  it('"Easy start" finds something in the built-in library, and nothing hard', () => {
+    const picked = filterLibrary(builtinWorkouts, 'start', '', 'en');
+    expect(picked.length).toBeGreaterThanOrEqual(5);
+    for (const w of picked) expect(w.tags).not.toContain('hiit');
+  });
+
+  it('every card kind has a plain-words effect in both languages', () => {
+    for (const tag of [
+      ...new Set(builtinWorkouts.map(primaryTag)),
+      'mine',
+      'progres',
+      'freestyle',
+    ] as const) {
+      expect(en.tagEffect[tag as keyof typeof en.tagEffect], tag).toBeTruthy();
+      expect(pl.tagEffect[tag as keyof typeof pl.tagEffect], tag).toBeTruthy();
+    }
   });
 
   it('searches the localized name without caring about case or diacritics', () => {
