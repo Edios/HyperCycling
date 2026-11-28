@@ -287,6 +287,31 @@ describe('TrainingScreen', () => {
     expect(screen.getByTestId('layout-players')).toBeInTheDocument();
   });
 
+  it('one rider on Classic: no riders column, the target sits under the ring', async () => {
+    stored = METERED_SETTINGS;
+    const config: SessionConfig = {
+      background: 'basic',
+      hud: 'players',
+      playerIds: [],
+      music: false,
+    };
+    useSessionStore.getState().load({
+      workout,
+      segments: flattenWorkout(workout),
+      config,
+      players: [players[0]!],
+    });
+    await renderScreen();
+    await screen.findByTestId('layout-solo');
+    expect(screen.queryByTestId('players-list')).toBeNull();
+    // effort 3 = 62 % FTP of 250 W
+    expect(screen.getByTestId('effort-name')).toHaveTextContent('target 155 W');
+    expect(screen.getByTestId('effort-name')).not.toHaveTextContent('% FTP');
+    expect(screen.queryByRole('button', { name: 'Players' })).toBeNull();
+    key('KeyG');
+    expect(screen.getByTestId('layout-solo')).toBeInTheDocument();
+  });
+
   it('players layout shows names only when the bike has no power', async () => {
     stored = {
       ...METERED_SETTINGS,

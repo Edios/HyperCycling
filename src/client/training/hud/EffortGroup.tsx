@@ -51,6 +51,8 @@ export interface EffortGroupProps {
   resistanceCommand?: ResistanceCommand;
   /** Show the '~N% FTP' part of the name; off for bikes that do not measure watts. */
   showFtp?: boolean;
+  /** One rider on a bike with watts: their target, shown instead of the % FTP. */
+  targetW?: number;
   /** Optional heart-rate target chip under the effort name. */
   hr?: ReactNode;
   /**
@@ -77,6 +79,7 @@ export function EffortGroup({
   motion = false,
   resistanceCommand,
   showFtp = true,
+  targetW,
   hr,
   trainer,
   className,
@@ -103,9 +106,11 @@ export function EffortGroup({
       ]
         .filter(Boolean)
         .join(' · ')
-    : showFtp
-      ? `${label} · ${t('training.ftpApprox', { pct: Math.round(ftpPct) })}`
-      : label;
+    : showFtp && targetW !== undefined
+      ? `${label} · ${t('training.erg.target', { watts: targetW })}`
+      : showFtp
+        ? `${label} · ${t('training.ftpApprox', { pct: Math.round(ftpPct) })}`
+        : label;
   const nextDesc = next
     ? [
         next.rpm !== undefined ? `${next.rpm} ${t('training.rpm')}` : '',
@@ -161,7 +166,13 @@ export function EffortGroup({
         )}
         <div
           data-testid="effort-name"
-          title={showFtp && !trainer ? t('training.ftpHint') : undefined}
+          title={
+            showFtp && !trainer
+              ? targetW !== undefined
+                ? `${t('training.ftpApprox', { pct: Math.round(ftpPct) })}. ${t('training.ftpHint')}`
+                : t('training.ftpHint')
+              : undefined
+          }
           className={`${hud.lbl} ${styles.name}${wordInside ? ` ${styles.nameLow}` : ''}`}
         >
           {name}
