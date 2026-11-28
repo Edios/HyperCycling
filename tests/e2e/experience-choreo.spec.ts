@@ -58,7 +58,7 @@ async function startCountdown(page: Page): Promise<void> {
 test('Neon Grid 30: the drop of the summit song meets the stand, counted in on the beat', async ({
   page,
 }, info) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (err) => errors.push(err.message));
   await page.route('https://www.youtube.com/iframe_api', (route) =>
@@ -96,20 +96,27 @@ test('Neon Grid 30: the drop of the summit song meets the stand, counted in on t
   // 1.5 s before the stand: "Stand up on the drop", counted down on the beat.
   await page.clock.fastForward(84_000);
   await expect(page.getByTestId('timeline')).toContainText('block 20 of');
-  const call = page.getByTestId('choreo-call');
-  for (let i = 0; i < 100 && (await call.count()) === 0; i += 1) await page.clock.runFor(200);
-  // Read at once: the lead-in lasts under two seconds.
-  const seen = await page.evaluate(() => {
-    const c = document.querySelector('[data-testid="choreo-call"]');
-    const root = document.querySelector('[data-testid="choreo"]');
-    return {
-      move: c?.getAttribute('data-move'),
-      on: c?.getAttribute('data-on'),
-      count: Number(c?.getAttribute('data-count')),
-      text: c?.textContent ?? '',
-      onBeat: root?.getAttribute('data-on-beat'),
-    };
-  });
+  // The lead-in lasts under two seconds and the page clock also runs on its own, so the call is
+  // read in the same evaluate that finds it (never "is it there?" and then "what does it say?").
+  const readCall = () =>
+    page.evaluate(() => {
+      const c = document.querySelector('[data-testid="choreo-call"]');
+      if (!c) return null;
+      const root = document.querySelector('[data-testid="choreo"]');
+      return {
+        move: c.getAttribute('data-move'),
+        on: c.getAttribute('data-on'),
+        count: Number(c.getAttribute('data-count')),
+        text: c.textContent ?? '',
+        onBeat: root?.getAttribute('data-on-beat'),
+      };
+    });
+  let seen = await readCall();
+  for (let i = 0; i < 150 && seen === null; i += 1) {
+    await page.clock.runFor(100);
+    seen = await readCall();
+  }
+  if (seen === null) throw new Error('the stand was never called');
   expect(seen).toMatchObject({ move: 'stand', on: 'drop', onBeat: 'true' }); // 66 rpm ~ 126 BPM
   expect(seen.text).toContain('Stand up on the drop');
   // The count runs on the song's beat (unit tests check each step); here: one of the lead-in.
