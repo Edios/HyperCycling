@@ -43,3 +43,17 @@ test('freestyle tab filters and searches', async ({ page }) => {
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('training-screen')).toBeVisible();
 });
+
+test('each kind says what it does; "Easy start" keeps no hard workouts', async ({ page }) => {
+  await page.goto('./#/freestyle');
+  const cards = page.getByTestId('workout-card');
+  await expect(cards.first()).toBeVisible();
+  // "Zone 2 · easy and long, builds the base": the kind and its effect on one line.
+  await expect(cards.first().getByTestId('workout-kind')).toContainText(' · ');
+  await page.getByRole('button', { name: 'Easy start', exact: true }).click();
+  const n = await cards.count();
+  expect(n).toBeGreaterThan(0);
+  for (const kind of await page.getByTestId('workout-kind').allTextContents()) {
+    expect(kind).not.toMatch(/^(HIIT|Tests|Climbs|Sprints|Threshold|VO2)\b/);
+  }
+});

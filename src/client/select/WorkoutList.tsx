@@ -6,7 +6,7 @@ import { localizedText } from '../data/localized';
 import { useSettings } from '../data/useSettings';
 import { useLang, useT } from '../i18n';
 import { ProfileChart } from '../ui/ProfileChart';
-import { minutesOf, primaryTag, tagKey } from './model';
+import { minutesOf, primaryTag, tagEffectKey, tagKey } from './model';
 import styles from './WorkoutList.module.css';
 
 /** Ten ticks, the first `value` lit. */
@@ -57,7 +57,10 @@ export const WorkoutRow = memo(function WorkoutRow({
             </span>
           )}
         </span>
-        <span className={styles.cat}>{t(tagKey(primaryTag(workout)))}</span>
+        <span className={styles.cat} data-testid="workout-kind">
+          {t(tagKey(primaryTag(workout)))}
+          <span className={styles.effect}> · {t(tagEffectKey(primaryTag(workout)))}</span>
+        </span>
       </div>
       <div className={styles.strip}>
         <ProfileChart segments={segments} height="1.5rem" />

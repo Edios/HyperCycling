@@ -4,10 +4,12 @@ import { totalDurationSec, type Workout } from '../../domain/workout';
 import { localizedText } from '../data/localized';
 import type { MessageKey } from '../i18n';
 
-export type FilterId = 'all' | 'short' | 'hiit' | 'zone2' | 'climbs' | 'tests' | 'music' | 'mine';
+export type FilterId =
+  'all' | 'start' | 'short' | 'hiit' | 'zone2' | 'climbs' | 'tests' | 'music' | 'mine';
 
 export const FILTER_IDS: readonly FilterId[] = [
   'all',
+  'start',
   'short',
   'hiit',
   'zone2',
@@ -18,6 +20,10 @@ export const FILTER_IDS: readonly FilterId[] = [
 ];
 
 export const SHORT_WORKOUT_SEC = 30 * 60;
+
+/** "Getting started": up to 45 minutes and none of the hard kinds (intervals, tests, climbs...). */
+export const START_WORKOUT_SEC = 45 * 60;
+const START_EXCLUDED_TAGS = ['hiit', 'vo2', 'sprint', 'threshold', 'climb', 'test'];
 
 const TAG_FILTERS: Partial<Record<FilterId, string>> = {
   hiit: 'hiit',
@@ -43,6 +49,9 @@ export function filterLibrary(
   return workouts.filter((w) => {
     if (filter === 'short') {
       if (totalDurationSec(w) > SHORT_WORKOUT_SEC) return false;
+    } else if (filter === 'start') {
+      if (totalDurationSec(w) > START_WORKOUT_SEC) return false;
+      if (w.tags.some((t) => START_EXCLUDED_TAGS.includes(t))) return false;
     } else {
       const tag = TAG_FILTERS[filter];
       if (tag !== undefined && !w.tags.includes(tag)) return false;
@@ -107,6 +116,11 @@ export function primaryTag(w: Workout): PrimaryTag {
 
 export function tagKey(tag: PrimaryTag): MessageKey {
   return `tag.${tag}`;
+}
+
+/** What a kind of workout does, in a few plain words (shown beside the kind in the list). */
+export function tagEffectKey(tag: PrimaryTag): MessageKey {
+  return `tagEffect.${tag}`;
 }
 
 export function minutesOf(w: Workout): number {

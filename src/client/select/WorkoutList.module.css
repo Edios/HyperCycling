@@ -71,6 +71,15 @@
 .cat {
   font-size: max(12px, 0.8125rem);
   color: var(--mut);
+  /* "Zone 2 · easy and long, builds the base": one line, cut at the end on a narrow row. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.effect {
+  color: var(--dim);
 }
 
 .badge {
