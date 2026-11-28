@@ -32,12 +32,12 @@ interface AdvancedPanelProps {
   panelRef?: Ref<HTMLDivElement>;
   /** The quiet line beside the title while closed: what is inside. */
   hint: string;
-  /** The Start bar already carries a "More" shortcut: on a phone the closed line would repeat it. */
+  /** The Start bar already carries a "Ride settings" shortcut: the closed line would repeat it. */
   chipBar?: boolean;
 }
 
 /**
- * "Advanced settings": a collapsed accordion under "Who rides". Closed it is one quiet line; open it
+ * "Ride settings": a collapsed accordion under "Who rides". Closed it is one quiet line; open it
  * shows named groups (see {@link Group}) in two columns on a wide screen and one list on a phone.
  */
 export function AdvancedPanel({

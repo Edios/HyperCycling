@@ -454,8 +454,13 @@ describe('SetupScreen redesign: who rides, advanced settings, sticky Start', () 
     const bar = await screen.findByTestId('start-bar');
     const music = within(bar).getByTestId('bar-music');
     expect(music).toHaveAttribute('aria-pressed', 'false');
+    expect(music).toHaveTextContent('Music: off');
     fireEvent.click(music);
     expect(music).toHaveAttribute('aria-pressed', 'true');
+    expect(music).toHaveTextContent('Music: on');
+    // One way into the ride settings: the closed accordion line is not shown beside the chip.
+    expect(screen.getByTestId('advanced')).toHaveAttribute('data-chip-bar', 'true');
+    expect(within(bar).getByTestId('bar-more')).toHaveTextContent('Ride settings');
 
     fireEvent.click(within(bar).getByTestId('bar-layout'));
     const dialog = screen.getByRole('dialog', { name: 'Screen layout' });

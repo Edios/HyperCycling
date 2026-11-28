@@ -20,7 +20,9 @@ test.beforeEach(({ browserName }, info) => {
 test.describe('phone setup bar (390x844)', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('Freestyle: the chips replace the closed Advanced line; More opens it', async ({ page }) => {
+  test('Freestyle: the chips replace the closed settings line; Ride settings opens it', async ({
+    page,
+  }) => {
     // The fixtures open Advanced by default; here it starts closed.
     await page.addInitScript(() => localStorage.setItem('hypercycling.setup.advanced', '0'));
     await page.goto('./#/setup/demo-mixed');
@@ -33,7 +35,18 @@ test.describe('phone setup bar (390x844)', () => {
   });
 });
 
-test('Experience keeps its own Advanced line on a phone (no chips there)', async ({ page }) => {
+test('a wide screen also has one way in: the chip, no closed settings line', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript(() => localStorage.setItem('hypercycling.setup.advanced', '0'));
+  await page.goto('./#/setup/demo-mixed');
+  await expect(page.getByTestId('bar-more')).toHaveText('Ride settings');
+  await expect(page.getByTestId('advanced-toggle')).toBeHidden();
+  await page.getByTestId('bar-more').click();
+  await expect(page.getByTestId('advanced-toggle')).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByTestId('advanced-toggle')).toContainText('Ride settings');
+});
+
+test('Experience keeps its own settings line on a phone (no chips there)', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => localStorage.setItem('hypercycling.setup.advanced', '0'));
   await page.goto('./#/setup/class-neon-grid-45?exp=neon-grid-45');

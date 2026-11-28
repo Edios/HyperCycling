@@ -114,9 +114,7 @@
   }
 }
 
-/* Phone: the Start bar's "More" chip opens this panel, so the closed line would be a second way in. */
-@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) {
-  .panel[data-chip-bar='true'][data-open='false'] {
-    display: none;
-  }
+/* The Start bar's "Ride settings" chip opens this panel: closed, its own line would be a second way in. */
+.panel[data-chip-bar='true'][data-open='false'] {
+  display: none;
 }
