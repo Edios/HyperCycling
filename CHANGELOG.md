@@ -8,6 +8,8 @@ under "What's new" (Polish texts for recent changes are written by hand).
 
 ### 2026-11-28
 
+- Fixed: **setup:** One way into the ride settings, the music chip says its state ([#177](https://github.com/Edios/HyperCycling/pull/177))
+- Fixed: **summary:** FIT for Strava first, the JSON file under More, back to where the ride came from ([#176](https://github.com/Edios/HyperCycling/pull/176))
 - Fixed: **devices:** On an iPhone the ride setup names Bluefy, with a link to the help ([#175](https://github.com/Edios/HyperCycling/pull/175))
 - Fixed: **plans:** The plan wizard skips the FTP step for a bike without watts ([#174](https://github.com/Edios/HyperCycling/pull/174))
 - Fixed: **hud:** No riders column for a single rider on Classic; watts never clipped ([#172](https://github.com/Edios/HyperCycling/pull/172))
@@ -134,7 +136,7 @@ under "What's new" (Polish texts for recent changes are written by hand).
 ### 2026-11-07
 
 - New: **experience:** Neon Grid 45 end to end ([#66](https://github.com/Edios/HyperCycling/pull/66))
-- New: **music:** Song finder by artist and title (M19d, first slice) ([#65](https://github.com/Edios/HyperCycling/pull/65))
+- New: **music:** Song finder by artist and title ([#65](https://github.com/Edios/HyperCycling/pull/65))
 - Faster: **scenes:** Continuous render-scale ladder, ribbon merge ([#64](https://github.com/Edios/HyperCycling/pull/64))
 - New: **ui:** M24b-d mobile readability, copy, a11y (axe e2e) ([#63](https://github.com/Edios/HyperCycling/pull/63))
 - New: **music:** Keyless Deezer BPM lookup ([#62](https://github.com/Edios/HyperCycling/pull/62))

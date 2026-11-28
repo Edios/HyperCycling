@@ -1505,6 +1505,23 @@ export const pl: Messages = {
     updateApply: 'Odśwież',
     updateLater: 'Później',
   },
+  whatsNew: {
+    eyebrow: 'Lista zmian',
+    title: 'Co nowego',
+    version: 'Wersja {version}',
+    older: 'Wcześniejsze zmiany (po angielsku)',
+    back: 'Wróć do „Jak to działa”',
+    link: 'Co nowego',
+    footer: 'Wersja {version} · Co nowego',
+    dot: 'Nowe zmiany',
+    type: {
+      feat: 'Nowość',
+      fix: 'Poprawka',
+      perf: 'Szybciej',
+      refactor: 'Ulepszenie',
+      other: 'Zmiana',
+    },
+  },
   guide: {
     menu: 'Jak to działa',
     eyebrow: 'Jak to działa',

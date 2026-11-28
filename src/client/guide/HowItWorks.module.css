@@ -32,6 +32,20 @@
   max-width: 38rem;
 }
 
+.news {
+  margin: 1rem 0 0;
+  font: 600 max(16px, 1.05rem) / 1.4 var(--font-body);
+}
+
+.news a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
 .why {
   display: grid;
   grid-template-columns: 1fr 1fr;

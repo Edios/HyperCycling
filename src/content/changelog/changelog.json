@@ -3,6 +3,20 @@
   "version": "2.0.0",
   "entries": [
     {
+      "pr": 177,
+      "date": "2026-11-28",
+      "type": "fix",
+      "scope": "setup",
+      "title": "One way into the ride settings, the music chip says its state"
+    },
+    {
+      "pr": 176,
+      "date": "2026-11-28",
+      "type": "fix",
+      "scope": "summary",
+      "title": "FIT for Strava first, the JSON file under More, back to where the ride came from"
+    },
+    {
       "pr": 175,
       "date": "2026-11-28",
       "type": "fix",
@@ -676,7 +690,7 @@
       "date": "2026-11-07",
       "type": "feat",
       "scope": "music",
-      "title": "Song finder by artist and title (M19d, first slice)"
+      "title": "Song finder by artist and title"
     },
     {
       "pr": 64,

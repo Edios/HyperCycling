@@ -49,7 +49,7 @@ const CONVENTIONAL = /^(\w+)(?:\(([^)]*)\))?(!)?:\s*(.+)$/;
  * to a rider. A parenthesis goes only when every comma- or plus-separated part is such a code.
  */
 const CODE_TOKEN =
-  /^(?:[A-Z]{1,2}\d+[\w.]*(?:-[A-Z]?\d+\w*)?(?:\s+(?:rest|part \d+|first slice))?|bug #\d+|stacked on #\d+|#\d+-\d+(?:\.\.\d+)?|Soundtrack Match PR \w+|PR \d+\w*|redesign step \d+|spec [\w\s]+|pkt [\w\s]+|[\w-]+\.spec\.ts:\d+)$/i;
+  /^(?:[A-Z]{1,2}\d+[\w.]*(?:-[A-Z]?\d+\w*)?(?:\s+(?:rest|part \d+|first slice))?|first slice|bug #\d+|stacked on #\d+|#\d+-\d+(?:\.\.\d+)?|Soundtrack Match PR \w+|PR \d+\w*|redesign step \d+|spec [\w\s]+|pkt [\w\s]+|[\w-]+\.spec\.ts:\d+)$/i;
 const TRAILING_PARENS = /\s*\(([^()]*)\)\s*$/;
 
 function stripCodes(text: string): string {

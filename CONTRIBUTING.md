@@ -38,6 +38,8 @@ First time: `npx playwright install chromium`. The e2e `local` project starts on
 
 One branch per feature or milestone (`feat/...`) from up-to-date `main`, one pull request into `main`, CI green before merge. Never commit to `main` directly. Commit messages are conventional (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 
+Pull request titles feed the in-app "What's new" and [CHANGELOG.md](CHANGELOG.md): write them in English for a rider (`feat(scope): what the rider gets`). `chore`, `ci`, `test`, `docs`, `build` and `style` are left out. The Pages deploy refreshes the list; to commit it, run `npm run changelog` (needs `gh`), and add a Polish text for recent changes in `src/content/changelog/changelog.pl.json`.
+
 ## Licence of contributions
 
 HyperCycling is licensed under the GNU AGPL-3.0-only (see [LICENSE](LICENSE) and [docs/licensing.md](docs/licensing.md)). By sending a pull request you agree that your contribution is released under the same licence.
