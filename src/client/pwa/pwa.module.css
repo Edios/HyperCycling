@@ -1,0 +1,60 @@
+.install {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.note {
+  margin: 0;
+  color: var(--mut);
+  font-size: max(var(--fs-min), 0.9375rem);
+}
+
+/* "New version": one quiet line under the top bar, never over the Start bar or a ride. */
+.update {
+  position: fixed;
+  z-index: 40;
+  top: calc(4.25rem + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  max-width: calc(100vw - 1.5rem);
+  padding: 0.25rem 0.25rem 0.25rem 1rem;
+  border: 1px solid var(--line2);
+  border-radius: 999px;
+  background: var(--s1);
+  color: var(--fg);
+  font-size: max(var(--fs-min), 0.9375rem);
+}
+
+.updateAction,
+.updateClose {
+  min-height: 44px;
+  min-width: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.updateAction {
+  padding: 0 0.75rem;
+  font-weight: 700;
+  color: var(--acc);
+}
+
+.updateClose {
+  color: var(--mut);
+  font-size: 1.25rem;
+}
+
+.updateAction:focus-visible,
+.updateClose:focus-visible {
+  outline: 2px solid var(--act);
+  outline-offset: 2px;
+}

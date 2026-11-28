@@ -1477,6 +1477,16 @@ export const en = {
     rideWithPlayers: 'Ride with players',
   },
   // "How it works" page (its own block, so other changes to this file do not collide with it).
+  pwa: {
+    title: 'Install as an app',
+    body: 'HyperCycling can sit on your home screen or desktop like an app: its own window, no browser bar, and the workouts work without the internet (music still needs it).',
+    install: 'Install the app',
+    installHint: 'Your workouts and settings stay where they are.',
+    installIos: 'On an iPhone or iPad: tap Share in Safari, then “Add to Home Screen”.',
+    updateReady: 'A new version is ready.',
+    updateApply: 'Refresh',
+    updateLater: 'Later',
+  },
   guide: {
     menu: 'How it works',
     eyebrow: 'How it works',

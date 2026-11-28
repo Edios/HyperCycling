@@ -1,6 +1,7 @@
 import { LANGS, type Lang } from '../../domain/lang';
 import { useSettings } from '../data/useSettings';
 import { getLang, setLang, useT } from '../i18n';
+import { InstallApp } from '../pwa/InstallApp';
 import { Segmented } from '../ui/Segmented';
 import { useSave } from './save';
 import { ShortcutsCard } from './ShortcutsCard';
@@ -52,6 +53,7 @@ export function GeneralSection() {
           {t('settings.general.help')}
         </a>
       </div>
+      <InstallApp />
       <ShortcutsCard />
     </div>
   );

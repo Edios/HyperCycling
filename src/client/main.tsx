@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { loadSettings } from './data/useSettings';
 import { completeSpotifyCallbackOnLoad, settingsSpotifyStore } from './music/spotify';
+import { listenForInstallPrompt, registerServiceWorker } from './pwa/pwa-store';
 import './theme/tokens.css';
 import './theme/fonts.css';
 
@@ -10,6 +11,10 @@ const root = document.getElementById('root');
 if (!root) throw new Error('Root element #root not found');
 
 async function bootstrap(container: HTMLElement): Promise<void> {
+  // Installable app: the install prompt is caught before the first render; the service worker
+  // (production builds) caches the app for offline rides and never touches the rider's data.
+  listenForInstallPrompt();
+  registerServiceWorker();
   // Returning from the Spotify consent page: finish the login before anything reads settings.
   const query = new URLSearchParams(location.search);
   if (query.has('code') || query.has('error')) {
