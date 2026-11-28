@@ -103,6 +103,28 @@
   min-height: 44px;
   display: inline-flex;
   align-items: center;
+  gap: 0.375rem;
+  list-style: none;
+}
+
+.more > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A flex summary loses the native marker: draw the same small triangle. */
+.more > summary::before {
+  content: '▸';
+  transition: transform 0.15s ease-out;
+}
+
+.more[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .more > summary::before {
+    transition: none;
+  }
 }
 
 .more .actions {
