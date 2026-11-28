@@ -64,6 +64,7 @@
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-react-hooks": "7.1.1",
     "fake-indexeddb": "6.2.8",
+    "fit-file-parser": "6.2.10",
     "globals": "17.14.0",
     "jsdom": "27.4.0",
     "msw": "3.0.7",
