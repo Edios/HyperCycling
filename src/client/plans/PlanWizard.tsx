@@ -101,6 +101,8 @@ function Wizard({ me }: { me: Player | undefined }) {
   const [minutes, setMinutes] = useState<30 | 45 | 60>(45);
   const [trainingDays, setTrainingDays] = useState<number[]>([]);
   const [pickedKind, setPickedKind] = useState<FtpKind | undefined>();
+  // A bike that shows no watts skips the FTP step (nothing to measure); the summary offers it back.
+  const [askFtp, setAskFtp] = useState(false);
   const [ftpText, setFtpText] = useState(me ? String(me.ftp) : '');
   const [hrText, setHrText] = useState(me?.hrMax !== undefined ? String(me.hrMax) : '');
   const [ageText, setAgeText] = useState('');
@@ -110,7 +112,8 @@ function Wizard({ me }: { me: Player | undefined }) {
   const heading = useRef<HTMLHeadingElement>(null);
 
   // A bike that already reports no watts starts on that answer.
-  const ftpKind: FtpKind = pickedKind ?? (settings.equipment.showsWatts ? 'unknown' : 'noWatts');
+  const ftpKind: FtpKind =
+    pickedKind ?? (settings.equipment.showsWatts || askFtp ? 'unknown' : 'noWatts');
   const ftpValue = validFtp(ftpText);
   const ftpAnswer: FtpAnswer =
     ftpKind === 'known' && ftpValue !== undefined
@@ -118,6 +121,11 @@ function Wizard({ me }: { me: Player | undefined }) {
       : ftpKind === 'known'
         ? { kind: 'unknown' }
         : { kind: ftpKind };
+
+  const skipFtp = !settings.equipment.showsWatts && !askFtp;
+  const flow: readonly number[] = skipFtp ? [0, 1, 3, LAST] : [0, 1, 2, 3, LAST];
+  const pos = Math.max(0, flow.indexOf(step));
+  const go = (delta: 1 | -1): void => setStep(flow[pos + delta] ?? step);
 
   const hrBlank = hrText.trim() === '';
   const hrValue = validHrMax(hrText);
@@ -234,19 +242,23 @@ function Wizard({ me }: { me: Player | undefined }) {
         </Link>
       </header>
       <ol className={styles.steps} aria-label={t('wizard.stepsLabel')}>
-        {STEP_KEYS.map((key, i) => (
+        {flow.map((i, n) => (
           <li
-            key={key}
+            key={i}
             data-testid="wizard-step"
             aria-current={i === step ? 'step' : undefined}
-            className={i < step ? styles.done : i === step ? styles.cur : undefined}
+            className={n < pos ? styles.done : i === step ? styles.cur : undefined}
           >
-            <span className={styles.sr}>{t(key)}</span>
+            <span className={styles.sr}>{t(STEP_KEYS[i] ?? 'wizard.stepGoal')}</span>
           </li>
         ))}
       </ol>
       <div className={styles.stepLabel}>
-        <b>{step < LAST ? t('wizard.stepOf', { n: step + 1 }) : t('wizard.ready')}</b>
+        <b>
+          {step < LAST
+            ? t('wizard.stepOf', { n: pos + 1, total: flow.length - 1 })
+            : t('wizard.ready')}
+        </b>
         {t(STEP_KEYS[step] ?? 'wizard.stepGoal')}
       </div>
 
@@ -530,6 +542,20 @@ function Wizard({ me }: { me: Player | undefined }) {
                   weeks: weeksOf(plan),
                 })}
               </p>
+              {skipFtp && (
+                <button
+                  type="button"
+                  className={styles.link}
+                  data-testid="wizard-ask-ftp"
+                  onClick={() => {
+                    setAskFtp(true);
+                    setPickedKind(undefined);
+                    setStep(2);
+                  }}
+                >
+                  {t('wizard.ftp.askWatts')}
+                </button>
+              )}
             </div>
             <Card className={styles.calendar}>
               <PlanCalendar plan={plan} settings={rec.settings} equipment={equipment} />
@@ -544,13 +570,13 @@ function Wizard({ me }: { me: Player | undefined }) {
             {t('wizard.pickToContinue')}
           </p>
         )}
-        {step > 0 && <Button onClick={() => setStep(step - 1)}>{t('wizard.back')}</Button>}
+        {step > 0 && <Button onClick={() => go(-1)}>{t('wizard.back')}</Button>}
         {step < LAST ? (
           <Button
             variant="primary"
             className={styles.grow}
             disabled={!canGoOn}
-            onClick={() => setStep(step + 1)}
+            onClick={() => go(1)}
           >
             {t('wizard.next')}
           </Button>

@@ -144,14 +144,28 @@ describe('PlanWizard steps', () => {
     await waitFor(() => expect(screen.getByRole('spinbutton')).toHaveValue(245));
   });
 
-  it('offers a bike without watts and selects it when the setting says no watts', async () => {
+  it('a bike without watts skips the FTP step; the summary can still ask for it', async () => {
     db.settings = {
       ...METERED_SETTINGS,
       equipment: { ...METERED_SETTINGS.equipment, showsWatts: false },
     };
     renderWizard();
-    await toFtpStep();
-    expect(screen.getByRole('radio', { name: /Bike without watts/ })).toBeChecked();
+    fireEvent.click(await screen.findByRole('radio', { name: /Build Form/ }));
+    expect(screen.getAllByTestId('wizard-step')).toHaveLength(4);
+    expect(screen.getByText('Step 1 of 3')).toBeInTheDocument();
+    next();
+    next();
+    // Straight from the time step to heart rate: no FTP question for a bike that has no watts.
+    expect(screen.getByText('Step 3 of 3')).toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: /Bike without watts/ })).toBeNull();
+    back();
+    expect(screen.getByRole('radio', { name: '45 min' })).toBeChecked();
+    next();
+    next();
+    expect(screen.getByTestId('wizard-reason')).toHaveTextContent('effort 1–10');
+    fireEvent.click(screen.getByTestId('wizard-ask-ftp'));
+    expect(screen.getAllByTestId('wizard-step')).toHaveLength(5);
+    expect(screen.getByRole('radio', { name: /I don.t know/ })).toBeChecked();
   });
 
   it('keeps the answers when going back and recomputes the plan for a new goal', async () => {

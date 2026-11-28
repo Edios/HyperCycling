@@ -455,7 +455,7 @@ export const en = {
     start: 'Start plan',
     customize: 'Customize',
     stepsLabel: 'Steps',
-    stepOf: 'Step {n} of 4',
+    stepOf: 'Step {n} of {total}',
     stepGoal: 'Goal',
     stepTime: 'Time',
     stepHr: 'Heart rate',
@@ -498,6 +498,7 @@ export const en = {
       guide: 'How do I do the test? See the guide',
       noWatts: 'Bike without watts',
       noWattsBody: 'The plan goes by effort 1–10 and heart rate. No power measuring.',
+      askWatts: 'My bike shows watts: ask about FTP',
     },
     reason: {
       test: 'You start with a 20-minute test because we don’t know your FTP yet. Then {weeks} of gradual progress, {days}× a week, {minutes} min each.',
