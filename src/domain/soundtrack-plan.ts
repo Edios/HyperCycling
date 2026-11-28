@@ -11,7 +11,7 @@
  *    no song twice in a ride; no energy 5 in the warm-up, nothing 3 steps calmer than a hard part
  *    asks for or 3 steps stronger than a calm one, nothing light (energy 1-2) on a climb (music
  *    energy spec §2b). Songs of the last rides cost a little (`history`, spec §3a), a song of the
- *    last rides may rest (`ROTATION_REST_RIDES`, off for now), and a small seeded jitter reorders
+ *    last rides may rest (`ROTATION_REST_RIDES`), and a small seeded jitter reorders
  *    near-equal songs ("Shuffle").
  * 2. Relaxation ladder, when the songs cannot fill a section (too few, or no queue that ends
  *    within the tolerances): a wider tempo window, the neighbour categories, any category (the
@@ -218,13 +218,14 @@ export const OWN_BONUS = 0.1;
 /**
  * The own-song bonus of each "How many of my songs" level. Measured with ten own songs at tempos
  * of 86-94 rpm on the 116 built-in workouts (first-visit kinds of music), as the share of the
- * picks where an own song not yet played fits the tempo: 'few' about 13%, 'half' (today's bonus)
- * about 54%, 'most' about 77% (one play per song and ride caps it near 78%). A negative bonus only
+ * picks where an own song not yet played fits the tempo: 'few' about 12%, 'half' (today's bonus)
+ * about 47%, 'most' about 77% (one play per song and ride caps it near 78%). A negative bonus only
  * lets a catalog song win the near-ties: an own song still plays where the catalog has nothing
- * as good.
+ * as good. 'few' was -0.2 until the 85-95 rpm catalog addition: with more catalog songs at these
+ * tempos it fell to 2.5%, so it is -0.05 now (12.1%, as before the addition).
  */
 export const OWN_SHARE_BONUS: Readonly<Record<OwnShare, number>> = {
-  few: -0.2,
+  few: -0.05,
   half: OWN_BONUS,
   most: 0.5,
 };
@@ -636,24 +637,24 @@ export const HISTORY_ARTIST_MAX = 0.2;
  */
 export const ROTATION_REF_SEC = 240;
 /**
- * OFF (0) until the catalog has more songs at 85-95 rpm (owner's decision of 2026-11-26): with
- * today's catalog it costs too much tempo fit for what it rotates. With it off, plans are the same
- * as before it. Measured and reviewed with 3 rides at 0.05 (below); its tests run again once it is
- * above 0.
+ * A song of the last `ROTATION_REST_RIDES` rides rests (the mild variant): it costs
+ * `ROTATION_REST_COST` once per queue, whatever its length (a short song was the handy filler of
+ * every 5-minute warm-up), and a part that took one on the first step of the ladder also tries the
+ * wider tempo window, where fresh songs of the chosen kinds may win when they fit about as well.
+ * Never another kind of music for the rest (review of #170: the owner accepts a little off the
+ * tempo, not other genres). Where nothing else fits, the resting song still plays (never a gap
+ * instead).
  *
- * A song of the last `ROTATION_REST_RIDES` rides rests (the mild variant): it costs `ROTATION_REST_COST` once per queue, whatever its length (a short song was the
- * handy filler of every 5-minute warm-up), and a part that took one on the first step of the
- * ladder also tries the wider tempo window, where fresh songs of the chosen kinds may win when they
- * fit about as well. Never another kind of music for the rest (review of #170: the owner accepts a
- * little off the tempo, not other genres). Where nothing else fits, the resting song still plays
- * (never a gap instead). 580 first-visit rides with the app's history: the most played song went
- * from 59% to 48% of the rides, the energy fit kept (84.3% -> 85.8% within one step), songs of
- * other kinds 48 -> 35, for 15% fewer songs within 3% of the tempo. Within the chosen kinds the
- * catalog has too few songs at 85-95 rpm to go lower (a cost of 0.15 gives 46%); letting the rest
- * reach the neighbour kinds gave 30%, but with 1133 songs of other kinds in place of 48.
+ * On since the 85-95 rpm catalog addition (owner's decision of 2026-11-26: catalog first, then the
+ * rest). 580 first-visit rides with the app's history, main -> this catalog with the rest of 3
+ * rides at 0.15: the most played song 59.0% -> 30.9% of the rides (Flume - Holdin On, the filler
+ * of the 9-minute warm-ups at 91 rpm), energy within one step 84.3% -> 88.3%, songs within 3% of
+ * the tempo 2541 -> 2645 (2959 with the new catalog and no rest: the rest costs 10.6% of them),
+ * songs of other kinds 48 -> 9, no gap over 30 s. Rock alone: top song 78.6% -> 39.1%, gaps over
+ * 30 s 5 -> 0. A cost of 0.05 left the top song at 33.3%; 0.25 gives 30.2% for more tempo.
  */
-export const ROTATION_REST_RIDES = 0;
-export const ROTATION_REST_COST = 0.05;
+export const ROTATION_REST_RIDES = 3;
+export const ROTATION_REST_COST = 0.15;
 /**
  * An add-on style (synthwave, drum and bass) is a supplement, never the backbone: each such song
  * costs this much, plus as much again for every one already in the ride.

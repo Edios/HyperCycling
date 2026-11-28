@@ -5172,6 +5172,816 @@
           "durationSec": 170
         }
       ]
+    },
+    {
+      "id": "red-hot-chili-peppers-cant-stop",
+      "artist": "Red Hot Chili Peppers",
+      "title": "Can't Stop",
+      "bpm": 91,
+      "durationSec": 278,
+      "categories": ["rock"],
+      "roles": ["steady", "climb"],
+      "energy": 4,
+      "groove": 3,
+      "mood": "playful",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 183 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        {
+          "id": "8DyziWtkfBw",
+          "label": "official/topic (Red Hot Chili Peppers)",
+          "durationSec": 278
+        },
+        { "id": "4rIdFmXcnAA", "label": "re-upload", "durationSec": 269 }
+      ]
+    },
+    {
+      "id": "red-hot-chili-peppers-scar-tissue",
+      "artist": "Red Hot Chili Peppers",
+      "title": "Scar Tissue",
+      "bpm": 89,
+      "durationSec": 221,
+      "categories": ["rock"],
+      "roles": ["warmup", "steady"],
+      "energy": 2,
+      "groove": 2,
+      "mood": "mellow",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 179 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        {
+          "id": "mzJj5-lubeM",
+          "label": "official/topic (Red Hot Chili Peppers)",
+          "durationSec": 221
+        },
+        {
+          "id": "dicvFgPyzu4",
+          "label": "official/topic (Red Hot Chili Peppers - RHCP)",
+          "durationSec": 224
+        },
+        { "id": "h9YyazDg9YM", "label": "re-upload", "durationSec": 218 }
+      ]
+    },
+    {
+      "id": "metallica-sad-but-true",
+      "artist": "Metallica",
+      "title": "Sad but True",
+      "bpm": 89,
+      "durationSec": 328,
+      "categories": ["rock"],
+      "roles": ["steady", "climb"],
+      "energy": 4,
+      "groove": 3,
+      "mood": "dark",
+      "tagged": 2,
+      "energyNote": "Heavy, slow riff: weighty rather than fast, so 4 at 89 BPM.",
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 181 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "A8MO7fkZc5o", "label": "official/topic (Metallica)", "durationSec": 328 },
+        { "id": "TpohVYomw2o", "label": "official/topic (Metallica - Topic)", "durationSec": 325 },
+        {
+          "id": "YEEBCSComdM",
+          "label": "official/topic (Warner Records Vault)",
+          "durationSec": 328
+        }
+      ]
+    },
+    {
+      "id": "muse-hysteria",
+      "artist": "Muse",
+      "title": "Hysteria",
+      "bpm": 93,
+      "durationSec": 227,
+      "categories": ["rock"],
+      "roles": ["steady", "climb"],
+      "energy": 4,
+      "groove": 3,
+      "mood": "dark",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 186 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "3dm_5qWWDV8", "label": "official/topic (Muse)", "durationSec": 227 },
+        { "id": "bwkmNC7ZUUE", "label": "re-upload", "durationSec": 228 },
+        { "id": "M2naLJABWNM", "label": "re-upload", "durationSec": 227 }
+      ]
+    },
+    {
+      "id": "queens-of-the-stone-age-no-one-knows",
+      "artist": "Queens of the Stone Age",
+      "title": "No One Knows",
+      "bpm": 171,
+      "durationSec": 259,
+      "categories": ["rock"],
+      "roles": ["steady", "climb"],
+      "energy": 4,
+      "groove": 2,
+      "mood": "dark",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "s88r_q7oufE", "label": "official/topic (QueensStoneAgeVEVO)", "durationSec": 259 },
+        {
+          "id": "qbv44u2U3ek",
+          "label": "official/topic (Queens Of The Stone Age - Topic)",
+          "durationSec": 256
+        },
+        { "id": "dTalAdaXEzc", "label": "re-upload", "durationSec": 254 }
+      ]
+    },
+    {
+      "id": "arctic-monkeys-arabella",
+      "artist": "Arctic Monkeys",
+      "title": "Arabella",
+      "bpm": 90,
+      "durationSec": 207,
+      "categories": ["rock"],
+      "roles": ["steady", "climb"],
+      "energy": 3,
+      "groove": 2,
+      "mood": "dark",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 180 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        {
+          "id": "Jn6-TItCazo",
+          "label": "official/topic (Official Arctic Monkeys)",
+          "durationSec": 207
+        },
+        { "id": "ts1nUJxFk4U", "label": "re-upload", "durationSec": 208 }
+      ]
+    },
+    {
+      "id": "led-zeppelin-whole-lotta-love",
+      "artist": "Led Zeppelin",
+      "title": "Whole Lotta Love",
+      "bpm": 88,
+      "durationSec": 335,
+      "categories": ["rock", "classics"],
+      "roles": ["steady", "climb"],
+      "energy": 4,
+      "groove": 2,
+      "mood": "dark",
+      "tagged": 2,
+      "energyNote": "Free-form middle (about 1.5 min of noise and theremin) drops the drive before the riff returns.",
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 174 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "HibBnC6SVk8", "label": "official/topic (Led Zeppelin)", "durationSec": 335 },
+        {
+          "id": "oaSk5vnAVJ8",
+          "label": "official/topic (Led Zeppelin - Topic)",
+          "durationSec": 330
+        },
+        { "id": "R8BpK2CXllI", "label": "re-upload", "durationSec": 335 }
+      ]
+    },
+    {
+      "id": "creedence-clearwater-revival-bad-moon-rising",
+      "artist": "Creedence Clearwater Revival",
+      "title": "Bad Moon Rising",
+      "bpm": 90,
+      "durationSec": 145,
+      "categories": ["rock", "classics"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "playful",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        {
+          "id": "AVHXXTs0F80",
+          "label": "official/topic (Creedence Clearwater Revival)",
+          "durationSec": 145
+        },
+        { "id": "5BmEGm-mraE", "label": "re-upload", "durationSec": 142 },
+        { "id": "424T65BTQTY", "label": "re-upload", "durationSec": 137 }
+      ]
+    },
+    {
+      "id": "dire-straits-walk-of-life",
+      "artist": "Dire Straits",
+      "title": "Walk of Life",
+      "bpm": 172,
+      "durationSec": 237,
+      "categories": ["classics", "rock"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "playful",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "kd9TlGDZGkI", "label": "official/topic (DireStraitsVEVO)", "durationSec": 237 },
+        { "id": "h2a20YL5mvg", "label": "official/topic (RHINO)", "durationSec": 253 },
+        { "id": "LAmUsHqosTc", "label": "re-upload", "durationSec": 237 }
+      ]
+    },
+    {
+      "id": "kult-arahja",
+      "artist": "Kult",
+      "title": "Arahja",
+      "bpm": 88,
+      "durationSec": 224,
+      "categories": ["rock", "classics"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "warm",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 174 (octave)",
+      "pl": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "_vw2K0AgFF0", "label": "official/topic (S.P. RECORDS)", "durationSec": 224 },
+        { "id": "A8d3QBMWUgs", "label": "official/topic (S.P. RECORDS)", "durationSec": 216 }
+      ]
+    },
+    {
+      "id": "coma-spadam",
+      "artist": "Coma",
+      "title": "Spadam",
+      "bpm": 90,
+      "durationSec": 298,
+      "categories": ["rock"],
+      "roles": ["steady", "climb"],
+      "energy": 4,
+      "groove": 3,
+      "mood": "dark",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 177 (octave)",
+      "pl": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "nQg6U56JIzs", "label": "re-upload", "durationSec": 298 },
+        { "id": "vN_sEPrVCdI", "label": "re-upload", "durationSec": 297 }
+      ]
+    },
+    {
+      "id": "maanam-boskie-buenos",
+      "artist": "Maanam",
+      "title": "Boskie Buenos",
+      "bpm": 88,
+      "durationSec": 207,
+      "categories": ["rock", "classics"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "playful",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 176 (octave)",
+      "pl": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "YdE2CRrmXek", "label": "official/topic (Maanam)", "durationSec": 207 },
+        { "id": "ZIl4SrO3Lu8", "label": "official/topic (MAANAM)", "durationSec": 195 }
+      ]
+    },
+    {
+      "id": "petit-biscuit-sunset-lover",
+      "artist": "Petit Biscuit",
+      "title": "Sunset Lover",
+      "bpm": 91,
+      "durationSec": 238,
+      "categories": ["electronic", "lofi"],
+      "roles": ["warmup", "steady"],
+      "energy": 2,
+      "groove": 2,
+      "mood": "mellow",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        {
+          "id": "ocRqQcRapQQ",
+          "label": "official/topic (Petit Biscuit - Topic)",
+          "durationSec": 238
+        },
+        { "id": "wuCK-oiE3rM", "label": "re-upload", "durationSec": 238 },
+        { "id": "HJjL92ZBRio", "label": "re-upload", "durationSec": 235 }
+      ]
+    },
+    {
+      "id": "gramatik-muy-tranquilo",
+      "artist": "Gramatik",
+      "title": "Muy Tranquilo",
+      "bpm": 90,
+      "durationSec": 234,
+      "categories": ["electronic", "lofi"],
+      "roles": ["warmup", "steady"],
+      "energy": 2,
+      "groove": 2,
+      "mood": "mellow",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "ns3SAjqMGU0", "label": "official/topic (Gramatik)", "durationSec": 234 },
+        { "id": "VjMjje_4-U4", "label": "official/topic (Gramatik - Topic)", "durationSec": 234 },
+        { "id": "FZK9Zi26Izc", "label": "re-upload", "durationSec": 234 }
+      ]
+    },
+    {
+      "id": "major-lazer-cold-water",
+      "artist": "Major Lazer",
+      "title": "Cold Water",
+      "bpm": 93,
+      "durationSec": 185,
+      "categories": ["electronic", "pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "warm",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 186 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        {
+          "id": "nBtDsQ4fhXY",
+          "label": "official/topic (Major Lazer Official)",
+          "durationSec": 185
+        },
+        { "id": "fMvIARf_SUU", "label": "official/topic (JustinBieberVEVO)", "durationSec": 184 },
+        { "id": "Cv0senDR6kk", "label": "re-upload", "durationSec": 186 }
+      ]
+    },
+    {
+      "id": "the-chainsmokers-closer",
+      "artist": "The Chainsmokers",
+      "title": "Closer",
+      "bpm": 95,
+      "durationSec": 247,
+      "categories": ["electronic", "pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "mellow",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 190 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "0zGcUoRlhmw", "label": "official/topic (ChainsmokersVEVO)", "durationSec": 247 },
+        { "id": "5XggbNWy3NA", "label": "re-upload", "durationSec": 246 },
+        { "id": "cjiRUCcTWYE", "label": "re-upload", "durationSec": 244 }
+      ]
+    },
+    {
+      "id": "wilkinson-afterglow",
+      "artist": "Wilkinson",
+      "title": "Afterglow",
+      "bpm": 174,
+      "durationSec": 227,
+      "categories": ["electronic"],
+      "roles": ["steady", "intervals"],
+      "energy": 4,
+      "groove": 3,
+      "mood": "euphoric",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "supplement": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "h7PRh7ZQlss", "label": "official/topic (UKF Drum & Bass)", "durationSec": 227 },
+        { "id": "0KE0daskzRM", "label": "official/topic (WilkinsonVEVO)", "durationSec": 225 },
+        { "id": "Om6rDCeNEgE", "label": "re-upload", "durationSec": 227 }
+      ]
+    },
+    {
+      "id": "rihanna-diamonds",
+      "artist": "Rihanna",
+      "title": "Diamonds",
+      "bpm": 92,
+      "durationSec": 225,
+      "categories": ["pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "warm",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "kOGBIbqXwYE", "label": "official/topic (RihannaVEVO)", "durationSec": 225 },
+        { "id": "0-p5EbAsxUM", "label": "re-upload", "durationSec": 225 }
+      ]
+    },
+    {
+      "id": "katy-perry-roar",
+      "artist": "Katy Perry",
+      "title": "Roar",
+      "bpm": 180,
+      "durationSec": 223,
+      "categories": ["pop"],
+      "roles": ["steady"],
+      "energy": 4,
+      "groove": 3,
+      "mood": "euphoric",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 90 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "zoJAcgmOS4Q", "label": "re-upload", "durationSec": 223 },
+        { "id": "oT73UO5nQXM", "label": "re-upload", "durationSec": 224 }
+      ]
+    },
+    {
+      "id": "coldplay-hymn-for-the-weekend",
+      "artist": "Coldplay",
+      "title": "Hymn for the Weekend",
+      "bpm": 90,
+      "durationSec": 261,
+      "categories": ["pop", "electronic"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "euphoric",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "YykjpeuMNEk", "label": "official/topic (Coldplay)", "durationSec": 261 },
+        { "id": "XHflE7pAEc8", "label": "re-upload", "durationSec": 259 }
+      ]
+    },
+    {
+      "id": "coldplay-yellow",
+      "artist": "Coldplay",
+      "title": "Yellow",
+      "bpm": 173,
+      "durationSec": 272,
+      "categories": ["pop", "rock"],
+      "roles": ["warmup", "steady"],
+      "energy": 2,
+      "groove": 2,
+      "mood": "warm",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 87 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "yKNxeF4KMsY", "label": "official/topic (Coldplay)", "durationSec": 272 },
+        { "id": "tdVAqxNLXiw", "label": "re-upload", "durationSec": 267 },
+        { "id": "1PtOb0pMYW8", "label": "re-upload", "durationSec": 267 }
+      ]
+    },
+    {
+      "id": "harry-styles-watermelon-sugar",
+      "artist": "Harry Styles",
+      "title": "Watermelon Sugar",
+      "bpm": 95,
+      "durationSec": 174,
+      "categories": ["pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "playful",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "7-x3uD5z1bQ", "label": "official/topic (HarryStylesVEVO)", "durationSec": 174 },
+        { "id": "E07s5ZYygMg", "label": "official/topic (HarryStylesVEVO)", "durationSec": 189 }
+      ]
+    },
+    {
+      "id": "lorde-royals",
+      "artist": "Lorde",
+      "title": "Royals",
+      "bpm": 85,
+      "durationSec": 200,
+      "categories": ["pop"],
+      "roles": ["warmup"],
+      "energy": 2,
+      "groove": 2,
+      "mood": "dark",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "nlcIKh6sBtc", "label": "official/topic (LordeVEVO)", "durationSec": 200 },
+        { "id": "p-CdRBIOx9Y", "label": "re-upload", "durationSec": 201 },
+        { "id": "nkZP5jgdCFY", "label": "re-upload", "durationSec": 190 }
+      ]
+    },
+    {
+      "id": "toto-africa",
+      "artist": "Toto",
+      "title": "Africa",
+      "bpm": 93,
+      "durationSec": 271,
+      "categories": ["classics", "pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 2,
+      "groove": 3,
+      "mood": "warm",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "FTQbiNvZqaY", "label": "official/topic (TotoVEVO)", "durationSec": 271 },
+        { "id": "Kb7lAMjFuA0", "label": "re-upload", "durationSec": 296 }
+      ]
+    },
+    {
+      "id": "kenny-loggins-footloose",
+      "artist": "Kenny Loggins",
+      "title": "Footloose",
+      "bpm": 174,
+      "durationSec": 221,
+      "categories": ["classics", "pop", "rock"],
+      "roles": ["steady", "finisher"],
+      "energy": 4,
+      "groove": 3,
+      "mood": "euphoric",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        {
+          "id": "bjQ9vTsMQ4I",
+          "label": "official/topic (Kenny Loggins - Topic)",
+          "durationSec": 221
+        },
+        { "id": "jL4YlNUi7ZE", "label": "re-upload", "durationSec": 231 },
+        { "id": "wFWDGTVYqE8", "label": "re-upload", "durationSec": 229 }
+      ]
+    },
+    {
+      "id": "phil-collins-in-the-air-tonight",
+      "artist": "Phil Collins",
+      "title": "In the Air Tonight",
+      "bpm": 95,
+      "durationSec": 336,
+      "categories": ["classics"],
+      "roles": ["warmup"],
+      "energy": 2,
+      "groove": 2,
+      "mood": "dark",
+      "tagged": 2,
+      "energyNote": "Brooding and sparse until the famous drum break near the end.",
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 190 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "cuHvKksNriE", "label": "official/topic (Phil Collins)", "durationSec": 336 },
+        { "id": "MN3x-kAbgFU", "label": "re-upload", "durationSec": 337 }
+      ]
+    },
+    {
+      "id": "kortez-hej-wy",
+      "artist": "Kortez",
+      "title": "Hej wy",
+      "bpm": 95,
+      "durationSec": 258,
+      "categories": ["pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 2,
+      "groove": 2,
+      "mood": "mellow",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "pl": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        {
+          "id": "3BnfiJnHXvk",
+          "label": "official/topic (Kortez Oficjalny Kanał)",
+          "durationSec": 258
+        },
+        {
+          "id": "GcjsvWNS5Ds",
+          "label": "official/topic (Kortez Oficjalny Kanał)",
+          "durationSec": 248
+        }
+      ]
+    },
+    {
+      "id": "emancipator-soon-it-will-be-cold-enough-to-build-fires",
+      "artist": "Emancipator",
+      "title": "Soon It Will Be Cold Enough to Build Fires",
+      "bpm": 94,
+      "durationSec": 181,
+      "categories": ["electronic", "lofi"],
+      "roles": ["warmup", "steady"],
+      "energy": 1,
+      "groove": 2,
+      "mood": "mellow",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        {
+          "id": "XvG7Iukpq78",
+          "label": "official/topic (Emancipator - Topic)",
+          "durationSec": 181
+        },
+        { "id": "hmOFlthPRPM", "label": "official/topic (Emancipator - Topic)", "durationSec": 175 }
+      ]
+    },
+    {
+      "id": "ellie-goulding-love-me-like-you-do",
+      "artist": "Ellie Goulding",
+      "title": "Love Me Like You Do",
+      "bpm": 95,
+      "durationSec": 249,
+      "categories": ["pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 2,
+      "groove": 3,
+      "mood": "warm",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "AJtDXIazrMo", "label": "official/topic (EllieGouldingVEVO)", "durationSec": 249 },
+        { "id": "725WlG1idPc", "label": "official/topic (EllieGouldingVEVO)", "durationSec": 254 },
+        { "id": "eVVaqFDG6Fo", "label": "re-upload", "durationSec": 254 }
+      ]
+    },
+    {
+      "id": "taylor-swift-delicate",
+      "artist": "Taylor Swift",
+      "title": "Delicate",
+      "bpm": 95,
+      "durationSec": 235,
+      "categories": ["pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 2,
+      "groove": 2,
+      "mood": "mellow",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "tCXGJQYZ9JA", "label": "official/topic (Taylor Swift)", "durationSec": 235 },
+        { "id": "3VJhgHoEawg", "label": "re-upload", "durationSec": 230 },
+        { "id": "8JW047DwfeQ", "label": "re-upload", "durationSec": 233 }
+      ]
+    },
+    {
+      "id": "porter-robinson-sad-machine",
+      "artist": "Porter Robinson",
+      "title": "Sad Machine",
+      "bpm": 89,
+      "durationSec": 351,
+      "categories": ["electronic"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "euphoric",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 180 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "qeu4RugfDw4", "label": "re-upload", "durationSec": 351 },
+        { "id": "pAGVvPfwdCY", "label": "re-upload", "durationSec": 352 }
+      ]
+    },
+    {
+      "id": "oasis-wonderwall",
+      "artist": "Oasis",
+      "title": "Wonderwall",
+      "bpm": 175,
+      "durationSec": 259,
+      "categories": ["rock", "classics"],
+      "roles": ["warmup", "steady"],
+      "energy": 2,
+      "groove": 3,
+      "mood": "warm",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "FVdjZYfDuLE", "label": "official/topic (Oasis - Topic)", "durationSec": 259 },
+        { "id": "bx1Bh8ZvH84", "label": "official/topic (OasisVEVO)", "durationSec": 278 },
+        { "id": "vU05Eksc_iM", "label": "official/topic (OasisVEVO)", "durationSec": 278 }
+      ]
+    },
+    {
+      "id": "radiohead-high-and-dry",
+      "artist": "Radiohead",
+      "title": "High and Dry",
+      "bpm": 88,
+      "durationSec": 259,
+      "categories": ["rock"],
+      "roles": ["warmup", "steady"],
+      "energy": 2,
+      "groove": 2,
+      "mood": "mellow",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 174 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "7qFfFVSerQo", "label": "official/topic (Radiohead)", "durationSec": 259 },
+        { "id": "DCsgFUElcII", "label": "re-upload", "durationSec": 256 },
+        { "id": "i2bjWe7MpSQ", "label": "re-upload", "durationSec": 259 }
+      ]
+    },
+    {
+      "id": "the-verve-bitter-sweet-symphony",
+      "artist": "The Verve",
+      "title": "Bitter Sweet Symphony",
+      "bpm": 171,
+      "durationSec": 357,
+      "categories": ["rock", "classics"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "warm",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "verified": "2026-11-28",
+      "youtube": [
+        { "id": "JnRw8bXVbPI", "label": "official/topic (The Verve - Topic)", "durationSec": 357 },
+        { "id": "e2BmBubctOs", "label": "official/topic (The Verve - Topic)", "durationSec": 360 },
+        { "id": "DGC0a4cby5c", "label": "re-upload", "durationSec": 358 }
+      ]
+    },
+    {
+      "id": "george-michael-faith",
+      "artist": "George Michael",
+      "title": "Faith",
+      "bpm": 96,
+      "durationSec": 196,
+      "categories": ["classics", "pop"],
+      "roles": ["warmup", "steady"],
+      "energy": 3,
+      "groove": 3,
+      "mood": "playful",
+      "tagged": 2,
+      "beat": "steady",
+      "clean": true,
+      "bpmNote": "sources say 191 (octave)",
+      "verified": "2026-11-28",
+      "youtube": [
+        {
+          "id": "N61LHFFfiik",
+          "label": "official/topic (George Michael - Topic)",
+          "durationSec": 196
+        },
+        { "id": "gbOsK9by6Hc", "label": "official/topic (georgemichaelVEVO)", "durationSec": 196 },
+        {
+          "id": "3910AceMvcc",
+          "label": "official/topic (George Michael - Topic)",
+          "durationSec": 199
+        }
+      ]
     }
   ]
 }

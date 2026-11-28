@@ -616,9 +616,9 @@ describe('planSoundtrack', () => {
     expect(planSoundtrack(ride, catalog, p, { history: [['no-such-song']] })).toEqual(first);
   });
 
-  // Off until the catalog has more songs at 85-95 rpm (owner, 2026-11-26): runs again once
-  // ROTATION_REST_RIDES is above 0 (measured and reviewed with 3).
-  describe.skipIf(ROTATION_REST_RIDES === 0)(
+  // On since the 85-95 rpm catalog addition (owner, 2026-11-26); skipped if the rest is switched
+  // off again (ROTATION_REST_RIDES = 0).
+  describe.skipIf((ROTATION_REST_RIDES as number) === 0)(
     'a song of the last rides rests (after the 85-95 rpm catalog addition)',
     () => {
       // 10 minutes at 90 rpm, Electronic chosen: three electronic songs right on the beat, three more

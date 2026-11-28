@@ -257,7 +257,7 @@ describe('groove, mood and finisher tags (R1d-2)', () => {
 });
 
 describe('the batch of 2026-11-24 after its review (R1f)', () => {
-  const batch = tracks.slice(179);
+  const batch = tracks.slice(179, 229);
   const get = (id: string) => {
     const t = tracks.find((x) => x.id === id);
     if (!t) throw new Error(id);
@@ -292,6 +292,28 @@ describe('the batch of 2026-11-24 after its review (R1f)', () => {
         !t.roles.includes('climb'),
     );
     expect(missing.map((t) => t.id)).toEqual([]);
+  });
+});
+
+describe('the 85-95 rpm batch of 2026-11-28', () => {
+  const batch = tracks.slice(229);
+
+  it('is 35 songs, all ridden at 85-96 rpm (BPM 85-96 or 170-192)', () => {
+    expect(batch).toHaveLength(35);
+    expect(batch[0]!.id).toBe('red-hot-chili-peppers-cant-stop');
+    for (const t of batch) {
+      const rpm = catalogRpm(t.bpm as number);
+      expect(rpm, t.id).toBeGreaterThanOrEqual(85);
+      expect(rpm, t.id).toBeLessThanOrEqual(96);
+    }
+  });
+
+  it('gives every choice of kind more songs, Polish ones too', () => {
+    const count = (c: string) => batch.filter((t) => t.categories.includes(c as never)).length;
+    for (const c of ['rock', 'electronic', 'pop', 'classics']) {
+      expect(count(c), c).toBeGreaterThanOrEqual(8);
+    }
+    expect(batch.filter((t) => t.pl).length).toBeGreaterThanOrEqual(4);
   });
 });
 
