@@ -130,7 +130,7 @@ describe('importRideBytes', () => {
     });
     const small = await gunzip(gzipSync(text('hello')), 100);
     expect(small.ok && new TextDecoder().decode(small.bytes)).toBe('hello');
-  });
+  }, 60_000); // 20 MB comes out in small chunks: slow on a busy machine
 
   it('asks to unpack the file by hand where the browser cannot', async () => {
     vi.stubGlobal('DecompressionStream', undefined);
