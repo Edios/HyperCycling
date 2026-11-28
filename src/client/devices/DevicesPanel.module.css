@@ -146,6 +146,12 @@
 .unsupported svg,
 .warn svg {
   margin-top: 0.15em;
+  flex: none;
+}
+
+.helpLink {
+  color: var(--fg);
+  white-space: nowrap;
 }
 
 .help {
