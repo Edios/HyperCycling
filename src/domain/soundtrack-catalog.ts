@@ -61,7 +61,10 @@ export interface CatalogTrack extends QueueItem {
   id: string;
   /**
    * Felt tempo (verified with two sources, octave folded to the one heard). Required for a song on
-   * the beat; absent for a song without a clear beat (`beat: 'none'`).
+   * the beat; absent for a song without a clear beat (`beat: 'none'`). The pulse a rider counts:
+   * a calm or mid-tempo song (strummed, a ballad) at its slow pulse (Wonderwall 87, not 175); a
+   * driving one (drum and bass, punk, metal, uptempo pop) may keep the fast pulse (Footloose 174).
+   * The other octave goes to `bpmNote`; the planner matches both (1:1 and 2x) either way.
    */
   bpm?: number;
   /** Length of the preferred version, seconds. */

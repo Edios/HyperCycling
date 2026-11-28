@@ -429,8 +429,11 @@ describe.skipIf((ROTATION_REST_RIDES as number) === 0)(
       rock = measure(ridesWith(rockPrefs), rockPrefs.categories);
     }, 120_000);
 
-    it('puts no song in more than 33% of the first-visit rides (Flume - Holdin On was in 59%)', () => {
-      expect(first.top[1], first.top[0]).toBeLessThanOrEqual(0.33 * 580);
+    it('puts no song in more than 34% of the first-visit rides (Flume - Holdin On was in 59%)', () => {
+      // 30.9-31.4% measured (180 of 580 after the 1:1 tempo fix of four songs). 34% leaves room
+      // for a new workout or a few catalog songs moving the near-ties (about 15 rides) and still
+      // catches the rest switched off (38.1%) or main's 59%.
+      expect(first.top[1], first.top[0]).toBeLessThanOrEqual(0.34 * 580);
     });
 
     it('puts no song in more than 42% of the Rock rides (Maanam was in 78.6%)', () => {
