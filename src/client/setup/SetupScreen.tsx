@@ -766,7 +766,7 @@ function SetupForm({ workout, plan, experience, planSettings, initialPlayers }: 
               </p>
             )}
             <div className={styles.devices}>
-              <DevicesPanel variant="compact" showTrainer showWatts={showsWatts} />
+              <DevicesPanel variant="compact" showTrainer showWatts={showsWatts} testLink />
             </div>
           </section>
 

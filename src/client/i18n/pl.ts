@@ -1958,6 +1958,59 @@ export const pl: Messages = {
     cancel: 'Anuluj',
   },
   devices: {
+    test: {
+      open: 'Test trenażera (1 min)',
+      openHint:
+        'Sprawdza moc, kadencję i tętno, potem jeden krok ERG. Przydaje się przed pierwszą jazdą i gdy coś nie gra.',
+      title: 'Test trenażera',
+      intro:
+        'Połącz trenażer (i pas, jeśli masz), potem pedałuj spokojnie przez około minutę. Test czyta czujniki przez 15 s, potem ustawia {from} W i zmienia na {to} W.',
+      start: 'Zacznij test',
+      needTrainer: 'Najpierw połącz trenażer.',
+      phase: {
+        reading: 'Czytam czujniki… {s} s',
+        ergSettle: 'ERG: trzymam {from} W…',
+        ergStep: 'ERG: zmiana na {to} W, mierzę reakcję…',
+        release: 'Oddaję sterowanie trenażerem…',
+      },
+      keepPedalling: 'Pedałuj dalej spokojnie i równo.',
+      cancel: 'Przerwij',
+      power: 'Moc',
+      cadence: 'Kadencja',
+      hr: 'Tętno',
+      reaction: 'Reakcja ERG',
+      deviation: 'Odchyłka od celu',
+      level: {
+        ok: 'Wszystko gra',
+        warn: 'Działa, z uwagami',
+        fail: 'Problem',
+      },
+      note: {
+        ok: 'Odczyty przychodzą równo, a ERG trzyma cel. Można jechać.',
+        noPower:
+          'Nie przyszła moc. Pedałuj w trakcie testu: większość trenażerów wysyła moc tylko, gdy koło się kręci.',
+        noCadence:
+          'Trenażer nie wysyła kadencji. Niektóre tak mają; lukę wypełni czujnik kadencji.',
+        gaps: 'Odczyty zniknęły na ponad 3 s. Przysuń telefon lub komputer i zamknij inne aplikacje, które łączą się z trenażerem.',
+        noHr: 'Nie przyszło tętno. Zwilż styki pasa i sprawdź baterię.',
+        noErg: 'Trenażer nie przyjmuje zadanej mocy (ERG). Jazdy pójdą w skali wysiłku.',
+        ergRefused:
+          'Trenażer odmówił sterowania. Zamknij inne aplikacje, które mogą go trzymać (Zwift, aplikacja producenta), i spróbuj ponownie.',
+        ergFailed:
+          'Polecenie ERG zostało bez odpowiedzi. Połącz trenażer ponownie i spróbuj jeszcze raz.',
+        ergNever:
+          'Moc nie doszła do nowego celu. Pedałuj trochę szybciej i sprawdź, czy trenażer jest w trybie ERG.',
+        ergSlow:
+          'ERG reaguje wolno (ponad 10 s). Długim blokom to nie przeszkadza; krótkie interwały będą spóźnione.',
+        ergOff:
+          'Moc odbiega od celu o ponad 10 %. Sprawdź kalibrację (spin-down) w aplikacji producenta.',
+      },
+      copy: 'Kopiuj raport',
+      copied: 'Raport skopiowany',
+      again: 'Powtórz',
+      reportNote:
+        'Raport trafia też do logu Bluetooth i raportu diagnostycznego. Nic nie opuszcza tego urządzenia, dopóki go nie udostępnisz.',
+    },
     title: 'Urządzenia Bluetooth',
     intro: 'Połącz trenażer i pas tętna. Ich dane zostają na tym urządzeniu.',
     trainer: 'Trenażer',

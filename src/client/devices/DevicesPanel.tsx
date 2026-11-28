@@ -20,6 +20,8 @@ export interface DevicesPanelProps {
   showTrainer: boolean;
   /** Show live watts (only for a bike that has a power meter or is a smart trainer). */
   showWatts: boolean;
+  /** The ride setup links to the trainer test in Settings; the test window itself does not. */
+  testLink?: boolean;
 }
 
 const ICON: Record<DeviceKind, IconName> = { trainer: 'trainer', hr: 'heart' };
@@ -39,7 +41,12 @@ function statusKey(slot: DeviceSlot): MessageKey {
 }
 
 /** Bluetooth trainer and heart rate strap: connect, status, live values, disconnect. */
-export function DevicesPanel({ variant, showTrainer, showWatts }: DevicesPanelProps) {
+export function DevicesPanel({
+  variant,
+  showTrainer,
+  showWatts,
+  testLink = false,
+}: DevicesPanelProps) {
   const t = useT();
   const store = useDeviceStore();
   const state = useDevicesState(store);
@@ -92,6 +99,15 @@ export function DevicesPanel({ variant, showTrainer, showWatts }: DevicesPanelPr
           />
         ))}
       </ul>
+      {testLink && showTrainer && (
+        <a
+          href="#/settings?section=equipment&test=trainer"
+          className={styles.testLink}
+          data-testid="trainer-test-link"
+        >
+          {t('devices.test.open')}
+        </a>
+      )}
       {!adapter && (
         <p className={styles.warn} role="status" data-testid="devices-adapter">
           <Icon name="warning" size={16} />

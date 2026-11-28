@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { BikeWizard } from '../bike/BikeWizard';
 import { DevicesPanel } from '../devices/DevicesPanel';
+import { TrainerTest } from '../devices/TrainerTest';
 import { useDeviceStore, useDevicesState } from '../devices/useDevices';
 import { Button } from '../ui/Button';
 import { resolveResistanceMode, type ResistanceMode } from '../../domain/settings';
@@ -18,9 +20,20 @@ export function EquipmentSection() {
   const save = useSave();
   const { settings } = useSettings();
   // A connected trainer measures power, whatever the bike setting says.
-  const trainerConnected = useDevicesState(useDeviceStore()).trainer.status === 'connected';
+  const devices = useDevicesState(useDeviceStore());
+  const trainerConnected = devices.trainer.status === 'connected';
   const mePlayer = useMePlayer();
   const [wizard, setWizard] = useState(false);
+  // `?test=trainer` (the link beside the setup's devices) opens the trainer test at once.
+  const [params, setParams] = useSearchParams();
+  const [testOpen, setTestOpen] = useState(params.get('test') === 'trainer');
+  const closeTest = (): void => {
+    setTestOpen(false);
+    if (params.has('test')) {
+      params.delete('test');
+      setParams(params, { replace: true });
+    }
+  };
   const eq = settings.equipment;
   const set = (patch: Partial<typeof eq>): void => void save({ equipment: { ...eq, ...patch } });
   return (
@@ -31,6 +44,16 @@ export function EquipmentSection() {
           {t('devices.title')}
         </h3>
         <DevicesPanel variant="full" showTrainer showWatts={eq.showsWatts || trainerConnected} />
+        {/* Nothing to test in a browser without Bluetooth (the panel above says why). */}
+        {devices.supported && (
+          <div className={styles.field}>
+            <Button onClick={() => setTestOpen(true)} data-testid="trainer-test-open">
+              {t('devices.test.open')}
+            </Button>
+            <span className={styles.note}>{t('devices.test.openHint')}</span>
+          </div>
+        )}
+        {testOpen && devices.supported && <TrainerTest onClose={closeTest} />}
       </section>
       <div className={styles.toggles}>
         <Toggle

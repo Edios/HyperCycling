@@ -1949,6 +1949,59 @@ export const en = {
     cancel: 'Cancel',
   },
   devices: {
+    test: {
+      open: 'Test the trainer (1 min)',
+      openHint:
+        'Checks power, cadence and heart rate, then one ERG step. Useful before the first ride and when something seems off.',
+      title: 'Trainer test',
+      intro:
+        'Connect the trainer (and the strap, if you have one), then pedal easily for about a minute. The test reads the sensors for 15 s, then sets {from} W and steps to {to} W.',
+      start: 'Start the test',
+      needTrainer: 'Connect the trainer first.',
+      phase: {
+        reading: 'Reading the sensors… {s} s',
+        ergSettle: 'ERG: holding {from} W…',
+        ergStep: 'ERG: stepping to {to} W, measuring the reaction…',
+        release: 'Handing the trainer back…',
+      },
+      keepPedalling: 'Keep pedalling at an easy, steady cadence.',
+      cancel: 'Cancel',
+      power: 'Power',
+      cadence: 'Cadence',
+      hr: 'Heart rate',
+      reaction: 'ERG reaction',
+      deviation: 'Deviation on target',
+      level: {
+        ok: 'All good',
+        warn: 'Works, with warnings',
+        fail: 'Problem',
+      },
+      note: {
+        ok: 'Readings arrive steadily and ERG follows the target. Ready to ride.',
+        noPower:
+          'No power arrived. Pedal during the test: most trainers send power only while the flywheel turns.',
+        noCadence:
+          'No cadence from the trainer. Some trainers do not send it; a cadence sensor fills the gap.',
+        gaps: 'Readings stopped for more than 3 s. Move the phone or computer closer and close other apps that use the trainer.',
+        noHr: 'No heart rate arrived. Wet the strap contacts and check its battery.',
+        noErg:
+          'The trainer does not offer a target power (ERG). Rides use the effort scale instead.',
+        ergRefused:
+          "The trainer refused control. Close other apps that may hold it (Zwift, the maker's app) and try again.",
+        ergFailed: 'The ERG command did not get an answer. Reconnect the trainer and try again.',
+        ergNever:
+          'Power never reached the new target. Pedal a little faster and check that the trainer is in ERG mode.',
+        ergSlow:
+          'ERG reacts slowly (over 10 s). Fine for long blocks; short intervals will feel late.',
+        ergOff:
+          "Power stays more than 10 % away from the target. Check calibration (spin-down) in the maker's app.",
+      },
+      copy: 'Copy report',
+      copied: 'Report copied',
+      again: 'Run again',
+      reportNote:
+        'The report is also added to the Bluetooth log and the diagnostics report. Nothing leaves this device until you share it.',
+    },
     title: 'Bluetooth devices',
     intro: 'Connect a smart trainer and a heart rate strap. Their data stays on this device.',
     trainer: 'Smart trainer',
