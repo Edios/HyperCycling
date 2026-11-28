@@ -242,8 +242,8 @@ describe('how many of my songs (owner decision of 2026-11-26)', () => {
     const few = shareOf('few');
     const half = shareOf(undefined);
     const most = shareOf('most');
-    // Measured on the shipped catalog: 12.6% / 53.9% / 76.9% (one play per song and ride caps
-    // "mostly mine" near 78%).
+    // Measured on the shipped catalog: 12.1% / 46.9% / 77.2% (one play per song and ride caps
+    // "mostly mine" near 78%). Before the 85-95 rpm addition: 12.6% / 53.9% / 76.9%.
     expect(few).toBeGreaterThan(0.05);
     expect(few).toBeLessThan(0.18);
     expect(half).toBeGreaterThan(0.42);

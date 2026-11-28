@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import type { EffortLevel } from '../domain/effort';
 import { sectionsOf, type MusicSection } from '../domain/soundtrack';
 import { builtinWorkouts } from '../client/data/builtin';
+import { matchBpm } from '../domain/bpm-match';
 import { isSprintTrack, parseCatalog, type CatalogTrack } from '../domain/soundtrack-catalog';
 import {
   DEFAULT_SOUNDTRACK_PREFS,
@@ -342,17 +343,24 @@ describe('rotation over ten rides of every built-in workout (R1f)', () => {
   });
 });
 
-// The rest is off until the catalog has more songs at 85-95 rpm (owner, 2026-11-26): these guards
-// run again once ROTATION_REST_RIDES is above 0. Measured with 3 rides at 0.05 on today's catalog:
-// top song 280 of 580 (48.3%), energy within one step 85.8%, 35 songs of other kinds, no gap.
-describe.skipIf(ROTATION_REST_RIDES === 0)(
+// The rest of a song between rides, on since the 85-95 rpm catalog addition (owner, 2026-11-26:
+// catalog first, then the rest). Skipped if the rest is switched off again. Measured with 3 rides
+// at 0.15 (main = before the addition, the rest off):
+//   first visit: top song 342 -> 179 of 580 (59.0% -> 30.9%), energy within one step 84.3% ->
+//   88.3%, songs within 3% of the tempo 2541 -> 2645, songs of other kinds 48 -> 9, no gap;
+//   Rock alone: top song 456 -> 227 (78.6% -> 39.1%), energy 66.2% -> 73.8%, within 3% 1829 ->
+//   2421, other kinds 1655 -> 269, gaps over 30 s 5 -> 0.
+describe.skipIf((ROTATION_REST_RIDES as number) === 0)(
   'the rest of a song between rides (after the 85-95 rpm catalog addition)',
   () => {
     // 580 rides through all built-in workouts (each five times, in a mixed order) with the history
     // as the app keeps it: the last 8 confirmed plans of any workout, a workout's newer plan
     // replacing its older one (`recordSoundtrackRide`). Built in beforeAll: nothing runs when skipped.
-    let plans: { w: Workout; plan: SoundtrackPlan }[] = [];
-    beforeAll(() => {
+    interface Ride {
+      w: Workout;
+      plan: SoundtrackPlan;
+    }
+    function ridesWith(base: SoundtrackPrefs): Ride[] {
       const order = [0, 1, 2, 3, 4].flatMap((r) =>
         builtinWorkouts.map((_, i) => ({
           w: builtinWorkouts[(i * 37 + r * 11) % builtinWorkouts.length]!,
@@ -360,11 +368,11 @@ describe.skipIf(ROTATION_REST_RIDES === 0)(
         })),
       );
       const kept: { workoutId: string; ids: string[] }[] = [];
-      plans = order.map(({ w, r }) => {
+      return order.map(({ w, r }) => {
         const plan = planSoundtrack(
           w,
           catalog,
-          { ...FIRST_VISIT_PREFS, seed: 1000 + r * 7919 },
+          { ...base, seed: 1000 + r * 7919 },
           { history: kept.map((k) => k.ids) },
         );
         const at = kept.findIndex((k) => k.workoutId === w.id);
@@ -373,51 +381,83 @@ describe.skipIf(ROTATION_REST_RIDES === 0)(
         kept.length = Math.min(kept.length, 8);
         return { w, plan };
       });
-    }, 60_000);
+    }
 
-    it('puts no song in more than 52% of the rides (Flume - Holdin On was in 342 of 580)', () => {
+    interface Measure {
+      top: [string, number];
+      within: number;
+      onTempo: number;
+      other: number;
+      gaps: string[];
+    }
+    function measure(rides: Ride[], chosen: SoundtrackPrefs['categories']): Measure {
       const counts = new Map<string, number>();
-      for (const { plan } of plans) {
-        for (const id of new Set(allIds(plan))) counts.set(id, (counts.get(id) ?? 0) + 1);
-      }
-      const top = [...counts].sort((a, b) => b[1] - a[1])[0]!;
-      // 280 (48.3%) with the rest of three rides: the first-visit kinds have few songs at 85-95 rpm.
-      expect(top[1], top[0]).toBeLessThanOrEqual(0.52 * plans.length);
-    });
-
-    it('leaves no gap over 30 s and keeps the energy within one step for most songs', () => {
       let picks = 0;
       let within = 0;
-      for (const { w, plan } of plans) {
+      let onTempo = 0;
+      let other = 0;
+      const gaps: string[] = [];
+      for (const { w, plan } of rides) {
+        for (const id of new Set(allIds(plan))) counts.set(id, (counts.get(id) ?? 0) + 1);
         const sections = new Map(sectionsOf(w).map((s) => [s.id, s]));
         for (const s of plan.sections) {
-          expect(s.report.gapSec, `${w.id}/${s.sectionId}`).toBeLessThanOrEqual(30);
+          if (s.report.gapSec > 30) gaps.push(`${w.id}/${s.sectionId}`);
           const sec = sections.get(s.sectionId);
-          if (!sec) continue;
           for (const p of s.picks) {
+            const t = byId.get(p.ref.id) as CatalogTrack;
             picks += 1;
-            if (Math.abs((byId.get(p.ref.id) as CatalogTrack).energy - sec.energy) <= 1)
-              within += 1;
+            if (sec && Math.abs(t.energy - sec.energy) <= 1) within += 1;
+            if (!t.categories.some((c) => chosen.includes(c))) other += 1;
+            const m = t.bpm === undefined ? undefined : matchBpm(t.bpm, s.rpm, { tolerance: 1 });
+            if (m && m.deviation <= 0.03) onTempo += 1;
           }
         }
       }
-      // The rest must not cost the energy fit: 84.3% within one step before it, 85.8% with it.
-      expect(within / picks).toBeGreaterThanOrEqual(0.83);
+      const top = [...counts].sort((a, b) => b[1] - a[1])[0]!;
+      return { top, within: within / picks, onTempo, other, gaps };
+    }
+
+    let first: Measure;
+    let rock: Measure;
+    beforeAll(() => {
+      first = measure(ridesWith(FIRST_VISIT_PREFS), FIRST_VISIT_PREFS.categories);
+      const rockPrefs: SoundtrackPrefs = {
+        ...FIRST_VISIT_PREFS,
+        categories: ['rock'],
+        polish: false,
+      };
+      rock = measure(ridesWith(rockPrefs), rockPrefs.categories);
+    }, 120_000);
+
+    it('puts no song in more than 33% of the first-visit rides (Flume - Holdin On was in 59%)', () => {
+      expect(first.top[1], first.top[0]).toBeLessThanOrEqual(0.33 * 580);
     });
 
-    it('takes no more songs of other kinds than before the rest (48 of 6389)', () => {
+    it('puts no song in more than 42% of the Rock rides (Maanam was in 78.6%)', () => {
+      expect(rock.top[1], rock.top[0]).toBeLessThanOrEqual(0.42 * 580);
+    });
+
+    it('leaves no gap over 30 s, first visit and Rock alone (Rock had 5 before)', () => {
+      expect(first.gaps).toEqual([]);
+      expect(rock.gaps).toEqual([]);
+    });
+
+    it('keeps the energy fit at least as good as before the addition (84.3% / Rock 66.2%)', () => {
+      expect(first.within).toBeGreaterThanOrEqual(0.86);
+      expect(rock.within).toBeGreaterThanOrEqual(0.71);
+    });
+
+    it('keeps the songs within 3% of the tempo (main 2541 / Rock 1829)', () => {
+      // The rest costs some tempo fit (2959 with the new catalog and no rest): at most 12% of it.
+      expect(first.onTempo).toBeGreaterThanOrEqual(2541);
+      expect(rock.onTempo).toBeGreaterThanOrEqual(2300);
+    });
+
+    it('takes no more songs of other kinds than before (48 / Rock 1655)', () => {
       // The rest may widen the tempo window, never the kinds of music (review of #170: with the
       // neighbour kinds open to it, 1133 songs were of a kind the rider had not chosen).
-      const chosen = FIRST_VISIT_PREFS.categories;
-      let other = 0;
-      for (const { plan } of plans) {
-        for (const id of allIds(plan)) {
-          if (!(byId.get(id) as CatalogTrack).categories.some((c) => chosen.includes(c)))
-            other += 1;
-        }
-      }
-      // 35 with the rest.
-      expect(other).toBeLessThanOrEqual(48);
+      expect(first.other).toBeLessThanOrEqual(20);
+      expect(rock.other).toBeLessThanOrEqual(350);
     });
   },
 );
