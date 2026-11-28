@@ -63,6 +63,27 @@ function stripCodes(text: string): string {
   }
 }
 
+/**
+ * Titles a rider must not see as they are (review of #182): review, nits, audit or follow-up work,
+ * references to other pull requests, internal codes anywhere in the title (R1-R4, N-09, P2-P5,
+ * M24b-d, E4, T5) and the early titles written in Polish. Such a change reaches the changelog only
+ * with a hand-written English text (`changelog.en.json`).
+ */
+const REVIEW_WORDS = /\b(?:review|nits?|audit|follow-?ups?|recenzj\w*|audyt\w*|poprawki po)\b/i;
+const PR_REFERENCE = /#\d+/;
+const CODE_ANYWHERE = /\b(?!VO2\b)[A-Z]{1,2}\d+[a-z]?(?:[-.][A-Z]?\d*[a-z]?)*\b|\b[A-Z]-\d+\b/;
+const POLISH = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]|\b(?:w|z|na|nie|oraz|bez|dla|po|się|już)\b/;
+
+/** True when a title needs a hand-written English text before a rider sees it. */
+export function needsText(title: string): boolean {
+  return (
+    REVIEW_WORDS.test(title) ||
+    PR_REFERENCE.test(title) ||
+    CODE_ANYWHERE.test(title) ||
+    POLISH.test(title)
+  );
+}
+
 /** One title -> its type, scope and text; undefined when it is left out of the changelog. */
 export function parseTitle(
   title: string,
@@ -97,13 +118,30 @@ export function polishDay(iso: string): string {
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
-/** Merged pull requests -> the changelog (newest first, skipped types left out). */
-export function buildChangelog(prs: readonly MergedPr[], version: string): Changelog {
+/**
+ * Merged pull requests -> the changelog (newest first). Skipped types and scopes are left out; a
+ * title that `needsText` is left out too unless `en` has a hand-written English text for it, which
+ * then replaces the title. So a new title published by the Pages deploy reaches riders only when
+ * it is already fit to read.
+ */
+export function buildChangelog(
+  prs: readonly MergedPr[],
+  version: string,
+  en: Readonly<Record<string, string>> = {},
+): Changelog {
   const entries: ChangelogEntry[] = [];
   for (const pr of prs) {
     const parsed = parseTitle(pr.title);
     if (!parsed) continue;
-    entries.push({ pr: pr.number, date: polishDay(pr.mergedAt), ...parsed });
+    const text = en[String(pr.number)];
+    // An empty text hides a change that is work on the repo, not on the app.
+    if (text === '' || (text === undefined && needsText(parsed.title))) continue;
+    entries.push({
+      pr: pr.number,
+      date: polishDay(pr.mergedAt),
+      ...parsed,
+      ...(text !== undefined ? { title: text } : {}),
+    });
   }
   entries.sort((a, b) => (a.date === b.date ? b.pr - a.pr : a.date < b.date ? 1 : -1));
   return { v: 1, version, entries };

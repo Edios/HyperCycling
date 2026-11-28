@@ -38,9 +38,17 @@ export const WHATS_NEW_KEY = 'hypercycling.whatsNew.seen';
 
 const listeners = new Set<() => void>();
 
-function readSeen(): number {
+function readSeen(log: Changelog): number {
   try {
-    const v = Number(localStorage.getItem(WHATS_NEW_KEY));
+    const raw = localStorage.getItem(WHATS_NEW_KEY);
+    if (raw === null) {
+      // A first visit: everything is new, so nothing is "new since last time" (review of #182).
+      // The dot waits for the next change.
+      const latest = latestPr(log);
+      localStorage.setItem(WHATS_NEW_KEY, String(latest));
+      return latest;
+    }
+    const v = Number(raw);
     return Number.isFinite(v) ? v : 0;
   } catch {
     // Storage blocked: no dot rather than a dot that never goes away.
@@ -50,7 +58,7 @@ function readSeen(): number {
 
 /** True while the changelog has a change newer than the last one seen. */
 export function hasUnseen(log: Changelog = changelog): boolean {
-  return latestPr(log) > readSeen();
+  return latestPr(log) > readSeen(log);
 }
 
 /** Marks every change of the changelog as seen (on opening "What's new"). */

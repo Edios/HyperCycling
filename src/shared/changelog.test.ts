@@ -1,11 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import log from '../content/changelog/changelog.json';
+import en from '../content/changelog/changelog.en.json';
 import pl from '../content/changelog/changelog.pl.json';
 import {
   buildChangelog,
   byDay,
   latestPr,
+  needsText,
   parseTitle,
   polishDay,
   renderMarkdown,
@@ -95,6 +97,60 @@ describe('the changelog', () => {
     for (const [pr, text] of Object.entries(pl as Record<string, string>)) {
       expect(prs.has(pr), pr).toBe(true);
       expect(text.trim().length, pr).toBeGreaterThan(10);
+    }
+  });
+});
+
+describe('titles a rider must not see as they are (review of #182)', () => {
+  it('needs a hand-written text for review work, references, codes and Polish titles', () => {
+    for (const t of [
+      'Audit N-09 grouped list and the notes of #156',
+      'Review nits of #145, #147',
+      'Own songs nits 2',
+      'Music audit P2-P5, P7: real cadence',
+      'No silence inside a ride: gap rules R1-R4, Neon Grid fallback',
+      'E4 world constructions for Neon Grid',
+      'T5 audit, Deezer JSONP opt-in',
+      'M24b-d mobile readability',
+      'Poprawki po recenzji',
+      'Experience w menu, czytelny scenariusz',
+      'Kolejka utworów w slocie',
+    ]) {
+      expect(needsText(t), t).toBe(true);
+    }
+    for (const t of [
+      'Songs follow ramps and pyramids',
+      'Own BPM window for 1:1, 2x and 4x',
+      'VO2 max intervals in Freestyle',
+      'FIT export of a recorded ride',
+    ]) {
+      expect(needsText(t), t).toBe(false);
+    }
+  });
+
+  it('uses the hand-written text, hides an empty one, leaves out the rest', () => {
+    const built = buildChangelog(
+      [
+        { number: 3, title: 'feat: audit N-09 grouped list', mergedAt: '2026-11-20T10:00:00Z' },
+        { number: 2, title: 'fix: review nits of #1', mergedAt: '2026-11-20T10:00:00Z' },
+        { number: 1, title: 'feat: task intro page', mergedAt: '2026-11-20T10:00:00Z' },
+      ],
+      '1.0.0',
+      { '3': 'Workouts grouped into a clearer list.', '1': '' },
+    );
+    expect(built.entries).toEqual([
+      { pr: 3, date: '2026-11-20', type: 'feat', title: 'Workouts grouped into a clearer list.' },
+    ]);
+  });
+
+  it('ships no title a rider must not see without its hand-written text', () => {
+    const texts = en as Record<string, string>;
+    const raw = (log as Changelog).entries.filter(
+      (e) => texts[String(e.pr)] === undefined && needsText(e.title),
+    );
+    expect(raw.map((e) => `#${e.pr} ${e.title}`)).toEqual([]);
+    for (const e of (log as Changelog).entries) {
+      if (texts[String(e.pr)] !== undefined) expect(e.title, `#${e.pr}`).toBe(texts[String(e.pr)]);
     }
   });
 });

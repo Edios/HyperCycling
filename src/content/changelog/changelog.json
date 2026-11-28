@@ -3,6 +3,34 @@
   "version": "2.0.0",
   "entries": [
     {
+      "pr": 181,
+      "date": "2026-11-28",
+      "type": "fix",
+      "scope": "hud",
+      "title": "One scale per ride; the % FTP waits behind a tap"
+    },
+    {
+      "pr": 180,
+      "date": "2026-11-28",
+      "type": "feat",
+      "scope": "freestyle",
+      "title": "Each kind says what it does; \"Easy start\" filter"
+    },
+    {
+      "pr": 179,
+      "date": "2026-11-28",
+      "type": "feat",
+      "scope": "ride-import",
+      "title": "Own FIT decoder for ride files, in a Web Worker"
+    },
+    {
+      "pr": 178,
+      "date": "2026-11-28",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "35 songs at 85-95 rpm; switch on the rest between rides"
+    },
+    {
       "pr": 177,
       "date": "2026-11-28",
       "type": "fix",
@@ -63,14 +91,14 @@
       "date": "2026-11-26",
       "type": "fix",
       "scope": "training",
-      "title": "Shortcut list closes from anywhere, 44 px Close; next song never skips into silence"
+      "title": "The shortcut list closes from anywhere, and \"next song\" never skips into silence."
     },
     {
       "pr": 167,
       "date": "2026-11-26",
       "type": "fix",
       "scope": "soundtrack",
-      "title": "Song order only with the ride's music on, 44 px Draw another, one-line choice"
+      "title": "The song order choice shows only with the ride's music on; a bigger \"Draw another\" button."
     },
     {
       "pr": 166,
@@ -98,14 +126,14 @@
       "date": "2026-11-26",
       "type": "fix",
       "scope": "soundtrack",
-      "title": "Own songs nits 2 (catalog note, check at save, start in the error)"
+      "title": "Your own songs: a catalog note, a check when saving and a clearer error message."
     },
     {
       "pr": 162,
       "date": "2026-11-26",
       "type": "fix",
       "scope": "freestyle",
-      "title": "Preview pane 12 px meta and 44 px buttons, labelled All N"
+      "title": "Freestyle preview: clearer details and bigger buttons."
     },
     {
       "pr": 161,
@@ -119,7 +147,7 @@
       "date": "2026-11-26",
       "type": "fix",
       "scope": "freestyle",
-      "title": "12 px text, 44 px filter targets, All N for HIIT and Short"
+      "title": "Freestyle: bigger text and filters that are easier to tap."
     },
     {
       "pr": 159,
@@ -133,7 +161,7 @@
       "date": "2026-11-26",
       "type": "feat",
       "scope": "freestyle",
-      "title": "Audit N-09 grouped list and the notes of #156"
+      "title": "Freestyle: workouts grouped into a clearer list."
     },
     {
       "pr": 157,
@@ -147,21 +175,21 @@
       "date": "2026-11-26",
       "type": "feat",
       "scope": "settings",
-      "title": "Audit N-10 and the review notes of #154"
+      "title": "Settings are tidier and easier to scan."
     },
     {
       "pr": 155,
       "date": "2026-11-26",
       "type": "fix",
       "scope": "soundtrack",
-      "title": "Own songs nits: removed-song message, catalog video, start time"
+      "title": "Your own songs: a clear message for a removed song and the right start time."
     },
     {
       "pr": 154,
       "date": "2026-11-26",
       "type": "feat",
       "scope": "ui",
-      "title": "Audit N-08, N-11-N-14 and 2x/1:1 cadence labels"
+      "title": "Clearer screens, and 1:1 and 2x cadence labels next to songs."
     },
     {
       "pr": 153,
@@ -182,13 +210,13 @@
       "date": "2026-11-25",
       "type": "fix",
       "scope": "experience",
-      "title": "Music audit P2-P5, P7: real cadence in annotate, no repeats, no dead queue entries"
+      "title": "Experience: music without repeats and without dead entries in the queue."
     },
     {
       "pr": 150,
       "date": "2026-11-25",
       "type": "fix",
-      "title": "Review nits of #145, #147, #148 (swap, double progres, rotation hint)"
+      "title": "Small fixes to plans, the position countdown and the rotation hint."
     },
     {
       "pr": 148,
@@ -230,7 +258,7 @@
       "date": "2026-11-25",
       "type": "feat",
       "scope": "soundtrack",
-      "title": "Per-workout tie-breaks, short songs pay full rotation, batch review fixes"
+      "title": "More variety in the music from one workout to the next."
     },
     {
       "pr": 141,
@@ -376,14 +404,14 @@
       "date": "2026-11-22",
       "type": "feat",
       "scope": "setup",
-      "title": "Lighter ride setup (audit N-05, N-06, N-07, captions)"
+      "title": "A lighter ride setup screen."
     },
     {
       "pr": 117,
       "date": "2026-11-21",
       "type": "feat",
       "scope": "ui",
-      "title": "Lighter phone layouts (audit N-01, N-03, N-04)"
+      "title": "Lighter layouts on a phone."
     },
     {
       "pr": 116,
@@ -425,7 +453,7 @@
       "date": "2026-11-20",
       "type": "fix",
       "scope": "music",
-      "title": "No silence inside a ride: ENDED moves the queue up, gap rules R1-R4, Neon Grid fallback"
+      "title": "No silence inside a ride: the music queue moves on by itself."
     },
     {
       "pr": 110,
@@ -439,21 +467,21 @@
       "date": "2026-11-20",
       "type": "feat",
       "scope": "devices",
-      "title": "Trainer and heart rate strap pairing UI, SINT16 resistance target"
+      "title": "Pair your trainer and heart rate strap."
     },
     {
       "pr": 108,
       "date": "2026-11-20",
       "type": "feat",
       "scope": "devices",
-      "title": "Web Bluetooth transport with GATT queue, Control Point client and reconnect"
+      "title": "Bluetooth connection to the trainer, with automatic reconnect."
     },
     {
       "pr": 107,
       "date": "2026-11-20",
       "type": "feat",
       "scope": "ble",
-      "title": "FTMS, HRS, CPS and CSC codecs with a byte-level trainer simulator"
+      "title": "Support for Bluetooth trainers and sensors (power, cadence, heart rate)."
     },
     {
       "pr": 103,
@@ -467,7 +495,7 @@
       "date": "2026-11-20",
       "type": "fix",
       "scope": "content",
-      "title": "Apply PL/EN copy audit fixes"
+      "title": "Improved Polish and English texts."
     },
     {
       "pr": 104,
@@ -509,7 +537,7 @@
       "date": "2026-11-19",
       "type": "feat",
       "scope": "bike",
-      "title": "Usunięcie stopni pokrętła S1–S5, względna komenda oporu w HUD"
+      "title": "Resistance as a relative cue during the ride instead of knob steps."
     },
     {
       "pr": 94,
@@ -523,56 +551,42 @@
       "date": "2026-11-19",
       "type": "fix",
       "scope": "neon-grid",
-      "title": "Przedostatnia piosenka nie jest już 59-sekundowym ogonkiem"
+      "title": "Neon Grid: no short scrap of a song at the end."
     },
     {
       "pr": 91,
       "date": "2026-11-19",
       "type": "feat",
       "scope": "ux",
-      "title": "Styl select, Experience w menu, czytelny scenariusz"
-    },
-    {
-      "pr": 89,
-      "date": "2026-11-08",
-      "type": "fix",
-      "scope": "music",
-      "title": "Poprawki po recenzji #88 (origin IP, pamięć porażek, durationSec, watchdog Spotify, prywatność, etykiety)"
+      "title": "Experience in the menu and a clearer scenario."
     },
     {
       "pr": 88,
       "date": "2026-11-08",
       "type": "feat",
       "scope": "music",
-      "title": "YouTube jako domyślne, pancerne źródło muzyki w Experience (łańcuch wgrań, failover, Sprawdź muzykę)"
+      "title": "YouTube as the default, sturdy music source in Experience, with a music check."
     },
     {
       "pr": 87,
       "date": "2026-11-08",
       "type": "fix",
       "scope": "intro",
-      "title": "Intro w CSS od pierwszej klatki, raz na 7 dni, wybór w Ustawieniach"
+      "title": "The intro shows from the first frame, at most once a week, with a choice in Settings."
     },
     {
       "pr": 86,
       "date": "2026-11-08",
       "type": "feat",
       "scope": "music",
-      "title": "Kolejka utworów w slocie + planer slotu"
+      "title": "A queue of songs for each music slot."
     },
     {
       "pr": 85,
       "date": "2026-11-08",
       "type": "feat",
       "scope": "experience",
-      "title": "Utwory wybrane przez właściciela w Neon Grid (musicHints)"
-    },
-    {
-      "pr": 84,
-      "date": "2026-11-08",
-      "type": "fix",
-      "scope": "scenes",
-      "title": "Zero alokacji w konstrukcjach, okno fali, construct bez interpolacji"
+      "title": "Songs picked for Neon Grid."
     },
     {
       "pr": 83,
@@ -582,17 +596,11 @@
       "title": "Dopasuj utwory ze Spotify do podpowiedzi scenariusza"
     },
     {
-      "pr": 82,
-      "date": "2026-11-08",
-      "type": "fix",
-      "title": "Drobne poprawki z audytu"
-    },
-    {
       "pr": 81,
       "date": "2026-11-08",
       "type": "feat",
       "scope": "bike",
-      "title": "Kalibracja stopni S1-S5 wpływa na cue i HUD"
+      "title": "The calibration of your knob steps adjusts the cues and the ride screen."
     },
     {
       "pr": 80,
@@ -606,28 +614,28 @@
       "date": "2026-11-08",
       "type": "feat",
       "scope": "home",
-      "title": "Stopka z informacją o projekcie, GitHub, Prywatność i licencja"
+      "title": "A footer with project info, GitHub, privacy and licence."
     },
     {
       "pr": 78,
       "date": "2026-11-08",
       "type": "feat",
       "scope": "experience",
-      "title": "Teren, rzadkie bramy, rodziny obiektów, landmark"
+      "title": "Experience: terrain, gates and landmarks."
     },
     {
       "pr": 77,
       "date": "2026-11-08",
       "type": "perf",
       "scope": "ui",
-      "title": "Szybsze otwieranie menu i paneli (tokeny ruchu, bez body:has)"
+      "title": "Menus and panels open faster."
     },
     {
       "pr": 76,
       "date": "2026-11-08",
       "type": "feat",
       "scope": "experience",
-      "title": "E4 world constructions for Neon Grid"
+      "title": "World constructions in Neon Grid."
     },
     {
       "pr": 75,
@@ -644,25 +652,18 @@
       "title": "Dosing rules as one pure function + editor/class card warnings"
     },
     {
-      "pr": 72,
-      "date": "2026-11-08",
-      "type": "feat",
-      "scope": "security",
-      "title": "T5 audit, Deezer JSONP opt-in in a sandboxed frame"
-    },
-    {
       "pr": 71,
       "date": "2026-11-08",
       "type": "feat",
       "scope": "coach",
-      "title": "M2 gramatyka cue + cisza w końcówce"
+      "title": "Clearer coach cues and quiet at the end of a ride."
     },
     {
       "pr": 69,
       "date": "2026-11-08",
       "type": "fix",
       "scope": "hud",
-      "title": "Experience na telefonie w poziomie + uproszczone menu (układ + Lite)"
+      "title": "Experience on a phone in landscape and a simpler menu."
     },
     {
       "pr": 68,
@@ -676,7 +677,7 @@
       "date": "2026-11-08",
       "type": "feat",
       "scope": "setup",
-      "title": "Skippable 'Twój rower' step with S1-S5 knob calibration"
+      "title": "An optional \"Your bike\" step with knob calibration."
     },
     {
       "pr": 66,
@@ -704,7 +705,7 @@
       "date": "2026-11-07",
       "type": "feat",
       "scope": "ui",
-      "title": "M24b-d mobile readability, copy, a11y (axe e2e)"
+      "title": "Easier to read on a phone, clearer texts and better accessibility."
     },
     {
       "pr": 62,
@@ -739,14 +740,14 @@
       "date": "2026-11-07",
       "type": "fix",
       "scope": "music",
-      "title": "BPM field review fixes"
+      "title": "Fixes to the BPM field."
     },
     {
       "pr": 57,
       "date": "2026-11-07",
       "type": "fix",
       "scope": "M16",
-      "title": "Review follow-ups (slots, BPM, scaling, PL hints)"
+      "title": "Fixes to song slots, BPM and workout scaling."
     },
     {
       "pr": 56,
@@ -794,7 +795,7 @@
       "date": "2026-11-07",
       "type": "perf",
       "scope": "world",
-      "title": "Engine optimisation M21a (pixel budget, zero-alloc update, GPU timer)"
+      "title": "A smoother 3D world on weaker devices."
     },
     {
       "pr": 49,
@@ -822,12 +823,6 @@
       "type": "feat",
       "scope": "onboarding",
       "title": "Welcome screen instead of 'no plan'"
-    },
-    {
-      "pr": 45,
-      "date": "2026-11-06",
-      "type": "refactor",
-      "title": "Rename hyperride to world in code"
     },
     {
       "pr": 44,
@@ -893,34 +888,10 @@
       "title": "Effort ring label overlap"
     },
     {
-      "pr": 31,
-      "date": "2026-11-01",
-      "type": "other",
-      "title": "HyperCycling foundation"
-    },
-    {
       "pr": 19,
       "date": "2026-11-01",
       "type": "fix",
       "title": "Pages URL in Spotify settings (HyperCycling)"
-    },
-    {
-      "pr": 13,
-      "date": "2026-11-01",
-      "type": "other",
-      "title": "Plan wizard (WIP)"
-    },
-    {
-      "pr": 12,
-      "date": "2026-11-01",
-      "type": "other",
-      "title": "Road world for Hyperride + QA fix wave (phone layout, editor, session-only choices)"
-    },
-    {
-      "pr": 11,
-      "date": "2026-11-01",
-      "type": "other",
-      "title": "GitHub Pages deploy and documentation"
     },
     {
       "pr": 10,
@@ -935,12 +906,6 @@
       "title": "Music (director, YouTube + Spotify, music UI)"
     },
     {
-      "pr": 8,
-      "date": "2026-11-01",
-      "type": "other",
-      "title": "M6–M8: editor + import, Hyperride, YouTube"
-    },
-    {
       "pr": 7,
       "date": "2026-11-01",
       "type": "other",
@@ -951,36 +916,6 @@
       "date": "2026-11-01",
       "type": "other",
       "title": "Basic training screen — session store, HUD, layouts, sounds, keyboard"
-    },
-    {
-      "pr": 5,
-      "date": "2026-11-01",
-      "type": "other",
-      "title": "Storage — repositories (SQLite, IndexedDB, HTTP), REST API, safe import with backups"
-    },
-    {
-      "pr": 4,
-      "date": "2026-11-01",
-      "type": "other",
-      "title": "Domain — effort scale, workouts, session engine, coach, plans, scaling, music schedule, tunnel path"
-    },
-    {
-      "pr": 3,
-      "date": "2026-11-01",
-      "type": "other",
-      "title": "V2 scaffold, tooling, CI, i18n and design tokens"
-    },
-    {
-      "pr": 2,
-      "date": "2024-09-15",
-      "type": "other",
-      "title": "Task intro page"
-    },
-    {
-      "pr": 1,
-      "date": "2024-09-14",
-      "type": "other",
-      "title": "Task user power feature"
     }
   ]
 }

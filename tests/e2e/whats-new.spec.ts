@@ -8,6 +8,12 @@ test("What's new: a quiet dot until it is opened, from How it works, with the ve
   page.on('pageerror', (err) => errors.push(err.message));
   await seedSettings(page, info, null);
   await page.goto('./#/');
+  // A first visit: no dot (everything is new, nothing is new since last time).
+  await expect(page.getByTestId('footer-whats-new')).toBeVisible();
+  await expect(page.getByTestId('whats-new-dot')).toHaveCount(0);
+  // After an update: the rider saw an older list.
+  await page.evaluate(() => localStorage.setItem('hypercycling.whatsNew.seen', '1'));
+  await page.reload();
 
   // The footer shows the version and a dot; no popup anywhere.
   const footer = page.getByTestId('footer-whats-new');

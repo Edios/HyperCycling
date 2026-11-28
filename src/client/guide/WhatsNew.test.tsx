@@ -18,7 +18,14 @@ describe("What's new", () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => setLang('en'));
 
-  it('shows the dot until the page is opened, then never again for the same changes', () => {
+  it('shows no dot on a first visit: everything is new, nothing is new since last time', () => {
+    render(<NewDot />);
+    expect(screen.queryByTestId('whats-new-dot')).toBeNull();
+    expect(localStorage.getItem(WHATS_NEW_KEY)).toBe(String(latestPr(changelog)));
+  });
+
+  it('shows the dot after an update until the page is opened, then never again', () => {
+    localStorage.setItem(WHATS_NEW_KEY, String(latestPr(changelog) - 1));
     render(<NewDot />);
     expect(screen.getByTestId('whats-new-dot')).toBeTruthy();
     expect(hasUnseen()).toBe(true);
