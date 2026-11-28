@@ -269,7 +269,8 @@ test.describe('Polish labels', () => {
     await page.goto('./#/setup/demo-mixed');
     const bar = page.getByTestId('start-bar');
     await expect(bar).toBeVisible();
-    await expect(bar.getByTestId('bar-music')).toContainText('Muzyka');
+    await expect(bar.getByTestId('bar-music')).toHaveText('Bez muzyki');
+    await expect(bar.getByTestId('bar-more')).toHaveText('Ustawienia jazdy');
     for (const width of [390, 360, 320]) {
       await page.setViewportSize({ width, height: 844 });
       const cut = await bar
