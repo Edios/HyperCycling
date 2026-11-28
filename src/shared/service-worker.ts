@@ -12,8 +12,9 @@ import type { Plugin } from 'vite';
  * - Never touches other origins (YouTube, Spotify, GetSongBPM...), `api/` (the local server's
  *   data), the help pages or the opt-in Deezer bridge. It never reads or writes IndexedDB or
  *   localStorage: the rider's data stays exactly as it was.
- * - Pages: network first, the cached `index.html` when offline. Files: cache first (they are
- *   content-hashed or listed in the precache), filled on the way.
+ * - Pages and public files without a hash: network first, the cache when offline (so they never
+ *   lag behind a fresh index.html). Content-hashed files (assets/): cache first. Lookups ignore
+ *   `Vary` (a server sending `Vary: Origin` broke offline starts).
  * - A new version waits until the page asks it to take over (the "new version" notice), so an
  *   open ride is never swapped under the rider. The very first install takes over at once.
  */
@@ -22,6 +23,10 @@ export function serviceWorkerSource(precache: readonly string[], version: string
 const CACHE = 'hc-${version}';
 const PRECACHE = ${JSON.stringify(precache)};
 const BYPASS = /^(api\\/|docs\\/|deezer-bridge\\.)/;
+const HASHED = /^assets\\//;
+// Modules and fonts are CORS requests (an Origin header); a server that answers with
+// \`Vary: Origin\` would make them miss what cache.addAll stored without one.
+const MATCH = { ignoreVary: true };
 
 const scope = () => new URL(self.registration.scope);
 const local = (url) => {
@@ -72,22 +77,28 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(index).then((hit) => hit || Response.error())),
+        .catch(() => caches.match(index, MATCH).then((hit) => hit || Response.error())),
     );
     return;
   }
+  const store = (response) => {
+    if (response.ok && response.type === 'basic') {
+      const copy = response.clone();
+      caches.open(CACHE).then((cache) => cache.put(request, copy));
+    }
+    return response;
+  };
+  // Content-hashed files (assets/) never change under their name: cache first.
+  if (HASHED.test(rel)) {
+    event.respondWith(caches.match(request, MATCH).then((hit) => hit || fetch(request).then(store)));
+    return;
+  }
+  // Public files without a hash (intro-boot.js, fonts, icons, manifest) follow the fresh
+  // index.html: network first, the cache only offline.
   event.respondWith(
-    caches.match(request).then(
-      (hit) =>
-        hit ||
-        fetch(request).then((response) => {
-          if (response.ok && response.type === 'basic') {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        }),
-    ),
+    fetch(request)
+      .then(store)
+      .catch(() => caches.match(request, MATCH).then((hit) => hit || Response.error())),
   );
 });
 `;
