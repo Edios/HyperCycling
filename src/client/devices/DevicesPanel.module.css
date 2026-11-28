@@ -219,3 +219,12 @@
     flex: 1;
   }
 }
+
+.testLink {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--mut);
+  font-size: max(var(--fs-min), 0.9375rem);
+}
