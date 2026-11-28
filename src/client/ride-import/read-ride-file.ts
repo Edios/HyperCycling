@@ -1,11 +1,12 @@
 /**
- * Reads a ride file (.fit for now) in a Web Worker, so a big file never freezes the page.
+ * Reads a ride file (.fit, .tcx, .gpx, each also as .gz) in a Web Worker and puts it on the
+ * 1 Hz axis, so a big file never freezes the page.
  * The size is checked before the file is read; the worker gets the bytes by transfer and is
  * stopped after the answer, an error or a 10 second timeout. Nothing is sent over the network.
  */
 
-import { RIDE_FILE_LIMITS, rideFormatOf } from '../../domain/ride-import/read';
-import type { RideReadResult } from '../../domain/ride-import/types';
+import { rideFileKind, uploadLimit } from '../../domain/ride-import/read';
+import type { RideImportResult } from '../../domain/ride-import/types';
 import type { RideImportRequest, RideImportResponse } from './protocol';
 
 export const RIDE_IMPORT_TIMEOUT_MS = 10_000;
@@ -40,10 +41,10 @@ let nextId = 1;
 export async function readRideFile(
   file: FileLike,
   options: ReadRideFileOptions = {},
-): Promise<RideReadResult> {
-  const format = rideFormatOf(file.name);
-  if (!format) return { ok: false, error: { code: 'unsupportedType' } };
-  const limit = RIDE_FILE_LIMITS[format];
+): Promise<RideImportResult> {
+  const kind = rideFileKind(file.name);
+  if (!kind) return { ok: false, error: { code: 'unsupportedType' } };
+  const limit = uploadLimit(kind);
   if (file.size > limit) return { ok: false, error: { code: 'tooLarge', limit } };
 
   let buffer: ArrayBuffer;
@@ -61,8 +62,8 @@ export async function readRideFile(
   }
 
   const id = nextId++;
-  return new Promise<RideReadResult>((resolve) => {
-    const finish = (result: RideReadResult) => {
+  return new Promise<RideImportResult>((resolve) => {
+    const finish = (result: RideImportResult) => {
       clearTimeout(timer);
       worker.onmessage = null;
       worker.onerror = null;
