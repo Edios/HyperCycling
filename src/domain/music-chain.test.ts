@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { MusicHint } from './experience';
+import type { CueSheet } from './choreography';
+import type { MusicHint, QueueItem } from './experience';
 import { queueRecordings, slotQueue, songChain, trackKey } from './music-chain';
 import type { TrackRef } from './workout';
 
@@ -117,5 +118,57 @@ describe('per-upload length', () => {
     );
     expect(q[0]?.durationSec).toBe(404);
     expect(q[0]?.alternates?.[0]?.durationSec).toBe(213);
+  });
+});
+
+describe('chains with a cue sheet', () => {
+  const sheet: CueSheet = {
+    schemaVersion: 1,
+    artist: 'A',
+    title: 'Song',
+    bpm: 120,
+    beatsPerBar: 4,
+    downbeatSec: 0.5,
+    recordings: [
+      { id: 'AAAAAAAAAAA', durationSec: 200 },
+      { id: 'BBBBBBBBBBB', durationSec: 203, shiftSec: 3 },
+    ],
+    sections: [
+      { t: 0, kind: 'intro' },
+      { t: 60.5, kind: 'chorus', id: 'chorus-1' },
+    ],
+  };
+  const item: QueueItem = {
+    artist: 'A',
+    title: 'Song',
+    durationSec: 200,
+    startOffsetSec: 4,
+    youtube: [{ id: 'AAAAAAAAAAA' }, { id: 'BBBBBBBBBBB' }, { id: 'CCCCCCCCCCC' }],
+  };
+  const opts = { source: 'youtube', spotifyUsable: false, cueSheets: [sheet] } as const;
+
+  it('gives every listed upload its grid; an unlisted one plays as authored, without one', () => {
+    const [a, b, c] = songChain(item, undefined, opts);
+    expect(a?.choreo?.downbeatSec).toBe(0.5);
+    expect(b?.choreo?.downbeatSec).toBe(3.5);
+    expect(c?.choreo).toBeUndefined();
+    expect([a?.startAtSec, b?.startAtSec, c?.startAtSec]).toEqual([4, 4, 4]);
+  });
+
+  it('moves the listed uploads to the anchored start, each by its own shift', () => {
+    const [a, b, c] = songChain(item, undefined, opts, { startSec: 30 });
+    expect([a?.startAtSec, b?.startAtSec, c?.startAtSec]).toEqual([30, 33, 4]);
+  });
+
+  it('moves only the first song of a slot', () => {
+    const hint: MusicHint = { ...item, slot: 0, queue: [{ ...item }] };
+    const [first, second] = slotQueue(hint, opts, { startSec: 30 });
+    expect(first?.startAtSec).toBe(30);
+    expect(second?.startAtSec).toBe(4);
+  });
+
+  it('a song without a sheet has no grid', () => {
+    const [a] = songChain({ ...item, title: 'Other' }, undefined, opts);
+    expect(a?.choreo).toBeUndefined();
   });
 });

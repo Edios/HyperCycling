@@ -75,6 +75,7 @@ import { clearSongFeedback, rateSong, trackKey, useSongFeedback } from './song-f
 import { QuickSettings } from './QuickSettings';
 import { withLiveChoice, youtubeUrlFor } from './quick-settings';
 import { CoachOverlay } from './hud/CoachOverlay';
+import { ChoreoCall } from './hud/ChoreoCall';
 import { Countdown } from './hud/Countdown';
 import { EdgeFlash } from './hud/EdgeFlash';
 import { bindTrainingKeys } from './keyboard';
@@ -1072,6 +1073,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       <div className={styles.center}>
         <Countdown n={countdownN} color={view.color} reducedMotion={reducedMotion} />
       </div>
+      {runtime.config.music && (
+        <ChoreoCall
+          getSongPosition={music.songPosition}
+          segments={runtime.segments}
+          color={view.color}
+          reducedMotion={reducedMotion}
+        />
+      )}
       {status === 'idle' && (
         <div className={`${styles.promptSlot} ${styles.promptOverlay}`}>
           <div className={styles.prompt}>

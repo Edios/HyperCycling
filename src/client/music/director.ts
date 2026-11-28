@@ -76,6 +76,11 @@ export interface MusicDirector {
    * song of a part with no fallback to fill the gap): a skip never asks for silence.
    */
   skip(): boolean;
+  /**
+   * The song clock: the recording that plays now and how far into it the player is, read from
+   * the player; null when nothing plays or the player cannot tell (choreography is then off).
+   */
+  songPosition(): { track: TrackRef; sec: number } | null;
   start(): void;
   dispose(): void;
 }
@@ -598,6 +603,18 @@ export function createMusicDirector(options: MusicDirectorOptions): MusicDirecto
       if (!endEarly(now.key, now.offsetSec)) return false;
       void reconcile();
       return true;
+    },
+
+    songPosition() {
+      const playing = current;
+      if (!playing || playing.halted || disposed) return null;
+      let sec: number | undefined;
+      try {
+        sec = playing.provider.position?.();
+      } catch {
+        sec = undefined;
+      }
+      return sec === undefined ? null : { track: playing.track, sec };
     },
 
     start() {

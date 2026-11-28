@@ -12,7 +12,7 @@
         "class-neon-grid-30-s3": "Calm, spacious song to recover. Aim for about 89 BPM. Idea: Tycho – Awake (88).",
         "class-neon-grid-30-s4": "Big uplifting song for the long summit climb. Aim for about 126 BPM. Idea: David Guetta & Sia – Titanium (126).",
         "class-neon-grid-30-s5": "Pick your own calm electronic song, 85-95 BPM; nothing is pinned for this slot.",
-        "class-neon-grid-30-s6": "Fast, driving song for the sprints. Aim for about 174 BPM. Idea: Sub Focus – Tidal Wave (174).",
+        "class-neon-grid-30-s6": "Driving song for the sprints, one beat per pedal stroke at 105 rpm. Aim for about 105 BPM. Idea: M83 – Midnight City (105).",
         "class-neon-grid-30-s7": "Quiet, beatless ambient piece; the last minute is silent. Aim for about 67 BPM. Idea: Brian Eno – An Ending (Ascent), no beat."
       }
     },
@@ -25,18 +25,13 @@
         "class-neon-grid-30-s3": "Spokojny, przestrzenny utwór na odpoczynek. Szukaj ok. 89 BPM. Pomysł: Tycho – Awake (88).",
         "class-neon-grid-30-s4": "Podniosły utwór na długi podjazd na szczyt. Szukaj ok. 126 BPM. Pomysł: David Guetta & Sia – Titanium (126).",
         "class-neon-grid-30-s5": "Wybierz własny spokojny utwór elektroniczny, 85-95 BPM; ten slot nie ma przypiętego utworu.",
-        "class-neon-grid-30-s6": "Szybki, napędzający utwór na sprinty. Szukaj ok. 174 BPM. Pomysł: Sub Focus – Tidal Wave (174).",
+        "class-neon-grid-30-s6": "Napędzający utwór na sprinty, jeden bit na obrót przy 105 rpm. Szukaj ok. 105 BPM. Pomysł: M83 – Midnight City (105).",
         "class-neon-grid-30-s7": "Cichy ambient bez beatu; ostatnia minuta w ciszy. Szukaj ok. 67 BPM. Pomysł: Brian Eno – An Ending (Ascent), bez beatu."
       }
     }
   },
   "category": "freestyle",
-  "tags": [
-    "music",
-    "hiit",
-    "climb",
-    "sprint"
-  ],
+  "tags": ["music", "hiit", "climb", "sprint"],
   "source": {
     "kind": "builtin",
     "file": "class-neon-grid-30.json"
@@ -478,70 +473,49 @@
       "id": "class-neon-grid-30-s1",
       "firstBlockId": "ng1-wu",
       "lastBlockId": "ng1-f",
-      "bpm": [
-        86,
-        92
-      ],
+      "bpm": [86, 92],
       "hint": "Easy electronic warm-up, about 5 min. Aim for about 90 BPM. Idea: Kavinsky – Nightcall (91)."
     },
     {
       "id": "class-neon-grid-30-s2",
       "firstBlockId": "ng3-a",
       "lastBlockId": "ng3-r2",
-      "bpm": [
-        168,
-        176
-      ],
+      "bpm": [168, 176],
       "hint": "Fast, driving song for 30/30 intervals. Aim for about 174 BPM. Idea: The Weeknd – Blinding Lights (171)."
     },
     {
       "id": "class-neon-grid-30-s3",
       "firstBlockId": "ng4r-a",
       "lastBlockId": "ng4r-b",
-      "bpm": [
-        86,
-        92
-      ],
+      "bpm": [86, 92],
       "hint": "Calm, spacious song to recover. Aim for about 89 BPM. Idea: Tycho – Awake (88)."
     },
     {
       "id": "class-neon-grid-30-s4",
       "firstBlockId": "ng9-a",
       "lastBlockId": "ng9-g",
-      "bpm": [
-        122,
-        130
-      ],
+      "bpm": [122, 130],
       "hint": "Big uplifting song for the long summit climb. Aim for about 126 BPM. Idea: David Guetta & Sia – Titanium (126)."
     },
     {
       "id": "class-neon-grid-30-s5",
       "firstBlockId": "ng8r-a",
       "lastBlockId": "ng8r-b",
-      "bpm": [
-        85,
-        95
-      ],
+      "bpm": [85, 95],
       "hint": "Pick your own calm electronic song, 85-95 BPM; nothing is pinned for this slot."
     },
     {
       "id": "class-neon-grid-30-s6",
       "firstBlockId": "ng10-a",
       "lastBlockId": "ng10-z",
-      "bpm": [
-        168,
-        176
-      ],
-      "hint": "Fast, driving song for the sprints. Aim for about 174 BPM. Idea: Sub Focus – Tidal Wave (174)."
+      "bpm": [100, 110],
+      "hint": "Driving song for the sprints, one beat per pedal stroke at 105 rpm. Aim for about 105 BPM. Idea: M83 – Midnight City (105)."
     },
     {
       "id": "class-neon-grid-30-s7",
       "firstBlockId": "ng11-cd",
       "lastBlockId": "ng11-c",
-      "bpm": [
-        64,
-        70
-      ],
+      "bpm": [64, 70],
       "hint": "Quiet, beatless ambient piece; the last minute is silent. Aim for about 67 BPM. Idea: Brian Eno – An Ending (Ascent), no beat."
     }
   ],

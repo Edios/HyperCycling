@@ -3,12 +3,14 @@
  * the rider's own account. Pure logic: the search function is injected, so tests need no network.
  * Nothing leaves the app except the Spotify search the rider's own token makes.
  */
+import { anchorStart, findCueSheet, type AnchorResult } from '../../domain/choreography';
 import { slotQueue, songChain, type ChainOptions } from '../../domain/music-chain';
 import { fillSlotGap, type GapFill } from '../../domain/music-gaps';
 import { cadenceFit, rankTracks } from '../../domain/bpm-match';
 import { pickPreferred, songKey, type PlanCandidate } from '../../domain/slot-plan';
 import {
   hintQueue,
+  songStartsSec,
   withExperiencePins,
   type Experience,
   type MusicHint,
@@ -465,6 +467,21 @@ export function choiceCues(w: Workout, choices: Readonly<Record<string, TrackRef
   return compileSongCues({ ...w, songs });
 }
 
+/**
+ * Where the first song of a hinted slot starts so that its anchored part falls on the anchor's
+ * block (choreography), in the song's first recording; undefined = no anchor or no cue sheet.
+ */
+export function hintAnchorStart(
+  w: Workout,
+  e: Experience,
+  h: MusicHint,
+  slotStartSec: number,
+): AnchorResult | undefined {
+  if (!h.anchor) return undefined;
+  const sheet = findCueSheet(e.cueSheets, h);
+  return sheet ? anchorStart(slotStartSec, w, h.anchor, sheet) : undefined;
+}
+
 /** The workout with the experience's pins and then the rider's own matches on top. */
 export function withUserMusic(
   w: Workout,
@@ -494,10 +511,20 @@ export function chainChoices(
   opts: Omit<ChainOptions, 'spotify'>,
 ): Record<string, TrackRef[]> {
   const out: Record<string, TrackRef[]> = { ...choices };
+  const starts = songStartsSec(w);
   for (const h of e.musicHints ?? []) {
     const slot = w.songs?.[h.slot];
     if (!slot) continue;
-    const queue = slotQueue(h, { ...opts, spotify: choices[slot.id] ?? [] });
+    const start = hintAnchorStart(w, e, h, starts[h.slot] ?? 0);
+    const queue = slotQueue(
+      h,
+      {
+        ...opts,
+        spotify: choices[slot.id] ?? [],
+        ...(e.cueSheets ? { cueSheets: e.cueSheets } : {}),
+      },
+      start ? { startSec: start.startSec } : undefined,
+    );
     if (queue.length > 0) out[slot.id] = queue;
   }
   return out;
@@ -540,7 +567,10 @@ export function fillGaps(
     const queue = slot ? out[slot.id] : undefined;
     if (!slot || !queue || queue.length === 0) continue;
     const reserve = (h.alternatives ?? []).flatMap((alt) => {
-      const [first, ...rest] = songChain(alt, undefined, opts);
+      const [first, ...rest] = songChain(alt, undefined, {
+        ...opts,
+        ...(e.cueSheets ? { cueSheets: e.cueSheets } : {}),
+      });
       return first ? [rest.length > 0 ? { ...first, alternates: rest } : first] : [];
     });
     const { queue: filled, ...rest } = fillSlotGap(queue, songDurationSec(w, slot), reserve, {

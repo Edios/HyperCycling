@@ -1,0 +1,88 @@
+/* Upper centre, clear of the count-in digit and of the coach's line in the middle. */
+.root {
+  position: fixed;
+  z-index: 5;
+  left: 50%;
+  top: calc(16 * var(--vh));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(1.2 * var(--vh));
+  pointer-events: none;
+  font-family: var(--font-display);
+  color: var(--c);
+}
+
+/* The beat: a ring that flares on every beat, stronger on beat 1 of the bar. */
+.beat {
+  width: calc(3.2 * var(--vh));
+  height: calc(3.2 * var(--vh));
+  border-radius: 50%;
+  border: 2px solid var(--c);
+  opacity: 0.35;
+  animation: beat var(--beat, 500ms) ease-out both;
+}
+
+.downbeat {
+  background: color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+@keyframes beat {
+  0% {
+    opacity: 1;
+    transform: scale(1.35);
+    box-shadow: 0 0 calc(2 * var(--vh)) var(--c);
+  }
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+.call {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  padding: calc(0.8 * var(--vh)) calc(2 * var(--vh));
+  border-radius: calc(1.2 * var(--vh));
+  background: color-mix(in srgb, #000 55%, transparent);
+  text-shadow: 0 0 calc(2 * var(--vh)) color-mix(in srgb, var(--c) 60%, transparent);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.label {
+  font-size: min(calc(5 * var(--vh)), 4.4vw);
+  letter-spacing: 0.02em;
+}
+
+.count {
+  font-size: min(calc(8 * var(--vh)), 7vw);
+  font-variant-numeric: tabular-nums;
+  min-width: 1ch;
+  text-align: center;
+}
+
+.tick {
+  animation: tick var(--beat, 500ms) ease-out both;
+}
+
+@keyframes tick {
+  0% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

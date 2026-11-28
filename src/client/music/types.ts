@@ -31,6 +31,11 @@ export interface MusicProvider {
    */
   setEndHandler?(handler: (() => void) | undefined): void;
   /**
+   * Optional song clock: seconds into the recording that plays now, read from the player itself;
+   * undefined while it is not playing (loading, buffering, an advert, paused).
+   */
+  position?(): number | undefined;
+  /**
    * Optional: looks up the name (and artists) of a track. The director uses it for tracks saved
    * without a title; it may reject and never holds up playback.
    */

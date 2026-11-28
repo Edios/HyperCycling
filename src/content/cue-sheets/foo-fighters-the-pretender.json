@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "artist": "Foo Fighters",
+  "title": "The Pretender",
+  "bpm": 173.01,
+  "beatsPerBar": 4,
+  "downbeatSec": 1.19,
+  "recordings": [
+    {
+      "id": "SBjQ9tuuTJQ",
+      "durationSec": 270
+    },
+    {
+      "id": "m4OnAwaDVTE",
+      "durationSec": 269,
+      "shiftSec": 0.42
+    },
+    {
+      "id": "nLjVtDtyDlY",
+      "durationSec": 269,
+      "shiftSec": 0.37
+    },
+    {
+      "id": "HRWJ7FxGwVg",
+      "durationSec": 269,
+      "shiftSec": 0.44
+    }
+  ],
+  "sections": [
+    {
+      "t": 0,
+      "kind": "intro"
+    },
+    {
+      "t": 261.98,
+      "kind": "outro"
+    }
+  ]
+}

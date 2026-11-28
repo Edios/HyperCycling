@@ -122,6 +122,27 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe('music director: song clock', () => {
+  it('reads the clock of the recording that plays, from its provider', async () => {
+    const director = make({ cues: [cue('b', track('B', 'youtube'))] });
+    expect(director.songPosition()).toBeNull(); // not started
+    director.start();
+    await runAt(130);
+    youtube.setPosition(undefined);
+    expect(director.songPosition()).toBeNull(); // the player cannot tell (loading, an advert)
+    youtube.setPosition(31.5);
+    expect(director.songPosition()).toEqual({
+      track: expect.objectContaining({ id: 'B' }),
+      sec: 31.5,
+    });
+    engine.set({ status: 'paused' });
+    await settle();
+    expect(director.songPosition()).toBeNull(); // halted with the ride
+    director.dispose();
+    expect(director.songPosition()).toBeNull();
+  });
+});
+
 describe('music director: idle and start', () => {
   it('stays idle without cues or a fallback playlist', async () => {
     const director = make();

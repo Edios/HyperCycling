@@ -22,6 +22,8 @@ interface FakePlayer {
 let players: FakePlayer[];
 let autoReady: boolean;
 let autoPlay: boolean;
+/** What the fake player says about its clock (the song clock test). */
+let clockState = { state: 1, time: 0, video: undefined as string | undefined };
 
 function makeApi(): YTNamespace {
   return {
@@ -44,6 +46,9 @@ function makeApi(): YTNamespace {
           mute: () => undefined,
           unMute: () => undefined,
           destroy: () => calls.push('destroy'),
+          getPlayerState: () => clockState.state,
+          getCurrentTime: () => clockState.time,
+          getVideoData: () => ({ video_id: clockState.video }),
         };
         const event = (data?: number): YTPlayerEvent => ({
           target: self,
@@ -81,6 +86,7 @@ beforeEach(() => {
   players = [];
   autoReady = true;
   autoPlay = true;
+  clockState = { state: 1, time: 0, video: undefined };
   sleep.mockClear();
   clock = 0;
   provider = createYoutubeMusicProvider({
@@ -97,6 +103,21 @@ afterEach(() => {
 });
 
 describe('YouTube music provider', () => {
+  it('reads the song clock from the player only while the asked-for video plays', async () => {
+    await provider.connect();
+    expect(provider.position?.()).toBeUndefined(); // no player yet
+    await provider.play(track('abc'), 30);
+    clockState = { state: 1, time: 31.25, video: 'abc' };
+    expect(provider.position?.()).toBe(31.25);
+    clockState = { state: 1, time: 5, video: 'advert00000' }; // something else in the player
+    expect(provider.position?.()).toBeUndefined();
+    clockState = { state: 3, time: 31.5, video: 'abc' }; // buffering
+    expect(provider.position?.()).toBeUndefined();
+    clockState = { state: 1, time: 32, video: 'abc' };
+    await provider.pause();
+    expect(provider.position?.()).toBeUndefined();
+  });
+
   it('is not ready until connected, and refuses to play before that', async () => {
     expect(provider.kind).toBe('youtube');
     expect(provider.isReady()).toBe(false);

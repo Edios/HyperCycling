@@ -235,12 +235,17 @@ describe('Neon Grid authored music queues', () => {
       expect(dywc.queue).toBeUndefined();
       expect(dywc.alternatives?.[0]?.title).toBe('Clarity');
     }
-    for (const id of ['neon-grid-45', 'neon-grid-45-light', 'neon-grid-30']) {
+    for (const id of ['neon-grid-45', 'neon-grid-45-light']) {
       // One song fills the 4:00 sprint slot (a second track used to play for only 59 s).
       const tw = hints(id).find((h) => h.title === 'Tidal Wave')!;
       expect(tw.queue).toBeUndefined();
       expect(tw.alternatives?.[0]?.title).toBe('Basket Case');
     }
+    // The 30's sprints ride on a song at the sprint cadence (105 BPM at 105 rpm), its reserve too.
+    const mc = hints('neon-grid-30').find((h) => h.slot === 5)!;
+    expect(`${mc.artist} - ${mc.title}`).toBe('M83 - Midnight City');
+    expect(mc.queue).toBeUndefined();
+    expect(mc.alternatives?.map((a) => a.bpm)).toEqual([109, 109]);
     for (const id of ['neon-grid-45', 'neon-grid-30']) {
       const pj = hints(id).find((h) => h.title === 'Pjanoo')!;
       expect(pj.queue).toBeUndefined(); // the 7:31 song fills the 5:00 slot (audit P2)
@@ -254,7 +259,9 @@ describe('Neon Grid authored music queues', () => {
       const w = getWorkout(e.workoutRef.id)!;
       const fixed = new Set(
         (e.musicHints ?? [])
-          .filter((h) => ["Don't You Worry Child", 'Pjanoo', 'Tidal Wave'].includes(h.title))
+          .filter((h) =>
+            ["Don't You Worry Child", 'Pjanoo', 'Tidal Wave', 'Midnight City'].includes(h.title),
+          )
           .map((h) => h.slot),
       );
       const warns = validateHintQueues(e, w);

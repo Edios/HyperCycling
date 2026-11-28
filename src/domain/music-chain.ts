@@ -7,6 +7,7 @@
  * account); with Spotify chosen (or Auto and Spotify connected) Spotify goes first and YouTube is
  * the backup. Uploads that a music check found dead go to the end of the chain.
  */
+import { findCueSheet, recordingChoreo, recordingShift, type CueSheet } from './choreography';
 import { hintQueue, type MusicHint, type QueueItem, type YoutubeCandidate } from './experience';
 import { songKey } from './slot-plan';
 import { MAX_ALTERNATES, type TrackRef } from './workout';
@@ -23,18 +24,43 @@ export interface ChainOptions {
   spotify?: readonly TrackRef[];
   /** `provider:id` of recordings a music check found dead; they go last in their chain. */
   dead?: ReadonlySet<string>;
+  /** Beat grids of the songs: the uploads a sheet lists carry their grid (choreography). */
+  cueSheets?: readonly CueSheet[];
+}
+
+/** Where the first song of a slot starts, moved so that a part of it falls on a block (anchor). */
+export interface SongStart {
+  /** Seconds into the sheet's first recording. */
+  startSec: number;
 }
 
 export const trackKey = (t: Pick<TrackRef, 'provider' | 'id'>): string => `${t.provider}:${t.id}`;
 
-/** The TrackRef of one YouTube upload of `item`. */
-export function youtubeTrack(item: QueueItem, cand: YoutubeCandidate): TrackRef {
+/**
+ * The TrackRef of one YouTube upload of `item`. An upload on the song's cue sheet carries its beat
+ * grid and, with `start`, begins at that point of the song (shifted to this upload); an upload the
+ * sheet does not list plays as authored.
+ */
+export function youtubeTrack(
+  item: QueueItem,
+  cand: YoutubeCandidate,
+  sheet?: CueSheet,
+  start?: SongStart,
+): TrackRef {
+  const shift = sheet ? recordingShift(sheet, cand.id) : undefined;
+  const choreo = sheet && shift !== undefined ? recordingChoreo(sheet, cand.id) : undefined;
+  const authored = cand.offsetSec ?? item.startOffsetSec ?? 0;
+  const startAtSec =
+    start && shift !== undefined
+      ? Math.max(0, Math.round((start.startSec + shift) * 1000) / 1000)
+      : authored;
   return {
     provider: 'youtube',
     id: cand.id,
     title: item.title,
     artist: item.artist,
-    startAtSec: cand.offsetSec ?? item.startOffsetSec ?? 0,
+    startAtSec,
+    ...(choreo ? { choreo } : {}),
     ...((cand.durationSec ?? item.durationSec) !== undefined
       ? { durationSec: cand.durationSec ?? item.durationSec }
       : {}),
@@ -67,9 +93,11 @@ function pairSpotify(
 export function songChain(
   item: QueueItem,
   spotify: TrackRef | undefined,
-  opts: Pick<ChainOptions, 'source' | 'spotifyUsable' | 'dead'>,
+  opts: Pick<ChainOptions, 'source' | 'spotifyUsable' | 'dead' | 'cueSheets'>,
+  start?: SongStart,
 ): TrackRef[] {
-  const yt = (item.youtube ?? []).map((c) => youtubeTrack(item, c));
+  const sheet = findCueSheet(opts.cueSheets, item);
+  const yt = (item.youtube ?? []).map((c) => youtubeTrack(item, c, sheet, start));
   const sp: TrackRef[] = [];
   if (opts.spotifyUsable && spotify) {
     const { alternates: _a, ...plain } = spotify;
@@ -88,13 +116,16 @@ export function songChain(
   return ordered.slice(0, MAX_ALTERNATES + 1);
 }
 
-/** The queue of one slot: one TrackRef per authored song, each carrying its backups. */
-export function slotQueue(hint: MusicHint, opts: ChainOptions): TrackRef[] {
+/**
+ * The queue of one slot: one TrackRef per authored song, each carrying its backups. `start` moves
+ * the first song (its anchor); the songs after it play from their authored start.
+ */
+export function slotQueue(hint: MusicHint, opts: ChainOptions, start?: SongStart): TrackRef[] {
   const items = hintQueue(hint);
   const paired = pairSpotify(items, opts.spotify ?? []);
   const out: TrackRef[] = [];
   items.forEach((item, i) => {
-    const [first, ...rest] = songChain(item, paired[i], opts);
+    const [first, ...rest] = songChain(item, paired[i], opts, i === 0 ? start : undefined);
     if (first) out.push(rest.length > 0 ? { ...first, alternates: rest } : first);
   });
   return out;

@@ -101,7 +101,9 @@ describe('P3 and P5: the tempo of the songs fits the cadence of their slots', ()
       }
       return fit / all;
     };
-    expect(share('neon-grid-30')).toBeGreaterThanOrEqual(0.79);
+    // 0.79 before the sprint slot took a song on the sprint cadence (owner decision 2026-11-26):
+    // the sprints are on the beat now, the recoveries between them are not.
+    expect(share('neon-grid-30')).toBeGreaterThanOrEqual(0.74);
     expect(share('neon-grid-45')).toBeGreaterThanOrEqual(0.8);
     expect(share('neon-grid-45-light')).toBeGreaterThanOrEqual(0.82);
   });
