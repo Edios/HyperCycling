@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 import { fillIntroTicks } from './src/client/brand/intro-markup';
 import { injectCspMeta } from './src/shared/cspMeta';
+import { serviceWorkerPlugin } from './src/shared/service-worker';
 
 /**
  * Embeds the Content-Security-Policy as a `<meta>` tag in production builds (GitHub Pages cannot
@@ -36,7 +37,7 @@ export default defineConfig({
   base: process.env.VITE_BASE ?? '/',
   // Vite would inline a small modulepreload polyfill; the CSP has no 'unsafe-inline' for scripts.
   build: { modulePreload: { polyfill: false } },
-  plugins: [react(), introMarkup(), cspMeta()],
+  plugins: [react(), introMarkup(), cspMeta(), serviceWorkerPlugin()],
   server: {
     host: '127.0.0.1',
     // The API only trusts the dev origin on 5173; silently moving to another port would break it.

@@ -5,6 +5,7 @@ import { useT } from '../i18n';
 import { AppBar } from '../ui/AppBar';
 import { Icon } from '../ui/Icon';
 import { GuideIcon } from './GuideIcons';
+import { InstallApp } from '../pwa/InstallApp';
 import styles from './HowItWorks.module.css';
 
 const REPO_URL = 'https://github.com/Edios/HyperCycling';
@@ -86,6 +87,14 @@ export function HowItWorks() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section aria-labelledby="guide-install">
+          <h2 id="guide-install" className={styles.sectionTitle}>
+            {t('pwa.title')}
+          </h2>
+          <p>{t('pwa.body')}</p>
+          <InstallApp />
         </section>
 
         <section className={styles.cta}>

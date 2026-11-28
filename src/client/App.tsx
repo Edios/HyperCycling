@@ -10,6 +10,7 @@ import { DevHome } from './screens/DevHome';
 import { SettingsEffects } from './settings/SettingsEffects';
 import { SettingsScreen } from './settings/SettingsScreen';
 import { PlayersScreen } from './players/PlayersScreen';
+import { UpdateNotice } from './pwa/UpdateNotice';
 import { KnobPrompt } from './settings/KnobPrompt';
 import { ResumePrompt } from './setup/ResumePrompt';
 import { SetupScreen } from './setup/SetupScreen';
@@ -38,6 +39,7 @@ function Root() {
       <KnobPrompt />
       <Outlet />
       <GlobalDiagnostics />
+      <UpdateNotice />
     </>
   );
 }

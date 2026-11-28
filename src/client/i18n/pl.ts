@@ -1466,6 +1466,17 @@ export const pl: Messages = {
     rideWithPlayers: 'Jedź z graczami',
   },
   // Podstrona „Jak to działa” (osobny blok, żeby inne zmiany w tym pliku się z nią nie zderzały).
+  pwa: {
+    title: 'Zainstaluj jako aplikację',
+    body: 'HyperCycling może stać na ekranie głównym albo pulpicie jak aplikacja: własne okno, bez paska przeglądarki, a treningi działają bez internetu (muzyka nadal go potrzebuje).',
+    install: 'Zainstaluj aplikację',
+    installHint: 'Twoje treningi i ustawienia zostają tam, gdzie są.',
+    installIos:
+      'Na iPhonie lub iPadzie: w Safari stuknij Udostępnij, potem „Do ekranu początkowego”.',
+    updateReady: 'Jest nowa wersja.',
+    updateApply: 'Odśwież',
+    updateLater: 'Później',
+  },
   guide: {
     menu: 'Jak to działa',
     eyebrow: 'Jak to działa',
