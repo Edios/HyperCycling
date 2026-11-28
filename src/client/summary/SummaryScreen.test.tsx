@@ -372,14 +372,14 @@ describe('SummaryScreen', () => {
         return el;
       }) as typeof document.createElement);
 
-      fireEvent.click(screen.getByRole('button', { name: 'Download FIT' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Download FIT for Strava' }));
       await waitFor(() => expect(click).toHaveBeenCalledTimes(1));
       const withHr = await read(create2.mock.calls[0]![0]);
       expect(String.fromCharCode(...withHr.slice(8, 12))).toBe('.FIT');
       expect(names[0]).toMatch(/^hypercycling-ride-.*\.fit$/);
 
       fireEvent.click(screen.getByRole('switch', { name: 'Heart rate in the FIT file' }));
-      fireEvent.click(screen.getByRole('button', { name: 'Download FIT' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Download FIT for Strava' }));
       await waitFor(() => expect(click).toHaveBeenCalledTimes(2));
       const withoutHr = await read(create2.mock.calls[1]![0]);
       // One byte less per record (and in the laps and session): the heart rate is really gone.
@@ -509,6 +509,19 @@ describe('SummaryScreen', () => {
       await new Promise((r) => setTimeout(r, 30));
       expect(db.logs).toHaveLength(1);
       expect(db.progressPuts).toHaveLength(1);
+    });
+
+    it('the way back fits the ride: Freestyle list, Experience list', async () => {
+      useLastResult.getState().set(result());
+      const { unmount } = renderSummary();
+      fireEvent.click(await screen.findByRole('button', { name: 'Back to Freestyle' }));
+      expect(await screen.findByTestId('where')).toHaveTextContent('/freestyle');
+      unmount();
+
+      useLastResult.getState().set(result({ experienceId: 'neon-grid-45' }));
+      renderSummary();
+      fireEvent.click(await screen.findByRole('button', { name: 'Back to Experience' }));
+      expect(await screen.findByTestId('where')).toHaveTextContent('/experiences');
     });
 
     it('Ride again goes back to setup with the same plan query', async () => {

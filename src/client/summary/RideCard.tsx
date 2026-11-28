@@ -95,6 +95,22 @@ export function RideCard({ ride }: { ride: RideRecord }) {
   return (
     <Card className={styles.card} data-testid="summary-ride">
       <h2 className={styles.title}>{t('summary.ride.title')}</h2>
+      {/* The usual next step after a ride: the file for Strava, Garmin Connect, intervals.icu. */}
+      <div className={styles.fit} data-testid="ride-fit">
+        <div className={styles.actions}>
+          <Button onClick={() => void downloadFit()} data-testid="ride-download-fit">
+            {t('summary.ride.downloadFit')}
+          </Button>
+          <span className={styles.privacy}>{t('summary.ride.privacy')}</span>
+        </div>
+        {hasHr && <Toggle label={t('summary.ride.fitHr')} checked={fitHr} onChange={setFitHr} />}
+        <p className={styles.fitHint}>
+          {t('summary.ride.fitHint')}{' '}
+          <a href="https://www.strava.com/upload/select" target="_blank" rel="noopener noreferrer">
+            {t('summary.ride.fitStrava')}
+          </a>
+        </p>
+      </div>
       <div className={styles.stats}>
         <Stat id="ride-time" label={t('summary.ride.time')} value={formatClock(s.ridingSec)} />
         {s.avgPowerW !== null && (
@@ -162,24 +178,15 @@ export function RideCard({ ride }: { ride: RideRecord }) {
           )}
         </div>
       )}
-      <div className={styles.actions}>
-        <Button onClick={download} data-testid="ride-download">
-          {t('summary.ride.download')}
-        </Button>
-        <Button onClick={() => void downloadFit()} data-testid="ride-download-fit">
-          {t('summary.ride.downloadFit')}
-        </Button>
-        <span className={styles.privacy}>{t('summary.ride.privacy')}</span>
-      </div>
-      <div className={styles.fit} data-testid="ride-fit">
-        {hasHr && <Toggle label={t('summary.ride.fitHr')} checked={fitHr} onChange={setFitHr} />}
-        <p className={styles.fitHint}>
-          {t('summary.ride.fitHint')}{' '}
-          <a href="https://www.strava.com/upload/select" target="_blank" rel="noopener noreferrer">
-            {t('summary.ride.fitStrava')}
-          </a>
-        </p>
-      </div>
+      {/* The raw recording is for the curious and for bug reports: one level down. */}
+      <details className={styles.more} data-testid="ride-more">
+        <summary>{t('summary.ride.more')}</summary>
+        <div className={styles.actions}>
+          <Button onClick={download} data-testid="ride-download">
+            {t('summary.ride.download')}
+          </Button>
+        </div>
+      </details>
     </Card>
   );
 }

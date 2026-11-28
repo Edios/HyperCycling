@@ -188,7 +188,10 @@ test('ride recording: the summary shows the ride and downloads it as JSON (T6)',
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    card.getByRole('button', { name: 'Download ride (JSON)' }).click(),
+    card
+      .getByText('More')
+      .click()
+      .then(() => card.getByRole('button', { name: 'Download ride (JSON)' }).click()),
   ]);
   expect(download.suggestedFilename()).toMatch(/^hypercycling-ride-\d{4}-\d{2}-\d{2}-\d{4}\.json$/);
   const path = await download.path();
@@ -208,7 +211,7 @@ test('ride recording: the summary shows the ride and downloads it as JSON (T6)',
   // The same ride as a FIT file (Strava, Garmin Connect, intervals.icu).
   const [fitDownload] = await Promise.all([
     page.waitForEvent('download'),
-    card.getByRole('button', { name: 'Download FIT' }).click(),
+    card.getByRole('button', { name: 'Download FIT for Strava' }).click(),
   ]);
   expect(fitDownload.suggestedFilename()).toMatch(
     /^hypercycling-ride-\d{4}-\d{2}-\d{2}-\d{4}\.fit$/,

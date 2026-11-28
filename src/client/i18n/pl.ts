@@ -170,7 +170,8 @@ export const pl: Messages = {
       zones: 'Czas w strefach tętna',
       zone: 'Strefa {n}',
       download: 'Pobierz jazdę (JSON)',
-      downloadFit: 'Pobierz FIT',
+      downloadFit: 'Pobierz FIT do Stravy',
+      more: 'Więcej',
       fitHr: 'Tętno w pliku FIT',
       fitHint:
         'Plik .fit wgrasz do Stravy, Garmin Connect (Importuj dane), intervals.icu i większości aplikacji treningowych.',
@@ -189,6 +190,8 @@ export const pl: Messages = {
     ended: 'Przerwany',
     ridden: 'Przejechany czas',
     backToPlan: 'Wróć do planu',
+    backToFreestyle: 'Wróć do Freestyle',
+    backToExperience: 'Wróć do Experience',
     again: 'Jedź jeszcze raz',
     countTitle: 'Zalicz do planu',
     countDetail: '{plan} · tydzień {week} · {slot}',
