@@ -1,0 +1,972 @@
+{
+  "v": 1,
+  "version": "2.0.0",
+  "entries": [
+    {
+      "pr": 175,
+      "date": "2026-11-28",
+      "type": "fix",
+      "scope": "devices",
+      "title": "On an iPhone the ride setup names Bluefy, with a link to the help"
+    },
+    {
+      "pr": 174,
+      "date": "2026-11-28",
+      "type": "fix",
+      "scope": "plans",
+      "title": "The plan wizard skips the FTP step for a bike without watts"
+    },
+    {
+      "pr": 172,
+      "date": "2026-11-28",
+      "type": "fix",
+      "scope": "hud",
+      "title": "No riders column for a single rider on Classic; watts never clipped"
+    },
+    {
+      "pr": 171,
+      "date": "2026-11-26",
+      "type": "fix",
+      "scope": "brand",
+      "title": "The still logo instead of the fallback text before React starts"
+    },
+    {
+      "pr": 170,
+      "date": "2026-11-26",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "\"How many of my songs\" (few / half / mostly mine); song rest between rides ready but off"
+    },
+    {
+      "pr": 169,
+      "date": "2026-11-26",
+      "type": "feat",
+      "scope": "diagnostics",
+      "title": "Diagnostics mode on every screen, with one masked report"
+    },
+    {
+      "pr": 168,
+      "date": "2026-11-26",
+      "type": "fix",
+      "scope": "training",
+      "title": "Shortcut list closes from anywhere, 44 px Close; next song never skips into silence"
+    },
+    {
+      "pr": 167,
+      "date": "2026-11-26",
+      "type": "fix",
+      "scope": "soundtrack",
+      "title": "Song order only with the ride's music on, 44 px Draw another, one-line choice"
+    },
+    {
+      "pr": 166,
+      "date": "2026-11-26",
+      "type": "feat",
+      "scope": "training",
+      "title": "Ride shortcuts for media keys, remotes and headphones; next song, ± ERG, \"?\" help"
+    },
+    {
+      "pr": 165,
+      "date": "2026-11-26",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Play the last song order again or draw a new one, save it after the ride"
+    },
+    {
+      "pr": 164,
+      "date": "2026-11-26",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Own BPM window for 1:1, 2x and 4x; energy over tempo in intervals and peaks"
+    },
+    {
+      "pr": 163,
+      "date": "2026-11-26",
+      "type": "fix",
+      "scope": "soundtrack",
+      "title": "Own songs nits 2 (catalog note, check at save, start in the error)"
+    },
+    {
+      "pr": 162,
+      "date": "2026-11-26",
+      "type": "fix",
+      "scope": "freestyle",
+      "title": "Preview pane 12 px meta and 44 px buttons, labelled All N"
+    },
+    {
+      "pr": 161,
+      "date": "2026-11-26",
+      "type": "feat",
+      "scope": "music",
+      "title": "Owner's per-song thumbs and heart during a ride"
+    },
+    {
+      "pr": 160,
+      "date": "2026-11-26",
+      "type": "fix",
+      "scope": "freestyle",
+      "title": "12 px text, 44 px filter targets, All N for HIIT and Short"
+    },
+    {
+      "pr": 159,
+      "date": "2026-11-26",
+      "type": "fix",
+      "scope": "world",
+      "title": "WebGL restart limit, Try 3D again in quick settings, local time in the log"
+    },
+    {
+      "pr": 158,
+      "date": "2026-11-26",
+      "type": "feat",
+      "scope": "freestyle",
+      "title": "Audit N-09 grouped list and the notes of #156"
+    },
+    {
+      "pr": 157,
+      "date": "2026-11-26",
+      "type": "fix",
+      "scope": "world",
+      "title": "Retry and log WebGL fallbacks, recover a context that never returns, Try again"
+    },
+    {
+      "pr": 156,
+      "date": "2026-11-26",
+      "type": "feat",
+      "scope": "settings",
+      "title": "Audit N-10 and the review notes of #154"
+    },
+    {
+      "pr": 155,
+      "date": "2026-11-26",
+      "type": "fix",
+      "scope": "soundtrack",
+      "title": "Own songs nits: removed-song message, catalog video, start time"
+    },
+    {
+      "pr": 154,
+      "date": "2026-11-26",
+      "type": "feat",
+      "scope": "ui",
+      "title": "Audit N-08, N-11-N-14 and 2x/1:1 cadence labels"
+    },
+    {
+      "pr": 153,
+      "date": "2026-11-26",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "The rider's own songs in Match music"
+    },
+    {
+      "pr": 152,
+      "date": "2026-11-25",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Groove and mood weights, one 1:1 vs 2x rule for planner and editor"
+    },
+    {
+      "pr": 151,
+      "date": "2026-11-25",
+      "type": "fix",
+      "scope": "experience",
+      "title": "Music audit P2-P5, P7: real cadence in annotate, no repeats, no dead queue entries"
+    },
+    {
+      "pr": 150,
+      "date": "2026-11-25",
+      "type": "fix",
+      "title": "Review nits of #145, #147, #148 (swap, double progres, rotation hint)"
+    },
+    {
+      "pr": 148,
+      "date": "2026-11-25",
+      "type": "feat",
+      "scope": "freestyle",
+      "title": "Rotation hint from the last ride"
+    },
+    {
+      "pr": 147,
+      "date": "2026-11-25",
+      "type": "feat",
+      "scope": "hud",
+      "title": "'Standing in X s' countdown on the position badge"
+    },
+    {
+      "pr": 146,
+      "date": "2026-11-25",
+      "type": "feat",
+      "scope": "content",
+      "title": "A 'why' sentence in every workout description"
+    },
+    {
+      "pr": 145,
+      "date": "2026-11-25",
+      "type": "feat",
+      "scope": "plans",
+      "title": "Build Form week 8 defaults to sweet spot, FTP test as alternative"
+    },
+    {
+      "pr": 143,
+      "date": "2026-11-25",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Groove 1-3, mood and the finisher role for the 229 songs"
+    },
+    {
+      "pr": 142,
+      "date": "2026-11-25",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Per-workout tie-breaks, short songs pay full rotation, batch review fixes"
+    },
+    {
+      "pr": 141,
+      "date": "2026-11-24",
+      "type": "feat",
+      "scope": "content",
+      "title": "Add 50 owner-approved songs to the soundtrack catalog (179 -> 229)"
+    },
+    {
+      "pr": 140,
+      "date": "2026-11-24",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Songs follow ramps and pyramids"
+    },
+    {
+      "pr": 139,
+      "date": "2026-11-24",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Literature rules in the fit: tempo curve, comfort band, slow-work penalty, climb 2x"
+    },
+    {
+      "pr": 138,
+      "date": "2026-11-24",
+      "type": "feat",
+      "scope": "editor",
+      "title": "Cadence next to BPM, fit mark and cadence filter for songs"
+    },
+    {
+      "pr": 137,
+      "date": "2026-11-24",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Asymmetric energy, rotation with ride history, Polish chip"
+    },
+    {
+      "pr": 136,
+      "date": "2026-11-24",
+      "type": "fix",
+      "scope": "world",
+      "title": "Retry WebGL instead of dropping to Basic at the first refusal"
+    },
+    {
+      "pr": 134,
+      "date": "2026-11-23",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Energy tagging by ear for all 179 songs"
+    },
+    {
+      "pr": 133,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Rate interval sections by their work phase"
+    },
+    {
+      "pr": 132,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "content",
+      "title": "Standing sprints in Freestyle; 105 rpm standing limit for short sprints"
+    },
+    {
+      "pr": 131,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "training",
+      "title": "Pause the ride when the app leaves the screen on a phone"
+    },
+    {
+      "pr": 130,
+      "date": "2026-11-22",
+      "type": "fix",
+      "scope": "training",
+      "title": "Timeline playhead after skip + animated seated/standing call"
+    },
+    {
+      "pr": 129,
+      "date": "2026-11-22",
+      "type": "fix",
+      "title": "Music player off by default on mobile; watts number always readable in the Power ring"
+    },
+    {
+      "pr": 128,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "export",
+      "title": "FIT export of a recorded ride"
+    },
+    {
+      "pr": 126,
+      "date": "2026-11-22",
+      "type": "fix",
+      "scope": "training",
+      "title": "Phone in portrait with the music player: the HUD is laid out above it"
+    },
+    {
+      "pr": 125,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Save the matched music plan on the device"
+    },
+    {
+      "pr": 124,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "soundtrack",
+      "title": "Match music wizard and a visible music player"
+    },
+    {
+      "pr": 123,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "domain",
+      "title": "Soundtrack planner and plan compiler"
+    },
+    {
+      "pr": 121,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "content",
+      "title": "Cool-down, beatless and fallback songs; coverage share 0.5"
+    },
+    {
+      "pr": 120,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "training",
+      "title": "Ride recording, ride card and JSON export"
+    },
+    {
+      "pr": 119,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "content",
+      "title": "Soundtrack catalog of 159 approved songs"
+    },
+    {
+      "pr": 118,
+      "date": "2026-11-22",
+      "type": "feat",
+      "scope": "setup",
+      "title": "Lighter ride setup (audit N-05, N-06, N-07, captions)"
+    },
+    {
+      "pr": 117,
+      "date": "2026-11-21",
+      "type": "feat",
+      "scope": "ui",
+      "title": "Lighter phone layouts (audit N-01, N-03, N-04)"
+    },
+    {
+      "pr": 116,
+      "date": "2026-11-21",
+      "type": "feat",
+      "scope": "domain",
+      "title": "Music sections of a workout for Soundtrack Match"
+    },
+    {
+      "pr": 115,
+      "date": "2026-11-21",
+      "type": "feat",
+      "scope": "hud",
+      "title": "Range bars, execution score, device stop pauses the ride"
+    },
+    {
+      "pr": 114,
+      "date": "2026-11-21",
+      "type": "feat",
+      "scope": "devices",
+      "title": "Copy or download the Bluetooth log from Settings"
+    },
+    {
+      "pr": 113,
+      "date": "2026-11-21",
+      "type": "feat",
+      "scope": "erg",
+      "title": "ERG control and trainer-mode HUD (watts ring, ERG chip, ±5%, auto-pause)"
+    },
+    {
+      "pr": 112,
+      "date": "2026-11-20",
+      "type": "feat",
+      "scope": "editor",
+      "title": "Simpler editor and a coach-marks tutorial"
+    },
+    {
+      "pr": 111,
+      "date": "2026-11-20",
+      "type": "fix",
+      "scope": "music",
+      "title": "No silence inside a ride: ENDED moves the queue up, gap rules R1-R4, Neon Grid fallback"
+    },
+    {
+      "pr": 110,
+      "date": "2026-11-20",
+      "type": "feat",
+      "scope": "hud",
+      "title": "Live power, cadence and heart rate from the trainer and strap"
+    },
+    {
+      "pr": 109,
+      "date": "2026-11-20",
+      "type": "feat",
+      "scope": "devices",
+      "title": "Trainer and heart rate strap pairing UI, SINT16 resistance target"
+    },
+    {
+      "pr": 108,
+      "date": "2026-11-20",
+      "type": "feat",
+      "scope": "devices",
+      "title": "Web Bluetooth transport with GATT queue, Control Point client and reconnect"
+    },
+    {
+      "pr": 107,
+      "date": "2026-11-20",
+      "type": "feat",
+      "scope": "ble",
+      "title": "FTMS, HRS, CPS and CSC codecs with a byte-level trainer simulator"
+    },
+    {
+      "pr": 103,
+      "date": "2026-11-20",
+      "type": "feat",
+      "scope": "editor",
+      "title": "Music lane with real track length, start/end trim, layout fixes on phones"
+    },
+    {
+      "pr": 102,
+      "date": "2026-11-20",
+      "type": "fix",
+      "scope": "content",
+      "title": "Apply PL/EN copy audit fixes"
+    },
+    {
+      "pr": 104,
+      "date": "2026-11-19",
+      "type": "fix",
+      "scope": "training",
+      "title": "Music chip in portrait, round controls with a gear icon, HUD fits the visible viewport"
+    },
+    {
+      "pr": 100,
+      "date": "2026-11-19",
+      "type": "feat",
+      "scope": "experience",
+      "title": "Series card, lean setup, advanced settings with help rows"
+    },
+    {
+      "pr": 98,
+      "date": "2026-11-19",
+      "type": "feat",
+      "scope": "ux",
+      "title": "How it works page with menu entry (PL+EN)"
+    },
+    {
+      "pr": 97,
+      "date": "2026-11-19",
+      "type": "feat",
+      "scope": "setup",
+      "title": "Ask only who is riding, advanced settings accordion, sticky Start bar"
+    },
+    {
+      "pr": 96,
+      "date": "2026-11-19",
+      "type": "fix",
+      "scope": "experience",
+      "title": "Coach cue no longer overlaps the controls (phone, portrait)"
+    },
+    {
+      "pr": 95,
+      "date": "2026-11-19",
+      "type": "feat",
+      "scope": "bike",
+      "title": "Usunięcie stopni pokrętła S1–S5, względna komenda oporu w HUD"
+    },
+    {
+      "pr": 94,
+      "date": "2026-11-19",
+      "type": "feat",
+      "scope": "ux",
+      "title": "Hero B, podpis Experience, ikony SVG zamiast emoji"
+    },
+    {
+      "pr": 92,
+      "date": "2026-11-19",
+      "type": "fix",
+      "scope": "neon-grid",
+      "title": "Przedostatnia piosenka nie jest już 59-sekundowym ogonkiem"
+    },
+    {
+      "pr": 91,
+      "date": "2026-11-19",
+      "type": "feat",
+      "scope": "ux",
+      "title": "Styl select, Experience w menu, czytelny scenariusz"
+    },
+    {
+      "pr": 89,
+      "date": "2026-11-08",
+      "type": "fix",
+      "scope": "music",
+      "title": "Poprawki po recenzji #88 (origin IP, pamięć porażek, durationSec, watchdog Spotify, prywatność, etykiety)"
+    },
+    {
+      "pr": 88,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "music",
+      "title": "YouTube jako domyślne, pancerne źródło muzyki w Experience (łańcuch wgrań, failover, Sprawdź muzykę)"
+    },
+    {
+      "pr": 87,
+      "date": "2026-11-08",
+      "type": "fix",
+      "scope": "intro",
+      "title": "Intro w CSS od pierwszej klatki, raz na 7 dni, wybór w Ustawieniach"
+    },
+    {
+      "pr": 86,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "music",
+      "title": "Kolejka utworów w slocie + planer slotu"
+    },
+    {
+      "pr": 85,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "experience",
+      "title": "Utwory wybrane przez właściciela w Neon Grid (musicHints)"
+    },
+    {
+      "pr": 84,
+      "date": "2026-11-08",
+      "type": "fix",
+      "scope": "scenes",
+      "title": "Zero alokacji w konstrukcjach, okno fali, construct bez interpolacji"
+    },
+    {
+      "pr": 83,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "experience",
+      "title": "Dopasuj utwory ze Spotify do podpowiedzi scenariusza"
+    },
+    {
+      "pr": 82,
+      "date": "2026-11-08",
+      "type": "fix",
+      "title": "Drobne poprawki z audytu"
+    },
+    {
+      "pr": 81,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "bike",
+      "title": "Kalibracja stopni S1-S5 wpływa na cue i HUD"
+    },
+    {
+      "pr": 80,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "music",
+      "title": "Import playlisty, masowe tagowanie BPM i chipy Sugerowane"
+    },
+    {
+      "pr": 79,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "home",
+      "title": "Stopka z informacją o projekcie, GitHub, Prywatność i licencja"
+    },
+    {
+      "pr": 78,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "experience",
+      "title": "Teren, rzadkie bramy, rodziny obiektów, landmark"
+    },
+    {
+      "pr": 77,
+      "date": "2026-11-08",
+      "type": "perf",
+      "scope": "ui",
+      "title": "Szybsze otwieranie menu i paneli (tokeny ruchu, bez body:has)"
+    },
+    {
+      "pr": 76,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "experience",
+      "title": "E4 world constructions for Neon Grid"
+    },
+    {
+      "pr": 75,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "experience",
+      "title": "Neon Grid 30 i Lekki 45, picker m:ss, powitanie 30 s"
+    },
+    {
+      "pr": 73,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "domain",
+      "title": "Dosing rules as one pure function + editor/class card warnings"
+    },
+    {
+      "pr": 72,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "security",
+      "title": "T5 audit, Deezer JSONP opt-in in a sandboxed frame"
+    },
+    {
+      "pr": 71,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "coach",
+      "title": "M2 gramatyka cue + cisza w końcówce"
+    },
+    {
+      "pr": 69,
+      "date": "2026-11-08",
+      "type": "fix",
+      "scope": "hud",
+      "title": "Experience na telefonie w poziomie + uproszczone menu (układ + Lite)"
+    },
+    {
+      "pr": 68,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "experience",
+      "title": "Neon Grid chapters as seven distinct worlds (trip channels)"
+    },
+    {
+      "pr": 67,
+      "date": "2026-11-08",
+      "type": "feat",
+      "scope": "setup",
+      "title": "Skippable 'Twój rower' step with S1-S5 knob calibration"
+    },
+    {
+      "pr": 66,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "experience",
+      "title": "Neon Grid 45 end to end"
+    },
+    {
+      "pr": 65,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "music",
+      "title": "Song finder by artist and title (M19d, first slice)"
+    },
+    {
+      "pr": 64,
+      "date": "2026-11-07",
+      "type": "perf",
+      "scope": "scenes",
+      "title": "Continuous render-scale ladder, ribbon merge"
+    },
+    {
+      "pr": 63,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "ui",
+      "title": "M24b-d mobile readability, copy, a11y (axe e2e)"
+    },
+    {
+      "pr": 62,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "music",
+      "title": "Keyless Deezer BPM lookup"
+    },
+    {
+      "pr": 61,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "experience",
+      "title": "Data model, loader, picker and Scenes theme engine"
+    },
+    {
+      "pr": 60,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "editor",
+      "title": "Song lane, class card, cool-down music lane"
+    },
+    {
+      "pr": 59,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "music",
+      "title": "GetSongBPM integration"
+    },
+    {
+      "pr": 58,
+      "date": "2026-11-07",
+      "type": "fix",
+      "scope": "music",
+      "title": "BPM field review fixes"
+    },
+    {
+      "pr": 57,
+      "date": "2026-11-07",
+      "type": "fix",
+      "scope": "M16",
+      "title": "Review follow-ups (slots, BPM, scaling, PL hints)"
+    },
+    {
+      "pr": 56,
+      "date": "2026-11-07",
+      "type": "other",
+      "title": "UI/UX quick wins (contrast, Start scrim, HUD title, stepped timeline, badge)"
+    },
+    {
+      "pr": 55,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "music",
+      "title": "BPM matching"
+    },
+    {
+      "pr": 54,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "M16",
+      "title": "Four class-format workouts"
+    },
+    {
+      "pr": 53,
+      "date": "2026-11-07",
+      "type": "fix",
+      "scope": "ux",
+      "title": "HR wizard labels, Editor menu entry, Duplicate and edit"
+    },
+    {
+      "pr": 52,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "home",
+      "title": "Start page with hero and mode dock"
+    },
+    {
+      "pr": 51,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "M16",
+      "title": "Song slots in the workout model"
+    },
+    {
+      "pr": 50,
+      "date": "2026-11-07",
+      "type": "perf",
+      "scope": "world",
+      "title": "Engine optimisation M21a (pixel budget, zero-alloc update, GPU timer)"
+    },
+    {
+      "pr": 49,
+      "date": "2026-11-07",
+      "type": "feat",
+      "title": "Heart-rate zones"
+    },
+    {
+      "pr": 48,
+      "date": "2026-11-07",
+      "type": "feat",
+      "scope": "M15",
+      "title": "Stepped effort (Knob) and first-class position"
+    },
+    {
+      "pr": 47,
+      "date": "2026-11-06",
+      "type": "feat",
+      "scope": "music",
+      "title": "Shorter gap between songs"
+    },
+    {
+      "pr": 46,
+      "date": "2026-11-06",
+      "type": "feat",
+      "scope": "onboarding",
+      "title": "Welcome screen instead of 'no plan'"
+    },
+    {
+      "pr": 45,
+      "date": "2026-11-06",
+      "type": "refactor",
+      "title": "Rename hyperride to world in code"
+    },
+    {
+      "pr": 44,
+      "date": "2026-11-06",
+      "type": "feat",
+      "scope": "freestyle",
+      "title": "Readable phone layout"
+    },
+    {
+      "pr": 43,
+      "date": "2026-11-06",
+      "type": "feat",
+      "scope": "plans",
+      "title": "Optional training weekdays"
+    },
+    {
+      "pr": 42,
+      "date": "2026-11-06",
+      "type": "feat",
+      "scope": "brand",
+      "title": "Swap blue/green on the effort scale"
+    },
+    {
+      "pr": 41,
+      "date": "2026-11-06",
+      "type": "fix",
+      "scope": "pages",
+      "title": "Serve from hypercycling.app root (base path /)"
+    },
+    {
+      "pr": 40,
+      "date": "2026-11-01",
+      "type": "fix",
+      "scope": "hud",
+      "title": "Cockpit panel style (tilted text, label gap, clipped top line)"
+    },
+    {
+      "pr": 39,
+      "date": "2026-11-01",
+      "type": "feat",
+      "scope": "brand",
+      "title": "Intro v2 (current logo, no digit, slower, always shown)"
+    },
+    {
+      "pr": 35,
+      "date": "2026-11-01",
+      "type": "fix",
+      "scope": "hud",
+      "title": "Riders panel clipped on phone"
+    },
+    {
+      "pr": 34,
+      "date": "2026-11-01",
+      "type": "feat",
+      "scope": "freestyle",
+      "title": "Light list with preview pane"
+    },
+    {
+      "pr": 33,
+      "date": "2026-11-01",
+      "type": "fix",
+      "scope": "hud",
+      "title": "Effort ring label overlap"
+    },
+    {
+      "pr": 31,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "HyperCycling foundation"
+    },
+    {
+      "pr": 19,
+      "date": "2026-11-01",
+      "type": "fix",
+      "title": "Pages URL in Spotify settings (HyperCycling)"
+    },
+    {
+      "pr": 13,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "Plan wizard (WIP)"
+    },
+    {
+      "pr": 12,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "Road world for Hyperride + QA fix wave (phone layout, editor, session-only choices)"
+    },
+    {
+      "pr": 11,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "GitHub Pages deploy and documentation"
+    },
+    {
+      "pr": 10,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "Settings, navigation, i18n/a11y, 20-min FTP test, security hardening"
+    },
+    {
+      "pr": 9,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "Music (director, YouTube + Spotify, music UI)"
+    },
+    {
+      "pr": 8,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "M6–M8: editor + import, Hyperride, YouTube"
+    },
+    {
+      "pr": 7,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "Plans, freestyle library, setup, summary, players (+ HUD fixes, parsers, editor state)"
+    },
+    {
+      "pr": 6,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "Basic training screen — session store, HUD, layouts, sounds, keyboard"
+    },
+    {
+      "pr": 5,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "Storage — repositories (SQLite, IndexedDB, HTTP), REST API, safe import with backups"
+    },
+    {
+      "pr": 4,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "Domain — effort scale, workouts, session engine, coach, plans, scaling, music schedule, tunnel path"
+    },
+    {
+      "pr": 3,
+      "date": "2026-11-01",
+      "type": "other",
+      "title": "V2 scaffold, tooling, CI, i18n and design tokens"
+    },
+    {
+      "pr": 2,
+      "date": "2024-09-15",
+      "type": "other",
+      "title": "Task intro page"
+    },
+    {
+      "pr": 1,
+      "date": "2024-09-14",
+      "type": "other",
+      "title": "Task user power feature"
+    }
+  ]
+}
