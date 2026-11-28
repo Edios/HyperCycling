@@ -4,6 +4,7 @@ import { LogoMark, ModeIcon, Wordmark, type Mode } from '../brand';
 import { toggleDiagnostics } from '../diagnostics/GlobalDiagnostics';
 import { createTapCounter } from '../diagnostics/toggle';
 import { GuideIcon } from '../guide/GuideIcons';
+import { NewDot } from '../guide/NewDot';
 import { useT } from '../i18n';
 import styles from './AppBar.module.css';
 import { Icon } from './Icon';
@@ -57,6 +58,7 @@ export function AppBar() {
       </Link>
       <NavLink to="/how-it-works" className={styles.ico} data-testid="nav-how-it-works">
         <GuideIcon name="help" /> <span className={styles.lbl}>{t('guide.menu')}</span>
+        <NewDot />
       </NavLink>
     </header>
   );

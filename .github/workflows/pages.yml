@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
   pages: write
   id-token: write
 
@@ -28,6 +29,13 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # "What's new" lists every merged pull request, also the one this push merged. Only the
+      # deployed build is refreshed (nothing is committed); the committed list stays if gh fails.
+      - name: Refresh the changelog
+        run: npm run changelog
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
       - run: npm run build:pages
       - uses: actions/upload-pages-artifact@v3
         with:

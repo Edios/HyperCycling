@@ -6,6 +6,7 @@ import { AppBar } from '../ui/AppBar';
 import { Icon } from '../ui/Icon';
 import { GuideIcon } from './GuideIcons';
 import { InstallApp } from '../pwa/InstallApp';
+import { NewDot } from './NewDot';
 import styles from './HowItWorks.module.css';
 
 const REPO_URL = 'https://github.com/Edios/HyperCycling';
@@ -39,6 +40,12 @@ export function HowItWorks() {
           <p className={styles.eyebrow}>{t('guide.eyebrow')}</p>
           <h1>{t('guide.title')}</h1>
           <p className={styles.lead}>{t('guide.lead')}</p>
+          <p className={styles.news}>
+            <Link to="/whats-new" data-testid="guide-whats-new">
+              {t('whatsNew.link')}
+            </Link>
+            <NewDot />
+          </p>
         </header>
 
         <section className={styles.why}>

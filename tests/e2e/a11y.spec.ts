@@ -20,6 +20,7 @@ const ROUTES = [
   '#/players',
   '#/settings',
   '#/how-it-works',
+  '#/whats-new',
   '#/setup/demo-mixed',
   '#/soundtrack/class-endurance-45',
   '#/editor/demo-mixed',

@@ -5,8 +5,11 @@ import { type Mode } from '../brand';
 import { useT, type MessageKey } from '../i18n';
 import { useActivePlan } from '../select/useActivePlan';
 import { ModeIcon } from '../brand';
+import { NewDot } from '../guide/NewDot';
 import { HomeArt } from './HomeArt';
 import styles from './Home.module.css';
+
+const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? 'dev';
 
 type TileMode = Exclude<Mode, 'coach'>;
 
@@ -62,6 +65,12 @@ export function Home() {
           </a>
           <Link to="/settings?section=about">{t('home.footerPrivacy')}</Link>
           <Link to="/settings?section=about">{t('home.footerAbout')}</Link>
+          <span>
+            <Link to="/whats-new" data-testid="footer-whats-new">
+              {t('whatsNew.footer', { version: APP_VERSION })}
+            </Link>
+            <NewDot />
+          </span>
         </nav>
         <p className={styles.footerCredit}>
           {t('home.bpmCredit')}{' '}

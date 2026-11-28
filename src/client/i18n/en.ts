@@ -1497,6 +1497,23 @@ export const en = {
     updateApply: 'Refresh',
     updateLater: 'Later',
   },
+  whatsNew: {
+    eyebrow: 'Changelog',
+    title: "What's new",
+    version: 'Version {version}',
+    older: 'Earlier changes',
+    back: 'Back to How it works',
+    link: "What's new",
+    footer: "Version {version} · What's new",
+    dot: 'New changes',
+    type: {
+      feat: 'New',
+      fix: 'Fixed',
+      perf: 'Faster',
+      refactor: 'Improved',
+      other: 'Changed',
+    },
+  },
   guide: {
     menu: 'How it works',
     eyebrow: 'How it works',
