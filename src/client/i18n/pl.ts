@@ -460,7 +460,7 @@ export const pl: Messages = {
     start: 'Zacznij plan',
     customize: 'Dostosuj',
     stepsLabel: 'Kroki',
-    stepOf: 'Krok {n} z 4',
+    stepOf: 'Krok {n} z {total}',
     stepGoal: 'Cel',
     stepTime: 'Czas',
     stepHr: 'Tętno',
@@ -503,6 +503,7 @@ export const pl: Messages = {
       guide: 'Jak zrobić test? Zobacz instrukcję',
       noWatts: 'Rower bez pomiaru mocy',
       noWattsBody: 'Plan pojedzie na wysiłku 1–10 i tętnie. Bez mierzenia mocy.',
+      askWatts: 'Mój rower pokazuje waty: zapytaj o FTP',
     },
     reason: {
       test: 'Zaczynasz od testu 20 min, bo nie znasz swojego FTP. Potem {weeks} stopniowej progresji, {days}× w tygodniu po {minutes} min.',
