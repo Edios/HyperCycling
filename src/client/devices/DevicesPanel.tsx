@@ -48,8 +48,24 @@ export function DevicesPanel({ variant, showTrainer, showWatts }: DevicesPanelPr
 
   if (!state.supported) {
     // The setup screen stays quiet in a browser without Bluetooth (nothing to connect there);
-    // Settings explains why and what to use instead.
-    if (!full) return null;
+    // Settings explains why and what to use instead. On an iPhone or iPad there is a way out
+    // (the Bluefy browser), so the setup names it in one line with a link to the help.
+    if (!full) {
+      if (state.unsupportedReason !== 'ios') return null;
+      return (
+        <div className={styles.panel} data-testid="devices">
+          <p className={styles.unsupported} role="note" data-testid="devices-ios-hint">
+            <Icon name="bluetooth" size={18} />
+            <span>
+              {t('devices.iosHint')}{' '}
+              <a href="#/settings?section=equipment" className={styles.helpLink}>
+                {t('devices.iosHelp')}
+              </a>
+            </span>
+          </p>
+        </div>
+      );
+    }
     return (
       <div className={`${styles.panel} ${full ? styles.full : ''}`} data-testid="devices">
         <p className={styles.unsupported} role="status" data-testid="devices-unsupported">

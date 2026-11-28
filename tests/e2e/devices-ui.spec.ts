@@ -63,6 +63,30 @@ test('unsupported browser: one clear sentence, no buttons', async ({ page }) => 
   await expect(devices.getByRole('button')).toHaveCount(0);
 });
 
+test.describe('iPhone (no Web Bluetooth)', () => {
+  test.use({
+    userAgent:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1',
+    viewport: { width: 390, height: 844 },
+  });
+
+  test('the ride setup names Bluefy in one line and links to the help', async ({ page }) => {
+    await page.goto('./');
+    await page.waitForFunction(() => window.__hcBle !== undefined);
+    await page.evaluate(() => {
+      window.__hcBle!.removeBluetooth();
+      location.hash = '#/setup/demo-mixed';
+    });
+    const hint = page.getByTestId('setup-screen').getByTestId('devices-ios-hint');
+    await expect(hint).toContainText('Bluefy');
+    await expect(page.getByRole('button', { name: 'Connect trainer' })).toHaveCount(0);
+    await hint.getByRole('link', { name: 'Help' }).click();
+    await expect(
+      page.getByTestId('equipment-devices').getByTestId('devices-unsupported'),
+    ).toContainText('Bluefy');
+  });
+});
+
 const VIEWPORTS = [
   { name: 'pc', width: 1280, height: 800 },
   { name: 'phone-portrait', width: 390, height: 844 },

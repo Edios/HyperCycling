@@ -1917,6 +1917,9 @@ export const pl: Messages = {
     hr: 'Pas tętna',
     connectTrainer: 'Połącz trenażer',
     connectHr: 'Połącz pas',
+    iosHint:
+      'Trenażer albo pas tętna na iPhonie lub iPadzie? Otwórz HyperCycling w darmowej przeglądarce Bluefy.',
+    iosHelp: 'Pomoc',
     disconnect: 'Rozłącz',
     reconnect: 'Połącz ponownie',
     chooseOther: 'Wybierz inne',

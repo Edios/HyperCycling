@@ -190,4 +190,21 @@ describe('DevicesPanel', () => {
     const { container } = render(<DevicesPanel variant="compact" showTrainer showWatts />);
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('on an iPhone the compact variant names Bluefy in one line, with a link to the help', () => {
+    setLang('en');
+    const store = createDeviceStore({
+      support: { supported: false, reason: 'ios' },
+      wakeLock: noWakeLock,
+    });
+    mount(store, { variant: 'compact' });
+    expect(screen.getByTestId('devices-ios-hint')).toHaveTextContent(
+      'Trainer or heart rate strap on an iPhone or iPad? Open HyperCycling in the free Bluefy browser.',
+    );
+    expect(screen.getByRole('link', { name: 'Help' })).toHaveAttribute(
+      'href',
+      '#/settings?section=equipment',
+    );
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
 });

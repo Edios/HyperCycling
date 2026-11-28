@@ -1909,6 +1909,9 @@ export const en = {
     hr: 'Heart rate strap',
     connectTrainer: 'Connect trainer',
     connectHr: 'Connect strap',
+    iosHint:
+      'Trainer or heart rate strap on an iPhone or iPad? Open HyperCycling in the free Bluefy browser.',
+    iosHelp: 'Help',
     disconnect: 'Disconnect',
     reconnect: 'Reconnect',
     chooseOther: 'Choose another',
