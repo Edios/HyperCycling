@@ -1,3 +1,4 @@
+import { targetWatts } from '../../../domain/effort';
 import { EffortGroup } from '../hud/EffortGroup';
 import { HrTarget } from '../hud/HrTarget';
 import { hasMeasures, MeasuresGroup } from '../hud/MeasuresGroup';
@@ -31,6 +32,12 @@ export function Classic({
 }: BasicLayoutProps & { withPlayers: boolean }) {
   // Nothing to show (no cadence target, no sensors): the tile is not drawn, no bare placeholder.
   const showMeasures = hasMeasures(view.segment.rpm, !hideRpmTile, live);
+  // One rider and no riders column: their target watts sit under the ring instead.
+  const solo = players.length === 1 ? players[0] : undefined;
+  const soloTargetW =
+    !withPlayers && showsWatts && !trainer && solo && Number.isFinite(solo.ftp) && solo.ftp > 0
+      ? targetWatts(solo.ftp, view.ftpPct)
+      : undefined;
   return (
     <div
       className={styles.root}
@@ -81,6 +88,7 @@ export function Classic({
           step={{ index: view.stepIndex, count: view.stepCount }}
           motion={!reducedMotion}
           showFtp={showsWatts}
+          {...(soloTargetW !== undefined ? { targetW: soloTargetW } : {})}
           {...(trainer ? { trainer } : {})}
           {...(knobCommand && view.resistanceCommand
             ? { resistanceCommand: view.resistanceCommand }

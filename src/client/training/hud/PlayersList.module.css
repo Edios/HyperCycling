@@ -1,4 +1,5 @@
 .root {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: calc(1 * var(--u));
@@ -52,8 +53,11 @@
 }
 
 .watts {
-  font-size: var(--rwatts, clamp(24px, calc(6.1 * var(--u)), 80px));
+  /* "1234 W" is about 3 em wide: at most ~60% of the column, so the unit is never cut. */
+  font-size: min(var(--rwatts, clamp(24px, calc(6.1 * var(--u)), 80px)), 20cqi);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  flex: none;
 }
 
 .me .name {
@@ -98,7 +102,7 @@
   }
 
   .watts {
-    font-size: 8vw;
+    font-size: min(8vw, 20cqi);
   }
 }
 

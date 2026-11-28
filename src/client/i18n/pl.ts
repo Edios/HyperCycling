@@ -233,6 +233,7 @@ export const pl: Messages = {
     ridersHint: {
       none: 'Wybierz osobę poniżej, aby pokazać graczy.',
       noRoom: 'Kokpit i Minimal nie mają miejsca na panel graczy.',
+      solo: 'Przy jednej osobie układ Klasyczny pokazuje cel pod pierścieniem.',
     },
     who: 'Kto jedzie?',
     add: 'Dodaj',

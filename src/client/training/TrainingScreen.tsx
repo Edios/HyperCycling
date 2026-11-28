@@ -658,9 +658,14 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   }, []);
 
   const playersOn = showPlayers && hasPlayers && supportsRiders(kind);
+  // Classic tiles with a single rider: the effort ring already shows the target, so the riders
+  // column (and its toggle) would only repeat it on a quarter of the screen.
+  const classicTiles = (wantsOverlay && !overlay) || kind === 'classic';
+  const soloTiles = classicTiles && runtime.players.length === 1;
+  const ridersAvailable = hasPlayers && !soloTiles;
 
   const togglePlayers = useCallback(() => {
-    if (!hasPlayers) return;
+    if (!ridersAvailable) return;
     if (playersOn) {
       setShowPlayers(false);
       return;
@@ -668,7 +673,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
     // Cockpit and Minimal have no room for riders: showing them switches to the corner layout.
     if (!supportsRiders(kind)) setKind('immersive');
     setShowPlayers(true);
-  }, [hasPlayers, playersOn, kind]);
+  }, [ridersAvailable, playersOn, kind]);
 
   const background = runtime.config.background;
   const cycleLayout = useCallback(() => {
@@ -833,7 +838,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
       status={status}
       muted={muted}
       hidden={hideControls}
-      hasPlayers={hasPlayers}
+      hasPlayers={ridersAvailable}
       onPrev={() => useSessionStore.getState().prev()}
       onToggle={toggle}
       onNext={() => useSessionStore.getState().next()}
@@ -851,7 +856,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
   // A background that fell back to Basic always shows the plain tiles, as before.
   const renderKind: LayoutKind = wantsOverlay && !overlay ? 'classic' : kind;
   const tiled = renderKind === 'classic';
-  const Layout = playersOn ? BasicPlayers : BasicSolo;
+  const Layout = playersOn && !soloTiles ? BasicPlayers : BasicSolo;
   const Overlay = {
     immersive: Immersive,
     column: Column,
@@ -1120,7 +1125,7 @@ function ActiveTraining({ runtime }: { runtime: SessionRuntime }) {
           layoutChoices={layoutChoices(background, isExperience)}
           experience={isExperience}
           riders={playersOn}
-          ridersHint={ridersHintKey(kind, hasPlayers)}
+          ridersHint={soloTiles ? 'setup.ridersHint.solo' : ridersHintKey(kind, hasPlayers)}
           onRiders={(on) => {
             if (on !== playersOn) togglePlayers();
           }}

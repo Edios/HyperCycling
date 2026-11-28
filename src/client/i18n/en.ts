@@ -229,6 +229,7 @@ export const en = {
     ridersHint: {
       none: 'Select a rider below to show riders.',
       noRoom: 'Cockpit and Minimal have no room for the riders panel.',
+      solo: 'With one rider, Classic shows the target under the ring.',
     },
     who: 'Who is riding?',
     add: 'Add',
