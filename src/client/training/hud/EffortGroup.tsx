@@ -97,20 +97,25 @@ export function EffortGroup({
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  // One scale per ride: the name never mixes the 1-10 level, watts and % FTP. With a trainer it
+  // reads "Easy · target 138 W" (the E-level is in the tooltip); on a bike with watts the % FTP
+  // waits behind a tap on the name; a bike without watts shows the word alone.
+  const [showPct, setShowPct] = useState(false);
   const label = t(`effort.${labelKey}`);
   const word = trainer ? t('training.erg.power') : t('training.effort');
+  const pct = t('training.ftpApprox', { pct: Math.round(ftpPct) });
+  const pctOnTap = showFtp && !trainer;
   const name = trainer
-    ? [
-        t('training.erg.effortShort', { label, effort: Math.round(effort) }),
-        trainer.targetW !== null ? t('training.erg.target', { watts: trainer.targetW }) : '',
-      ]
+    ? [label, trainer.targetW !== null ? t('training.erg.target', { watts: trainer.targetW }) : '']
         .filter(Boolean)
         .join(' · ')
-    : showFtp && targetW !== undefined
-      ? `${label} · ${t('training.erg.target', { watts: targetW })}`
-      : showFtp
-        ? `${label} · ${t('training.ftpApprox', { pct: Math.round(ftpPct) })}`
-        : label;
+    : [
+        label,
+        showFtp && targetW !== undefined ? t('training.erg.target', { watts: targetW }) : '',
+        pctOnTap && showPct ? pct : '',
+      ]
+        .filter(Boolean)
+        .join(' · ');
   const nextDesc = next
     ? [
         next.rpm !== undefined ? `${next.rpm} ${t('training.rpm')}` : '',
@@ -164,18 +169,22 @@ export function EffortGroup({
             {word}
           </div>
         )}
+        {/* Not a focusable button: during a ride Space starts and pauses, it must not land here. */}
         <div
           data-testid="effort-name"
+          data-pct={pctOnTap ? (showPct ? 'shown' : 'hidden') : undefined}
           title={
-            showFtp && !trainer
-              ? targetW !== undefined
-                ? `${t('training.ftpApprox', { pct: Math.round(ftpPct) })}. ${t('training.ftpHint')}`
-                : t('training.ftpHint')
-              : undefined
+            trainer
+              ? t('training.erg.effortShort', { label, effort: Math.round(effort) })
+              : pctOnTap
+                ? `${pct}. ${t('training.ftpHint')}`
+                : undefined
           }
-          className={`${hud.lbl} ${styles.name}${wordInside ? ` ${styles.nameLow}` : ''}`}
+          onClick={pctOnTap ? () => setShowPct((v) => !v) : undefined}
+          className={`${hud.lbl} ${styles.name}${wordInside ? ` ${styles.nameLow}` : ''}${pctOnTap ? ` ${styles.nameTap}` : ''}`}
         >
           {name}
+          {pctOnTap && !showPct && <span className="sr-only"> · {pct}</span>}
         </div>
         {trainer && trainer.targetW !== null && trainer.watts !== null && (
           <div className={styles.powerBar}>
